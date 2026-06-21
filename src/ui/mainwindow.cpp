@@ -157,7 +157,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &) const override
     {
-        return QSize(option.rect.width(), 16);
+        return QSize(option.rect.width(), qMax(16, option.fontMetrics.height() + 2));
     }
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -258,7 +258,7 @@ public:
                    const QModelIndex &index) const override
     {
         QSize s = QStyledItemDelegate::sizeHint(option, index);
-        s.setHeight(26);
+        s.setHeight(qMax(26, option.fontMetrics.height() + 10));
         return s;
     }
 
@@ -1175,9 +1175,11 @@ void MainWindow::applyFontSizes()
         }
     }
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
-    if (m_topicSetByLabel)
+    if (m_topicSetByLabel) {
+        m_topicSetByLabel->setFont(makeFont(fs.topicBar));
         m_topicSetByLabel->setStyleSheet(
             QString("QLabel { color: %1; }").arg(m_theme.valid ? m_theme.placeholder : "#888888"));
+    }
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
     for (auto *p : std::as_const(m_orderedPanes)) {
@@ -2329,6 +2331,7 @@ double *MainWindow::fontFieldForWidget(QObject *obj, const QPoint &pos)
 
     if (m_topicText    && isOrChild(m_topicText))    return &m_config.ui.fontSizes.topicText;
     if (m_topicDisplay && isOrChild(m_topicDisplay)) return &m_config.ui.fontSizes.topicText;
+    if (m_primaryHeader && isOrChild(m_primaryHeader)) return &m_config.ui.fontSizes.topicBar;
     if (m_nickList     && isOrChild(m_nickList))      return &m_config.ui.fontSizes.nickList;
     if (m_nickPanel    && isOrChild(m_nickPanel))     return &m_config.ui.fontSizes.nickDock;
     if (m_chatView     && isOrChild(m_chatView))     return &m_config.ui.fontSizes.chat;
