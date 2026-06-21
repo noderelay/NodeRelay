@@ -80,9 +80,23 @@ Session 2026-06-18:
   ChatView deferred layout, review CodeQL findings when first scan completes.
 -->
 
+<!--
+Session 2026-06-20 (font zoom fix):
+- Fixed font zoom row heights: NickDelegate and SidebarDelegate returned hardcoded
+  pixel heights (16 / 26), so Ctrl+scroll changed text width but rows never grew
+  taller. Now derived from option.fontMetrics.height() with qMax preserving originals.
+- Fixed topic bar Ctrl+scroll: m_primaryHeader wasn't mapped in fontFieldForWidget,
+  so zoom had no live effect (only applied after restart). Also m_topicSetByLabel
+  never got setFont() in applyFontSizes.
+- No regressions found. No known issues.
+- Next priorities: MainWindow controller extractions, ChatView deferred layout.
+-->
+
 ## 0.25.50
 
 ### Fixed
+- **Font zoom row heights** — NickDelegate and SidebarDelegate had hardcoded pixel heights (16 / 26); Ctrl+scroll changed text width but rows never grew taller. Row heights now derived from font metrics.
+- **Topic bar Ctrl+scroll** — primary header wasn't mapped in fontFieldForWidget, so zoom had no live effect until restart; topicSetByLabel also missed setFont() in applyFontSizes.
 - **Bot icon not showing on Linux** — root cause was multi-layered: `hasCap("whox")` checked IRCv3 CAP instead of ISUPPORT (always false, so per-nick WHO was never sent); WHOX format string `%cnfa` was missing the querytype token `t`; the 354 handler dropped entries where channel was `*` (Ergo returns `*` for per-nick WHOX queries); and `onWhoEntry` only updated per-channel bot sets, not the session-wide set.
 - **354 WHOX parser robustness** — auto-detects whether the server included the querytype token, handling both 5-param and 6-param response formats.
 - **Per-nick WHO fallback** — sends standard `WHO nick` on servers that don't support WHOX, so bot detection works everywhere.

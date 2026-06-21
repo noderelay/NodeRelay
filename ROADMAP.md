@@ -313,6 +313,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] mIRC color codes in topic bar — linkifyTopic() now runs through ircToHtml() (v0.25.49, 2026-06-20)
 - [x] Keyboard shortcuts documentation rewritten — quick reference table, navigation section, macOS notes (v0.25.49, 2026-06-20)
 - [x] Static analysis cleanup — duplicate /caps handler removed; compiler warnings fixed (old-style casts, narrowing, platform ifdef) (v0.25.49, 2026-06-20)
+- [x] Font zoom row height fix — NickDelegate/SidebarDelegate sizeHint derived from fontMetrics instead of hardcoded pixels; topic bar header mapped in fontFieldForWidget for live Ctrl+scroll (v0.25.50, 2026-06-20)
 
 ---
 

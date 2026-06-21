@@ -431,7 +431,7 @@ theme = "nord"
 
 ### How do I change the font size?
 
-Use **Ctrl+Plus** / **Ctrl+Minus** to zoom the font for the UI region that currently has focus (chat, nick list, sidebar, or input box). You can also use **Ctrl+Scroll wheel** to zoom the region under the cursor. Each region has its own independent font size. For fine-grained control, open **Preferences → Appearance → Font Config** to set exact point sizes for each region. Font sizes are saved to your config automatically.
+Use **Ctrl+Plus** / **Ctrl+Minus** to zoom the font for the UI region that currently has focus (chat, nick list, sidebar, channel header, or input box). You can also use **Ctrl+Scroll wheel** to zoom the region under the cursor. Each region has its own independent font size. For fine-grained control, open **Preferences → Appearance → Font Config** to set exact point sizes for each region. Font sizes are saved to your config automatically.
 
 To set font sizes in config directly:
 
