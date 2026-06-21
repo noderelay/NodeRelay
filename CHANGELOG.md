@@ -92,6 +92,17 @@ Session 2026-06-20 (font zoom fix):
 - Next priorities: MainWindow controller extractions, ChatView deferred layout.
 -->
 
+<!--
+Session 2026-06-21 (project management):
+- Reviewed and closed 3 unsolicited PRs from roeyk (#10 splitters, #11 topic
+  collapse, #12 dropdown mode). Code was AI-generated, didn't match project
+  style, and added unneeded complexity/resource overhead.
+- Added CONTRIBUTING.md — sets expectations: open issue first, match code style,
+  project goals (stable/secure/fast/lightweight), what won't be merged.
+- No code changes this session. No version bump.
+- Next priorities: MainWindow controller extractions, ChatView deferred layout.
+-->
+
 ## 0.25.50
 
 ### Fixed
