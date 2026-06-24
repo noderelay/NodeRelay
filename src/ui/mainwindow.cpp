@@ -88,6 +88,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QScreen>
+#include <QScroller>
 #include <QRandomGenerator>
 #include <QShortcut>
 #include <QDebug>
@@ -1202,6 +1203,7 @@ void MainWindow::setupSidebar()
                                      QColor(m_theme.text),
                                      QColor(m_theme.sidebarUnread));
     m_sidebar->setItemDelegate(m_sidebarDelegate);
+    QScroller::grabGesture(m_sidebar->viewport(), QScroller::LeftMouseButtonGesture);
 
     connect(m_sidebar, &QTreeWidget::itemClicked,
             this, [this](QTreeWidgetItem *, int){ onSidebarSelectionChanged(); });
@@ -1333,6 +1335,7 @@ void MainWindow::setupNickPanel()
     m_nickList->setSpacing(0);
     m_nickList->setIconSize(QSize(16, 16));
     m_nickList->setUniformItemSizes(true);
+    QScroller::grabGesture(m_nickList->viewport(), QScroller::LeftMouseButtonGesture);
     m_nickDelegate = new NickDelegate(m_nickList);
     if (m_theme.valid)
         m_nickDelegate->setColors(QColor(m_theme.accent),

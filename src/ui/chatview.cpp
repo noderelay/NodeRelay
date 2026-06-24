@@ -6,6 +6,8 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QScroller>
+#include <QScrollerProperties>
 #include <QWheelEvent>
 #include <QPainter>
 #include <QScrollBar>
@@ -48,6 +50,22 @@ ChatView::ChatView(QWidget *parent)
             if (m_atBottom && !m_userScrolledAway)
                 verticalScrollBar()->setValue(max);
         });
+
+    QScroller::grabGesture(viewport(), QScroller::LeftMouseButtonGesture);
+    auto *scroller = QScroller::scroller(viewport());
+    QScrollerProperties props = scroller->scrollerProperties();
+    props.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy,
+                          QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
+    props.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy,
+                          QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
+    scroller->setScrollerProperties(props);
+    connect(scroller, &QScroller::stateChanged, this, [this](QScroller::State state) {
+        if (state == QScroller::Dragging && !m_userScrolledAway) {
+            m_userScrolledAway = true;
+            m_atBottom = false;
+            emit scrolledAwayFromBottom(true);
+        }
+    });
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────

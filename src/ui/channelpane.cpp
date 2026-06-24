@@ -3,6 +3,7 @@
 #include "ui/fadescrollbar.h"
 
 #include <QListWidget>
+#include <QScroller>
 #include <QPlainTextEdit>
 #include <QKeyEvent>
 #include <QLabel>
@@ -97,6 +98,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
     m_nickList->setSpacing(0);
     m_nickList->setUniformItemSizes(true);
+    QScroller::grabGesture(m_nickList->viewport(), QScroller::LeftMouseButtonGesture);
 
     auto *nickWrapper = new QWidget;
     nickWrapper->setObjectName("nickPanel");
