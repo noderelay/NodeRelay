@@ -103,6 +103,31 @@ Session 2026-06-21 (project management):
 - Next priorities: MainWindow controller extractions, ChatView deferred layout.
 -->
 
+<!--
+Session 2026-06-23:
+- Refactored mainwindow.cpp: extracted context menus (contextmenus.cpp, 562 lines)
+  and nick panel (nickpanel.cpp, 280 lines); moved isCondensable and buildReactionLine
+  to chatrenderer.h as shared inlines. mainwindow.cpp 5281→4447 lines.
+- Added unit tests: tst_config.cpp (12 tests for Config::load/save round-trip,
+  defaults, backward compat, app icon migration, bouncer types) and
+  tst_ignoretypes.cpp (6 tests for IgnoreTypes flags, case-insensitive lookup).
+- Added kinetic touch scrolling via QScroller on ChatView, sidebar, nick list,
+  and channel pane nick lists. QScroller handles touch-vs-click disambiguation
+  automatically. Mouse behavior unchanged.
+- No regressions found. No known issues.
+- Next priorities: test touch scrolling on actual tablet; accessibility
+  (QAccessibleInterface for ChatView); spellcheck (on hold).
+-->
+
+## 0.25.51
+
+### Added
+- **Kinetic touch scrolling** — flick-to-scroll with momentum on touchscreen and tablet devices via Qt's QScroller; enabled on chat view, sidebar, nick list, and channel panes. Mouse behavior is unchanged.
+- **Unit tests for config and ignore types** — 12 config tests covering TOML loading, saving, round-trip, defaults, backward compatibility, and app icon migration; 6 ignore type tests covering flag operations and case-insensitive nick matching.
+
+### Changed
+- **Code organization** — extracted context menus (562 lines) and nick panel (280 lines) from mainwindow.cpp into separate files; moved `isCondensable` and `buildReactionLine` to chatrenderer.h as shared inline helpers. mainwindow.cpp reduced from 5,281 to 4,447 lines.
+
 ## 0.25.50
 
 ### Fixed

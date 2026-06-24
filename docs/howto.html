@@ -533,6 +533,7 @@
     <li><a href="#brackets">Nick brackets</a></li>
     <li><a href="#panels">Show/hide panels</a></li>
     <li><a href="#scrollbars">Fade scrollbars</a></li>
+    <li><a href="#touch-scrolling">Touch scrolling</a></li>
     <li><a href="#hanging-indent">Hanging indent</a></li>
     <li><a href="#app-icon">App icon</a></li>
     <li><a href="#notifications">Notifications</a></li>
@@ -2782,6 +2783,26 @@ show_nick_prefix = false   # hides "alice ▸" next to the input</pre>
     <div class="note">
       <strong>Busy channels always show a scrollbar.</strong> Uplink renders only the most recent 150 messages when you join or switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even if you haven't sent or received anything — this is expected. Scroll to the top to load earlier messages 50 at a time. Quiet channels with fewer than 150 messages show no scrollbar until content fills the view.
     </div>
+  </section>
+
+  <!-- TOUCH SCROLLING -->
+  <section id="touch-scrolling">
+    <h2>Touch scrolling</h2>
+    <p>On touchscreen and tablet devices, all scrollable areas support <strong>kinetic flick-to-scroll</strong> — swipe your finger and the content keeps moving with natural momentum, then gradually slows to a stop.</p>
+    <p>This applies to:</p>
+    <ul>
+      <li>The main chat view</li>
+      <li>The server/channel sidebar</li>
+      <li>The nick list</li>
+      <li>All split channel panes</li>
+    </ul>
+    <p>Touch gestures are automatically distinguished from taps and text selection:</p>
+    <ul>
+      <li><strong>Quick swipe</strong> — scrolls with momentum</li>
+      <li><strong>Tap</strong> — clicks links and nicks as normal</li>
+      <li><strong>Long press then drag</strong> — selects text</li>
+    </ul>
+    <p>Mouse behavior is completely unchanged — this feature only activates with touch input.</p>
   </section>
 
   <!-- HANGING INDENT -->

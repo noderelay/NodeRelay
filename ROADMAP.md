@@ -315,6 +315,17 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Static analysis cleanup — duplicate /caps handler removed; compiler warnings fixed (old-style casts, narrowing, platform ifdef) (v0.25.49, 2026-06-20)
 - [x] Font zoom row height fix — NickDelegate/SidebarDelegate sizeHint derived from fontMetrics instead of hardcoded pixels; topic bar header mapped in fontFieldForWidget for live Ctrl+scroll (v0.25.50, 2026-06-20)
 - [x] CONTRIBUTING.md — contribution guidelines: open issue first, match code style, project goals, testing requirements, what won't be merged (2026-06-21)
+- [x] MainWindow refactor — extracted context menus (contextmenus.cpp) and nick panel (nickpanel.cpp); moved isCondensable and buildReactionLine to chatrenderer.h; mainwindow.cpp 5281→4447 lines (2026-06-23)
+- [x] Config and ignore type unit tests — tst_config.cpp (12 tests), tst_ignoretypes.cpp (6 tests); covers load/save round-trip, defaults, backward compat, flags (2026-06-23)
+- [x] Kinetic touch scrolling — QScroller on ChatView, sidebar, nick list, channel panes; flick-to-scroll with momentum for touchscreen/tablet use (2026-06-23)
+
+---
+
+## Planned — Future
+
+- [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat
+- [ ] Spellcheck — hunspell integration for the input box (on hold)
+- [ ] Long-press context menus — touch-friendly alternative to right-click for tablets
 
 ---
 
@@ -399,7 +410,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [ ] `PreviewController` — link preview queue, cache insertion, hide/show preview actions, watchdog timer
 - [ ] `UpdateChecker` — GitHub release check, version comparison, update dialog
 - [ ] `InputController` — autocomplete, input history, emoji replacement, typing state, send button
-- [ ] `NickContextMenuBuilder` — nick right-click actions (message, whois, op, kick, DCC submenu)
+- [x] `NickContextMenuBuilder` — nick right-click actions extracted to contextmenus.cpp (2026-06-23)
 - [ ] `ChatRenderController` — message→ChatLine conversion, reaction/redaction updates, event condensation
 
 **ChatView performance** — reduce cost of relayout and rendering on large backlogs (5 000-line cap):

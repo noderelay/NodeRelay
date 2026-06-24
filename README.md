@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.50-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.51-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.50-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.51-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.50-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.51-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.50-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.51-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -142,6 +142,7 @@
 | **Quick channel switcher** | **Ctrl+K** opens a floating popup — type to filter channels, Enter to jump. |
 | **Channel navigation** | **Alt+Up/Down** cycles channels, **Alt+Left/Right** cycles panes. |
 | **Jump to bottom** | Floating button appears when scrolled up in a busy channel — click to return to live chat. |
+| **Touch scrolling** | Kinetic flick-to-scroll with momentum on touchscreen and tablet devices — chat, sidebar, and nick list. |
 
 ### 🖥️ Nick List & Sidebar
 
