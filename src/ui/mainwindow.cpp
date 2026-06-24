@@ -384,29 +384,6 @@ protected:
     }
 };
 
-static ChatLine buildReactionLine(const QHash<QString, QSet<QString>> &rx, const QString &msgid)
-{
-    QTextCharFormat fmt;
-    fmt.setForeground(QColor("#888888"));
-    QString text;
-    QList<ChatSegment> segs;
-    for (auto it = rx.constBegin(); it != rx.constEnd(); ++it) {
-        ChatSegment seg;
-        seg.start  = static_cast<int>(text.size());
-        const QString piece = it.key() + "(" + QString::number(it.value().size()) + ") ";
-        seg.length = static_cast<int>(piece.size());
-        seg.format = fmt;
-        text += piece;
-        segs.append(seg);
-    }
-    ChatLine line;
-    line.text     = text;
-    line.segments = segs;
-    line.id       = "rx:" + msgid;
-    line.role     = ChatLineRole::Reaction;
-    return line;
-}
-
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -3031,20 +3008,6 @@ void MainWindow::onChannelRemoved(ServerId host, BufferId channel)
     onSidebarSelectionChanged();
 }
 
-static bool isCondensable(const Message &msg, const QString &selfNick)
-{
-    switch (msg.type) {
-    case MessageType::Join:
-    case MessageType::Part:
-    case MessageType::Quit:
-    case MessageType::Nick:
-    case MessageType::Kick:
-        return selfNick.isEmpty()
-            || msg.nick.compare(selfNick, Qt::CaseInsensitive) != 0;
-    default:
-        return false;
-    }
-}
 
 // Collect the tail run of consecutive condensable messages from ch.messages
 // that share the same calendar day as the last message.
@@ -3055,179 +3018,11 @@ static QList<Message> collectEventGroup(const Channel *ch, const QString &selfNi
     const QDate day = ch->messages.last().timestamp.toLocalTime().date();
     for (qsizetype i = ch->messages.size() - 1; i >= 0; --i) {
         const auto &m = ch->messages[i];
-        if (!isCondensable(m, selfNick)) break;
+        if (!ChatRenderer::isCondensable(m, selfNick)) break;
         if (m.timestamp.toLocalTime().date() != day) break;
         group.prepend(m);
     }
     return group;
-}
-
-void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
-                                         ServerId host, BufferId channel)
-{
-    auto *ch = m_model->channel(host, channel);
-    if (!ch) return;
-
-    const qint64 targetMs = groupId.toLongLong();
-    const QString selfNick = m_model->selfNick(host);
-    int start = -1;
-    for (int i = 0; i < ch->messages.size(); ++i) {
-        if (ch->messages[i].timestamp.toMSecsSinceEpoch() == targetMs
-            && isCondensable(ch->messages[i], selfNick)) {
-            start = i;
-            break;
-        }
-    }
-    if (start < 0) return;
-
-    const QDate day = ch->messages[start].timestamp.toLocalTime().date();
-    int j = start + 1;
-    while (j < ch->messages.size()
-           && isCondensable(ch->messages[j], selfNick)
-           && ch->messages[j].timestamp.toLocalTime().date() == day)
-        ++j;
-
-    QList<Message> group(ch->messages.cbegin() + start, ch->messages.cbegin() + j);
-
-    const bool expand = !m_expandedEventGroups.contains(groupId);
-    if (expand) {
-        if (m_expandedEventGroups.size() >= 200)
-            m_expandedEventGroups.clear();
-        m_expandedEventGroups.insert(groupId);
-    } else {
-        m_expandedEventGroups.remove(groupId);
-    }
-
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    ctx.validTheme   = m_theme.valid;
-    ctx.themeText    = m_theme.text;
-    ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = ch;
-
-    const bool atBottom = view->isAtBottom();
-    view->replaceLine("evgrp:" + groupId,
-                      ChatRenderer::formatEventGroupLine(group, ctx, groupId, expand));
-    if (atBottom) view->scrollToBottom();
-}
-
-void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor,
-                                            const QPoint &globalPos,
-                                            ServerId host, BufferId channel)
-{
-    if (anchor.startsWith("nick:")) {
-        showNickContextMenu(anchor.mid(5), globalPos);
-        return;
-    }
-
-    if (anchor.startsWith("msgid:")) {
-        const QString msgid = anchor.mid(6);
-        QMenu menu(view->viewport());
-        auto *cl = m_model->clientFor(host);
-        const QString sel = view->selectedText();
-        if (!sel.isEmpty()) {
-            connect(menu.addAction("Copy"), &QAction::triggered, this,
-                    [sel]{ QApplication::clipboard()->setText(sel); });
-            menu.addSeparator();
-        }
-        connect(menu.addAction("Reply"), &QAction::triggered, this,
-                [this, msgid, host, channel]{
-            auto *ch = m_model->channel(host, channel);
-            QString origNick;
-            if (ch) for (const auto &m : std::as_const(ch->messages))
-                if (m.msgid == msgid) { origNick = m.nick; break; }
-            m_pendingReplyMsgid = msgid;
-            if (m_replyLabel) m_replyLabel->setText("↩ " + (origNick.isEmpty() ? msgid : origNick));
-            if (m_replyBar) m_replyBar->show();
-            if (m_input)    m_input->setFocus();
-        });
-        if (cl && cl->hasCap("message-tags")) {
-            connect(menu.addAction("React"), &QAction::triggered, this,
-                    [this, msgid, host, channel, globalPos]{
-                m_pendingReactMsgid    = msgid;
-                m_pendingReactHost     = host.str();
-                m_pendingReactChannel  = channel.str();
-                ensureEmojiPicker();
-                m_emojiPicker->showAt(globalPos);
-            });
-        }
-        {
-            auto *ch = m_model->channel(host, channel);
-            if (cl && cl->hasCap("draft/message-redaction") && ch) {
-                QString msgNick;
-                for (const auto &m : std::as_const(ch->messages))
-                    if (m.msgid == msgid) { msgNick = m.nick; break; }
-                if (msgNick == m_model->selfNick(host)) {
-                    connect(menu.addAction("Delete"), &QAction::triggered, this,
-                            [this, msgid, host, channel]{
-                        m_model->sendRedact(host, channel, msgid);
-                    });
-                }
-            }
-        }
-        menu.exec(globalPos);
-        return;
-    }
-
-    if (anchor.startsWith("preview:")) {
-        const QString url = anchor.mid(8);
-        QMenu menu(view->viewport());
-        connect(menu.addAction("Open URL"), &QAction::triggered, this, [url]{
-            const QUrl u(url);
-            if (u.scheme().toLower() == "http" || u.scheme().toLower() == "https")
-                QDesktopServices::openUrl(u);
-        });
-        auto *ch = m_model->channel(host, channel);
-        if (ch && ch->previews.contains(url)) {
-            connect(menu.addAction("Hide Preview"), &QAction::triggered, this,
-                    [this, url, host, channel]{
-                auto *inner = m_model->channel(host, channel);
-                if (inner) inner->hiddenPreviews.insert(url);
-                refreshChatView(host, channel);
-            });
-        }
-        menu.exec(globalPos);
-        return;
-    }
-
-    if (!anchor.isEmpty()) {
-        // URL or other anchor
-        QString href = anchor;
-        if (href.startsWith("url:")) href = href.mid(4);
-        QMenu menu(view->viewport());
-        connect(menu.addAction("Copy URL"), &QAction::triggered,
-                this, [href]{ QApplication::clipboard()->setText(href); });
-        connect(menu.addAction("Open URL"), &QAction::triggered, this, [href]{
-            const QUrl u(href);
-            if (u.scheme().toLower() == "http" || u.scheme().toLower() == "https")
-                QDesktopServices::openUrl(u);
-        });
-        auto *ch = m_model->channel(host, channel);
-        const bool isHidden   = ch && ch->hiddenPreviews.contains(href);
-        const bool hasPreview = ch && ch->previews.contains(href);
-        if (isHidden) {
-            connect(menu.addAction("Show Preview"), &QAction::triggered, this,
-                    [this, href, host, channel]{
-                auto *inner = m_model->channel(host, channel);
-                if (inner) inner->hiddenPreviews.remove(href);
-                refreshChatView(host, channel);
-            });
-        } else {
-            auto *hideAction = menu.addAction("Hide Preview");
-            hideAction->setEnabled(hasPreview);
-            connect(hideAction, &QAction::triggered, this, [this, href, host, channel]{
-                auto *inner = m_model->channel(host, channel);
-                if (inner) inner->hiddenPreviews.insert(href);
-                refreshChatView(host, channel);
-            });
-        }
-        menu.exec(globalPos);
-    }
 }
 
 void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &msg)
@@ -3250,7 +3045,7 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
     };
 
     auto appendToView = [&](ChatView *view, Channel *ch) {
-        if (isCondensable(msg, selfNick)) {
+        if (ChatRenderer::isCondensable(msg, selfNick)) {
             const QList<Message> group = collectEventGroup(ch, selfNick);
             if (group.isEmpty()) return;
             const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
@@ -3272,7 +3067,7 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
     {
         auto *ch = m_model->channel(host, channel);
         if (ch) {
-            if (isCondensable(msg, selfNick)) {
+            if (ChatRenderer::isCondensable(msg, selfNick)) {
                 appendToView(m_chatView, ch);
             } else {
                 appendMessage(msg, m_config.ui.linkPreviews);
@@ -3379,7 +3174,7 @@ void MainWindow::onReactionsChanged(ServerId host, BufferId channel, const QStri
             view->removeLine(rxId);
             return;
         }
-        const ChatLine rxLine = buildReactionLine(*rxIt, msgid);
+        const ChatLine rxLine = ChatRenderer::buildReactionLine(*rxIt, msgid);
         if (view->findLine(rxId) >= 0)
             view->replaceLine(rxId, rxLine);
         else
@@ -3798,93 +3593,6 @@ void MainWindow::openChannelList(ServerId host)
     m_channelListDialog->show();
 }
 
-void MainWindow::onSidebarContextMenu(const QPoint &pos)
-{
-    auto *item = m_sidebar->itemAt(pos);
-    if (!item) return;
-
-    const ServerId host{item->data(0, Qt::UserRole).toString()};
-    const BufferId channel{item->data(0, Qt::UserRole + 1).toString()};
-
-    // Heap-allocate and use popup() instead of exec() to avoid a Qt/Wayland
-    // issue where the pending button-release from the triggering click is
-    // delivered into exec()'s event loop, immediately selecting the first item.
-    auto *menu = new QMenu(this);
-    connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
-
-    if (channel.str() == "(server)") {
-        auto *sess = m_model->session(host);
-        if (sess && sess->connected) {
-            menu->addAction("Disconnect", this, [this, host]{
-                if (auto *cl = m_model->clientFor(host))
-                    cl->quit();
-            });
-        } else {
-            menu->addAction("Reconnect", this, [this, host]{
-                if (auto *cl = m_model->clientFor(host))
-                    cl->reconnect();
-            });
-        }
-        menu->addAction("Close Server", this, [this, host]{
-            m_model->closeServer(host);
-        });
-        menu->addSeparator();
-        const int idx = m_sidebar->indexOfTopLevelItem(item);
-        if (idx > 0) {
-            menu->addAction("Move Up", this, [this, idx]{
-                auto *moved = m_sidebar->takeTopLevelItem(idx);
-                m_sidebar->insertTopLevelItem(idx - 1, moved);
-                moved->setExpanded(true);
-                m_sidebar->setCurrentItem(moved);
-                syncSidebarOrderToConfig();
-            });
-        }
-        if (idx < m_sidebar->topLevelItemCount() - 1) {
-            menu->addAction("Move Down", this, [this, idx]{
-                auto *moved = m_sidebar->takeTopLevelItem(idx);
-                m_sidebar->insertTopLevelItem(idx + 1, moved);
-                moved->setExpanded(true);
-                m_sidebar->setCurrentItem(moved);
-                syncSidebarOrderToConfig();
-            });
-        }
-    } else if (channel.str().startsWith('#') || channel.str().startsWith('&')) {
-        const QString paneKey = host.str() + "|" + channel.str().toLower();
-        if (!m_panes.contains(paneKey)) {
-            menu->addAction("Open in Pane", this, [this, host, channel]{
-                openChannelPane(host, channel);
-            });
-        } else {
-            menu->addAction("Close Pane", this, [this, host, channel]{
-                closeChannelPane(host, channel);
-            });
-        }
-        menu->addSeparator();
-        menu->addAction("Rejoin", this, [this, host, channel]{
-            m_model->sendPart(host, channel);
-            QTimer::singleShot(500, this, [this, host, channel]{
-                m_model->sendJoin(host, channel);
-            });
-        });
-        menu->addAction("Leave", this, [this, host, channel]{
-            m_model->sendPart(host, channel);
-        });
-        menu->addAction("Close", this, [this, host, channel]{
-            m_model->closeBuffer(host, channel);
-        });
-    } else if (!channel.isEmpty() && channel.str() != "(server)") {
-        // PM / user query
-        menu->addAction("Close Query", this, [this, host, channel]{
-            m_model->closeBuffer(host, channel);
-        });
-    }
-
-    if (!menu->actions().isEmpty())
-        menu->popup(m_sidebar->viewport()->mapToGlobal(pos));
-    else
-        menu->deleteLater();
-}
-
 // ---------------------------------------------------------------------------
 // Channel panes
 // ---------------------------------------------------------------------------
@@ -4158,11 +3866,11 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
 
     for (int i = 0; i < ch->messages.size(); ) {
         const auto &msg = ch->messages[i];
-        if (isCondensable(msg, selfNick)) {
+        if (ChatRenderer::isCondensable(msg, selfNick)) {
             const QDate day = msg.timestamp.toLocalTime().date();
             int j = i + 1;
             while (j < ch->messages.size()
-                   && isCondensable(ch->messages[j], selfNick)
+                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
                    && ch->messages[j].timestamp.toLocalTime().date() == day)
                 ++j;
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
@@ -4176,7 +3884,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
             if (!msg.msgid.isEmpty()) {
                 auto rxIt = ch->reactions.constFind(msg.msgid);
                 if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    pane->chatView()->appendLine(buildReactionLine(*rxIt, msg.msgid));
+                    pane->chatView()->appendLine(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
             }
             const bool isText = (msg.type == MessageType::Privmsg ||
                                  msg.type == MessageType::Action  ||
@@ -4215,286 +3923,6 @@ void MainWindow::refreshPaneNickList(ChannelPane *pane)
 
     for (const auto &e : std::as_const(ch->nicks))
         pane->nickList()->addItem(makeNickItem(e, ch, sess));
-}
-
-void MainWindow::onNickListContextMenu(const QPoint &pos)
-{
-    auto *item = m_nickList->itemAt(pos);
-    if (!item) return;
-    const QString nick = item->data(Qt::UserRole).toString();
-    if (nick.isEmpty()) return;
-    showNickContextMenu(nick, m_nickList->mapToGlobal(pos));
-}
-
-void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPos)
-{
-    const ServerId host    = m_model->activeHost();
-    const BufferId channel = m_model->activeChannel();
-    if (nick.isEmpty() || host.isEmpty()) return;
-
-    QMenu menu(this);
-
-    QAction *title = menu.addAction(nick);
-    title->setEnabled(false);
-    QFont tf = title->font();
-    tf.setBold(true);
-    title->setFont(tf);
-    menu.addSeparator();
-
-    // ── Common actions ────────────────────────────────────────────────────────
-    connect(menu.addAction("Message"), &QAction::triggered, this, [this, host, nick]{
-        m_model->openPM(host, nick);
-        switchToChannel(host, BufferId{nick});
-        if (m_input) m_input->setFocus();
-    });
-
-    connect(menu.addAction("Whois"), &QAction::triggered, this, [this, host, nick]{
-        m_model->sendRaw(host, "WHOIS " + nick);
-    });
-
-    connect(menu.addAction("Copy Nick"), &QAction::triggered, this, [nick]{
-        qApp->clipboard()->setText(nick);
-    });
-
-    menu.addSeparator();
-
-    // ── Ignore ▶ ─────────────────────────────────────────────────────────────
-    {
-        const QString key = nick.toLower();
-        const IgnoreTypes curFlags = m_model->ignoreFlags(key);
-
-        auto *ignoreSub = new QMenu("Ignore", &menu);
-        ignoreSub->setIcon(MenuIcons::eyeOff());
-
-        auto makeTypeAction = [&](const QString &label, IgnoreType type) {
-            auto *act = ignoreSub->addAction(label);
-            act->setCheckable(true);
-            act->setChecked(bool(curFlags & type));
-            connect(act, &QAction::triggered, this, [this, host, key, type](bool checked) {
-                IgnoreTypes flags = m_model->ignoreFlags(key);
-                if (checked) flags |= type;
-                else         flags &= ~IgnoreTypes(type);
-                m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
-                if (flags) {
-                    m_model->setIgnore(key, flags);
-                    m_config.ignoreList.append({key, flags});
-                } else {
-                    m_model->clearIgnore(key);
-                    m_model->localMessage(host, m_model->activeChannel(),
-                                          "No longer ignoring " + key);
-                }
-                saveConfig();
-                scheduleNickRefresh(host, m_model->activeChannel());
-            });
-        };
-
-        makeTypeAction("Private Messages", IgnoreType::PM);
-        makeTypeAction("Notices",          IgnoreType::Notice);
-        makeTypeAction("Invites",          IgnoreType::Invite);
-
-        if (curFlags) {
-            ignoreSub->addSeparator();
-            connect(ignoreSub->addAction(MenuIcons::close(), "Unignore All"),
-                    &QAction::triggered, this, [this, host, key] {
-                m_model->clearIgnore(key);
-                m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
-                saveConfig();
-                m_model->localMessage(host, m_model->activeChannel(),
-                                      "No longer ignoring " + key);
-                scheduleNickRefresh(host, m_model->activeChannel());
-            });
-        }
-
-        menu.addMenu(ignoreSub);
-    }
-
-    menu.addSeparator();
-
-    // ── CTCP ▶ ───────────────────────────────────────────────────────────────
-    {
-        auto *ctcpSub = new QMenu("CTCP", &menu);
-
-        connect(ctcpSub->addAction("Ping"), &QAction::triggered, this, [this, host, nick]{
-            const qint64 ts = QDateTime::currentMSecsSinceEpoch();
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
-        });
-
-        connect(ctcpSub->addAction("Time"), &QAction::triggered, this, [this, host, nick]{
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01TIME\x01");
-        });
-
-        connect(ctcpSub->addAction("Version"), &QAction::triggered, this, [this, host, nick]{
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01VERSION\x01");
-        });
-
-        menu.addMenu(ctcpSub);
-    }
-
-    // ── DCC ▶ ────────────────────────────────────────────────────────────────
-    {
-        auto *dccSub = new QMenu("DCC", &menu);
-
-        connect(dccSub->addAction("Send File"), &QAction::triggered, this, [this, host, nick]{
-            const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick);
-            if (path.isEmpty()) return;
-
-            IrcClient *client = m_model->clientFor(host);
-            if (!client) return;
-
-            const quint32 localIp = client->localIpv4();
-            auto *dcc = new DccSend(path, this);
-            if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any)) {
-                dcc->deleteLater(); return;
-            }
-            QPointer<DccSend> dccGuard(dcc);
-
-            const quint32 ip   = localIp;
-            const quint16 port = dcc->port();
-            const QString fn   = dcc->filename();
-            const qint64  size = dcc->filesize();
-
-            m_model->sendRaw(host,
-                "PRIVMSG " + nick + " :\x01""DCC SEND "
-                + fn + " " + QString::number(ip)
-                + " " + QString::number(port)
-                + " " + QString::number(size) + "\x01");
-
-            auto *prog = new QProgressDialog("Sending " + fn + " to " + nick,
-                                              "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
-            prog->setWindowModality(Qt::NonModal);
-            prog->setAttribute(Qt::WA_DeleteOnClose);
-
-            connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-                prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
-            });
-            connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
-                prog->setValue(prog->maximum());
-                if (dccGuard) dccGuard->deleteLater();
-            });
-            connect(dcc, &DccSend::error, this, [this, prog, dccGuard](const QString &msg){
-                prog->close();
-                if (dccGuard) dccGuard->deleteLater();
-                QMessageBox::warning(this, "DCC Error", msg);
-            });
-            connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
-                if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
-            });
-
-            prog->show();
-        });
-
-        connect(dccSub->addAction("Send File (Passive)"), &QAction::triggered, this, [this, host, nick]{
-            const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick + " (Passive)");
-            if (path.isEmpty()) return;
-
-            auto *dcc = new DccSend(path, this);
-            const QString token = dcc->initPassive();
-            if (token.isEmpty()) { dcc->deleteLater(); return; }
-
-            const QString fn   = dcc->filename();
-            const qint64  size = dcc->filesize();
-
-            QPointer<DccSend> dccGuard(dcc);
-            m_pendingPassiveSends.insert(token, dcc);
-            m_model->sendRaw(host,
-                "PRIVMSG " + nick + " :\x01""DCC SEND "
-                + fn + " 0 0"
-                + " " + QString::number(size)
-                + " " + token + "\x01");
-
-            // Fix #4: timeout stale passive sends after 120s
-            QTimer::singleShot(120000, this, [this, token, dccGuard]{
-                if (DccSend *d = m_pendingPassiveSends.take(token)) {
-                    d->cancel();
-                    if (dccGuard) dccGuard->deleteLater();
-                }
-            });
-
-            auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
-                                              "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
-            prog->setWindowModality(Qt::NonModal);
-            prog->setAttribute(Qt::WA_DeleteOnClose);
-
-            connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-                prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
-            });
-            connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
-                prog->setValue(prog->maximum());
-                if (dccGuard) dccGuard->deleteLater();
-            });
-            connect(dcc, &DccSend::error, this, [this, prog, dccGuard, token](const QString &msg){
-                prog->close();
-                m_pendingPassiveSends.remove(token);
-                if (dccGuard) dccGuard->deleteLater();
-                QMessageBox::warning(this, "DCC Error", msg);
-            });
-            connect(prog, &QProgressDialog::canceled, dcc, [this, dccGuard, token]{
-                m_pendingPassiveSends.remove(token);
-                if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
-            });
-            prog->show();
-        });
-
-        menu.addMenu(dccSub);
-    }
-
-    menu.addSeparator();
-
-    // ── Chan Ops ▶ ───────────────────────────────────────────────────────────
-    {
-        auto *opSub = new QMenu("Chan Ops", &menu);
-
-        connect(opSub->addAction("Give Op"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (!channel.isEmpty() && channel.str() != "(server)")
-                m_model->sendRaw(host, "MODE " + channel.str() + " +o " + nick);
-        });
-        connect(opSub->addAction("Take Op"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (!channel.isEmpty() && channel.str() != "(server)")
-                m_model->sendRaw(host, "MODE " + channel.str() + " -o " + nick);
-        });
-        connect(opSub->addAction("Give Voice"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (!channel.isEmpty() && channel.str() != "(server)")
-                m_model->sendRaw(host, "MODE " + channel.str() + " +v " + nick);
-        });
-        connect(opSub->addAction("Take Voice"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (!channel.isEmpty() && channel.str() != "(server)")
-                m_model->sendRaw(host, "MODE " + channel.str() + " -v " + nick);
-        });
-
-        opSub->addSeparator();
-
-        connect(opSub->addAction("Invite"), &QAction::triggered, this, [this, host, channel, nick]{
-            bool ok;
-            const QString target = QInputDialog::getText(
-                this, "Invite " + nick, "Channel:", QLineEdit::Normal,
-                (channel.isEmpty() || channel.str() == "(server)") ? QString() : channel.str(), &ok);
-            if (!ok || target.isEmpty()) return;
-            m_model->sendRaw(host, "INVITE " + nick + " " + target);
-        });
-        connect(opSub->addAction("Kick"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (channel.isEmpty() || channel.str() == "(server)") return;
-            bool ok;
-            QString reason = QInputDialog::getText(this, "Kick " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
-            if (!ok) return;
-            m_model->sendRaw(host, "KICK " + channel.str() + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
-        });
-        connect(opSub->addAction("Ban"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (!channel.isEmpty() && channel.str() != "(server)")
-                m_model->sendRaw(host, "MODE " + channel.str() + " +b " + nick + "!*@*");
-        });
-        connect(opSub->addAction("Kick && Ban"), &QAction::triggered, this, [this, host, channel, nick]{
-            if (channel.isEmpty() || channel.str() == "(server)") return;
-            bool ok;
-            QString reason = QInputDialog::getText(this, "Kick & Ban " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
-            if (!ok) return;
-            m_model->sendRaw(host, "MODE " + channel.str() + " +b " + nick + "!*@*");
-            m_model->sendRaw(host, "KICK " + channel.str() + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
-        });
-
-        menu.addMenu(opSub);
-    }
-
-    menu.exec(globalPos);
 }
 
 void MainWindow::enqueuePreview(const QUrl &url, ServerId host, BufferId channel, const QString &msgid)
@@ -4569,11 +3997,11 @@ void MainWindow::refreshChatView(ServerId host, BufferId channel, bool resetToLa
         }
 
         const auto &msg = ch->messages[i];
-        if (isCondensable(msg, selfNick)) {
+        if (ChatRenderer::isCondensable(msg, selfNick)) {
             const QDate day = msg.timestamp.toLocalTime().date();
             int j = i + 1;
             while (j < ch->messages.size()
-                   && isCondensable(ch->messages[j], selfNick)
+                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
                    && ch->messages[j].timestamp.toLocalTime().date() == day)
                 ++j;
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
@@ -4586,7 +4014,7 @@ void MainWindow::refreshChatView(ServerId host, BufferId channel, bool resetToLa
             if (!msg.msgid.isEmpty()) {
                 auto rxIt = ch->reactions.constFind(msg.msgid);
                 if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    m_chatView->appendLine(buildReactionLine(*rxIt, msg.msgid));
+                    m_chatView->appendLine(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
             }
             const bool isText = (msg.type == MessageType::Privmsg ||
                                  msg.type == MessageType::Action  ||
@@ -4682,11 +4110,11 @@ void MainWindow::loadOlderMessages()
 
     for (int i = newStart; i < prevStart; ) {
         const auto &msg = ch->messages[i];
-        if (isCondensable(msg, selfNick)) {
+        if (ChatRenderer::isCondensable(msg, selfNick)) {
             const QDate day = msg.timestamp.toLocalTime().date();
             int j = i + 1;
             while (j < prevStart
-                   && isCondensable(ch->messages[j], selfNick)
+                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
                    && ch->messages[j].timestamp.toLocalTime().date() == day)
                 ++j;
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
@@ -4699,7 +4127,7 @@ void MainWindow::loadOlderMessages()
             if (!msg.msgid.isEmpty()) {
                 auto rxIt = ch->reactions.constFind(msg.msgid);
                 if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    older.append(buildReactionLine(*rxIt, msg.msgid));
+                    older.append(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
             }
             ++i;
         }
@@ -4748,11 +4176,11 @@ void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count
 
     for (int i = 0; i < end; ) {
         const auto &msg = ch->messages[i];
-        if (isCondensable(msg, selfNick)) {
+        if (ChatRenderer::isCondensable(msg, selfNick)) {
             const QDate day = msg.timestamp.toLocalTime().date();
             int j = i + 1;
             while (j < end
-                   && isCondensable(ch->messages[j], selfNick)
+                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
                    && ch->messages[j].timestamp.toLocalTime().date() == day)
                 ++j;
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
@@ -4765,7 +4193,7 @@ void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count
             if (!msg.msgid.isEmpty()) {
                 auto rxIt = ch->reactions.constFind(msg.msgid);
                 if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    older.append(buildReactionLine(*rxIt, msg.msgid));
+                    older.append(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
             }
             ++i;
         }
@@ -4774,220 +4202,6 @@ void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count
     m_chatView->removeLine("status:older");
     m_chatView->prependLines(std::move(older));
 }
-
-QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
-                                           const ServerSession *sess)
-{
-    const bool isBot = ch->botNicks.contains(e.nick.toLower())
-                    || (sess && sess->botNicks.contains(e.nick.toLower()));
-    auto *item = new QListWidgetItem(e.display());
-    if (isBot) {
-        const QString key = e.nick.toLower();
-        if (!m_botIconIdx.contains(key)) {
-            if (m_botIconIdx.size() >= 500)
-                m_botIconIdx.erase(m_botIconIdx.begin());
-            m_botIconIdx[key] = QRandomGenerator::global()->bounded(2);
-        }
-        const QString svgPath = m_botIconIdx[key] == 0
-            ? QStringLiteral(":/icons/mi-smart-toy.svg")
-            : QStringLiteral(":/icons/mi-alien.svg");
-        item->setIcon(MenuIcons::fromSvg(svgPath,
-                                         QColor(m_theme.valid ? m_theme.accent : "#5588ff")));
-    }
-    item->setData(Qt::UserRole, e.nick);
-    if (m_model->isIgnored(e.nick.toLower()))
-        item->setData(Qt::UserRole + 1, QVariant::fromValue(MenuIcons::eyeOff()));
-    {
-        const NickMeta *meta = nullptr;
-        if (sess) {
-            auto it = sess->nickMeta.constFind(e.nick.toLower());
-            if (it != sess->nickMeta.constEnd())
-                meta = &it.value();
-        }
-        const bool hasAvatarImage = meta && !meta->avatarUrl.isEmpty()
-                                    && m_avatarCache.contains(meta->avatarUrl);
-        if (hasAvatarImage) {
-            QByteArray pngBytes;
-            QBuffer avatarBuf(&pngBytes);
-            avatarBuf.open(QIODevice::WriteOnly);
-            m_avatarCache[meta->avatarUrl].save(&avatarBuf, "PNG");
-            const QString b64 = QString::fromLatin1(pngBytes.toBase64());
-            QStringList lines;
-            if (!meta->displayName.isEmpty())
-                lines << QLatin1String("Name:") + meta->displayName.toHtmlEscaped();
-            if (!e.account.isEmpty())
-                lines << QLatin1String("Account: ") + e.account.toHtmlEscaped();
-            item->setToolTip(
-                QString("<html><body><table><tr>"
-                        "<td><img src='data:image/png;base64,%1' width='32' height='32'></td>"
-                        "<td style='padding-left:6px;vertical-align:middle'>%2</td>"
-                        "</tr></table></body></html>")
-                    .arg(b64, lines.join("<br>")));
-        } else {
-            QStringList tips;
-            if (meta && !meta->displayName.isEmpty())
-                tips << QLatin1String("Name:") + meta->displayName;
-            if (!e.account.isEmpty())
-                tips << QLatin1String("Account: ") + e.account;
-            if (meta && !meta->avatarUrl.isEmpty())
-                tips << QLatin1String("Avatar: ") + meta->avatarUrl;
-            if (!tips.isEmpty())
-                item->setToolTip(tips.join('\n'));
-        }
-    }
-    if (m_config.ui.coloredNicks)
-        item->setForeground(ChatRenderer::nickColor(e.nick));
-    return item;
-}
-
-QString MainWindow::nickTooltip(const QString &nick, const ServerId &host) const
-{
-    const ServerSession *sess = const_cast<SessionModel *>(m_model)->session(host);
-    const NickMeta *meta = nullptr;
-    QString account;
-    if (sess) {
-        auto it = sess->nickMeta.constFind(nick.toLower());
-        if (it != sess->nickMeta.constEnd()) meta = &it.value();
-        // account comes from Channel's nicks list
-        for (const auto &ch : std::as_const(sess->channels)) {
-            auto ni = std::find_if(ch.nicks.cbegin(), ch.nicks.cend(),
-                                   [&](const NickEntry &e){ return e.nick.toLower() == nick.toLower(); });
-            if (ni != ch.nicks.cend()) { account = ni->account; break; }
-        }
-    }
-    const bool hasImage = meta && !meta->avatarUrl.isEmpty() && m_avatarCache.contains(meta->avatarUrl);
-    if (hasImage) {
-        QByteArray bytes;
-        QBuffer buf(const_cast<QByteArray *>(&bytes));
-        buf.open(QIODevice::WriteOnly);
-        m_avatarCache[meta->avatarUrl].save(&buf, "PNG");
-        const QString b64 = QString::fromLatin1(bytes.toBase64());
-        QStringList lines;
-        if (!meta->displayName.isEmpty())
-            lines << meta->displayName.toHtmlEscaped();
-        if (!account.isEmpty())
-            lines << account.toHtmlEscaped();
-        return QString("<html><body><table><tr>"
-                       "<td><img src='data:image/png;base64,%1' width='32' height='32'></td>"
-                       "<td style='padding-left:6px;vertical-align:middle'>%2</td>"
-                       "</tr></table></body></html>")
-                   .arg(b64, lines.join("<br>"));
-    }
-    QStringList tips;
-    if (meta && !meta->displayName.isEmpty()) tips << meta->displayName;
-    if (!account.isEmpty())                   tips << account;
-    return tips.join('\n');
-}
-
-int MainWindow::findNickRow(QListWidget *list, const QString &nick)
-{
-    const QString lower = nick.toLower();
-    for (int i = 0; i < list->count(); ++i)
-        if (list->item(i)->data(Qt::UserRole).toString().toLower() == lower)
-            return i;
-    return -1;
-}
-
-void MainWindow::onNickAdded(ServerId host, BufferId channel, const QString &nick)
-{
-    auto *ch   = m_model->channel(host, channel);
-    auto *sess = m_model->session(host);
-    if (!ch) return;
-    const qsizetype row = ch->nickIndex.value(nick.toLower(), -1);
-    if (row < 0) return;
-    const NickEntry &e = ch->nicks[row];
-
-    const bool isActive = (host == m_model->activeHost() &&
-                           channel.str().toLower() == m_model->activeChannel().str().toLower());
-    if (isActive) {
-        m_nickList->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
-        if (m_nickCountLabel) {
-            const QString countStr = QString::number(ch->nicks.size());
-            m_nickCountLabel->setText(countStr);
-            m_nickCountLabel->setToolTip(countStr + " users");
-        }
-    }
-
-    const QString key = host.str() + "|" + channel.str().toLower();
-    if (auto *pane = m_panes.value(key))
-        pane->nickList()->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
-}
-
-void MainWindow::onNickRemoved(ServerId host, BufferId channel, const QString &nick)
-{
-    auto *ch = m_model->channel(host, channel);
-
-    const bool isActive = (host == m_model->activeHost() &&
-                           channel.str().toLower() == m_model->activeChannel().str().toLower());
-    if (isActive) {
-        const int row = findNickRow(m_nickList, nick);
-        if (row >= 0) delete m_nickList->takeItem(row);
-        if (m_nickCountLabel && ch) {
-            const QString countStr = QString::number(ch->nicks.size());
-            m_nickCountLabel->setText(countStr);
-            m_nickCountLabel->setToolTip(countStr + " users");
-        }
-    }
-
-    const QString key = host.str() + "|" + channel.str().toLower();
-    if (auto *pane = m_panes.value(key)) {
-        const int row = findNickRow(pane->nickList(), nick);
-        if (row >= 0) delete pane->nickList()->takeItem(row);
-    }
-
-    const QString timerKey = host.str() + "|" + channel.str().toLower() + "|" + nick;
-    if (auto *t = m_typingNickTimers.value(timerKey)) {
-        t->stop();
-        t->deleteLater();
-        m_typingNickTimers.remove(timerKey);
-        m_typingNicks[key].remove(nick);
-        updateTypingLabel();
-    }
-}
-
-void MainWindow::onNickRenamed(ServerId host, BufferId channel,
-                                const QString &oldNick, const QString &newNick)
-{
-    auto *ch   = m_model->channel(host, channel);
-    auto *sess = m_model->session(host);
-    if (!ch) return;
-    const qsizetype newRow = ch->nickIndex.value(newNick.toLower(), -1);
-    if (newRow < 0) return;
-    const NickEntry &e = ch->nicks[newRow];
-
-    auto apply = [&](QListWidget *list) {
-        const int oldRow = findNickRow(list, oldNick);
-        if (oldRow < 0) return;
-        delete list->takeItem(oldRow);
-        list->insertItem(static_cast<int>(newRow), makeNickItem(e, ch, sess));
-    };
-
-    const bool isActive = (host == m_model->activeHost() &&
-                           channel.str().toLower() == m_model->activeChannel().str().toLower());
-    if (isActive) apply(m_nickList);
-
-    const QString key = host.str() + "|" + channel.str().toLower();
-    if (auto *pane = m_panes.value(key)) apply(pane->nickList());
-}
-
-void MainWindow::refreshNickList(ServerId host, BufferId channel)
-{
-    if (m_nickFilter) m_nickFilter->clear();
-    m_nickList->clear();
-    auto *ch   = m_model->channel(host, channel);
-    if (!ch) return;
-    auto *sess = m_model->session(host);
-
-    for (const auto &e : std::as_const(ch->nicks))
-        m_nickList->addItem(makeNickItem(e, ch, sess));
-
-    if (m_nickCountLabel) {
-        const QString countStr = QString::number(ch->nicks.size());
-        m_nickCountLabel->setText(countStr);
-        m_nickCountLabel->setToolTip(countStr + " users");
-    }
-}
-
 
 static QString topicAgeStr(quint64 ts)
 {
@@ -5182,54 +4396,6 @@ QString MainWindow::formatMessage(const Message &msg) const
     ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = m_model->channel(m_model->activeHost(), m_model->activeChannel());
     return ChatRenderer::formatMessage(msg, ctx);
-}
-
-void MainWindow::fetchAvatar(const QString &url)
-{
-    if (url.isEmpty() || m_avatarCache.contains(url) || m_avatarFetching.contains(url))
-        return;
-
-    auto cacheAndRefresh = [this, url](QPixmap px) {
-        if (px.isNull()) return;
-        px = px.scaled(36, 36, Qt::KeepAspectRatio, Qt::FastTransformation);
-        static constexpr int kAvatarCacheCap = 80;
-        if (!m_avatarCache.contains(url)) {
-            if (m_avatarCacheOrder.size() >= kAvatarCacheCap) {
-                const QString evicted = m_avatarCacheOrder.takeFirst();
-                m_avatarCache.remove(evicted);
-            }
-            m_avatarCacheOrder.append(url);
-        }
-        m_avatarCache.insert(url, px);
-        scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
-    };
-
-    // Local file — load directly without network
-    const QUrl qurl(url);
-    if (qurl.isLocalFile()) {
-        cacheAndRefresh(QPixmap(qurl.toLocalFile()));
-        return;
-    }
-    if (url.startsWith('/')) {
-        cacheAndRefresh(QPixmap(url));
-        return;
-    }
-
-    if (!m_avatarNam)
-        m_avatarNam = new QNetworkAccessManager(this);
-    m_avatarFetching.insert(url);
-    QNetworkRequest req{qurl};
-    req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
-    auto *reply = m_avatarNam->get(req);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, url, cacheAndRefresh] {
-        reply->deleteLater();
-        m_avatarFetching.remove(url);
-        if (reply->error() != QNetworkReply::NoError)
-            return;
-        QPixmap px;
-        if (px.loadFromData(reply->readAll()))
-            cacheAndRefresh(px);
-    });
 }
 
 void MainWindow::saveConfig(bool migratePasswords)

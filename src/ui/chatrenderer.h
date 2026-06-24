@@ -1,8 +1,10 @@
 #pragma once
 
 #include <QColor>
+#include <QHash>
 #include <QList>
 #include <QRegularExpression>
+#include <QSet>
 #include <QString>
 #include "model/message.h"
 #include "ui/chatline.h"
@@ -42,5 +44,43 @@ QString htmlAttr      (const QString &s);
 QString ircToHtml     (const QString &raw);
 QString linkifyHtml   (const QString &html);
 QString wrapEmojiHtml (const QString &html, double ptSize);
+
+inline ChatLine buildReactionLine(const QHash<QString, QSet<QString>> &rx, const QString &msgid)
+{
+    QTextCharFormat fmt;
+    fmt.setForeground(QColor("#888888"));
+    QString text;
+    QList<ChatSegment> segs;
+    for (auto it = rx.constBegin(); it != rx.constEnd(); ++it) {
+        ChatSegment seg;
+        seg.start  = static_cast<int>(text.size());
+        const QString piece = it.key() + "(" + QString::number(it.value().size()) + ") ";
+        seg.length = static_cast<int>(piece.size());
+        seg.format = fmt;
+        text += piece;
+        segs.append(seg);
+    }
+    ChatLine line;
+    line.text     = text;
+    line.segments = segs;
+    line.id       = "rx:" + msgid;
+    line.role     = ChatLineRole::Reaction;
+    return line;
+}
+
+inline bool isCondensable(const Message &msg, const QString &selfNick)
+{
+    switch (msg.type) {
+    case MessageType::Join:
+    case MessageType::Part:
+    case MessageType::Quit:
+    case MessageType::Nick:
+    case MessageType::Kick:
+        return selfNick.isEmpty()
+            || msg.nick.compare(selfNick, Qt::CaseInsensitive) != 0;
+    default:
+        return false;
+    }
+}
 
 } // namespace ChatRenderer
