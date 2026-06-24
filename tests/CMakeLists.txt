@@ -21,6 +21,20 @@ uplink_test(tst_chatformat
     LIBS Qt6::Gui
 )
 
+uplink_test(tst_config
+    SOURCES
+        tst_config.cpp
+        ${CMAKE_SOURCE_DIR}/src/config/config.cpp
+        ${CMAKE_SOURCE_DIR}/src/config/keychainhelper.cpp
+    LIBS tomlplusplus::tomlplusplus Qt6Keychain::Qt6Keychain
+)
+target_include_directories(tst_config PRIVATE ${QTKEYCHAIN_COMPAT_INCLUDE})
+
+uplink_test(tst_ignoretypes
+    SOURCES
+        tst_ignoretypes.cpp
+)
+
 # ---------------------------------------------------------------------------
 # Fuzz target — two build modes:
 #   Standalone replay (default): any compiler, reads files from argv
