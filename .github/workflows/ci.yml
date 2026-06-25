@@ -64,9 +64,14 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
+      - name: List test binaries (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Get-ChildItem build/Release -Filter *.exe | Select-Object Name,Length
+
       - name: Run tests
         timeout-minutes: 5
-        run: ctest --test-dir build --output-on-failure -C Release --timeout 60
+        run: ctest --test-dir build --output-on-failure -C Release --timeout 60 -V
 
   sanitize:
     runs-on: ubuntu-24.04
