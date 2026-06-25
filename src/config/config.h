@@ -137,4 +137,6 @@ struct Config {
     static void      save(const Config &cfg, const QString &path, bool migratePasswords = false);
     static QString   defaultPath();
     static void      ensureExists(const QString &path);
+    static QString   defaultScriptsPath();
+    static void      installDefaultScripts(QList<ScriptBinding> &scripts);
 };

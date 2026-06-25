@@ -60,6 +60,12 @@
         <file alias="mi-left-panel-close.svg">icons/mi-left-panel-close.svg</file>
         <file alias="mi-right-panel-open.svg">icons/mi-right-panel-open.svg</file>
     </qresource>
+    <qresource prefix="/scripts">
+        <file alias="music.sh">../scripts/music.sh</file>
+        <file alias="weather.sh">../scripts/weather.sh</file>
+        <file alias="uptime.sh">../scripts/uptime.sh</file>
+        <file alias="roll.sh">../scripts/roll.sh</file>
+    </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>
         <file alias="commands.md">../docs/commands.md</file>

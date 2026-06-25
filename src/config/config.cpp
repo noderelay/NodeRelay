@@ -298,6 +298,10 @@ Config Config::load(const QString &path)
         qWarning() << "Uplink: config parse error:" << e.what();
     }
 
+    // First launch: install bundled scripts if scripts dir doesn't exist yet
+    if (!QFileInfo::exists(defaultScriptsPath()))
+        installDefaultScripts(cfg.scripts);
+
     return cfg;
 }
 
@@ -505,4 +509,57 @@ bool Config::needsNickSetup() const
         if (s.nick == "yournick" || s.nick.isEmpty())
             return true;
     return false;
+}
+
+QString Config::defaultScriptsPath()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+           + "/.config/uplink/scripts";
+}
+
+struct BundledScript {
+    const char *command;
+    const char *resource;
+    const char *filename;
+};
+
+static const BundledScript kBundledScripts[] = {
+    { "music",   ":/scripts/music.sh",   "music.sh"   },
+    { "weather", ":/scripts/weather.sh", "weather.sh" },
+    { "uptime",  ":/scripts/uptime.sh",  "uptime.sh"  },
+    { "roll",    ":/scripts/roll.sh",    "roll.sh"    },
+};
+
+void Config::installDefaultScripts(QList<ScriptBinding> &scripts)
+{
+    const QString dir = defaultScriptsPath();
+    QDir().mkpath(dir);
+
+    for (const auto &bs : kBundledScripts) {
+        const QString dest = dir + "/" + bs.filename;
+
+        // Copy script file if missing
+        if (!QFileInfo::exists(dest)) {
+            QFile src(bs.resource);
+            if (src.open(QIODevice::ReadOnly)) {
+                QFile out(dest);
+                if (out.open(QIODevice::WriteOnly)) {
+                    out.write(src.readAll());
+                    out.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner
+                                       | QFileDevice::ExeOwner);
+                }
+            }
+        }
+
+        // Add config entry if no matching command exists
+        bool found = false;
+        for (const auto &sb : std::as_const(scripts)) {
+            if (sb.command == QLatin1String(bs.command)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            scripts.append({QLatin1String(bs.command), dest, true});
+    }
 }

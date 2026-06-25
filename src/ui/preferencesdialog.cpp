@@ -528,13 +528,47 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
     vbox->addWidget(scriptsContainer);
 
     {
+        auto *btnRow = new QHBoxLayout;
+
         auto *addBtn = new PillButton("Add Script");
         addBtn->setAccentColor(accent);
         addBtn->setAutoDefault(false);
         connect(addBtn, &QPushButton::clicked, this, [addRow] {
             addRow(ScriptBinding{});
         });
-        vbox->addWidget(addBtn);
+        btnRow->addWidget(addBtn);
+
+        auto *restoreBtn = new PillButton("Restore Defaults");
+        restoreBtn->setAccentColor(accent);
+        restoreBtn->setAutoDefault(false);
+        connect(restoreBtn, &QPushButton::clicked, this, [this, addRow, emitScripts, scriptsContainer] {
+            QList<ScriptBinding> current;
+            const auto rows = scriptsContainer->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
+            for (auto *row : rows) {
+                auto *cmdEdit = row->findChild<QLineEdit*>("cmdEdit");
+                if (cmdEdit)
+                    current.append({cmdEdit->text().trimmed().toLower().remove(QChar('/')), {}, true});
+            }
+            Config::installDefaultScripts(current);
+            // Add rows for any newly installed scripts
+            for (const auto &sb : std::as_const(current)) {
+                bool exists = false;
+                for (auto *row : rows) {
+                    auto *cmdEdit = row->findChild<QLineEdit*>("cmdEdit");
+                    if (cmdEdit && cmdEdit->text().trimmed().toLower().remove(QChar('/')) == sb.command) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists)
+                    addRow(sb);
+            }
+            emitScripts();
+        });
+        btnRow->addWidget(restoreBtn);
+
+        btnRow->addStretch();
+        vbox->addLayout(btnRow);
     }
 
     vbox->addStretch();
