@@ -141,6 +141,30 @@ Session 2026-06-24:
   spellcheck (on hold); more MainWindow extractions.
 -->
 
+<!--
+Session 2026-06-25 (Windows script support + CI green):
+- Fixed /music on Linux: D-Bus fallback was printing raw xesam:title keys instead
+  of actual track values. grep -A1 + head -1 was matching the dict key line;
+  changed to tail -1 to get the value line.
+- Added Windows support for bundled scripts: .sh files launched via bash.exe
+  (Git Bash/WSL) in commanddispatcher.cpp; executable check skipped for .sh on Windows.
+- /music on Windows: queries GSMTC (Global System Media Transport Controls) via
+  PowerShell WinRT — works with Spotify, Chrome, Edge, VLC, etc. Requires Windows 10 1809+.
+- /uptime on Windows: queries LastBootUpTime via PowerShell Get-CimInstance.
+- /weather and /roll: no changes needed — curl and pure bash work via Git Bash.
+- Fixed Windows CI (tst_config had been failing since scripts feature landed):
+  1. CMAKE_RUNTIME_OUTPUT_DIRECTORY: qt6keychain.dll wasn't colocated with test
+     binaries, causing a silent startup failure (Windows DLL loading).
+  2. Stubbed keychainhelper in test build to remove qtkeychain dependency.
+  3. Root cause found: QTemporaryFile on Windows uses FILE_FLAG_DELETE_ON_CLOSE,
+     blocking Config::load from opening the file via a second handle. Fixed by
+     replacing QTemporaryFile with QTemporaryDir + QFile in tst_config.cpp.
+- All CI green: Linux, macOS, Windows, sanitize all pass.
+- Full docs: CHANGELOG, ROADMAP, README, commands.md, howto.html, index.html updated.
+- No regressions found. No known issues.
+- Next priorities: accessibility (QAccessibleInterface for ChatView); spellcheck (on hold).
+-->
+
 ## 0.25.53
 
 ### Added
@@ -150,6 +174,7 @@ Session 2026-06-24:
 
 ### Fixed
 - **Linux /music** — D-Bus fallback was printing raw MPRIS key names (`xesam:title`) instead of actual track metadata; grep was matching the dict key line instead of the value line.
+- **Windows CI** — `tst_config` had been timing out/crashing since v0.25.52; root cause was `QTemporaryFile` using `FILE_FLAG_DELETE_ON_CLOSE` on Windows, blocking `Config::load` from reading the file. Fixed by using `QTemporaryDir` + `QFile` instead.
 
 ## 0.25.52
 
