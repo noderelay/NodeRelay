@@ -389,6 +389,73 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 
 ---
 
+## User Scripts
+
+Uplink lets you link external scripts to custom slash commands. Any executable — bash, python, ruby, whatever — can become a command. Configure them in **Preferences → Scripts**.
+
+Each script row has:
+- **Enabled** checkbox
+- **Command** name (e.g. `music` — becomes `/music`)
+- **Script path** — full path to the executable
+- **Browse** button to pick the file
+- **Delete** button to remove the binding
+
+When you run a user script command, Uplink:
+1. Runs the script in a background thread (UI stays responsive)
+2. Passes context as environment variables: `UPLINK_NICK`, `UPLINK_SERVER`, `UPLINK_CHANNEL`, `UPLINK_ARGS`
+3. Also passes any arguments after the command as positional arguments
+4. Sends each line of stdout to the current channel (max 5 lines, 450 chars each)
+5. Shows errors (non-zero exit, stderr, timeout) locally — never sent to the channel
+
+Scripts have a 10-second timeout. User scripts cannot shadow built-in commands.
+
+### Included: `/music`
+
+The `scripts/music.sh` script shows the currently playing track. It auto-detects the platform:
+
+| Platform | Dependency | Install |
+|---|---|---|
+| **macOS** | `nowplaying-cli` | `brew install nowplaying-cli` |
+| **Linux** | `playerctl` | `pacman -S playerctl` or `apt install playerctl` |
+
+On macOS, if `nowplaying-cli` is not in PATH (common when launching from a GUI app), the script falls back to `/opt/homebrew/bin/nowplaying-cli`. If you installed Homebrew to a non-default location, edit the path in the script.
+
+**Setup:**
+1. Open **Preferences → Scripts**
+2. Click **Add Script**
+3. Set command to `music`
+4. Browse to `scripts/music.sh` in your Uplink install
+5. Make sure the script is executable: `chmod +x scripts/music.sh`
+
+**Usage:**
+```
+/music
+♫ Now playing: Flesh and Bone — Landon Wilks (Flesh and Bone)
+```
+
+### Writing your own scripts
+
+A script is any executable file that prints to stdout. Example — a simple greeting script:
+
+```bash
+#!/bin/bash
+echo "Hello from $UPLINK_NICK on $UPLINK_SERVER in $UPLINK_CHANNEL!"
+echo "Args: $UPLINK_ARGS"
+```
+
+Available environment variables:
+
+| Variable | Value |
+|---|---|
+| `UPLINK_NICK` | Your current nickname |
+| `UPLINK_SERVER` | Server name (e.g. `LinuxDojo`) |
+| `UPLINK_CHANNEL` | Current channel (e.g. `#uplink`) |
+| `UPLINK_ARGS` | Everything typed after the command |
+
+Arguments are also passed as positional parameters (`$1`, `$2`, etc.).
+
+---
+
 ## Raw IRC protocol
 
 | Command | Description |

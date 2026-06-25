@@ -71,6 +71,20 @@ away_message = "Away from keyboard"
 # Optional: NickServ IDENTIFY on connect (use SASL if the server supports it)
 # nickserv_password = "yourpassword"
 
+# ─── User scripts ────────────────────────────────────────────────────────────
+# Link external scripts to custom slash commands.
+# Set these from the GUI: ☰ → Preferences → Scripts → Add Script
+
+# [[script]]
+# command = "music"
+# path = "/home/you/scripts/music.sh"
+# enabled = true
+
+# [[script]]
+# command = "fortune"
+# path = "/usr/games/fortune"
+# enabled = true
+
 # ─── Multiple servers ─────────────────────────────────────────────────────────
 # Add more [[server]] blocks to connect to additional networks.
 

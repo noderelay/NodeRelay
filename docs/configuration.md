@@ -853,6 +853,34 @@ avatar_url = "/home/alice/Pictures/avatar.png"
 
 ---
 
+## The `[[script]]` block
+
+Stores user-defined script bindings. Each entry maps a slash command to an external executable. The block is written automatically when you use the **Preferences → Scripts** page.
+
+```toml
+[[script]]
+command = "music"
+path = "/home/joe/scripts/music.sh"
+enabled = true
+
+[[script]]
+command = "fortune"
+path = "/usr/games/fortune"
+enabled = false
+```
+
+| Key | Type | Description |
+|---|---|---|
+| `command` | string | Command name without the leading slash (e.g. `music` becomes `/music`) |
+| `path` | string | Absolute path to the executable script |
+| `enabled` | boolean | Whether the command is active. Set to `false` to disable without removing. |
+
+User scripts cannot shadow built-in commands (`/join`, `/quit`, etc.) — built-in commands always take priority.
+
+See the [Slash Commands → User Scripts](commands.md#user-scripts) section for full details on writing and using scripts.
+
+---
+
 ## Disabling a server
 
 Set `disabled = true` in a server block to keep it in your config without connecting to it on startup. The server block is preserved and written back on every save — nothing is lost.
