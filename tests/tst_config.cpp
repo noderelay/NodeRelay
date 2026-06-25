@@ -1,14 +1,15 @@
 #include <QtTest/QtTest>
 #include "config/config.h"
-#include <QTemporaryFile>
+#include <QTemporaryDir>
 
 #define LOAD(varName, tomlStr) \
-    QTemporaryFile varName##_tmp; \
-    varName##_tmp.setAutoRemove(true); \
-    QVERIFY(varName##_tmp.open()); \
-    varName##_tmp.write(tomlStr); \
-    varName##_tmp.flush(); \
-    const Config varName = Config::load(varName##_tmp.fileName())
+    QTemporaryDir varName##_dir; \
+    QVERIFY(varName##_dir.isValid()); \
+    const QString varName##_path = varName##_dir.path() + "/config.toml"; \
+    { QFile f(varName##_path); \
+      QVERIFY(f.open(QIODevice::WriteOnly)); \
+      f.write(tomlStr); } \
+    const Config varName = Config::load(varName##_path)
 
 class TstConfig : public QObject
 {
@@ -232,11 +233,9 @@ nick = "joe"
         orig.monitorList.append("friend1");
         orig.monitorList.append("friend2");
 
-        QTemporaryFile tmp;
-        tmp.setAutoRemove(true);
-        QVERIFY(tmp.open());
-        const QString path = tmp.fileName();
-        tmp.close();
+        QTemporaryDir tmpDir;
+        QVERIFY(tmpDir.isValid());
+        const QString path = tmpDir.path() + "/roundtrip.toml";
 
         Config::save(orig, path, false);
         Config loaded = Config::load(path);
@@ -296,18 +295,6 @@ nick = "joe"
     }
 };
 
-int main(int argc, char *argv[])
-{
-    fprintf(stderr, "tst_config: main() entered\n");
-    fflush(stderr);
-    QCoreApplication app(argc, argv);
-    fprintf(stderr, "tst_config: QCoreApplication created\n");
-    fflush(stderr);
-    TstConfig tc;
-    int ret = QTest::qExec(&tc, argc, argv);
-    fprintf(stderr, "tst_config: QTest::qExec returned %d\n", ret);
-    fflush(stderr);
-    return ret;
-}
+QTEST_GUILESS_MAIN(TstConfig)
 
 #include "tst_config.moc"

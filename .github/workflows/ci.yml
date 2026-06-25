@@ -64,12 +64,6 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Direct run tst_config (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: build\Release\tst_config.exe -o -,txt -v2 2>&1
-        continue-on-error: true
-
       - name: Run tests
         timeout-minutes: 5
         run: ctest --test-dir build --output-on-failure -C Release --timeout 60
