@@ -67,7 +67,7 @@ jobs:
       - name: Direct run tst_config (Windows)
         if: runner.os == 'Windows'
         shell: cmd
-        run: build\Release\tst_config.exe 2>&1
+        run: build\Release\tst_config.exe -o -,txt -v2 2>&1
         continue-on-error: true
 
       - name: Run tests

@@ -304,7 +304,10 @@ int main(int argc, char *argv[])
     fprintf(stderr, "tst_config: QCoreApplication created\n");
     fflush(stderr);
     TstConfig tc;
-    return QTest::qExec(&tc, argc, argv);
+    int ret = QTest::qExec(&tc, argc, argv);
+    fprintf(stderr, "tst_config: QTest::qExec returned %d\n", ret);
+    fflush(stderr);
+    return ret;
 }
 
 #include "tst_config.moc"
