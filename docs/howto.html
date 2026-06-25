@@ -524,6 +524,7 @@
     <li><a href="#logging">Message logging</a></li>
     <li><a href="#link-previews">Link previews</a></li>
     <li><a href="#dcc">DCC file transfer</a></li>
+    <li><a href="#scripting">User scripts</a></li>
   </ul>
 
   <div class="nav-section">Tweaks</div>
@@ -2649,6 +2650,60 @@ link_previews = true</pre>
 
     <div class="tip">
       <strong>If both sides are behind NAT,</strong> neither mode will work — there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- SCRIPTING -->
+  <section id="scripting">
+    <h2>User scripts</h2>
+    <p>Uplink lets you link external scripts to custom slash commands. Scripts can be written in any language — bash, python, ruby, whatever. Four scripts ship bundled and are auto-installed on first launch:</p>
+
+    <table>
+      <tr><th>Command</th><th>What it does</th><th>Dependencies</th></tr>
+      <tr>
+        <td><code>/music</code></td>
+        <td>Show the currently playing track from any media player</td>
+        <td>macOS: <code>brew install nowplaying-cli</code><br>Linux: <code>playerctl</code> recommended, falls back to MPRIS2/D-Bus</td>
+      </tr>
+      <tr>
+        <td><code>/weather [city]</code></td>
+        <td>Current weather — leave blank for IP-detected location, or pass a city name</td>
+        <td><code>curl</code> (pre-installed on most systems)</td>
+      </tr>
+      <tr>
+        <td><code>/uptime</code></td>
+        <td>Show system uptime</td>
+        <td>None — uses built-in OS commands</td>
+      </tr>
+      <tr>
+        <td><code>/roll [NdS]</code></td>
+        <td>Tabletop dice roller — <code>/roll 2d6</code>, <code>/roll 1d20</code>, or just <code>/roll</code> for a d6</td>
+        <td>None — pure bash</td>
+      </tr>
+    </table>
+
+    <h3>Adding your own scripts</h3>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>Preferences → Scripts</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Click <strong>Add Script</strong>.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Type a command name (e.g. <code>greet</code>) and browse to your script.</div></div>
+    <div class="step-row"><span class="step">4</span><div>Make sure the script is executable (<code>chmod +x yourscript.sh</code>).</div></div>
+
+    <p>When you type <code>/greet</code> in chat, Uplink runs your script and sends its stdout to the current channel (max 5 lines). Scripts receive context via environment variables:</p>
+
+    <table>
+      <tr><th>Variable</th><th>Value</th></tr>
+      <tr><td><code>UPLINK_NICK</code></td><td>Your current nickname</td></tr>
+      <tr><td><code>UPLINK_SERVER</code></td><td>Server name (e.g. <code>LinuxDojo</code>)</td></tr>
+      <tr><td><code>UPLINK_CHANNEL</code></td><td>Current channel (e.g. <code>#uplink</code>)</td></tr>
+      <tr><td><code>UPLINK_ARGS</code></td><td>Everything typed after the command</td></tr>
+    </table>
+
+    <p>Arguments are also passed as positional parameters (<code>$1</code>, <code>$2</code>, etc.). Scripts have a 10-second timeout and cannot shadow built-in commands.</p>
+
+    <div class="tip">
+      <strong>Deleted a bundled script?</strong> Click <strong>Restore Defaults</strong> in Preferences → Scripts to bring back only the missing ones — your custom scripts are never touched.
     </div>
   </section>
 

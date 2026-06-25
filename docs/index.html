@@ -683,6 +683,42 @@
 
 <hr class="rule">
 
+<!-- SCRIPTING -->
+<section id="scripting">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-tag" style="color: var(--gb-yellow);">scripting</span>
+      <h2>Your scripts, your commands</h2>
+      <p>Link any executable to a custom slash command. Write scripts in bash, python, ruby — whatever you want. Four scripts ship out of the box, ready to use on first launch.</p>
+    </div>
+    <div class="pw-grid">
+      <div class="feat-card b-yellow">
+        <h3>/music</h3>
+        <p>Show what you're listening to. Uses MPRIS2/D-Bus on Linux (Spotify, VLC, mpd, browser) and <code>nowplaying-cli</code> on macOS.</p>
+        <p><code>♫ Now playing: Flesh and Bone — Landon Wilks</code></p>
+      </div>
+      <div class="feat-card b-green">
+        <h3>/weather [city]</h3>
+        <p>Current weather from <code>wttr.in</code>. Pass a city name or leave blank for your IP-detected location.</p>
+        <p><code>🌤 Portland: Sunny +88°F 25% humidity</code></p>
+      </div>
+      <div class="feat-card b-blue">
+        <h3>/uptime</h3>
+        <p>System uptime. Cross-platform — works on Linux and macOS with no dependencies.</p>
+        <p><code>⏱ up 4 hours, 58 minutes</code></p>
+      </div>
+      <div class="feat-card b-purple">
+        <h3>/roll [NdS]</h3>
+        <p>Tabletop dice roller. <code>/roll 2d6</code>, <code>/roll 1d20</code>, or just <code>/roll</code> for a quick d6.</p>
+        <p><code>🎲 2d6: 3 + 5 = 8</code></p>
+      </div>
+    </div>
+    <p class="theme-count">Add your own in <b>Preferences → Scripts</b> — set a command name, browse to any executable, done. Scripts receive <code>UPLINK_NICK</code>, <code>UPLINK_SERVER</code>, <code>UPLINK_CHANNEL</code>, and <code>UPLINK_ARGS</code> as environment variables. Deleted a bundled script? Click <b>Restore Defaults</b> to bring it back.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
 <!-- POWER USERS -->
 <section id="power">
   <div class="wrap">

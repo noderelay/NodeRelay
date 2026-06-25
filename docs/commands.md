@@ -393,12 +393,16 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 
 Uplink lets you link external scripts to custom slash commands. Any executable — bash, python, ruby, whatever — can become a command. Configure them in **Preferences → Scripts**.
 
-Each script row has:
+Uplink ships with four bundled scripts (`/music`, `/weather`, `/uptime`, `/roll`) that are auto-installed on first launch to `~/.config/uplink/scripts/`. They show up in Preferences → Scripts ready to use.
+
+You can also add your own. Each script row has:
 - **Enabled** checkbox
 - **Command** name (e.g. `music` — becomes `/music`)
 - **Script path** — full path to the executable
 - **Browse** button to pick the file
 - **Delete** button to remove the binding
+
+If you delete a bundled script and want it back, click **Restore Defaults** — it only re-adds the missing ones without touching your custom scripts.
 
 When you run a user script command, Uplink:
 1. Runs the script in a background thread (UI stays responsive)
@@ -420,12 +424,7 @@ The `scripts/music.sh` script shows the currently playing track. It auto-detects
 
 On macOS, if `nowplaying-cli` is not in PATH (common when launching from a GUI app), the script falls back to `/opt/homebrew/bin/nowplaying-cli`. If you installed Homebrew to a non-default location, edit the path in the script.
 
-**Setup:**
-1. Open **Preferences → Scripts**
-2. Click **Add Script**
-3. Set command to `music`
-4. Browse to `scripts/music.sh` in your Uplink install
-5. Make sure the script is executable: `chmod +x scripts/music.sh`
+The `/music` command is auto-installed on first launch. On macOS, install the dependency first: `brew install nowplaying-cli`. On Linux, install `playerctl` — or the script falls back to raw D-Bus queries automatically.
 
 **Usage:**
 ```
