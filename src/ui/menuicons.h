@@ -76,5 +76,6 @@ inline QIcon hamburger      (const QColor &c = {}) { return fromSvg(":/icons/men
 inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/mi-manage-accounts.svg",     c, 24); }
 
 inline QIcon scripts        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",        c); }
+inline QIcon deleteIcon     (const QColor &c = {}) { return fromSvg(":/icons/mi-delete.svg",            c); }
 
 } // namespace MenuIcons

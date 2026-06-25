@@ -44,6 +44,7 @@
         <file alias="mi-smart-toy.svg">icons/mi-smart-toy.svg</file>
         <file alias="mi-alien.svg">icons/mi-alien.svg</file>
         <file alias="mi-close.svg">icons/mi-close.svg</file>
+        <file alias="mi-delete.svg">icons/mi-delete.svg</file>
         <file alias="mi-check.svg">icons/mi-check.svg</file>
         <file alias="mi-lightbulb-2.svg">icons/mi-lightbulb-2.svg</file>
         <file alias="mi-bolt.svg">icons/mi-bolt.svg</file>

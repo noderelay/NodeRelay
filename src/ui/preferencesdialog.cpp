@@ -502,8 +502,11 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
         });
         rowLayout->addWidget(browseBtn);
 
-        auto *removeBtn = new QPushButton("X");
-        removeBtn->setFixedWidth(28);
+        auto *removeBtn = new QPushButton;
+        removeBtn->setIcon(MenuIcons::deleteIcon());
+        removeBtn->setIconSize(QSize(18, 18));
+        removeBtn->setFixedSize(28, 28);
+        removeBtn->setFlat(true);
         removeBtn->setAutoDefault(false);
         removeBtn->setToolTip("Remove");
         connect(removeBtn, &QPushButton::clicked, this, [row, emitScripts] {
