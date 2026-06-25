@@ -296,5 +296,15 @@ nick = "joe"
     }
 };
 
-QTEST_GUILESS_MAIN(TstConfig)
+int main(int argc, char *argv[])
+{
+    fprintf(stderr, "tst_config: main() entered\n");
+    fflush(stderr);
+    QCoreApplication app(argc, argv);
+    fprintf(stderr, "tst_config: QCoreApplication created\n");
+    fflush(stderr);
+    TstConfig tc;
+    return QTest::qExec(&tc, argc, argv);
+}
+
 #include "tst_config.moc"
