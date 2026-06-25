@@ -538,16 +538,14 @@ void Config::installDefaultScripts(QList<ScriptBinding> &scripts)
     for (const auto &bs : kBundledScripts) {
         const QString dest = dir + "/" + bs.filename;
 
-        // Copy script file if missing
-        if (!QFileInfo::exists(dest)) {
-            QFile src(bs.resource);
-            if (src.open(QIODevice::ReadOnly)) {
-                QFile out(dest);
-                if (out.open(QIODevice::WriteOnly)) {
-                    out.write(src.readAll());
-                    out.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner
-                                       | QFileDevice::ExeOwner);
-                }
+        // Always overwrite bundled scripts with the version shipped in the app
+        QFile src(bs.resource);
+        if (src.open(QIODevice::ReadOnly)) {
+            QFile out(dest);
+            if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                out.write(src.readAll());
+                out.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner
+                                   | QFileDevice::ExeOwner);
             }
         }
 
