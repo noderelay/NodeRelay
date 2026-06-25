@@ -812,7 +812,8 @@ void CommandDispatcher::executeScript(const ScriptBinding &binding,
 
             const QStringList lines = stdoutText.split('\n', Qt::SkipEmptyParts);
             const int maxLines = 5;
-            for (int i = 0; i < std::min(static_cast<int>(lines.size()), maxLines); ++i) {
+            const int count = lines.size() < maxLines ? lines.size() : maxLines;
+            for (int i = 0; i < count; ++i) {
                 const QString line = lines[i].trimmed().left(450);
                 if (!line.isEmpty())
                     m_model->sendMessage(host, channel, line);
