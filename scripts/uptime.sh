@@ -5,7 +5,7 @@
 
 case "$(uname)" in
     Darwin)
-        boot=$(sysctl -n kern.boottime | sed 's/.*sec = \([0-9]*\).*/\1/')
+        boot=$(sysctl -n kern.boottime | awk -F'[ ,]' '{print $4}')
         now=$(date +%s)
         secs=$((now - boot))
         days=$((secs / 86400))
