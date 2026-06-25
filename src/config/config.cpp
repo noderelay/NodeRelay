@@ -298,8 +298,8 @@ Config Config::load(const QString &path)
         qWarning() << "Uplink: config parse error:" << e.what();
     }
 
-    // First launch: install bundled scripts if scripts dir doesn't exist yet
-    if (!QFileInfo::exists(defaultScriptsPath()))
+    // Install bundled scripts if none are configured yet
+    if (cfg.scripts.isEmpty())
         installDefaultScripts(cfg.scripts);
 
     return cfg;
