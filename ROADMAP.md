@@ -318,6 +318,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] MainWindow refactor — extracted context menus (contextmenus.cpp) and nick panel (nickpanel.cpp); moved isCondensable and buildReactionLine to chatrenderer.h; mainwindow.cpp 5281→4447 lines (2026-06-23)
 - [x] Config and ignore type unit tests — tst_config.cpp (12 tests), tst_ignoretypes.cpp (6 tests); covers load/save round-trip, defaults, backward compat, flags (2026-06-23)
 - [x] Kinetic touch scrolling — QScroller on ChatView, sidebar, nick list, channel panes; flick-to-scroll with momentum for touchscreen/tablet use (2026-06-23)
+- [x] User script bindings — Preferences → Scripts tab to link external executables to custom slash commands; QProcess worker thread, env vars, 10s timeout, 5-line output cap; cannot shadow built-ins (2026-06-24)
+- [x] Bundled scripts — /music (MPRIS2/nowplaying-cli), /weather (wttr.in), /uptime, /roll (tabletop dice); auto-installed on first launch to ~/.config/uplink/scripts/; Restore Defaults button (2026-06-24)
 
 ---
 
@@ -326,6 +328,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat
 - [ ] Spellcheck — hunspell integration for the input box (on hold)
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets
+- [ ] More bundled scripts — /calc, /8ball, /shrug, /tableflip, etc.
 
 ---
 

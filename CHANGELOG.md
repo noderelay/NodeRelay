@@ -119,6 +119,39 @@ Session 2026-06-23:
   (QAccessibleInterface for ChatView); spellcheck (on hold).
 -->
 
+<!--
+Session 2026-06-24:
+- Added user script bindings system — link external scripts to custom slash
+  commands via Preferences → Scripts. Scripts run via QProcess in a worker
+  thread with env vars (UPLINK_NICK, UPLINK_SERVER, UPLINK_CHANNEL, UPLINK_ARGS)
+  and CLI args. 10s timeout, 5-line output cap, no shell wrapper.
+- Bundled 4 default scripts: /music (MPRIS2/nowplaying-cli), /weather (wttr.in),
+  /uptime (cross-platform), /roll (tabletop dice roller).
+- Auto-install bundled scripts on first launch to ~/.config/uplink/scripts/.
+  Restore Defaults button re-adds missing bundled scripts without touching
+  user-added ones. Bundled scripts are overwritten with app version on restore.
+- Added material delete icon for script remove button.
+- Redesigned Scripts tab from QTableWidget to row-based layout (fixed macOS
+  rendering issues with invisible button text and wrong font sizes).
+- Fixed Windows CI: std::min macro conflict with MSVC's windows.h min macro.
+- Fixed /uptime on macOS: greedy sed matched usec instead of sec field.
+- Full docs: commands.md, configuration.md, howto.html, index.html landing page.
+- No regressions found. No known issues.
+- Next priorities: accessibility (QAccessibleInterface for ChatView);
+  spellcheck (on hold); more MainWindow extractions.
+-->
+
+## 0.25.52
+
+### Added
+- **User script bindings** — link external scripts to custom slash commands via Preferences → Scripts. Any executable (bash, python, ruby, etc.) can become a `/command`. Scripts run in a background thread with context passed as environment variables (`UPLINK_NICK`, `UPLINK_SERVER`, `UPLINK_CHANNEL`, `UPLINK_ARGS`). 10-second timeout, 5-line output cap, no shell injection surface.
+- **Bundled scripts** — four scripts ship out of the box and auto-install on first launch: `/music` (MPRIS2/D-Bus on Linux, nowplaying-cli on macOS), `/weather` (wttr.in), `/uptime` (cross-platform), `/roll` (tabletop dice roller, e.g. `/roll 2d6`).
+- **Restore Defaults** button in Preferences → Scripts re-adds only missing bundled scripts without touching user-added ones.
+
+### Fixed
+- **Windows build** — `std::min` macro conflict with MSVC's `windows.h` `min` macro.
+- **macOS /uptime** — greedy sed was matching the `usec` field instead of `sec`, showing 56 years of uptime.
+
 ## 0.25.51
 
 ### Added
