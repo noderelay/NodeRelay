@@ -433,6 +433,36 @@ On macOS, if `nowplaying-cli` is not in PATH (common when launching from a GUI a
 ♫ Now playing: Flesh and Bone — Landon Wilks (Flesh and Bone)
 ```
 
+### Included: `/weather`
+
+Shows current weather from [wttr.in](https://wttr.in). No dependencies beyond `curl`.
+
+```
+/weather              — weather for your IP-detected location
+/weather Portland     — weather for Portland
+🌤 Portland: Sunny +88°F 25% humidity ↘13mph wind
+```
+
+### Included: `/uptime`
+
+Shows system uptime. No dependencies — uses built-in commands on both macOS and Linux.
+
+```
+/uptime
+⏱ up 4 hours, 58 minutes
+```
+
+### Included: `/roll`
+
+Dice roller using tabletop notation (NdS = N dice with S sides). No dependencies — pure bash.
+
+```
+/roll           — rolls 1d6 (default)
+/roll 2d6       — roll 2 six-sided dice
+/roll 1d20      — classic D&D d20
+🎲 2d6: 3 + 5 = 8
+```
+
 ### Writing your own scripts
 
 A script is any executable file that prints to stdout. Example — a simple greeting script:
