@@ -9,6 +9,10 @@ set(CMAKE_AUTOUIC ON)
 
 option(UPLINK_VENDOR_DEPS "Download missing dependencies automatically" ON)
 
+if(WIN32)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg WebSockets)
 find_package(Qt6Keychain QUIET)
 if(NOT Qt6Keychain_FOUND)
