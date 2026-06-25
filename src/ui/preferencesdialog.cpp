@@ -8,7 +8,6 @@
 #include <QFileDialog>
 #include <QFrame>
 #include <QHBoxLayout>
-#include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -16,7 +15,6 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QStackedWidget>
-#include <QTableWidget>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -444,51 +442,57 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
 
     vbox->addSpacing(4);
 
-    m_scriptsTable = new QTableWidget(0, 3);
-    m_scriptsTable->setHorizontalHeaderLabels({"Command", "Script Path", "Enabled"});
-    m_scriptsTable->horizontalHeader()->setStretchLastSection(false);
-    m_scriptsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
-    m_scriptsTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-    m_scriptsTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    m_scriptsTable->setColumnWidth(0, 120);
-    m_scriptsTable->verticalHeader()->setVisible(false);
-    m_scriptsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_scriptsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    auto *scriptsList = new QVBoxLayout;
+    scriptsList->setSpacing(8);
+    auto *scriptsContainer = new QWidget;
+    scriptsContainer->setLayout(scriptsList);
 
-    auto emitScripts = [this] {
+    auto emitScripts = [this, scriptsContainer] {
         QList<ScriptBinding> scripts;
-        for (int r = 0; r < m_scriptsTable->rowCount(); ++r) {
+        const auto rows = scriptsContainer->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
+        for (auto *row : rows) {
+            auto *cmdEdit  = row->findChild<QLineEdit*>("cmdEdit");
+            auto *pathEdit = row->findChild<QLineEdit*>("pathEdit");
+            auto *chk      = row->findChild<QCheckBox*>("enabledChk");
+            if (!cmdEdit || !pathEdit || !chk) continue;
             ScriptBinding sb;
-            if (auto *cmdItem = m_scriptsTable->item(r, 0))
-                sb.command = cmdItem->text().trimmed().toLower().remove(QChar('/'));
-            auto *pathWidget = m_scriptsTable->cellWidget(r, 1);
-            if (auto *edit = pathWidget ? pathWidget->findChild<QLineEdit*>() : nullptr)
-                sb.path = edit->text().trimmed();
-            auto *chkWidget = m_scriptsTable->cellWidget(r, 2);
-            if (auto *chk = chkWidget ? chkWidget->findChild<QCheckBox*>() : nullptr)
-                sb.enabled = chk->isChecked();
+            sb.command = cmdEdit->text().trimmed().toLower().remove(QChar('/'));
+            sb.path    = pathEdit->text().trimmed();
+            sb.enabled = chk->isChecked();
             if (!sb.command.isEmpty() && !sb.path.isEmpty())
                 scripts.append(sb);
         }
         emit scriptsChanged(scripts);
     };
 
-    auto addRow = [this, emitScripts](const ScriptBinding &sb) {
-        const int row = m_scriptsTable->rowCount();
-        m_scriptsTable->insertRow(row);
+    auto addRow = [this, scriptsList, emitScripts](const ScriptBinding &sb) {
+        auto *row = new QWidget;
+        auto *rowLayout = new QHBoxLayout(row);
+        rowLayout->setContentsMargins(0, 4, 0, 4);
+        rowLayout->setSpacing(6);
 
-        auto *cmdItem = new QTableWidgetItem(sb.command);
-        m_scriptsTable->setItem(row, 0, cmdItem);
+        auto *chk = new QCheckBox;
+        chk->setObjectName("enabledChk");
+        chk->setChecked(sb.enabled);
+        chk->setToolTip("Enabled");
+        rowLayout->addWidget(chk);
 
-        auto *pathContainer = new QWidget;
-        auto *pathLayout = new QHBoxLayout(pathContainer);
-        pathLayout->setContentsMargins(2, 0, 2, 0);
-        pathLayout->setSpacing(2);
+        auto *slash = new QLabel("/");
+        slash->setFixedWidth(8);
+        rowLayout->addWidget(slash);
+
+        auto *cmdEdit = new QLineEdit(sb.command);
+        cmdEdit->setObjectName("cmdEdit");
+        cmdEdit->setPlaceholderText("command");
+        cmdEdit->setFixedWidth(100);
+        rowLayout->addWidget(cmdEdit);
+
         auto *pathEdit = new QLineEdit(sb.path);
-        pathEdit->setPlaceholderText("/path/to/script");
-        pathLayout->addWidget(pathEdit, 1);
-        auto *browseBtn = new QPushButton("Browse");
-        browseBtn->setFixedWidth(60);
+        pathEdit->setObjectName("pathEdit");
+        pathEdit->setPlaceholderText("Path to script...");
+        rowLayout->addWidget(pathEdit, 1);
+
+        auto *browseBtn = new QPushButton("Browse...");
         browseBtn->setAutoDefault(false);
         connect(browseBtn, &QPushButton::clicked, this, [this, pathEdit] {
             const QString path = QFileDialog::getOpenFileName(
@@ -496,53 +500,38 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
             if (!path.isEmpty())
                 pathEdit->setText(path);
         });
-        pathLayout->addWidget(browseBtn);
-        m_scriptsTable->setCellWidget(row, 1, pathContainer);
+        rowLayout->addWidget(browseBtn);
 
-        auto *chkContainer = new QWidget;
-        auto *chkLayout = new QHBoxLayout(chkContainer);
-        chkLayout->setContentsMargins(0, 0, 0, 0);
-        chkLayout->setAlignment(Qt::AlignCenter);
-        auto *chk = new QCheckBox;
-        chk->setChecked(sb.enabled);
-        chkLayout->addWidget(chk);
-        m_scriptsTable->setCellWidget(row, 2, chkContainer);
+        auto *removeBtn = new QPushButton("X");
+        removeBtn->setFixedWidth(28);
+        removeBtn->setAutoDefault(false);
+        removeBtn->setToolTip("Remove");
+        connect(removeBtn, &QPushButton::clicked, this, [row, emitScripts] {
+            row->deleteLater();
+            emitScripts();
+        });
+        rowLayout->addWidget(removeBtn);
 
+        scriptsList->addWidget(row);
+
+        connect(cmdEdit,  &QLineEdit::editingFinished, this, emitScripts);
         connect(pathEdit, &QLineEdit::editingFinished, this, emitScripts);
-        connect(chk, &QCheckBox::toggled, this, emitScripts);
+        connect(chk,      &QCheckBox::toggled,         this, emitScripts);
     };
 
     for (const auto &sb : cfg.scripts)
         addRow(sb);
 
-    connect(m_scriptsTable, &QTableWidget::cellChanged, this, emitScripts);
-
-    vbox->addWidget(m_scriptsTable, 1);
+    vbox->addWidget(scriptsContainer);
 
     {
-        auto *btnRow = new QHBoxLayout;
-        auto *addBtn = new PillButton("Add");
+        auto *addBtn = new PillButton("Add Script");
         addBtn->setAccentColor(accent);
         addBtn->setAutoDefault(false);
-        connect(addBtn, &QPushButton::clicked, this, [addRow, emitScripts] {
+        connect(addBtn, &QPushButton::clicked, this, [addRow] {
             addRow(ScriptBinding{});
-            emitScripts();
         });
-        btnRow->addWidget(addBtn);
-
-        auto *removeBtn = new PillButton("Remove");
-        removeBtn->setAccentColor(accent);
-        removeBtn->setAutoDefault(false);
-        connect(removeBtn, &QPushButton::clicked, this, [this, emitScripts] {
-            const int row = m_scriptsTable->currentRow();
-            if (row >= 0) {
-                m_scriptsTable->removeRow(row);
-                emitScripts();
-            }
-        });
-        btnRow->addWidget(removeBtn);
-        btnRow->addStretch();
-        vbox->addLayout(btnRow);
+        vbox->addWidget(addBtn);
     }
 
     vbox->addStretch();

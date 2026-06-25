@@ -7,7 +7,6 @@ class QCheckBox;
 class QLineEdit;
 class QListWidget;
 class QStackedWidget;
-class QTableWidget;
 
 class PreferencesDialog : public QDialog
 {
@@ -67,7 +66,6 @@ private:
     QButtonGroup *m_bracketsGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
-    QTableWidget *m_scriptsTable{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
