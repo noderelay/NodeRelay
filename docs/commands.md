@@ -413,10 +413,10 @@ Scripts have a 10-second timeout. User scripts cannot shadow built-in commands.
 
 The `scripts/music.sh` script shows the currently playing track. It auto-detects the platform:
 
-| Platform | Dependency | Install |
+| Platform | How it works | Dependency |
 |---|---|---|
-| **macOS** | `nowplaying-cli` | `brew install nowplaying-cli` |
-| **Linux** | `playerctl` | `pacman -S playerctl` or `apt install playerctl` |
+| **macOS** | Queries macOS Now Playing center | `brew install nowplaying-cli` |
+| **Linux** | Queries MPRIS2 via D-Bus — works with any MPRIS-compatible player (Spotify, VLC, mpd, Firefox, Chrome/YouTube Music, etc.) | `playerctl` recommended (`pacman -S playerctl` or `apt install playerctl`), falls back to `dbus-send` if not installed |
 
 On macOS, if `nowplaying-cli` is not in PATH (common when launching from a GUI app), the script falls back to `/opt/homebrew/bin/nowplaying-cli`. If you installed Homebrew to a non-default location, edit the path in the script.
 
