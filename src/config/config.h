@@ -28,6 +28,12 @@ struct IgnoreEntry {
     IgnoreTypes flags{kIgnoreAll};
 };
 
+struct ScriptBinding {
+    QString command;    // e.g. "music" (no leading slash)
+    QString path;       // absolute path to executable
+    bool    enabled{true};
+};
+
 struct ChannelConfig {
     QString name;
     QString password;
@@ -121,6 +127,7 @@ struct Config {
     UiConfig            ui;
     QList<IgnoreEntry>  ignoreList;
     QStringList         monitorList;   // nicks to watch with MONITOR
+    QList<ScriptBinding> scripts;
     QString             profileDisplayName; // draft/metadata-2 display-name
     QString             profileAvatarUrl;   // draft/metadata-2 avatar URL
 

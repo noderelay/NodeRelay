@@ -215,6 +215,20 @@ Config Config::load(const QString &path)
             }
         }
 
+        // [[script]]
+        if (auto scripts = tbl["script"].as_array()) {
+            for (auto &node : *scripts) {
+                auto *s = node.as_table();
+                if (!s) continue;
+                ScriptBinding sb;
+                sb.command = QString::fromStdString((*s)["command"].value_or<std::string>("")).trimmed().toLower();
+                sb.path    = QString::fromStdString((*s)["path"].value_or<std::string>(""));
+                sb.enabled = (*s)["enabled"].value_or(true);
+                if (!sb.command.isEmpty() && !sb.path.isEmpty())
+                    cfg.scripts.append(sb);
+            }
+        }
+
         // [[server]]
         if (auto servers = tbl["server"].as_array()) {
             for (auto &node : *servers) {
@@ -361,6 +375,13 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         out << "[" << section << "]\nnicks = [" << quoted.join(", ") << "]\n\n";
     };
     writeNickList("monitor", cfg.monitorList);
+
+    for (const auto &sb : cfg.scripts) {
+        out << "[[script]]\n";
+        out << "command = " << tomlQuote(sb.command) << "\n";
+        out << "path = " << tomlQuote(sb.path) << "\n";
+        out << "enabled = " << boolStr(sb.enabled) << "\n\n";
+    }
 
     for (const auto &s : cfg.servers) {
         // Bundle all 4 server-level passwords into one keychain item → one macOS prompt per server.

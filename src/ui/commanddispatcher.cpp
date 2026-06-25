@@ -6,6 +6,7 @@
 #include <memory>
 #include <QDateTime>
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QMetaObject>
 #include <QProcess>
@@ -711,10 +712,125 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         };
         for (const QString &line : lines)
             m_model->localMessage(host, channel, line);
+        // Append user-defined script commands
+        bool headerShown = false;
+        for (const auto &sb : std::as_const(m_config->scripts)) {
+            if (!sb.enabled) continue;
+            if (!headerShown) {
+                m_model->localMessage(host, channel, "");
+                m_model->localMessage(host, channel, "User Scripts:");
+                headerShown = true;
+            }
+            m_model->localMessage(host, channel,
+                "  /" + sb.command + " — " + sb.path);
+        }
     } else {
-        m_model->localMessage(host, channel,
-            "Unknown command: " + cmd + "  (use /raw or /quote to send raw IRC)");
+        const QString cmdName = cmd.mid(1).toLower();
+        const ScriptBinding *binding = nullptr;
+        for (const auto &sb : std::as_const(m_config->scripts)) {
+            if (sb.enabled && sb.command == cmdName) {
+                binding = &sb;
+                break;
+            }
+        }
+        if (binding) {
+            executeScript(*binding, args, host, channel);
+        } else {
+            m_model->localMessage(host, channel,
+                "Unknown command: " + cmd + "  (use /raw or /quote to send raw IRC)");
+        }
     }
 
     return true;
+}
+
+void CommandDispatcher::executeScript(const ScriptBinding &binding,
+                                       const QString &args,
+                                       ServerId host, BufferId channel)
+{
+    const QString scriptPath = binding.path;
+
+    QFileInfo fi(scriptPath);
+    if (!fi.exists()) {
+        m_model->localMessage(host, channel, "Script not found: " + scriptPath);
+        return;
+    }
+    if (!fi.isExecutable()) {
+        m_model->localMessage(host, channel, "Script is not executable: " + scriptPath);
+        return;
+    }
+
+    const QString nick   = m_model->selfNick(host);
+    const QString server = host.str();
+    const QString chan   = channel.str();
+
+    m_model->localMessage(host, channel, "Running /" + binding.command + "...");
+
+    auto *thread = QThread::create([this, scriptPath, args, nick, server, chan, host, channel]() {
+        QProcess proc;
+
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("UPLINK_NICK",    nick);
+        env.insert("UPLINK_SERVER",  server);
+        env.insert("UPLINK_CHANNEL", chan);
+        env.insert("UPLINK_ARGS",    args);
+        proc.setProcessEnvironment(env);
+
+        QStringList argList;
+        if (!args.isEmpty())
+            argList = args.split(' ', Qt::SkipEmptyParts);
+
+        proc.start(scriptPath, argList);
+
+        if (!proc.waitForFinished(10000)) {
+            proc.kill();
+            proc.waitForFinished(1000);
+            QMetaObject::invokeMethod(this, [this, host, channel]() {
+                m_model->localMessage(host, channel, "Script timed out (10s limit).");
+            }, Qt::QueuedConnection);
+            return;
+        }
+
+        const int exitCode = proc.exitCode();
+        const QString stdoutText = QString::fromUtf8(proc.readAllStandardOutput()).trimmed();
+        const QString stderrText = QString::fromUtf8(proc.readAllStandardError()).trimmed();
+
+        QMetaObject::invokeMethod(this, [this, host, channel, exitCode,
+                                          stdoutText, stderrText]() {
+            if (exitCode != 0) {
+                m_model->localMessage(host, channel,
+                    "Script exited with code " + QString::number(exitCode));
+                if (!stderrText.isEmpty())
+                    m_model->localMessage(host, channel, "stderr: " + stderrText.left(500));
+                return;
+            }
+
+            if (stdoutText.isEmpty()) {
+                m_model->localMessage(host, channel, "Script produced no output.");
+                return;
+            }
+
+            const QStringList lines = stdoutText.split('\n', Qt::SkipEmptyParts);
+            const int maxLines = 5;
+            for (int i = 0; i < std::min(static_cast<int>(lines.size()), maxLines); ++i) {
+                const QString line = lines[i].trimmed().left(450);
+                if (!line.isEmpty())
+                    m_model->sendMessage(host, channel, line);
+            }
+            if (lines.size() > maxLines)
+                m_model->localMessage(host, channel,
+                    QString("(%1 more lines suppressed)").arg(lines.size() - maxLines));
+        }, Qt::QueuedConnection);
+    });
+
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+    auto *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(thread, &QThread::finished, timer, [timer]() {
+        timer->stop();
+        timer->deleteLater();
+    });
+    timer->start(12000);
+    thread->start();
 }

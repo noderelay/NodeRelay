@@ -1011,6 +1011,12 @@ void MainWindow::connectPreferences()
             m_model->localMessage(activeHost, activeChan,
                 "No connected servers to send profile to.");
     });
+
+    connect(m_prefsDialog, &PreferencesDialog::scriptsChanged,
+            this, [this](const QList<ScriptBinding> &scripts) {
+        m_config.scripts = scripts;
+        saveConfig();
+    });
 }
 
 

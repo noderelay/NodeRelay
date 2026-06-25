@@ -75,4 +75,6 @@ inline QIcon manageServers  (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon hamburger      (const QColor &c = {}) { return fromSvg(":/icons/menu.svg",                   c, 24); }
 inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/mi-manage-accounts.svg",     c, 24); }
 
+inline QIcon scripts        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",        c); }
+
 } // namespace MenuIcons

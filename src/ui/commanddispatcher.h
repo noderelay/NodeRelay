@@ -25,6 +25,9 @@ signals:
     void openChannelList(ServerId host);
 
 private:
+    void executeScript(const ScriptBinding &binding, const QString &args,
+                       ServerId host, BufferId channel);
+
     SessionModel *m_model;
     Config       *m_config;
     QWidget      *m_dialogParent;

@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QFrame>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -15,6 +16,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QStackedWidget>
+#include <QTableWidget>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -85,6 +87,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     addNavItem("Notifications", MenuIcons::mention());
     addNavItem("Logging",       MenuIcons::documentation());
     addNavItem("Profile",       MenuIcons::gear());
+    addNavItem("Scripts",       MenuIcons::scripts());
 
     m_pages = new QStackedWidget;
     m_pages->addWidget(createAppearancePage(cfg, accent));
@@ -93,6 +96,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     m_pages->addWidget(createNotificationsPage(cfg));
     m_pages->addWidget(createLoggingPage(cfg));
     m_pages->addWidget(createProfilePage(cfg, accent));
+    m_pages->addWidget(createScriptsPage(cfg, accent));
 
     connect(m_navList, &QListWidget::currentRowChanged,
             m_pages, &QStackedWidget::setCurrentIndex);
@@ -410,6 +414,135 @@ QWidget *PreferencesDialog::createProfilePage(const Config &cfg, const QColor &a
                                      m_avatarUrlEdit->text().trimmed());
         });
         vbox->addWidget(applyBtn);
+    }
+
+    vbox->addStretch();
+    return page;
+}
+
+// ── Scripts ─────────────────────────────────────────────────────────────────
+
+QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &accent)
+{
+    auto *page = new QWidget;
+    auto *vbox = new QVBoxLayout(page);
+    vbox->setContentsMargins(12, 8, 12, 8);
+    vbox->setSpacing(6);
+
+    vbox->addWidget(pageTitle("Scripts"));
+
+    {
+        auto *note = new QLabel(
+            "Link external scripts to custom slash commands. "
+            "Script stdout is sent as a message to the current channel. "
+            "Scripts receive context via environment variables: "
+            "<b>UPLINK_NICK</b>, <b>UPLINK_SERVER</b>, <b>UPLINK_CHANNEL</b>, <b>UPLINK_ARGS</b>.");
+        note->setWordWrap(true);
+        note->setStyleSheet("font-size: 9pt;");
+        vbox->addWidget(note);
+    }
+
+    vbox->addSpacing(4);
+
+    m_scriptsTable = new QTableWidget(0, 3);
+    m_scriptsTable->setHorizontalHeaderLabels({"Command", "Script Path", "Enabled"});
+    m_scriptsTable->horizontalHeader()->setStretchLastSection(false);
+    m_scriptsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    m_scriptsTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    m_scriptsTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    m_scriptsTable->setColumnWidth(0, 120);
+    m_scriptsTable->verticalHeader()->setVisible(false);
+    m_scriptsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_scriptsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    auto emitScripts = [this] {
+        QList<ScriptBinding> scripts;
+        for (int r = 0; r < m_scriptsTable->rowCount(); ++r) {
+            ScriptBinding sb;
+            if (auto *cmdItem = m_scriptsTable->item(r, 0))
+                sb.command = cmdItem->text().trimmed().toLower().remove(QChar('/'));
+            auto *pathWidget = m_scriptsTable->cellWidget(r, 1);
+            if (auto *edit = pathWidget ? pathWidget->findChild<QLineEdit*>() : nullptr)
+                sb.path = edit->text().trimmed();
+            auto *chkWidget = m_scriptsTable->cellWidget(r, 2);
+            if (auto *chk = chkWidget ? chkWidget->findChild<QCheckBox*>() : nullptr)
+                sb.enabled = chk->isChecked();
+            if (!sb.command.isEmpty() && !sb.path.isEmpty())
+                scripts.append(sb);
+        }
+        emit scriptsChanged(scripts);
+    };
+
+    auto addRow = [this, emitScripts](const ScriptBinding &sb) {
+        const int row = m_scriptsTable->rowCount();
+        m_scriptsTable->insertRow(row);
+
+        auto *cmdItem = new QTableWidgetItem(sb.command);
+        m_scriptsTable->setItem(row, 0, cmdItem);
+
+        auto *pathContainer = new QWidget;
+        auto *pathLayout = new QHBoxLayout(pathContainer);
+        pathLayout->setContentsMargins(2, 0, 2, 0);
+        pathLayout->setSpacing(2);
+        auto *pathEdit = new QLineEdit(sb.path);
+        pathEdit->setPlaceholderText("/path/to/script");
+        pathLayout->addWidget(pathEdit, 1);
+        auto *browseBtn = new QPushButton("...");
+        browseBtn->setFixedWidth(30);
+        browseBtn->setAutoDefault(false);
+        connect(browseBtn, &QPushButton::clicked, this, [this, pathEdit] {
+            const QString path = QFileDialog::getOpenFileName(
+                this, "Select Script", QString(), "All Files (*)");
+            if (!path.isEmpty())
+                pathEdit->setText(path);
+        });
+        pathLayout->addWidget(browseBtn);
+        m_scriptsTable->setCellWidget(row, 1, pathContainer);
+
+        auto *chkContainer = new QWidget;
+        auto *chkLayout = new QHBoxLayout(chkContainer);
+        chkLayout->setContentsMargins(0, 0, 0, 0);
+        chkLayout->setAlignment(Qt::AlignCenter);
+        auto *chk = new QCheckBox;
+        chk->setChecked(sb.enabled);
+        chkLayout->addWidget(chk);
+        m_scriptsTable->setCellWidget(row, 2, chkContainer);
+
+        connect(pathEdit, &QLineEdit::editingFinished, this, emitScripts);
+        connect(chk, &QCheckBox::toggled, this, emitScripts);
+    };
+
+    for (const auto &sb : cfg.scripts)
+        addRow(sb);
+
+    connect(m_scriptsTable, &QTableWidget::cellChanged, this, emitScripts);
+
+    vbox->addWidget(m_scriptsTable, 1);
+
+    {
+        auto *btnRow = new QHBoxLayout;
+        auto *addBtn = new PillButton("Add");
+        addBtn->setAccentColor(accent);
+        addBtn->setAutoDefault(false);
+        connect(addBtn, &QPushButton::clicked, this, [addRow, emitScripts] {
+            addRow(ScriptBinding{});
+            emitScripts();
+        });
+        btnRow->addWidget(addBtn);
+
+        auto *removeBtn = new PillButton("Remove");
+        removeBtn->setAccentColor(accent);
+        removeBtn->setAutoDefault(false);
+        connect(removeBtn, &QPushButton::clicked, this, [this, emitScripts] {
+            const int row = m_scriptsTable->currentRow();
+            if (row >= 0) {
+                m_scriptsTable->removeRow(row);
+                emitScripts();
+            }
+        });
+        btnRow->addWidget(removeBtn);
+        btnRow->addStretch();
+        vbox->addLayout(btnRow);
     }
 
     vbox->addStretch();

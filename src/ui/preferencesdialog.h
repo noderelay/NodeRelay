@@ -7,6 +7,7 @@ class QCheckBox;
 class QLineEdit;
 class QListWidget;
 class QStackedWidget;
+class QTableWidget;
 
 class PreferencesDialog : public QDialog
 {
@@ -36,6 +37,7 @@ signals:
     void aboutRequested();
     void docsRequested();
     void profileSetRequested(const QString &displayName, const QString &avatarUrl);
+    void scriptsChanged(const QList<ScriptBinding> &scripts);
 
 private:
     QWidget *createAppearancePage(const Config &cfg, const QColor &accent);
@@ -44,6 +46,7 @@ private:
     QWidget *createNotificationsPage(const Config &cfg);
     QWidget *createLoggingPage(const Config &cfg);
     QWidget *createProfilePage(const Config &cfg, const QColor &accent);
+    QWidget *createScriptsPage(const Config &cfg, const QColor &accent);
 
     QListWidget    *m_navList{nullptr};
     QStackedWidget *m_pages{nullptr};
@@ -64,6 +67,7 @@ private:
     QButtonGroup *m_bracketsGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
+    QTableWidget *m_scriptsTable{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
