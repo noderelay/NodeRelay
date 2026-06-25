@@ -487,8 +487,8 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
         auto *pathEdit = new QLineEdit(sb.path);
         pathEdit->setPlaceholderText("/path/to/script");
         pathLayout->addWidget(pathEdit, 1);
-        auto *browseBtn = new QPushButton("...");
-        browseBtn->setFixedWidth(40);
+        auto *browseBtn = new QPushButton("Browse");
+        browseBtn->setFixedWidth(60);
         browseBtn->setAutoDefault(false);
         connect(browseBtn, &QPushButton::clicked, this, [this, pathEdit] {
             const QString path = QFileDialog::getOpenFileName(
