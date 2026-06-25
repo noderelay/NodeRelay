@@ -64,14 +64,26 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: List test binaries (Windows)
+      - name: Debug tst_config (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Get-ChildItem build/Release -Filter *.exe | Select-Object Name,Length
+        run: |
+          Write-Output "=== DLLs in build/Release ==="
+          Get-ChildItem build/Release -Filter *.dll | Select-Object Name,Length
+          Write-Output "=== EXEs in build/Release ==="
+          Get-ChildItem build/Release -Filter *.exe | Select-Object Name,Length
+          Write-Output "=== Running tst_config directly ==="
+          $proc = Start-Process build/Release/tst_config.exe -Wait -PassThru -NoNewWindow -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+          Write-Output "=== stdout ==="
+          if (Test-Path out.txt) { Get-Content out.txt }
+          Write-Output "=== stderr ==="
+          if (Test-Path err.txt) { Get-Content err.txt }
+          Write-Output "=== exit code: $($proc.ExitCode) ==="
+        continue-on-error: true
 
       - name: Run tests
         timeout-minutes: 5
-        run: ctest --test-dir build --output-on-failure -C Release --timeout 60 -V
+        run: ctest --test-dir build --output-on-failure -C Release --timeout 60
 
   sanitize:
     runs-on: ubuntu-24.04
