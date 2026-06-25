@@ -66,19 +66,13 @@ jobs:
 
       - name: Debug tst_config (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: cmd
         run: |
-          Write-Output "=== DLLs in build/Release ==="
-          Get-ChildItem build/Release -Filter *.dll | Select-Object Name,Length
-          Write-Output "=== EXEs in build/Release ==="
-          Get-ChildItem build/Release -Filter *.exe | Select-Object Name,Length
-          Write-Output "=== Running tst_config directly ==="
-          $proc = Start-Process build/Release/tst_config.exe -Wait -PassThru -NoNewWindow -RedirectStandardOutput out.txt -RedirectStandardError err.txt
-          Write-Output "=== stdout ==="
-          if (Test-Path out.txt) { Get-Content out.txt }
-          Write-Output "=== stderr ==="
-          if (Test-Path err.txt) { Get-Content err.txt }
-          Write-Output "=== exit code: $($proc.ExitCode) ==="
+          echo === DLLs and EXEs ===
+          dir build\Release\*.dll build\Release\*.exe
+          echo === Running tst_config directly ===
+          build\Release\tst_config.exe -v1 2>&1
+          echo === exit code: %ERRORLEVEL% ===
         continue-on-error: true
 
       - name: Run tests
