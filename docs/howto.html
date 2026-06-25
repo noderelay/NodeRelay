@@ -2665,7 +2665,7 @@ link_previews = true</pre>
       <tr>
         <td><code>/music</code></td>
         <td>Show the currently playing track from any media player</td>
-        <td>macOS: <code>brew install nowplaying-cli</code><br>Linux: <code>playerctl</code> recommended, falls back to MPRIS2/D-Bus</td>
+        <td>macOS: <code>brew install nowplaying-cli</code><br>Linux: <code>playerctl</code> recommended, falls back to MPRIS2/D-Bus<br>Windows: Git Bash + PowerShell (built-in)</td>
       </tr>
       <tr>
         <td><code>/weather [city]</code></td>
@@ -2688,7 +2688,7 @@ link_previews = true</pre>
     <div class="step-row"><span class="step">1</span><div>Open <strong>Preferences → Scripts</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click <strong>Add Script</strong>.</div></div>
     <div class="step-row"><span class="step">3</span><div>Type a command name (e.g. <code>greet</code>) and browse to your script.</div></div>
-    <div class="step-row"><span class="step">4</span><div>Make sure the script is executable (<code>chmod +x yourscript.sh</code>).</div></div>
+    <div class="step-row"><span class="step">4</span><div>Make sure the script is executable (<code>chmod +x yourscript.sh</code>). On Windows, <code>.sh</code> scripts are launched automatically via Git Bash.</div></div>
 
     <p>When you type <code>/greet</code> in chat, Uplink runs your script and sends its stdout to the current channel (max 5 lines). Scripts receive context via environment variables:</p>
 

@@ -141,6 +141,16 @@ Session 2026-06-24:
   spellcheck (on hold); more MainWindow extractions.
 -->
 
+## 0.25.53
+
+### Added
+- **Windows script support** — `.sh` scripts on Windows are now launched via `bash.exe` (Git Bash / WSL) instead of failing with "not executable". The executable check is skipped for `.sh` files on Windows.
+- **Windows /music** — queries the Windows Global System Media Transport Controls (GSMTC) via PowerShell; works with any media player that integrates with Windows media (Spotify, Chrome, Edge, VLC, etc.). Requires Windows 10 1809+.
+- **Windows /uptime** — queries boot time via PowerShell `Get-CimInstance`.
+
+### Fixed
+- **Linux /music** — D-Bus fallback was printing raw MPRIS key names (`xesam:title`) instead of actual track metadata; grep was matching the dict key line instead of the value line.
+
 ## 0.25.52
 
 ### Added
@@ -149,7 +159,6 @@ Session 2026-06-24:
 - **Restore Defaults** button in Preferences → Scripts re-adds only missing bundled scripts without touching user-added ones.
 
 ### Fixed
-- **Linux /music** — D-Bus fallback was printing raw MPRIS key names (`xesam:title`) instead of actual track metadata; grep was matching the dict key line instead of the value line.
 - **Windows build** — `std::min` macro conflict with MSVC's `windows.h` `min` macro.
 - **macOS /uptime** — greedy sed was matching the `usec` field instead of `sec`, showing 56 years of uptime.
 

@@ -411,7 +411,7 @@ When you run a user script command, Uplink:
 4. Sends each line of stdout to the current channel (max 5 lines, 450 chars each)
 5. Shows errors (non-zero exit, stderr, timeout) locally — never sent to the channel
 
-Scripts have a 10-second timeout. User scripts cannot shadow built-in commands.
+Scripts have a 10-second timeout. User scripts cannot shadow built-in commands. On Windows, `.sh` scripts are automatically launched via `bash.exe` (Git Bash or WSL).
 
 ### Included: `/music`
 
@@ -421,10 +421,11 @@ The `scripts/music.sh` script shows the currently playing track. It auto-detects
 |---|---|---|
 | **macOS** | Queries macOS Now Playing center | `brew install nowplaying-cli` |
 | **Linux** | Queries MPRIS2 via D-Bus — works with any MPRIS-compatible player (Spotify, VLC, mpd, Firefox, Chrome/YouTube Music, etc.) | `playerctl` recommended (`pacman -S playerctl` or `apt install playerctl`), falls back to `dbus-send` if not installed |
+| **Windows** | Queries Windows Global System Media Transport Controls (GSMTC) via PowerShell — works with any media player that integrates with Windows media controls (Spotify, Chrome, Edge, VLC, etc.) | Git Bash, Windows 10 1809+, PowerShell 5.1+ (all standard) |
 
 On macOS, if `nowplaying-cli` is not in PATH (common when launching from a GUI app), the script falls back to `/opt/homebrew/bin/nowplaying-cli`. If you installed Homebrew to a non-default location, edit the path in the script.
 
-The `/music` command is auto-installed on first launch. On macOS, install the dependency first: `brew install nowplaying-cli`. On Linux, install `playerctl` — or the script falls back to raw D-Bus queries automatically.
+The `/music` command is auto-installed on first launch. On macOS, install the dependency first: `brew install nowplaying-cli`. On Linux, install `playerctl` — or the script falls back to raw D-Bus queries automatically. On Windows, no extra dependencies are needed beyond Git Bash.
 
 **Usage:**
 ```
@@ -444,7 +445,7 @@ Shows current weather from [wttr.in](https://wttr.in). No dependencies beyond `c
 
 ### Included: `/uptime`
 
-Shows system uptime. No dependencies — uses built-in commands on both macOS and Linux.
+Shows system uptime. No dependencies — uses built-in commands on macOS, Linux, and Windows.
 
 ```
 /uptime

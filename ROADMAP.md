@@ -320,6 +320,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Kinetic touch scrolling — QScroller on ChatView, sidebar, nick list, channel panes; flick-to-scroll with momentum for touchscreen/tablet use (2026-06-23)
 - [x] User script bindings — Preferences → Scripts tab to link external executables to custom slash commands; QProcess worker thread, env vars, 10s timeout, 5-line output cap; cannot shadow built-ins (2026-06-24)
 - [x] Bundled scripts — /music (MPRIS2/nowplaying-cli), /weather (wttr.in), /uptime, /roll (tabletop dice); auto-installed on first launch to ~/.config/uplink/scripts/; Restore Defaults button (2026-06-24)
+- [x] Windows script support — .sh scripts launched via bash.exe on Windows; /music queries GSMTC via PowerShell; /uptime queries WMI via PowerShell; fixed Linux /music D-Bus metadata parsing (2026-06-24)
 
 ---
 
