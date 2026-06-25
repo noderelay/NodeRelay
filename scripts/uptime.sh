@@ -17,6 +17,21 @@ case "$(uname)" in
         up=$(uptime -p 2>/dev/null || uptime)
         echo "⏱ ${up}"
         ;;
+    MINGW*|MSYS*|CYGWIN*)
+        info=$(powershell.exe -NoProfile -NonInteractive -Command '
+$up = (Get-Date) - (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+$parts = @()
+if ($up.Days) { $parts += "$($up.Days) days" }
+if ($up.Hours) { $parts += "$($up.Hours) hours" }
+$parts += "$($up.Minutes) minutes"
+"up " + ($parts -join ", ")
+' 2>/dev/null | tr -d '\r')
+        if [ -z "$info" ]; then
+            echo "Could not determine uptime."
+            exit 1
+        fi
+        echo "⏱ $info"
+        ;;
     *)
         echo "Unsupported platform: $(uname)"
         exit 1

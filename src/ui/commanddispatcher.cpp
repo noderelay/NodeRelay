@@ -755,7 +755,11 @@ void CommandDispatcher::executeScript(const ScriptBinding &binding,
         m_model->localMessage(host, channel, "Script not found: " + scriptPath);
         return;
     }
-    if (!fi.isExecutable()) {
+    if (!fi.isExecutable()
+#ifdef Q_OS_WIN
+        && !scriptPath.endsWith(QLatin1String(".sh"))
+#endif
+    ) {
         m_model->localMessage(host, channel, "Script is not executable: " + scriptPath);
         return;
     }
@@ -780,7 +784,12 @@ void CommandDispatcher::executeScript(const ScriptBinding &binding,
         if (!args.isEmpty())
             argList = args.split(' ', Qt::SkipEmptyParts);
 
-        proc.start(scriptPath, argList);
+#ifdef Q_OS_WIN
+        if (scriptPath.endsWith(QLatin1String(".sh")))
+            proc.start(QStringLiteral("bash"), QStringList{scriptPath} + argList);
+        else
+#endif
+            proc.start(scriptPath, argList);
 
         if (!proc.waitForFinished(10000)) {
             proc.kill();

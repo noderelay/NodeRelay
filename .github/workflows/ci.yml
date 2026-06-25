@@ -65,7 +65,8 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Run tests
-        run: ctest --test-dir build --output-on-failure -C Release
+        timeout-minutes: 5
+        run: ctest --test-dir build --output-on-failure -C Release --timeout 60
 
   sanitize:
     runs-on: ubuntu-24.04
@@ -90,4 +91,5 @@ jobs:
         run: cmake --build build-sanitize
 
       - name: Run tests with sanitizers
-        run: ctest --test-dir build-sanitize --output-on-failure
+        timeout-minutes: 5
+        run: ctest --test-dir build-sanitize --output-on-failure --timeout 60

@@ -149,6 +149,7 @@ Session 2026-06-24:
 - **Restore Defaults** button in Preferences → Scripts re-adds only missing bundled scripts without touching user-added ones.
 
 ### Fixed
+- **Linux /music** — D-Bus fallback was printing raw MPRIS key names (`xesam:title`) instead of actual track metadata; grep was matching the dict key line instead of the value line.
 - **Windows build** — `std::min` macro conflict with MSVC's `windows.h` `min` macro.
 - **macOS /uptime** — greedy sed was matching the `usec` field instead of `sec`, showing 56 years of uptime.
 

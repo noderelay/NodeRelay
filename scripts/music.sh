@@ -44,9 +44,37 @@ case "$(uname)" in
                 org.freedesktop.DBus.Properties.Get \
                 string:'org.mpris.MediaPlayer2.Player' \
                 string:'Metadata' 2>/dev/null)
-            title=$(echo "$META" | grep -A1 '"xesam:title"' | grep 'string' | head -1 | sed 's/.*string "\(.*\)"/\1/')
-            artist=$(echo "$META" | grep -A2 '"xesam:artist"' | grep 'string' | head -1 | sed 's/.*string "\(.*\)"/\1/')
-            album=$(echo "$META" | grep -A1 '"xesam:album"' | grep 'string' | head -1 | sed 's/.*string "\(.*\)"/\1/')
+            title=$(echo "$META" | grep -A1 '"xesam:title"' | grep 'string' | tail -1 | sed 's/.*string "\(.*\)"/\1/')
+            artist=$(echo "$META" | grep -A2 '"xesam:artist"' | grep 'string' | tail -1 | sed 's/.*string "\(.*\)"/\1/')
+            album=$(echo "$META" | grep -A1 '"xesam:album"' | grep 'string' | tail -1 | sed 's/.*string "\(.*\)"/\1/')
+        fi
+        ;;
+    MINGW*|MSYS*|CYGWIN*)
+        if ! command -v powershell.exe &>/dev/null; then
+            echo "PowerShell not found — required for /music on Windows."
+            exit 1
+        fi
+        info=$(powershell.exe -NoProfile -NonInteractive -Command '
+try {
+    Add-Type -AssemblyName System.Runtime.WindowsRuntime
+    $at = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
+        $_.Name -eq "AsTask" -and $_.GetParameters().Count -eq 1 -and
+        $_.GetParameters()[0].ParameterType.Name -eq "IAsyncOperation``1" })[0]
+    function WrtAwait($op, $t) {
+        $task = $at.MakeGenericMethod($t).Invoke($null, @($op))
+        $task.Wait(-1) | Out-Null
+        return $task.Result }
+    [void][Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager,Windows.Media.Control,ContentType=WindowsRuntime]
+    $mgr = WrtAwait ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager]::RequestAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager])
+    $s = $mgr.GetCurrentSession()
+    if ($s) {
+        [void][Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties,Windows.Media.Control,ContentType=WindowsRuntime]
+        $p = WrtAwait ($s.TryGetMediaPropertiesAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties])
+        if ($p.Title) { "$($p.Title)|$($p.Artist)|$($p.AlbumTitle)" } }
+} catch {}
+' 2>/dev/null | tr -d '\r')
+        if [ -n "$info" ]; then
+            IFS='|' read -r title artist album <<< "$info"
         fi
         ;;
     *)
