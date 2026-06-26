@@ -107,9 +107,16 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          $(brew --prefix qt)/bin/macdeployqt build/Uplink.app -dmg
-          mv build/Uplink.dmg \
-              Uplink-${{ github.ref_name }}-macos-${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}.dmg
+          $(brew --prefix qt)/bin/macdeployqt build/Uplink.app
+          find build/Uplink.app/Contents/Frameworks -name "*.dylib" -exec codesign --force --sign - {} \;
+          find build/Uplink.app/Contents/Frameworks -type d -name "*.framework" -exec codesign --force --sign - {} \;
+          find build/Uplink.app/Contents/PlugIns -name "*.dylib" -exec codesign --force --sign - {} \;
+          codesign --force --sign - build/Uplink.app/Contents/MacOS/Uplink
+          codesign --force --sign - build/Uplink.app
+          ARCH=${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}
+          DMG_NAME="Uplink-${{ github.ref_name }}-macos-${ARCH}.dmg"
+          hdiutil create -volname "Uplink" -srcfolder build/Uplink.app \
+              -ov -format UDZO "${DMG_NAME}"
 
       # ── Upload ───────────────────────────────────────────────────────────
       - name: Upload to release
