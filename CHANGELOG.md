@@ -5279,6 +5279,37 @@ Next priorities: hero screenshots (3 needed for docs/index.html hero section); S
 strong types; virtual scrolling for very busy channels.
 -->
 
+<!--
+Session 2026-06-26 (v0.25.54 — auto-update, sysinfo cleanup, clangd):
+
+Changes:
+- Removed /sysinfo confirmation dialog — users found it unnecessary; command now
+  posts system info directly like every other send command.
+- Implemented full auto-update behind "Check for Updates": downloads and applies
+  the correct release asset per platform. Linux AppImage replaces itself in-place
+  (Linux inode semantics allow overwriting a running file) and relaunches — no sudo
+  needed when the user owns the AppImage. Windows saves the ZIP to ~/Downloads and
+  opens the folder. macOS downloads the DMG and opens it in Finder. Source builds
+  and FreeBSD show an informational message instead.
+- Set up compile_commands.json: CMake now exports the compilation database;
+  symlinked to project root so clangd gets accurate Qt include paths and the LSP
+  false-positive diagnostics are cleared.
+- Bumped to v0.25.54, tagged, built, all CIs green (Release, CI, CodeQL).
+- Updated all docs: index.html, README.md, commands.md, faq.md, howto.html.
+
+Bugs found and fixed:
+- Vexing parse: QNetworkRequest req(QUrl(url)) was parsed as a function declaration
+  by GCC — fixed by switching to brace initialization.
+- assetName was unused on Linux in applyUpdate() — fixed with Q_UNUSED.
+- README.md download badge links were not updated on first doc pass — caught by
+  user feedback and corrected.
+
+Known issues open:
+- REDACT via soju still untested — kicked to next release.
+- UpdateChecker extraction to a separate class still pending (feature is complete
+  but lives inline in MainWindow).
+-->
+
 ## [0.25.54] — 2026-06-26
 
 ### Added

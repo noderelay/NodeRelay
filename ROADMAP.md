@@ -234,6 +234,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Right-click copy in chat view — selecting text and right-clicking shows Copy (v0.14.0)
 - [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
 - [x] In-app update check UI — "Check for Updates" in hamburger menu; fetches GitHub releases API, parses tag_name, compares UPLINK_VERSION_MAJOR/MINOR/PATCH; shows "Update Available" or "Up to Date" message box
+- [x] Auto-update — "Check for Updates" now downloads and installs the release automatically: AppImage replaces in-place + relaunches (no sudo); Windows saves ZIP to Downloads; macOS opens DMG in Finder; source/FreeBSD show informational message (v0.25.54)
+- [x] `/sysinfo` — removed confirmation dialog; posts system info directly like any other send command (v0.25.54)
+- [x] `compile_commands.json` — CMake now exports compilation database; symlinked to project root so clangd gets accurate include paths and diagnostics (v0.25.54)
 - [x] Event message visual polish — join/part/quit/nick lines render at 82% font size; part/quit/kick color softened to #e06b6b for dark backgrounds (v0.18.2)
 - [x] QSS visual polish overhaul — rounded inputs with focus rings, themed checkboxes/radio/tabs/tooltips, floating scrollbars, pill-shaped sidebar selection, menu border-radius and separators (v0.19.0)
 - [x] Sidebar fitted pill highlight — custom SidebarDelegate draws rounded rect sized to text width; no full-row highlight; hover shift eliminated; selected text always readable (v0.19.0)
@@ -412,7 +415,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 **MainWindow refactor** — extract controllers from `mainwindow.cpp` (~5 000 lines) one at a time, no visual changes. Each extraction moves a self-contained block of logic into its own class:
 - [ ] `DccController` — all DCC send/receive UI, lifecycle, progress dialogs, passive pending map
 - [ ] `PreviewController` — link preview queue, cache insertion, hide/show preview actions, watchdog timer
-- [ ] `UpdateChecker` — GitHub release check, version comparison, update dialog
+- [ ] `UpdateChecker` — extract auto-update logic from MainWindow into a dedicated class (feature done inline; extraction pending)
 - [ ] `InputController` — autocomplete, input history, emoji replacement, typing state, send button
 - [x] `NickContextMenuBuilder` — nick right-click actions extracted to contextmenus.cpp (2026-06-23)
 - [ ] `ChatRenderController` — message→ChatLine conversion, reaction/redaction updates, event condensation

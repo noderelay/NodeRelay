@@ -631,6 +631,9 @@
     <pre>appimageupdatetool ./Uplink-*.AppImage</pre>
     <p>Only the changed blocks are downloaded — much faster than a full re-download.</p>
 
+    <h3>Auto-update from inside Uplink</h3>
+    <p>Click <strong>☰ → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches — no terminal, no package manager, no sudo required.</p>
+
     <div class="tip">
       <strong>Optional:</strong> place the AppImage in <code>~/bin/</code> or <code>~/.local/bin/</code> and it will appear in your application launcher if your desktop environment supports AppImage integration (most do with <code>libappindicator</code> installed).
     </div>
@@ -1505,7 +1508,7 @@ channels = "#uplink"</pre>
     <p>The channel header row runs across the top of the chat area (right of the sidebar divider). From left to right:</p>
 
     <ul>
-      <li><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong>, <strong>Manage Servers</strong>, Documentation, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</li>
+      <li><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (downloads and installs the latest release automatically — see <a href="#appimage">Auto-update</a>), <strong>Manage Servers</strong>, Documentation, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</li>
       <li><strong>⚙ Gear</strong> — opens <strong>Preferences</strong> with pages: Appearance (theme, app icon, font config), Chat Window (timestamps, nick brackets, link previews), Interface (input bar toggles, typing indicator), Notifications (tray notifications, highlight words), Logging, and Profile.</li>
       <li><strong>▸ Topic button</strong> — shows or hides the topic text below the header. Icon is grey when topic is hidden, accent-colored when visible.</li>
       <li><strong>#channel (+modes)</strong> — the active channel name and its mode string.</li>
