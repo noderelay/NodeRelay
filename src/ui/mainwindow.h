@@ -289,6 +289,9 @@ private:
     void saveConfig(bool migratePasswords = false);
     void onConfigFileChanged();
 
+    void downloadAndApplyUpdate(const QString &url, const QString &assetName);
+    void applyUpdate(const QString &tempPath, const QString &assetName);
+
     bool    m_showNickPrefix{true};
     bool    m_showEmojiBtn{false};
     bool    m_showTopic{true};
