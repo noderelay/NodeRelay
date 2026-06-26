@@ -4,6 +4,7 @@ config.toml
 
 # Build
 build/
+compile_commands.json
 build-appimage/
 build-san/
 build-heaptrack/
