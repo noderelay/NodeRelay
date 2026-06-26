@@ -2762,9 +2762,10 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     // Position above the input bar in main-window coords
     const QPoint inputTL = m_input->mapTo(this, QPoint(0, 0));
 
-    // Align left edge with colon position approximation using font metrics
-    const int charW  = m_input->fontMetrics().averageCharWidth();
-    const int colonX = m_input->contentsMargins().left() + static_cast<int>(colon) * charW;
+    // Align left edge with colon position using actual text advance
+    const QString textUpToColon = before.left(colon);
+    const int colonX = m_input->contentsMargins().left()
+                       + m_input->fontMetrics().horizontalAdvance(textUpToColon);
     const QPoint colonLocal = m_input->mapTo(this, QPoint(colonX, 0));
 
     int px = qMax(inputTL.x(), colonLocal.x());
