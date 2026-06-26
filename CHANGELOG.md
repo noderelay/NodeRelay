@@ -5279,6 +5279,20 @@ Next priorities: hero screenshots (3 needed for docs/index.html hero section); S
 strong types; virtual scrolling for very busy channels.
 -->
 
+## [0.25.54] — 2026-06-26
+
+### Added
+- **Auto-update** — "Check for Updates" in the hamburger menu now offers to download and install the latest release automatically. Linux AppImage users get an in-place replace and relaunch with no sudo required. Windows downloads the ZIP to your Downloads folder and opens it. macOS downloads and opens the DMG in Finder. Source builds and FreeBSD show an informational message instead.
+
+### Fixed
+- **Emoji autocomplete popup** — the suggestion popup now tracks the cursor position correctly as you type instead of appearing at a fixed offset.
+
+### Changed
+- **`/sysinfo`** — removed the confirmation dialog; the command posts system info to the channel directly, consistent with every other send command.
+
+### Platform
+- **AppImage** — bundles Noto Color Emoji as a fallback font so emoji render correctly on Linux systems that don't have a color emoji font installed. System fonts still take priority.
+
 ## [0.25.40] — 2026-06-16
 
 ### Fixed
