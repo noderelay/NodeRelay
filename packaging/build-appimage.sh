@@ -182,7 +182,20 @@ export PATH="$WRAPPER_DIR:$TOOLS_DIR:$PATH"
     --desktop-file "$SCRIPT_DIR/Uplink.desktop" \
     --icon-file "$ICON_PNG"
 
-# Phase 2b: ensure AppDir root has the required files for appimagetool
+# Phase 2b: bundle color emoji font as fallback for hosts that don't have one
+mkdir -p "$APPDIR/usr/share/fonts/truetype"
+EMOJI_FONT=$(find /usr/share/fonts /usr/local/share/fonts -name "NotoColorEmoji.ttf" 2>/dev/null | head -1)
+if [[ -z "$EMOJI_FONT" ]]; then
+    EMOJI_FONT=$(fc-match --format="%{file}" "emoji:color=1" 2>/dev/null || true)
+fi
+if [[ -f "$EMOJI_FONT" ]]; then
+    cp "$EMOJI_FONT" "$APPDIR/usr/share/fonts/truetype/NotoColorEmoji.ttf"
+    echo "==> Bundled emoji font: $EMOJI_FONT"
+else
+    echo "WARNING: No color emoji font found on build host — emoji may render without color"
+fi
+
+# Phase 2c: ensure AppDir root has the required files for appimagetool
 cp -n "$APPDIR/usr/share/applications/Uplink.desktop" "$APPDIR/" 2>/dev/null || true
 cp -n "$APPDIR/usr/share/icons/hicolor/256x256/apps/uplink.png" "$APPDIR/" 2>/dev/null || true
 if [[ -f "$SCRIPT_DIR/uplink.png" ]] && [[ ! -f "$APPDIR/uplink.png" ]]; then
@@ -218,6 +231,29 @@ export LD_LIBRARY_PATH="$HERE/usr/lib:${LD_LIBRARY_PATH:-}"
 export QT_PLUGIN_PATH="$HERE/usr/plugins:${QT_PLUGIN_PATH:-}"
 export QT_QPA_PLATFORM_PLUGIN_PATH="$HERE/usr/plugins/platforms"
 export XDG_DATA_DIRS="$HERE/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+
+# Generate a fontconfig at runtime so system fonts take priority;
+# the bundled color emoji font is listed last as a fallback only.
+if [[ -d "$HERE/usr/share/fonts" ]]; then
+    _FC_DIR="$HERE/var/cache/fontconfig-uplink"
+    mkdir -p "$_FC_DIR"
+    _FC_CONF="$_FC_DIR/fonts.conf"
+    cat > "$_FC_CONF" << FONTSCONF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>~/.fonts</dir>
+  <dir>/usr/share/fonts</dir>
+  <dir>/usr/local/share/fonts</dir>
+  <dir prefix="xdg">fonts</dir>
+  <dir>$HERE/usr/share/fonts</dir>
+  <cachedir>$_FC_DIR</cachedir>
+  <include ignore_missing="yes">/etc/fonts/conf.d</include>
+</fontconfig>
+FONTSCONF
+    export FONTCONFIG_FILE="$_FC_CONF"
+fi
+
 exec "$HERE/usr/bin/Uplink" "$@"
 APPRUN
     chmod +x "$APPDIR/AppRun"
