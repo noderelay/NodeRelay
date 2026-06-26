@@ -597,7 +597,7 @@
       <tr>
         <td>macOS arm64</td>
         <td><a href="https://github.com/noderelay/UplinkIRC/releases/latest">Latest release ↗</a></td>
-        <td>Open the <code>.dmg</code>, drag Uplink to Applications</td>
+        <td>See install steps below</td>
       </tr>
       <tr>
         <td>FreeBSD</td>
@@ -611,9 +611,21 @@
     </div>
 
     <div class="tip">
-      <strong>macOS users:</strong> the DMG is built for Apple Silicon (arm64). Intel Macs run it automatically via Rosetta 2. Because the app is unsigned, macOS Gatekeeper may block it on first launch. If that happens, right-click (or Ctrl+click) the DMG in Finder and choose <strong>Open</strong>, then click <strong>Open</strong> again in the dialog. If that still doesn't work, open Terminal and run:
-      <pre style="margin-top:0.5rem;">xattr -dr com.apple.quarantine ~/Downloads/Uplink-*.dmg</pre>
-      Then open the DMG normally. Alternatively, go to <strong>System Settings → Privacy &amp; Security</strong> and click <strong>Open Anyway</strong> after the blocked-app notice appears.
+      <strong>macOS — install steps (Apple Silicon and Intel via Rosetta 2)</strong>
+      <p>Because Uplink is not signed with an Apple Developer certificate, Gatekeeper will warn you on first launch. Follow these steps exactly:</p>
+      <ol>
+        <li>Download the <code>.dmg</code> from the releases page.</li>
+        <li>Double-click the DMG. When macOS says it cannot verify the file, click <strong>Done</strong> (not Eject — the volume stays mounted).</li>
+        <li>Double-click the DMG icon on your desktop to open it and see <strong>Uplink.app</strong> inside.</li>
+        <li>Open a new Finder window (<strong>Cmd+N</strong>) and click <strong>Applications</strong> in the sidebar.</li>
+        <li>Drag <strong>Uplink.app</strong> from the DMG window into Applications.</li>
+        <li>Eject the DMG (right-click the desktop icon → <strong>Eject</strong>).</li>
+        <li>In Applications, right-click <strong>Uplink.app</strong> → <strong>Open</strong>. Click <strong>Done</strong> on the warning dialog.</li>
+        <li>Open <strong>System Settings → Privacy &amp; Security</strong>, scroll down, and click <strong>Open Anyway</strong> next to the Uplink entry.</li>
+        <li>Click <strong>Open</strong> in the confirmation. Uplink launches and macOS remembers your approval.</li>
+      </ol>
+      <p>After the first launch, Uplink opens normally with no warnings.</p>
+      <p><strong>Updating:</strong> click <strong>☰ → Check for Updates</strong>. If a new version is available, Uplink downloads the DMG and opens it in Finder. Drag the new <strong>Uplink.app</strong> to Applications and click <strong>Replace</strong>. Then repeat steps 7–9 above — macOS requires re-approval once per update since the app is not certificate-signed.</p>
     </div>
   </section>
 
