@@ -191,11 +191,11 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/time <nick>` | Ask a user for their local time via CTCP — reply appears in the active channel |
 | `/version [nick]` | Request server version, or CTCP VERSION from a nick |
 | `/ctcp <nick> <command> [args]` | Send a raw CTCP request to a user |
-| `/sysinfo` | Collect OS, CPU, RAM, GPU, and uptime info and post it to the current channel — asks for confirmation before posting |
+| `/sysinfo` | Collect OS, CPU, RAM, GPU, and uptime info and post it to the current channel |
 
 Incoming CTCP VERSION and PING requests are answered automatically.
 
-> **Note:** `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately, then replaces it with the result when ready. A 12-second timeout applies — if collection hangs, an error is posted instead.
+> **Note:** `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result when ready. A 12-second timeout applies — if collection hangs, an error is posted instead.
 
 > **Note:** `/time` and `/ping` only work if the target client supports those CTCP commands. Most IRC clients do, but bots often do not respond. If you see no reply, the other side simply does not support it.
 

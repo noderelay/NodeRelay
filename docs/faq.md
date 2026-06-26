@@ -823,7 +823,7 @@ Uplink enforces two receive limits before accepting a transfer:
 
 Click **☰** (the hamburger button in the top-left) and choose **Check for Updates**. Uplink connects to the GitHub releases API, reads the latest version tag, and compares it to the version you have installed.
 
-- If a newer version is available, a dialog tells you the version number so you can download it from the releases page.
+- If a newer version is available, a dialog offers to download and install it automatically. Linux AppImage users get an in-place replace and relaunch. Windows downloads the ZIP to your Downloads folder. macOS downloads and opens the DMG in Finder. Source builds see an informational message instead.
 - If you're already on the latest version, a dialog confirms that.
 
 The check requires an internet connection. It sends one small HTTPS request to `api.github.com` and nothing else.
@@ -888,7 +888,7 @@ You do not have to click the timestamp exactly to get Reply. If you right-click 
 
 ### How do I post my system info to a channel?
 
-Type `/sysinfo` in the input box. Uplink shows a confirmation dialog before posting — click **Yes** to send the info to the current channel, or **No** to cancel.
+Type `/sysinfo` in the input box. Uplink posts your system info to the current channel immediately.
 
 The collection runs in the background (GPU detection via `vulkaninfo` or `lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result once ready. A 12-second timeout applies in case a subprocess hangs.
 
