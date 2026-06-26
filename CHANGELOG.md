@@ -5280,6 +5280,29 @@ strong types; virtual scrolling for very busy channels.
 -->
 
 <!--
+Session 2026-06-26 (macOS DMG codesign + install docs):
+
+Changes:
+- Fixed macOS DMG: app was crashing on launch with SIGKILL (Code Signature Invalid)
+  because the DMG had no code signature at all. Added ad-hoc codesign to CI:
+  signs all dylibs, frameworks, and plugins inside-out before packaging the DMG.
+- Root cause of signing failure: themes/ directory was in Contents/MacOS/ alongside
+  the binary; codesign treats that directory as a code subcomponent and rejects
+  non-binary files. Fixed by moving themes to Contents/Resources/themes/ before
+  macdeployqt runs in CI. Added ../Resources/themes to themeloader search paths
+  so the app still finds them at runtime.
+- Documented exact macOS install steps in howto.html — the 9-step Gatekeeper
+  workaround including the Privacy & Security Open Anyway flow, plus update
+  instructions explaining re-approval is required once per update.
+- Re-pushed v0.25.54 tag three times to re-trigger CI after each fix iteration.
+- All CI green: Linux, macOS, Windows.
+
+Known issues open:
+- macOS users must repeat Open Anyway once per update (no Apple Developer cert).
+- REDACT via soju still untested.
+-->
+
+<!--
 Session 2026-06-26 (v0.25.54 — auto-update, sysinfo cleanup, clangd):
 
 Changes:
@@ -5316,6 +5339,7 @@ Known issues open:
 - **Auto-update** — "Check for Updates" in the hamburger menu now offers to download and install the latest release automatically. Linux AppImage users get an in-place replace and relaunch with no sudo required. Windows downloads the ZIP to your Downloads folder and opens it. macOS downloads and opens the DMG in Finder. Source builds and FreeBSD show an informational message instead.
 
 ### Fixed
+- **macOS DMG** — app crashed immediately on launch (SIGKILL: Code Signature Invalid). The DMG is now ad-hoc signed in CI — all frameworks, dylibs, and plugins are signed inside-out before packaging. Themes directory moved from `Contents/MacOS/` to `Contents/Resources/` so codesign doesn't reject the bundle.
 - **Emoji autocomplete popup** — the suggestion popup now tracks the cursor position correctly as you type instead of appearing at a fixed offset.
 
 ### Changed
