@@ -7,7 +7,6 @@
 #include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QMetaObject>
 #include <QProcess>
 #include <QSettings>
@@ -475,11 +474,6 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             m_model->sendRaw(host, "PRIVMSG " + target + " :" + ctcp);
         }
     } else if (cmd == "/sysinfo") {
-        const int ret = QMessageBox::question(m_dialogParent, "Share System Info",
-            "This will post your OS, CPU, memory, GPU, and uptime to " + channel.str() + ".\n\n"
-            "System details can identify you. Continue?",
-            QMessageBox::Yes | QMessageBox::No);
-        if (ret != QMessageBox::Yes) return true;
         if (!m_sysinfoCache.isEmpty()) {
             m_model->sendMessage(host, channel,
                 m_sysinfoCache + " UP: " + sysinfoUptime());
