@@ -23,6 +23,7 @@ void ThemeLoader::ensureUserThemesDir()
     // Seed from the bundled themes directory (next to binary or installed path).
     const QStringList sources = {
         QCoreApplication::applicationDirPath() + "/themes",
+        QCoreApplication::applicationDirPath() + "/../Resources/themes",
         QCoreApplication::applicationDirPath() + "/../share/uplink/themes",
         QCoreApplication::applicationDirPath() + "/../themes",
     };

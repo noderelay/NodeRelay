@@ -108,6 +108,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           $(brew --prefix qt)/bin/macdeployqt build/Uplink.app
+          mv build/Uplink.app/Contents/MacOS/themes build/Uplink.app/Contents/Resources/themes
           find build/Uplink.app/Contents/Frameworks -name "*.dylib" -exec codesign --force --sign - {} \;
           find build/Uplink.app/Contents/Frameworks -type d -name "*.framework" -exec codesign --force --sign - {} \;
           find build/Uplink.app/Contents/PlugIns -name "*.dylib" -exec codesign --force --sign - {} \;
