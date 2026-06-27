@@ -6560,7 +6560,7 @@ Session summary — 2026-05-29  README redesign / repo beautification
 What was built:
   - README.md completely redesigned from a plain bullet list to a rich,
     visually structured GitHub page:
-    * 5 badges: latest release, CI status, MIT license, Qt6/C++17, IRCv3
+    * 5 badges: latest release, CI status, GPLv3 license, Qt6/C++17, IRCv3
     * 3 platform download buttons (Linux, Windows, macOS) linking directly
       to v0.6.0 release assets
     * App icon gallery — all 5 icon variants (Dark, Light Default, Light,

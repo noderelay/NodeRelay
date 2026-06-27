@@ -10,7 +10,7 @@
     <img src="https://github.com/noderelay/UplinkIRC/actions/workflows/ci.yml/badge.svg" alt="CI" />
   </a>
   <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/noderelay/UplinkIRC?style=flat-square&color=22863a" alt="MIT License" />
+    <img src="https://img.shields.io/github/license/noderelay/UplinkIRC?style=flat-square&color=22863a" alt="GPLv3 License" />
   </a>
   <img src="https://img.shields.io/badge/Qt6%20%2F%20C%2B%2B-cross--platform-blueviolet?style=flat-square" alt="Qt6 / C++" />
   <img src="https://img.shields.io/badge/IRCv3-ready-orange?style=flat-square" alt="IRCv3" />
@@ -452,4 +452,4 @@ The `assets/` directory contains brand files for free use:
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+GPLv3 — see [LICENSE](LICENSE)
