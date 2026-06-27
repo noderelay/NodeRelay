@@ -41,7 +41,11 @@ modules:
     sources:
       - type: git
         url: https://github.com/noderelay/UplinkIRC.git
+        tag: v0.25.54
         commit: 2654695614f75ee465c1aa76b2053bef90f3589e
+        x-checker-data:
+          type: git
+          tag-pattern: "^v([\\d.]+)$"
     post-install:
       - install -Dm644 packaging/flatpak/io.github.noderelay.UplinkIRC.metainfo.xml
           /app/share/metainfo/io.github.noderelay.UplinkIRC.metainfo.xml
