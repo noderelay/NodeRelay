@@ -1,6 +1,15 @@
 # Changelog
 
 <!--
+Session 2026-06-27 (network debug):
+- MacBook couldn't connect to irc.linuxdojo.org after installing v0.25.55 DMG.
+- Root cause: irc.linuxdojo.org publicly resolves to 192.168.1.32 (LAN-only).
+  MacBook was on upstairs AP; suspected AP client isolation blocking LAN traffic.
+  Not an Uplink bug. Unresolved — user closed session before fixing AP settings.
+- No code changes.
+-->
+
+<!--
 Session 2026-06-27:
 - AppImage catalog (appimage.github.io PR #3778) flagged glibc too new.
 - Switched Linux CI runner from ubuntu-24.04 to ubuntu-22.04 (glibc 2.35).
