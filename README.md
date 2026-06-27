@@ -18,6 +18,7 @@
 
 <p align="center">
   A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.<br/>
+  <a href="https://uplinkirc.chat">uplinkirc.chat</a> &nbsp;&mdash;&nbsp;
   Default network: <strong>irc.linuxdojo.org:6697</strong> &mdash; channel <strong>#uplink</strong>
 </p>
 
