@@ -171,6 +171,7 @@ private:
 
     void syncSidebarOrderToConfig();
     void syncSidebarOrderFromConfig();
+    void syncChannelOrderToConfig(const ServerId &host);
     QTreeWidgetItem *findServerItem (const ServerId &host) const;
     QTreeWidgetItem *findChannelItem(const ServerId &host, const BufferId &channel) const;
 

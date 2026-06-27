@@ -2921,6 +2921,31 @@ void MainWindow::syncSidebarOrderFromConfig()
     }
 }
 
+void MainWindow::syncChannelOrderToConfig(const ServerId &host)
+{
+    auto *srvItem = findServerItem(host);
+    if (!srvItem) return;
+    for (auto &sc : m_config.servers) {
+        if (sc.name != host.str()) continue;
+        QList<ChannelConfig> reordered;
+        for (int i = 0; i < srvItem->childCount(); ++i) {
+            const QString ch = srvItem->child(i)->data(0, Qt::UserRole + 1).toString().toLower();
+            for (const auto &cc : std::as_const(sc.channels))
+                if (cc.name.toLower() == ch) { reordered.append(cc); break; }
+        }
+        // keep any config channels that aren't in the sidebar (shouldn't happen, but be safe)
+        for (const auto &cc : std::as_const(sc.channels)) {
+            bool found = false;
+            for (const auto &r : std::as_const(reordered))
+                if (r.name.toLower() == cc.name.toLower()) { found = true; break; }
+            if (!found) reordered.append(cc);
+        }
+        sc.channels = reordered;
+        break;
+    }
+    saveConfig();
+}
+
 QTreeWidgetItem *MainWindow::findServerItem(const ServerId &host) const
 {
     for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {

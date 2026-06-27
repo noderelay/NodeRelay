@@ -268,6 +268,27 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
         menu->addAction("Close", this, [this, host, channel]{
             m_model->closeBuffer(host, channel);
         });
+        auto *srvItem = item->parent();
+        if (srvItem) {
+            const int cidx = srvItem->indexOfChild(item);
+            menu->addSeparator();
+            if (cidx > 0) {
+                menu->addAction("Move Up", this, [this, host, srvItem, item, cidx]{
+                    srvItem->takeChild(cidx);
+                    srvItem->insertChild(cidx - 1, item);
+                    m_sidebar->setCurrentItem(item);
+                    syncChannelOrderToConfig(host);
+                });
+            }
+            if (cidx < srvItem->childCount() - 1) {
+                menu->addAction("Move Down", this, [this, host, srvItem, item, cidx]{
+                    srvItem->takeChild(cidx);
+                    srvItem->insertChild(cidx + 1, item);
+                    m_sidebar->setCurrentItem(item);
+                    syncChannelOrderToConfig(host);
+                });
+            }
+        }
     } else if (!channel.isEmpty() && channel.str() != "(server)") {
         // PM / user query
         menu->addAction("Close Query", this, [this, host, channel]{
