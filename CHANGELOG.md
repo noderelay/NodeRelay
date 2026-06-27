@@ -204,6 +204,21 @@ Session 2026-06-26 (Flatpak removal):
 - Next priorities: accessibility (QAccessibleInterface for ChatView); spellcheck (on hold).
 -->
 
+<!--
+Session 2026-06-26 (AppImage catalog + script fix):
+- Submitted UplinkIRC to AppImage catalog (PR #3778 at AppImage/appimage.github.io).
+  Submission is a single-line data file pointing to the GitHub repo; bot auto-scrapes releases.
+- Added packaging/io.github.noderelay.UplinkIRC.metainfo.xml with uplinkirc.chat as homepage URL.
+  Added CMake install rule so metainfo is bundled into future AppImages.
+- Fixed bug: bundled scripts (/weather, /roll, /uptime, /music) were never registered in
+  existing configs. installDefaultScripts() was only called when cfg.scripts was completely
+  empty. Users with any prior config (even from before scripts were added) would see
+  "Unknown command" for all bundled scripts. Fix: always call installDefaultScripts() on
+  load; it already handles deduplication internally.
+- No version bump this session.
+- Next priorities: accessibility (QAccessibleInterface for ChatView); spellcheck (on hold).
+-->
+
 ## 0.25.53
 
 ### Added
