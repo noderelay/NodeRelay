@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+Session 2026-06-26 (housekeeping):
+- Removed stale NodeRelay brand files: packaging/noderelay.png,
+  packaging/uplink.png, packaging/NodeRelay.desktop — leftover from
+  old brand, not referenced by any build script or CI.
+- Added uplinkirc.chat link to README header (below badges, inline with
+  default network line).
+- Set GitHub repo About: description, homepage (https://uplinkirc.chat),
+  topics: irc, irc-client, ircv3, qt6, cpp17, cross-platform.
+-->
+
+<!--
 Session 2026-06-26:
 - Added move up/down for channels in sidebar right-click context menu;
   order persisted to config immediately via syncChannelOrderToConfig().
