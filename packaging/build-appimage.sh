@@ -75,7 +75,7 @@ verify_sha256 "$LD_QT"
 # ---------------------------------------------------------------------------
 # Icon
 # ---------------------------------------------------------------------------
-ICON_PNG="$SCRIPT_DIR/uplink.png"
+ICON_PNG="$PROJECT_DIR/resources/icons/uplink-dark.png"
 
 # ---------------------------------------------------------------------------
 # Build
@@ -199,8 +199,8 @@ fi
 # Phase 2c: ensure AppDir root has the required files for appimagetool
 cp -n "$APPDIR/usr/share/applications/Uplink.desktop" "$APPDIR/" 2>/dev/null || true
 cp -n "$APPDIR/usr/share/icons/hicolor/256x256/apps/uplink.png" "$APPDIR/" 2>/dev/null || true
-if [[ -f "$SCRIPT_DIR/uplink.png" ]] && [[ ! -f "$APPDIR/uplink.png" ]]; then
-    cp "$SCRIPT_DIR/uplink.png" "$APPDIR/"
+if [[ -f "$ICON_PNG" ]] && [[ ! -f "$APPDIR/uplink.png" ]]; then
+    cp "$ICON_PNG" "$APPDIR/uplink.png"
 fi
 if [[ ! -f "$APPDIR/AppRun" ]]; then
     cat > "$APPDIR/AppRun" << 'APPRUN'
