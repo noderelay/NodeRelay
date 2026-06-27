@@ -193,6 +193,17 @@ Session 2026-06-25 (Windows script support + CI green):
 - Next priorities: accessibility (QAccessibleInterface for ChatView); spellcheck (on hold).
 -->
 
+<!--
+Session 2026-06-26 (Flatpak removal):
+- Attempted Flathub submission for io.github.noderelay.UplinkIRC.
+  PRs were auto-closed: first targeted wrong base branch (master instead of new-pr),
+  second lacked the required checklist (video of Flatpak running on Linux is mandatory).
+- Decision: remove Flatpak packaging from the project entirely.
+  Removed: packaging/flatpak/, .github/workflows/update-flatpak.yml, .flatpak-builder/.
+- No code changes. No version bump.
+- Next priorities: accessibility (QAccessibleInterface for ChatView); spellcheck (on hold).
+-->
+
 ## 0.25.53
 
 ### Added
