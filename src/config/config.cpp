@@ -298,9 +298,7 @@ Config Config::load(const QString &path)
         qWarning() << "Uplink: config parse error:" << e.what();
     }
 
-    // Install bundled scripts if none are configured yet
-    if (cfg.scripts.isEmpty())
-        installDefaultScripts(cfg.scripts);
+    installDefaultScripts(cfg.scripts);
 
     return cfg;
 }
