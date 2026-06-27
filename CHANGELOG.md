@@ -1,6 +1,20 @@
 # Changelog
 
 <!--
+Session 2026-06-27:
+- AppImage catalog (appimage.github.io PR #3778) flagged glibc too new.
+- Switched Linux CI runner from ubuntu-24.04 to ubuntu-22.04 (glibc 2.35).
+- Ubuntu 22.04 apt ships Qt 6.2.4 which lacks qt_standard_project_setup();
+  switched to jurplel/install-qt-action to install Qt 6.8.2 via aqtinstall.
+- Added -DUPLINK_VENDOR_DEPS=ON for Linux CI (no system qtkeychain with aqt Qt).
+- Added UPLINK_EXTRA_CMAKE_ARGS env var passthrough in build-appimage.sh.
+- Added packaging/uplink.png (256x256) — linuxdeploy requires a standard icon
+  size; source icon is 1254x1254 and was never committed, causing CI failure.
+- Bumped version to 0.25.55; all three platform builds pass.
+- Replied to appimage.github.io reviewer pointing to v0.25.55.
+-->
+
+<!--
 Session 2026-06-26 (housekeeping):
 - Removed stale NodeRelay brand files: packaging/noderelay.png,
   packaging/uplink.png, packaging/NodeRelay.desktop — leftover from
@@ -218,6 +232,16 @@ Session 2026-06-26 (AppImage catalog + script fix):
 - No version bump this session.
 - Next priorities: accessibility (QAccessibleInterface for ChatView); spellcheck (on hold).
 -->
+
+## 0.25.55
+
+### Fixed
+- **AppImage glibc requirement** — Linux CI now builds on Ubuntu 22.04 (glibc 2.35) instead of Ubuntu 24.04 (glibc 2.39), making the AppImage compatible with a wider range of distros.
+
+### Internal
+- Switched Linux CI Qt install to `jurplel/install-qt-action` (Qt 6.8.2 via aqtinstall); Ubuntu 22.04 apt only ships Qt 6.2 which lacks `qt_standard_project_setup`.
+- Added `UPLINK_EXTRA_CMAKE_ARGS` passthrough in `build-appimage.sh` for CI-only cmake flags.
+- Added `packaging/uplink.png` (256×256) required by linuxdeploy.
 
 ## 0.25.53
 
