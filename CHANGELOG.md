@@ -1,6 +1,23 @@
 # Changelog
 
 <!--
+Session 2026-06-26:
+- Added move up/down for channels in sidebar right-click context menu;
+  order persisted to config immediately via syncChannelOrderToConfig().
+- Switched license from MIT to GPLv3; created LICENSE file, updated
+  README badge, docs/index.html, docs/quality.html, CHANGELOG.
+- Added Flatpak packaging: packaging/flatpak/ with manifest, metainfo XML,
+  and desktop file. App ID: io.github.noderelay.UplinkIRC. Runtime: KDE 6.10.
+  Bundles qtkeychain 0.14.3 and tomlplusplus v3.4.0.
+- Added .github/workflows/update-flatpak.yml: auto-updates commit hash, tag,
+  and metainfo release entry on every v* tag push.
+- Added x-checker-data to manifest source so Flathub bot auto-PRs on new tags.
+- Fixed metainfo: removed invalid social-contacts OARS attribute; bumped
+  runtime from EOL 6.8 to 6.10. Both appstream and manifest pass lint clean.
+- Submitted to Flathub (PR open as of 2026-06-26).
+-->
+
+<!--
 Session 2026-06-20 (bot icon):
 - Root-caused bot icon not showing on Linux: per-nick WHOX returned channel "*",
   354 handler dropped it; hasCap("whox") was always false; format string missing
