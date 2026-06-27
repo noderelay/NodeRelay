@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=NodeRelay
-Comment=Fast, secure IRC client
-Exec=NodeRelay
-Icon=noderelay
-Categories=Network;IRCClient;
-Terminal=false
