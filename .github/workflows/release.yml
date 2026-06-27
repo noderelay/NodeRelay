@@ -31,11 +31,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            qt6-base-dev qt6-tools-dev libqt6svg6-dev libqt6websockets6-dev \
             cmake ninja-build \
-            libgl-dev \
+            libgl-dev libsecret-1-dev \
             libfuse2 librsvg2-bin \
-            libsecret-1-dev
+            python3-pip
+          pip3 install aqtinstall
+          aqt install-qt linux desktop 6.8.2 gcc_64 -m qtsvg qtwebsockets -O ~/Qt
+          echo "$HOME/Qt/6.8.2/gcc_64/bin" >> $GITHUB_PATH
+          echo "CMAKE_PREFIX_PATH=$HOME/Qt/6.8.2/gcc_64" >> $GITHUB_ENV
 
       - name: Setup Python (Windows)
         if: runner.os == 'Windows'
@@ -58,7 +61,7 @@ jobs:
 
       - name: Configure (Linux)
         if: runner.os == 'Linux'
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DUPLINK_VENDOR_DEPS=ON
 
       - name: Configure (Windows)
         if: runner.os == 'Windows'
@@ -88,6 +91,7 @@ jobs:
         if: runner.os == 'Linux'
         env:
           UPDATE_INFORMATION: "gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|Uplink-*-x86_64.AppImage.zsync"
+          UPLINK_EXTRA_CMAKE_ARGS: "-DUPLINK_VENDOR_DEPS=ON"
         run: bash packaging/build-appimage.sh
 
       # ── Windows ──────────────────────────────────────────────────────────

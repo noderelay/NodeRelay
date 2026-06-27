@@ -84,6 +84,7 @@ echo "==> Building (Release)..."
 cmake -B "$BUILD_DIR" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
+    ${UPLINK_EXTRA_CMAKE_ARGS:-} \
     "$PROJECT_DIR"
 cmake --build "$BUILD_DIR" -j"$(nproc)"
 
