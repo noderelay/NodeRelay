@@ -1,5 +1,19 @@
 # Changelog
 
+<!--
+Session 2026-06-28:
+- AppImage catalog PR #3778 still open; reviewer has not responded since noderelay replied pointing to v0.25.55.
+- Cleaned up GitHub release history: deleted 70 of 83 releases, kept 13 meaningful milestones.
+  Reason: suspicious release cadence (40+ in June with 2 stars) flagged in external code review.
+- Rewrote CHANGELOG.md from 6900+ lines to 183 lines covering only the 13 kept releases;
+  features from dropped releases folded into the nearest kept version.
+- Fixed docs/index.html version (was stuck on v0.25.54); ran sync-site.sh to update README.md.
+- Fix: topic set-by label now strips the nick!user@host mask down to just the nick.
+  mainwindow.cpp — both setText call sites use setter.section('!', 0, 0).
+No regressions. No known issues.
+Next: wait on AppImage PR; consider v1.0 milestone renumber on next release.
+-->
+
 ## v0.25.55 — 2026-06-27
 
 - AppImage now builds on Ubuntu 22.04 (glibc 2.35) for broader distro compatibility
