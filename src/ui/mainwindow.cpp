@@ -2176,7 +2176,7 @@ void MainWindow::connectModel()
             [this](ServerId h, BufferId ch, const QString &setter, quint64 ts){
         if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
             if (m_topicSetByLabel) {
-                m_topicSetByLabel->setText("Topic set by " + setter + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
                 m_topicSetByLabel->setVisible(!setter.isEmpty() && ts > 0);
             }
     });
@@ -4361,7 +4361,7 @@ void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
             const QString setter = ch ? ch->topicSetBy : QString();
             const quint64 ts     = ch ? ch->topicSetAt : 0;
             if (!setter.isEmpty() && ts > 0) {
-                m_topicSetByLabel->setText("Topic set by " + setter + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
                 m_topicSetByLabel->show();
             } else {
                 m_topicSetByLabel->hide();
