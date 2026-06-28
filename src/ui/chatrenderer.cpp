@@ -44,98 +44,112 @@ QColor nickColor(const QString &nick)
     return QColor(palette[qHash(nick.toLower()) % N]);
 }
 
-QString ircToHtml(const QString &raw)
+static const char* const kIrcPalette[16] = {
+    "#FFFFFF","#000000","#00007F","#009300",
+    "#FF0000","#7F0000","#9C009C","#FC7F00",
+    "#FFFF00","#00FC00","#009393","#00FFFF",
+    "#0000FC","#FF00FF","#7F7F7F","#D2D2D2"
+};
+
+struct IrcSpan {
+    QString text;
+    bool bold{false}, italic{false}, underline{false}, strike{false};
+    int fg{-1}, bg{-1};
+};
+
+static QList<IrcSpan> parseIrcSpans(const QString &raw)
 {
-    static const char* const kColors[] = {
-        "#FFFFFF","#000000","#00007F","#009300",
-        "#FF0000","#7F0000","#9C009C","#FC7F00",
-        "#FFFF00","#00FC00","#009393","#00FFFF",
-        "#0000FC","#FF00FF","#7F7F7F","#D2D2D2"
-    };
-
-    struct Fmt {
+    QList<IrcSpan> spans;
+    struct State {
         bool bold{false}, italic{false}, underline{false}, strike{false};
-        int  fg{-1}, bg{-1};
-        bool operator==(const Fmt &o) const {
-            return bold==o.bold && italic==o.italic && underline==o.underline
-                && strike==o.strike && fg==o.fg && bg==o.bg;
-        }
-    };
-
-    Fmt     cur;
-    int     openSpans = 0;
-    QString out;
-    out.reserve(raw.size() * 2);
-
-    auto closeAll = [&] {
-        for (int i = 0; i < openSpans; ++i) out += "</span>";
-        openSpans = 0;
-    };
-
-    auto applyFmt = [&](const Fmt &next) {
-        if (next == cur) return;
-        closeAll();
-        cur = next;
-        QString style;
-        if (cur.bold)      style += "font-weight:bold;";
-        if (cur.italic)    style += "font-style:italic;";
-        QString td;
-        if (cur.underline) td += "underline ";
-        if (cur.strike)    td += "line-through ";
-        if (!td.isEmpty()) style += "text-decoration:" + td.trimmed() + ";";
-        if (cur.fg >= 0 && cur.fg < 16) style += QString("color:%1;").arg(kColors[cur.fg]);
-        if (cur.bg >= 0 && cur.bg < 16) style += QString("background-color:%1;").arg(kColors[cur.bg]);
-        if (!style.isEmpty()) {
-            out += "<span style='" + style + "'>";
-            openSpans = 1;
-        }
-    };
-
+        int fg{-1}, bg{-1};
+    } cur;
+    QString chunk;
     int i = 0;
-    const qsizetype len = raw.size();
+    const int len = static_cast<int>(raw.size());
+
+    auto flush = [&]() {
+        if (chunk.isEmpty()) return;
+        IrcSpan s;
+        s.text      = chunk;
+        s.bold      = cur.bold;
+        s.italic    = cur.italic;
+        s.underline = cur.underline;
+        s.strike    = cur.strike;
+        s.fg        = cur.fg;
+        s.bg        = cur.bg;
+        spans.append(s);
+        chunk.clear();
+    };
+
     while (i < len) {
         const ushort c = raw[i].unicode();
-        if (c == 0x02) {
-            Fmt n = cur; n.bold = !cur.bold; applyFmt(n); ++i;
-        } else if (c == 0x1D) {
-            Fmt n = cur; n.italic = !cur.italic; applyFmt(n); ++i;
-        } else if (c == 0x1F) {
-            Fmt n = cur; n.underline = !cur.underline; applyFmt(n); ++i;
-        } else if (c == 0x1E) {
-            Fmt n = cur; n.strike = !cur.strike; applyFmt(n); ++i;
-        } else if (c == 0x16) {
-            Fmt n = cur; std::swap(n.fg, n.bg); applyFmt(n); ++i;
-        } else if (c == 0x0F || (c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',')) {
-            applyFmt({}); ++i;
+        if      (c == 0x02) { flush(); cur.bold      = !cur.bold;      ++i; }
+        else if (c == 0x1D) { flush(); cur.italic    = !cur.italic;    ++i; }
+        else if (c == 0x1F) { flush(); cur.underline = !cur.underline; ++i; }
+        else if (c == 0x1E) { flush(); cur.strike    = !cur.strike;    ++i; }
+        else if (c == 0x16) { flush(); std::swap(cur.fg, cur.bg);      ++i; }
+        else if (c == 0x0F || (c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',')) {
+            flush(); cur = State{}; ++i;
         } else if (c == 0x03) {
-            ++i;
-            Fmt n = cur;
+            flush(); ++i;
             if (i < len && raw[i].isDigit()) {
                 int fg = raw[i++].digitValue();
                 if (i < len && raw[i].isDigit()) fg = fg * 10 + raw[i++].digitValue();
-                n.fg = fg;
+                cur.fg = fg;
                 if (i < len && raw[i] == ',' && i+1 < len && raw[i+1].isDigit()) {
                     ++i;
                     int bg = raw[i++].digitValue();
                     if (i < len && raw[i].isDigit()) bg = bg * 10 + raw[i++].digitValue();
-                    n.bg = bg;
+                    cur.bg = bg;
                 }
             } else {
-                n.fg = -1; n.bg = -1;
+                cur.fg = -1; cur.bg = -1;
             }
-            applyFmt(n);
         } else if (c == 0x11) {
             ++i;
         } else {
-            if      (raw[i] == '<') out += "&lt;";
-            else if (raw[i] == '>') out += "&gt;";
-            else if (raw[i] == '&') out += "&amp;";
-            else if (raw[i] == '"') out += "&quot;";
-            else                    out += raw[i];
-            ++i;
+            chunk += raw[i++];
         }
     }
-    closeAll();
+    flush();
+    return spans;
+}
+
+QString ircToHtml(const QString &raw)
+{
+    QString out;
+    out.reserve(raw.size() * 2);
+    bool inSpan = false;
+
+    auto closeSpan = [&]() {
+        if (inSpan) { out += "</span>"; inSpan = false; }
+    };
+
+    for (const IrcSpan &s : parseIrcSpans(raw)) {
+        QString style;
+        if (s.bold)      style += "font-weight:bold;";
+        if (s.italic)    style += "font-style:italic;";
+        QString td;
+        if (s.underline) td += "underline ";
+        if (s.strike)    td += "line-through ";
+        if (!td.isEmpty()) style += "text-decoration:" + td.trimmed() + ";";
+        if (s.fg >= 0 && s.fg < 16) style += QString("color:%1;").arg(kIrcPalette[s.fg]);
+        if (s.bg >= 0 && s.bg < 16) style += QString("background-color:%1;").arg(kIrcPalette[s.bg]);
+        closeSpan();
+        if (!style.isEmpty()) {
+            out += "<span style='" + style + "'>";
+            inSpan = true;
+        }
+        for (const QChar &ch : s.text) {
+            if      (ch == '<') out += "&lt;";
+            else if (ch == '>') out += "&gt;";
+            else if (ch == '&') out += "&amp;";
+            else if (ch == '"') out += "&quot;";
+            else                out += ch;
+        }
+    }
+    closeSpan();
     return out;
 }
 
@@ -447,66 +461,16 @@ struct TextBuilder {
 
 static void ircToSegments(const QString &raw, const QTextCharFormat &base, TextBuilder &tb)
 {
-    static const QColor kColors[] = {
-        QColor("#FFFFFF"), QColor("#000000"), QColor("#00007F"), QColor("#009300"),
-        QColor("#FF0000"), QColor("#7F0000"), QColor("#9C009C"), QColor("#FC7F00"),
-        QColor("#FFFF00"), QColor("#00FC00"), QColor("#009393"), QColor("#00FFFF"),
-        QColor("#0000FC"), QColor("#FF00FF"), QColor("#7F7F7F"), QColor("#D2D2D2")
-    };
-
-    struct State {
-        bool bold{false}, italic{false}, underline{false}, strike{false};
-        int  fg{-1}, bg{-1};
-    } state;
-
-    QString chunk;
-    int i = 0;
-    const int len = static_cast<int>(raw.size());
-
-    auto flushChunk = [&]() {
-        if (chunk.isEmpty()) return;
+    for (const IrcSpan &s : parseIrcSpans(raw)) {
         QTextCharFormat fmt = base;
-        if (state.bold)      fmt.setFontWeight(QFont::Bold);
-        if (state.italic)    fmt.setFontItalic(true);
-        if (state.underline) fmt.setFontUnderline(true);
-        if (state.strike)    fmt.setFontStrikeOut(true);
-        if (state.fg >= 0 && state.fg < 16) fmt.setForeground(kColors[state.fg]);
-        if (state.bg >= 0 && state.bg < 16) fmt.setBackground(kColors[state.bg]);
-        tb.append(chunk, fmt);
-        chunk.clear();
-    };
-
-    while (i < len) {
-        const ushort c = raw[i].unicode();
-        if      (c == 0x02) { flushChunk(); state.bold      = !state.bold;      ++i; }
-        else if (c == 0x1D) { flushChunk(); state.italic    = !state.italic;    ++i; }
-        else if (c == 0x1F) { flushChunk(); state.underline = !state.underline; ++i; }
-        else if (c == 0x1E) { flushChunk(); state.strike    = !state.strike;    ++i; }
-        else if (c == 0x16) { flushChunk(); std::swap(state.fg, state.bg);      ++i; }
-        else if (c == 0x0F || (c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',')) {
-            flushChunk(); state = State{}; ++i;
-        } else if (c == 0x03) {
-            flushChunk(); ++i;
-            if (i < len && raw[i].isDigit()) {
-                int fg = raw[i++].digitValue();
-                if (i < len && raw[i].isDigit()) fg = fg * 10 + raw[i++].digitValue();
-                state.fg = fg;
-                if (i < len && raw[i] == ',' && i+1 < len && raw[i+1].isDigit()) {
-                    ++i;
-                    int bg = raw[i++].digitValue();
-                    if (i < len && raw[i].isDigit()) bg = bg * 10 + raw[i++].digitValue();
-                    state.bg = bg;
-                }
-            } else {
-                state.fg = -1; state.bg = -1;
-            }
-        } else if (c == 0x11) {
-            ++i;
-        } else {
-            chunk += raw[i++];
-        }
+        if (s.bold)      fmt.setFontWeight(QFont::Bold);
+        if (s.italic)    fmt.setFontItalic(true);
+        if (s.underline) fmt.setFontUnderline(true);
+        if (s.strike)    fmt.setFontStrikeOut(true);
+        if (s.fg >= 0 && s.fg < 16) fmt.setForeground(QColor(kIrcPalette[s.fg]));
+        if (s.bg >= 0 && s.bg < 16) fmt.setBackground(QColor(kIrcPalette[s.bg]));
+        tb.append(s.text, fmt);
     }
-    flushChunk();
 }
 
 static void linkifySegments(TextBuilder &tb, int textStart)
