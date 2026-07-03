@@ -27,6 +27,7 @@ class PreferencesDialog;
 class LinkPreview;
 class EmojiPicker;
 class DccController;
+class PreviewController;
 class ChannelPane;
 class QuickSwitcher;
 class UpdateChecker;
@@ -270,16 +271,9 @@ private:
     SessionModel *m_model;
     TrayIcon     *m_tray{nullptr};
     SignalBars   *m_signalBars{nullptr};
-    LinkPreview  *m_linkPreview{nullptr};
+    PreviewController *m_previews{nullptr};
     QString       m_hoveredUrl;
     QPoint        m_hoverGlobalPos;
-    struct PreviewCtx { ServerId host; BufferId channel; QString msgid; };
-    QHash<QString, PreviewCtx> m_previewChannels; // url → {host, channel, msgid}
-    QQueue<QUrl>  m_previewQueue;
-    bool          m_previewFetchBusy{false};
-    QTimer       *m_previewWatchdog{nullptr};
-    void enqueuePreview(const QUrl &url, ServerId host, BufferId channel, const QString &msgid);
-    void processPreviewQueue();
     DccController *m_dcc{nullptr};
     Config        m_config;
     Theme         m_theme;

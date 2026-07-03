@@ -16,6 +16,7 @@
 #include "ui/appicons.h"
 #include "ui/themeloader.h"
 #include "ui/linkpreview.h"
+#include "ui/previewcontroller.h"
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
@@ -1586,84 +1587,50 @@ void MainWindow::setupChatArea()
         statusBar()->showMessage(url.host());
         m_hoverGlobalPos = QCursor::pos();
         QToolTip::showText(m_hoverGlobalPos, url.host(), m_chatView->viewport());
-        if (m_config.ui.linkPreviews) m_linkPreview->fetchHover(url);
+        if (m_config.ui.linkPreviews) m_previews->linkPreview()->fetchHover(url);
     });
     connect(m_chatView, &ChatView::loadOlderRequested, this, &MainWindow::loadOlderMessages);
     m_chatView->installEventFilter(this);
     m_chatView->viewport()->installEventFilter(this);
 
-    m_linkPreview = new LinkPreview(this);
+    m_previews = new PreviewController(m_model, this);
 
-    m_previewWatchdog = new QTimer(this);
-    m_previewWatchdog->setSingleShot(true);
-    connect(m_previewWatchdog, &QTimer::timeout, this, [this]{
-        m_previewFetchBusy = false;
-        processPreviewQueue();
-    });
-
-    connect(m_linkPreview, &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
+    connect(m_previews->linkPreview(), &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
         if (url.toString() != m_hoveredUrl) return;
         const QString display = title.length() > 80 ? title.left(79) + QChar(0x2026) : title;
         statusBar()->showMessage(display);
         QToolTip::showText(m_hoverGlobalPos, display, m_chatView->viewport());
     });
 
-    connect(m_linkPreview, &LinkPreview::cardReady, this,
-            [this](const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail){
-        const QString urlStr = pageUrl.toString();
-        m_previewWatchdog->stop();
-        m_previewFetchBusy = false;
-
-        auto it = m_previewChannels.find(urlStr);
-        if (it == m_previewChannels.end()) {
-            processPreviewQueue();
-            return;
-        }
-        const ServerId host    = it->host;
-        const BufferId channel = it->channel;
-        const QString msgid    = it->msgid;
-        m_previewChannels.erase(it);
-        processPreviewQueue();
-
+    connect(m_previews, &PreviewController::cardStored, this,
+            [this](ServerId host, BufferId channel, const QString &msgid, const QString &urlStr){
         auto *ch = m_model->channel(host, channel);
         if (!ch) return;
+        const auto p = ch->previews.constFind(urlStr);
+        if (p == ch->previews.constEnd()) return;
 
-        // Thumbnail scaled to max 100 px wide
         QPixmap thumb;
-        if (!thumbnail.isNull())
-            thumb = thumbnail.scaledToWidth(qMin(thumbnail.width(), 240),
-                                            Qt::SmoothTransformation);
-
-        Channel::PreviewCard card;
-        card.title   = title.left(120);
-        card.domain  = pageUrl.host();
-        card.pageUrl = urlStr;
-        if (!thumb.isNull()) {
-            QBuffer pngBuf(&card.pngData);
-            pngBuf.open(QIODevice::WriteOnly);
-            thumb.save(&pngBuf, "PNG");
-        }
-        ch->addPreview(urlStr, card);
+        if (!p->pngData.isEmpty()) thumb.loadFromData(p->pngData, "PNG");
 
         auto makeCardLine = [&]() -> ChatLine {
             ChatLine line;
             line.id   = "preview:" + urlStr;
             line.role = ChatLineRole::PreviewCard;
             line.image = thumb;
-            line.text = card.title + "\n" + card.domain;
+            line.text = p->title + "\n" + p->domain;
             QTextCharFormat titleFmt;
             titleFmt.setFontWeight(QFont::Bold);
             ChatSegment titleSeg;
             titleSeg.start  = 0;
-            titleSeg.length = static_cast<int>(card.title.size());
+            titleSeg.length = static_cast<int>(p->title.size());
             titleSeg.format = titleFmt;
             titleSeg.anchor = "preview:" + urlStr;
             line.segments.append(titleSeg);
             QTextCharFormat domainFmt;
             domainFmt.setForeground(QColor("#888888"));
             ChatSegment domainSeg;
-            domainSeg.start  = static_cast<int>(card.title.size()) + 1;
-            domainSeg.length = static_cast<int>(card.domain.size());
+            domainSeg.start  = static_cast<int>(p->title.size()) + 1;
+            domainSeg.length = static_cast<int>(p->domain.size());
             domainSeg.format = domainFmt;
             line.segments.append(domainSeg);
             return line;
@@ -3793,26 +3760,6 @@ void MainWindow::refreshPaneNickList(ChannelPane *pane)
         pane->nickList()->addItem(makeNickItem(e, ch, sess));
 }
 
-void MainWindow::enqueuePreview(const QUrl &url, ServerId host, BufferId channel, const QString &msgid)
-{
-    const QString key = url.toString();
-    if (key.isEmpty()) return;
-    if (m_previewChannels.contains(key)) return;
-    if (m_previewQueue.size() >= 10) return;
-    if (m_previewChannels.size() >= 100) return;
-    m_previewChannels.insert(key, {host, channel, msgid});
-    m_previewQueue.enqueue(url);
-    processPreviewQueue();
-}
-
-void MainWindow::processPreviewQueue()
-{
-    if (m_previewFetchBusy || m_previewQueue.isEmpty()) return;
-    m_previewFetchBusy = true;
-    m_previewWatchdog->start(20000);
-    m_linkPreview->fetch(m_previewQueue.dequeue());
-}
-
 void MainWindow::refreshChatView(ServerId host, BufferId channel, bool resetToLatest)
 {
     m_chatView->clear();
@@ -4197,8 +4144,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                     continue;
                 }
             }
-            if (!m_previewChannels.contains(urlStr))
-                enqueuePreview(QUrl(urlStr), host, channel, msg.msgid);
+            m_previews->enqueue(QUrl(urlStr), host, channel, msg.msgid);
         }
     }
 
