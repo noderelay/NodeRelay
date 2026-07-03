@@ -30,6 +30,7 @@ class DccSend;
 class DccReceive;
 class ChannelPane;
 class QuickSwitcher;
+class UpdateChecker;
 class QNetworkAccessManager;
 class QGraphicsOpacityEffect;
 class QPropertyAnimation;
@@ -290,8 +291,7 @@ private:
     void saveConfig(bool migratePasswords = false);
     void onConfigFileChanged();
 
-    void downloadAndApplyUpdate(const QString &url, const QString &assetName);
-    void applyUpdate(const QString &tempPath, const QString &assetName);
+    UpdateChecker *m_updateChecker{nullptr};
 
     bool    m_showNickPrefix{true};
     bool    m_showEmojiBtn{false};
