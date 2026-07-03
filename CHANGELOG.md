@@ -1,6 +1,23 @@
 # Changelog
 
 <!--
+Session 2026-07-02:
+- AppImage catalog PR #3778 MERGED by probonopd; UplinkIRC accepted, listing pending next site rebuild (not yet visible on appimage.github.io/apps).
+- MainWindow refactor complete: UpdateChecker, DccController, PreviewController extracted as classes;
+  input bar and chat view update logic split to inputbar.cpp / chatupdates.cpp. mainwindow.cpp 4669 → 3184 lines.
+- ChatView perf: per-line QTextLayout cache reused across repaints (evicted off-screen);
+  incremental width relayout skips lines whose height can't change; deferred chunked relayout on resize.
+- 8-angle code review of the day's diff found and fixed: layoutWidth staleness poisoning (deferred pass
+  could permanently skip stale lines), resize visible-window computed from stale heights, eviction index
+  drift, preview watchdog leaking the 100-entry budget (pre-existing), Tab-at-column-0 clobbering
+  (pre-existing), scroll-anchor overshoot, PNG re-decode on live previews.
+- CI matrix + CodeQL green; ASan/UBSan build and tests clean. User smoke-tested on macOS.
+No release tagged. Known deferred cleanups: preview-card ChatLine built 4 ways (live cards styled,
+refreshed cards plain — pre-existing); ChatRenderer::Context copy-pasted 9 times.
+Next: /calc /8ball /shrug /tableflip bundled scripts; accessibility; long-press context menus.
+-->
+
+<!--
 Session 2026-06-28:
 - AppImage catalog PR #3778 still open; reviewer has not responded since noderelay replied pointing to v0.25.55.
 - Cleaned up GitHub release history: deleted 70 of 83 releases, kept 13 meaningful milestones.
