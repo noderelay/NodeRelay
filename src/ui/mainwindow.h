@@ -26,8 +26,7 @@ class DocsDialog;
 class PreferencesDialog;
 class LinkPreview;
 class EmojiPicker;
-class DccSend;
-class DccReceive;
+class DccController;
 class ChannelPane;
 class QuickSwitcher;
 class UpdateChecker;
@@ -281,7 +280,7 @@ private:
     QTimer       *m_previewWatchdog{nullptr};
     void enqueuePreview(const QUrl &url, ServerId host, BufferId channel, const QString &msgid);
     void processPreviewQueue();
-    QMap<QString, DccSend*> m_pendingPassiveSends;
+    DccController *m_dcc{nullptr};
     Config        m_config;
     Theme         m_theme;
 

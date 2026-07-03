@@ -5,7 +5,7 @@
 #include "ui/menuicons.h"
 #include "ui/channelpane.h"
 #include "irc/ircclient.h"
-#include "irc/dccsend.h"
+#include "ui/dcccontroller.h"
 #include "model/sessionmodel.h"
 #include "config/config.h"
 
@@ -420,104 +420,11 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         auto *dccSub = new QMenu("DCC", &menu);
 
         connect(dccSub->addAction("Send File"), &QAction::triggered, this, [this, host, nick]{
-            const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick);
-            if (path.isEmpty()) return;
-
-            IrcClient *client = m_model->clientFor(host);
-            if (!client) return;
-
-            const quint32 localIp = client->localIpv4();
-            auto *dcc = new DccSend(path, this);
-            if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any)) {
-                dcc->deleteLater(); return;
-            }
-            QPointer<DccSend> dccGuard(dcc);
-
-            const quint32 ip   = localIp;
-            const quint16 port = dcc->port();
-            const QString fn   = dcc->filename();
-            const qint64  size = dcc->filesize();
-
-            m_model->sendRaw(host,
-                "PRIVMSG " + nick + " :\x01""DCC SEND "
-                + fn + " " + QString::number(ip)
-                + " " + QString::number(port)
-                + " " + QString::number(size) + "\x01");
-
-            auto *prog = new QProgressDialog("Sending " + fn + " to " + nick,
-                                              "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
-            prog->setWindowModality(Qt::NonModal);
-            prog->setAttribute(Qt::WA_DeleteOnClose);
-
-            connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-                prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
-            });
-            connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
-                prog->setValue(prog->maximum());
-                if (dccGuard) dccGuard->deleteLater();
-            });
-            connect(dcc, &DccSend::error, this, [this, prog, dccGuard](const QString &msg){
-                prog->close();
-                if (dccGuard) dccGuard->deleteLater();
-                QMessageBox::warning(this, "DCC Error", msg);
-            });
-            connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
-                if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
-            });
-
-            prog->show();
+            m_dcc->sendFile(host, nick);
         });
 
         connect(dccSub->addAction("Send File (Passive)"), &QAction::triggered, this, [this, host, nick]{
-            const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick + " (Passive)");
-            if (path.isEmpty()) return;
-
-            auto *dcc = new DccSend(path, this);
-            const QString token = dcc->initPassive();
-            if (token.isEmpty()) { dcc->deleteLater(); return; }
-
-            const QString fn   = dcc->filename();
-            const qint64  size = dcc->filesize();
-
-            QPointer<DccSend> dccGuard(dcc);
-            m_pendingPassiveSends.insert(token, dcc);
-            m_model->sendRaw(host,
-                "PRIVMSG " + nick + " :\x01""DCC SEND "
-                + fn + " 0 0"
-                + " " + QString::number(size)
-                + " " + token + "\x01");
-
-            // Fix #4: timeout stale passive sends after 120s
-            QTimer::singleShot(120000, this, [this, token, dccGuard]{
-                if (DccSend *d = m_pendingPassiveSends.take(token)) {
-                    d->cancel();
-                    if (dccGuard) dccGuard->deleteLater();
-                }
-            });
-
-            auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
-                                              "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
-            prog->setWindowModality(Qt::NonModal);
-            prog->setAttribute(Qt::WA_DeleteOnClose);
-
-            connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-                prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
-            });
-            connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
-                prog->setValue(prog->maximum());
-                if (dccGuard) dccGuard->deleteLater();
-            });
-            connect(dcc, &DccSend::error, this, [this, prog, dccGuard, token](const QString &msg){
-                prog->close();
-                m_pendingPassiveSends.remove(token);
-                if (dccGuard) dccGuard->deleteLater();
-                QMessageBox::warning(this, "DCC Error", msg);
-            });
-            connect(prog, &QProgressDialog::canceled, dcc, [this, dccGuard, token]{
-                m_pendingPassiveSends.remove(token);
-                if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
-            });
-            prog->show();
+            m_dcc->sendFilePassive(host, nick);
         });
 
         menu.addMenu(dccSub);

@@ -4,8 +4,7 @@
 #include "mainwindow.h"
 #include "ui/commanddispatcher.h"
 #include "irc/ircclient.h"
-#include "irc/dccsend.h"
-#include "irc/dccreceive.h"
+#include "ui/dcccontroller.h"
 #include "ui/trayicon.h"
 #include "ui/aboutdialog.h"
 #include "ui/channellistdialog.h"
@@ -28,7 +27,6 @@
 #include "ui/chatrenderer.h"
 #include "ui/chatview.h"
 #include "config/config.h"
-#include "net/addresscheck.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -2116,138 +2114,7 @@ void MainWindow::connectModel()
         // Reject: connection already aborted in IrcClient::onSslErrors
     });
 
-    connect(m_model, &SessionModel::dccSendReceived, this,
-            [this](ServerId, const QString &fromNick,
-                   const QString &filename, quint32 ip, quint16 port, qint64 filesize)
-    {
-        const QString sizeStr = filesize >= 1024*1024
-            ? QString::number(filesize / (1024*1024)) + " MB"
-            : QString::number(filesize / 1024) + " KB";
-        const QString ipStr = QHostAddress(ip).toString();
-
-        const int ret = QMessageBox::question(this, "Incoming DCC File",
-            "Sender: " + fromNick + "\n"
-            "File: " + filename + "\n"
-            "Size: " + sizeStr + "\n"
-            "Address: " + ipStr + ":" + QString::number(port) + "\n\n"
-            "DCC connects directly to the sender and may reveal your IP address.\n"
-            "Only accept files from people you trust.\n\nAccept?",
-            QMessageBox::Yes | QMessageBox::No);
-        if (ret != QMessageBox::Yes) return;
-
-        const QString savePath = QFileDialog::getSaveFileName(
-            this, "Save File", QFileInfo(filename).fileName());
-        if (savePath.isEmpty()) return;
-
-        auto *dcc  = new DccReceive(savePath, ip, port, filesize, this);
-        QPointer<DccReceive> dccGuard(dcc);
-        auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
-                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : static_cast<int>(filesize), this);
-        prog->setWindowModality(Qt::NonModal);
-        prog->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
-            prog->setValue(static_cast<int>(filesize > INT_MAX
-                ? received * INT_MAX / filesize : received));
-        });
-        connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
-            prog->setValue(prog->maximum());
-            if (dccGuard) dccGuard->deleteLater();
-            QMessageBox::information(this, "DCC", "File received:\n" + path);
-        });
-        connect(dcc, &DccReceive::error, this, [this, prog, dccGuard](const QString &msg){
-            prog->close();
-            if (dccGuard) dccGuard->deleteLater();
-            QMessageBox::warning(this, "DCC Error", msg);
-        });
-        connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
-            if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
-        });
-
-        dcc->start();
-        prog->show();
-    });
-
-    connect(m_model, &SessionModel::dccPassiveOfferReceived, this,
-            [this](ServerId server, const QString &fromNick,
-                   const QString &filename, quint32 senderIp, qint64 filesize, const QString &token)
-    {
-        const QString sizeStr = filesize >= 1024*1024
-            ? QString::number(filesize / (1024*1024)) + " MB"
-            : QString::number(filesize / 1024) + " KB";
-        const QString ipStr = QHostAddress(senderIp).toString();
-
-        const int ret = QMessageBox::question(this, "Incoming DCC File (Passive)",
-            "Sender: " + fromNick + "\n"
-            "File: " + filename + "\n"
-            "Size: " + sizeStr + "\n"
-            "Sender address: " + ipStr + "\n\n"
-            "DCC connects directly to the sender and may reveal your IP address.\n"
-            "Only accept files from people you trust.\n\nAccept?",
-            QMessageBox::Yes | QMessageBox::No);
-        if (ret != QMessageBox::Yes) return;
-
-        const QString savePath = QFileDialog::getSaveFileName(
-            this, "Save File", QFileInfo(filename).fileName());
-        if (savePath.isEmpty()) return;
-
-        auto *dcc = new DccReceive(savePath, 0, 0, filesize, this);
-        if (!dcc->listenPassive(senderIp)) { dcc->deleteLater(); return; }
-        QPointer<DccReceive> dccGuard(dcc);
-
-        IrcClient *client = m_model->clientFor(server);
-        const quint32 ourIp   = client ? client->localIpv4() : 0;
-        const quint16 ourPort = dcc->listenPort();
-        QString fn = QFileInfo(filename).fileName().replace(' ', '_');
-        fn.remove(QRegularExpression("[\\x00-\\x1f\\x7f]"));
-        if (fn.isEmpty()) fn = QStringLiteral("file");
-        fn = fn.left(180);
-
-        m_model->sendRaw(server,
-            "PRIVMSG " + fromNick + " :\x01""DCC SEND "
-            + fn + " " + QString::number(ourIp)
-            + " " + QString::number(ourPort)
-            + " " + QString::number(filesize)
-            + " " + token + "\x01");
-
-        auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
-                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : static_cast<int>(filesize), this);
-        prog->setWindowModality(Qt::NonModal);
-        prog->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
-            prog->setValue(static_cast<int>(filesize > INT_MAX ? received * INT_MAX / filesize : received));
-        });
-        connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
-            prog->setValue(prog->maximum());
-            if (dccGuard) dccGuard->deleteLater();
-            QMessageBox::information(this, "DCC", "File received:\n" + path);
-        });
-        connect(dcc, &DccReceive::error, this, [this, prog, dccGuard](const QString &msg){
-            prog->close();
-            if (dccGuard) dccGuard->deleteLater();
-            QMessageBox::warning(this, "DCC Error", msg);
-        });
-        connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
-            if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
-        });
-        prog->show();
-    });
-
-    connect(m_model, &SessionModel::dccPassiveSendReply, this,
-            [this](ServerId, const QString &, const QString &,
-                   quint32 ip, quint16 port, qint64, const QString &token)
-    {
-        DccSend *dcc = m_pendingPassiveSends.take(token);
-        if (dcc) {
-            if (isPrivateAddress(QHostAddress(ip))) {
-                QMessageBox::warning(this, "DCC", "Blocked: remote address is private or reserved.");
-                dcc->deleteLater();
-            } else {
-                dcc->connectOut(ip, port);
-            }
-        }
-    });
+    m_dcc = new DccController(m_model, this);
 
     connect(m_model, &SessionModel::pingRtt, this, [this](ServerId host, int ms){
         if (m_signalBars && host == m_model->activeHost())
