@@ -122,6 +122,7 @@ qt_add_executable(Uplink WIN32
     src/ui/dcccontroller.h
     src/ui/previewcontroller.cpp
     src/ui/previewcontroller.h
+    src/ui/inputbar.cpp
     src/ui/themeloader.cpp
     src/ui/themeloader.h
     src/irc/ircclient.cpp
