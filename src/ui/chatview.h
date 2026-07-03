@@ -80,8 +80,6 @@ private:
     int              m_findLine{-1};
     int              m_findFrom{-1};
     int              m_findTo{-1};
-    int              m_paintFirst{-1};   // last painted line window, for layout eviction
-    int              m_paintLast{-1};
     QTimer          *m_relayoutTimer{nullptr}; // deferred off-screen relayout after width change
 
     static constexpr int kMaxLines   = 2000;

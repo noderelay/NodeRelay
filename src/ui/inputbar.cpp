@@ -280,7 +280,10 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, ServerId host, BufferI
     const int pos = tc.positionInBlock();
 
     if (!m_tabActive) {
-        // Start a new cycle: derive prefix from text before cursor
+        // Start a new cycle: derive prefix from text before cursor.
+        // pos == 0 must not reach lastIndexOf: a from-index of -1 means
+        // "search from the end" in Qt and would grab the last word.
+        if (pos == 0) return;
         const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
         const QString prefix = text.mid(wordStart, pos - wordStart);
         if (prefix.isEmpty()) return;

@@ -2,7 +2,6 @@
 
 #include <QMainWindow>
 #include <QFileSystemWatcher>
-#include <QQueue>
 #include <QRegularExpression>
 #include <QStringList>
 #include <QColor>
@@ -24,7 +23,6 @@ class AboutDialog;
 class ChannelListDialog;
 class DocsDialog;
 class PreferencesDialog;
-class LinkPreview;
 class EmojiPicker;
 class DccController;
 class PreviewController;

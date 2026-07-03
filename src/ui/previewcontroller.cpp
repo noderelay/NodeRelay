@@ -14,6 +14,10 @@ PreviewController::PreviewController(SessionModel *model, QObject *parent)
     m_previewWatchdog = new QTimer(this);
     m_previewWatchdog->setSingleShot(true);
     connect(m_previewWatchdog, &QTimer::timeout, this, [this]{
+        // Release the timed-out fetch's slot so it doesn't consume the
+        // m_previewChannels budget forever and can be retried later.
+        m_previewChannels.remove(m_inFlightUrl);
+        m_inFlightUrl.clear();
         m_previewFetchBusy = false;
         processQueue();
     });
@@ -38,14 +42,17 @@ void PreviewController::processQueue()
 {
     if (m_previewFetchBusy || m_previewQueue.isEmpty()) return;
     m_previewFetchBusy = true;
+    const QUrl url = m_previewQueue.dequeue();
+    m_inFlightUrl = url.toString();
     m_previewWatchdog->start(20000);
-    m_linkPreview->fetch(m_previewQueue.dequeue());
+    m_linkPreview->fetch(url);
 }
 
 void PreviewController::onCardReady(const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail)
 {
     const QString urlStr = pageUrl.toString();
     m_previewWatchdog->stop();
+    m_inFlightUrl.clear();
     m_previewFetchBusy = false;
 
     auto it = m_previewChannels.find(urlStr);
@@ -79,5 +86,5 @@ void PreviewController::onCardReady(const QUrl &pageUrl, const QString &title, c
     }
     ch->addPreview(urlStr, card);
 
-    emit cardStored(host, channel, msgid, urlStr);
+    emit cardStored(host, channel, msgid, urlStr, thumb);
 }

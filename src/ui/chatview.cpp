@@ -156,8 +156,6 @@ void ChatView::clear()
 {
     m_lines.clear();
     m_cumH.clear();
-    m_paintFirst = -1;
-    m_paintLast  = -1;
     m_atBottom = true;
     m_userScrolledAway = false;
     verticalScrollBar()->setRange(0, 0);
@@ -264,16 +262,13 @@ void ChatView::paintEvent(QPaintEvent *)
         drawLine(p, m_lines[i], screenY, selFrom, selTo, findFrom, findTo);
     }
 
-    // Evict cached layouts for lines that left the painted window so memory
-    // stays bounded to roughly one screenful of layouts.
+    // Evict cached layouts for lines outside the painted window so memory
+    // stays bounded to roughly one screenful of layouts. A full sweep (just
+    // null-pointer checks) is immune to index drift from append/prepend.
     const int last = i;
-    if (m_paintFirst >= 0) {
-        for (int k = m_paintFirst; k < m_paintLast && k < m_lines.size(); ++k)
-            if (k < first || k >= last)
-                m_lines[k].cachedLayout.reset();
-    }
-    m_paintFirst = first;
-    m_paintLast  = last;
+    for (int k = 0; k < m_lines.size(); ++k)
+        if ((k < first || k >= last) && m_lines[k].cachedLayout)
+            m_lines[k].cachedLayout.reset();
 }
 
 void ChatView::resizeEvent(QResizeEvent *e)
@@ -286,13 +281,16 @@ void ChatView::resizeEvent(QResizeEvent *e)
 
     // Width changed: relayout only the visible window now, defer the rest
     // to idle chunks so drag-resizing stays smooth on a full backlog.
+    // Accumulate NEW heights until a viewport is covered — the old cumH is
+    // stale, and on widen the relaid lines shrink so more of them fit.
     const int scrollY = verticalScrollBar()->value();
     const int vpH     = viewport()->height();
     int i = lineAt(scrollY);
     if (i < 0) i = 0;
-    for (; i < m_lines.size(); ++i) {
-        if (m_cumH.value(i, 0) - scrollY >= vpH) break;
+    int covered = 0;
+    for (; i < m_lines.size() && covered < vpH; ++i) {
         relayoutForWidth(m_lines[i]);
+        covered += m_lines[i].cachedH;
     }
     rebuildCumH();
     updateScrollRange();
@@ -448,6 +446,7 @@ void ChatView::invalidateHeights()
         l.cachedNaturalW = 0;
         l.visLines.clear();
         l.cachedLayout.reset();
+        l.cachedLayoutWidth = 0;
     }
 }
 
@@ -715,7 +714,6 @@ void ChatView::relayoutForWidth(ChatLine &line) const
 {
     const int wrap = wrapWidth();
     if (line.cachedH > 0 && line.layoutWidth == wrap) return;
-    line.cachedLayout.reset();
 
     if (line.cachedH > 0) {
         if (line.role == ChatLineRole::PreviewCard || line.text.isEmpty()) {
@@ -724,11 +722,19 @@ void ChatView::relayoutForWidth(ChatLine &line) const
         }
         if (line.visLines.size() == 1 && line.cachedNaturalW > 0
             && line.cachedNaturalW <= wrap) {
+            // Left-aligned single-line text draws identically at any wrap
+            // width it fits in, so the cached layout stays valid; centered
+            // status lines shift with the width and must rebuild.
+            if (line.cachedLayout && line.role != ChatLineRole::StatusLine)
+                line.cachedLayoutWidth = wrap;
+            else
+                line.cachedLayout.reset();
             line.layoutWidth = wrap;
             return;
         }
     }
 
+    line.cachedLayout.reset();
     line.cachedH = 0;
     line.visLines.clear();
     layoutLine(line);
@@ -761,8 +767,12 @@ void ChatView::scheduleDeferredRelayout()
             if (processed > 0) {
                 rebuildCumH();
                 updateScrollRange();
-                if (!m_atBottom && anchorIdx >= 0 && anchorIdx < m_cumH.size())
-                    verticalScrollBar()->setValue(m_cumH[anchorIdx] + anchorOff);
+                if (!m_atBottom && anchorIdx >= 0 && anchorIdx < m_cumH.size()) {
+                    // Clamp the intra-line offset: the anchor line may have
+                    // shrunk, and a stale offset would overshoot past it.
+                    const int off = qMin(anchorOff, qMax(0, m_lines[anchorIdx].cachedH - 1));
+                    verticalScrollBar()->setValue(m_cumH[anchorIdx] + off);
+                }
                 viewport()->update();
             }
             if (more) m_relayoutTimer->start();
@@ -807,7 +817,7 @@ QList<QTextLayout::FormatRange> ChatView::buildFormatRanges(const ChatLine &line
 QTextLayout *ChatView::ensureLayout(const ChatLine &line) const
 {
     const int wrap = wrapWidth();
-    if (line.cachedLayout && line.layoutWidth == wrap)
+    if (line.cachedLayout && line.cachedLayoutWidth == wrap)
         return line.cachedLayout.get();
 
     auto layout = std::make_shared<QTextLayout>();
@@ -836,8 +846,8 @@ QTextLayout *ChatView::ensureLayout(const ChatLine &line) const
     }
     layout->endLayout();
 
-    line.cachedLayout = std::move(layout);
-    line.layoutWidth  = wrap;
+    line.cachedLayout      = std::move(layout);
+    line.cachedLayoutWidth = wrap;
     return line.cachedLayout.get();
 }
 

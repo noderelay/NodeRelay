@@ -1600,14 +1600,12 @@ void MainWindow::setupChatArea()
     });
 
     connect(m_previews, &PreviewController::cardStored, this,
-            [this](ServerId host, BufferId channel, const QString &msgid, const QString &urlStr){
+            [this](ServerId host, BufferId channel, const QString &msgid,
+                   const QString &urlStr, const QPixmap &thumb){
         auto *ch = m_model->channel(host, channel);
         if (!ch) return;
         const auto p = ch->previews.constFind(urlStr);
         if (p == ch->previews.constEnd()) return;
-
-        QPixmap thumb;
-        if (!p->pngData.isEmpty()) thumb.loadFromData(p->pngData, "PNG");
 
         auto makeCardLine = [&]() -> ChatLine {
             ChatLine line;

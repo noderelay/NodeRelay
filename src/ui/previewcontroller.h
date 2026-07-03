@@ -2,6 +2,7 @@
 
 #include <QHash>
 #include <QObject>
+#include <QPixmap>
 #include <QQueue>
 #include <QString>
 #include <QUrl>
@@ -26,7 +27,8 @@ public:
     void enqueue(const QUrl &url, ServerId host, BufferId channel, const QString &msgid);
 
 signals:
-    void cardStored(ServerId host, BufferId channel, const QString &msgid, const QString &url);
+    void cardStored(ServerId host, BufferId channel, const QString &msgid,
+                    const QString &url, const QPixmap &thumb);
 
 private:
     void processQueue();
@@ -38,6 +40,7 @@ private:
     LinkPreview  *m_linkPreview;
     QHash<QString, PreviewCtx> m_previewChannels; // url → {host, channel, msgid}
     QQueue<QUrl>  m_previewQueue;
+    QString       m_inFlightUrl;   // url currently being fetched, for watchdog cleanup
     bool          m_previewFetchBusy{false};
     QTimer       *m_previewWatchdog{nullptr};
 };

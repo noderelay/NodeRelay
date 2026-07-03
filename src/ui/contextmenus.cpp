@@ -13,7 +13,6 @@
 #include <QClipboard>
 #include <QDateTime>
 #include <QDesktopServices>
-#include <QFileDialog>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -21,8 +20,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPlainTextEdit>
-#include <QPointer>
-#include <QProgressDialog>
 #include <QTimer>
 #include <QTreeWidget>
 

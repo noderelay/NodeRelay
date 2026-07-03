@@ -39,5 +39,8 @@ struct ChatLine {
 
     // Built QTextLayout, reused across repaints; held only for lines near the
     // viewport (paintEvent evicts on scroll-away) so memory stays bounded.
+    // cachedLayoutWidth tracks the wrap width the layout was built at — kept
+    // separate from layoutWidth, which is the height-cache staleness marker.
     mutable std::shared_ptr<QTextLayout> cachedLayout;
+    mutable int cachedLayoutWidth{0};
 };
