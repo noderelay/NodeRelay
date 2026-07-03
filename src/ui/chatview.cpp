@@ -12,6 +12,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QTextLayout>
+#include <QTimer>
 #include <QTextLine>
 #include <algorithm>
 #include <cmath>
@@ -155,6 +156,8 @@ void ChatView::clear()
 {
     m_lines.clear();
     m_cumH.clear();
+    m_paintFirst = -1;
+    m_paintLast  = -1;
     m_atBottom = true;
     m_userScrolledAway = false;
     verticalScrollBar()->setRange(0, 0);
@@ -244,6 +247,7 @@ void ChatView::paintEvent(QPaintEvent *)
 
     int i = lineAt(scrollY);
     if (i < 0) i = 0;
+    const int first = i;
 
     for (; i < m_lines.size(); ++i) {
         const int screenY = m_cumH[i] - scrollY;
@@ -259,6 +263,17 @@ void ChatView::paintEvent(QPaintEvent *)
         if (i == m_findLine) { findFrom = m_findFrom; findTo = m_findTo; }
         drawLine(p, m_lines[i], screenY, selFrom, selTo, findFrom, findTo);
     }
+
+    // Evict cached layouts for lines that left the painted window so memory
+    // stays bounded to roughly one screenful of layouts.
+    const int last = i;
+    if (m_paintFirst >= 0) {
+        for (int k = m_paintFirst; k < m_paintLast && k < m_lines.size(); ++k)
+            if (k < first || k >= last)
+                m_lines[k].cachedLayout.reset();
+    }
+    m_paintFirst = first;
+    m_paintLast  = last;
 }
 
 void ChatView::resizeEvent(QResizeEvent *e)
@@ -268,10 +283,20 @@ void ChatView::resizeEvent(QResizeEvent *e)
         updateScrollRange();
         return;
     }
-    invalidateHeights();
-    for (auto &l : m_lines) layoutLine(l);
+
+    // Width changed: relayout only the visible window now, defer the rest
+    // to idle chunks so drag-resizing stays smooth on a full backlog.
+    const int scrollY = verticalScrollBar()->value();
+    const int vpH     = viewport()->height();
+    int i = lineAt(scrollY);
+    if (i < 0) i = 0;
+    for (; i < m_lines.size(); ++i) {
+        if (m_cumH.value(i, 0) - scrollY >= vpH) break;
+        relayoutForWidth(m_lines[i]);
+    }
     rebuildCumH();
     updateScrollRange();
+    scheduleDeferredRelayout();
 }
 
 void ChatView::wheelEvent(QWheelEvent *e)
@@ -419,7 +444,10 @@ void ChatView::invalidateHeights()
     for (auto &l : m_lines) {
         l.cachedH    = 0;
         l.cachedHangPx = 0;
+        l.layoutWidth = 0;
+        l.cachedNaturalW = 0;
         l.visLines.clear();
+        l.cachedLayout.reset();
     }
 }
 
@@ -464,37 +492,16 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
 
     const qreal relY = docY - m_cumH[idx] - kVPad;
 
+    QTextLayout *layout = ensureLayout(line);
+
     // Find which visual sub-line was clicked
-    int visIdx = static_cast<int>(line.visLines.size()) - 1;
-    for (int v = 0; v < static_cast<int>(line.visLines.size()); ++v) {
-        const auto &vl = line.visLines[v];
-        if (relY < vl.y + vl.h) { visIdx = v; break; }
+    int visIdx = layout->lineCount() - 1;
+    for (int v = 0; v < layout->lineCount(); ++v) {
+        const QTextLine vl = layout->lineAt(v);
+        if (relY < vl.y() + vl.height()) { visIdx = v; break; }
     }
 
-    // Recreate the QTextLayout to do proper char hit-testing
-    QTextLayout layout;
-    layout.setFont(m_font);
-    layout.setText(line.text);
-    layout.setFormats(buildFormatRanges(line));
-    QTextOption opt;
-    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-    layout.setTextOption(opt);
-
-    const int wrap  = wrapWidth();
-    const int hangW = lineHangW(line);
-    layout.beginLayout();
-    bool first = true;
-    for (int v = 0; v < line.visLines.size(); ++v) {
-        QTextLine tl = layout.createLine();
-        if (!tl.isValid()) break;
-        const int indent = (!first && line.hangIndent) ? hangW : 0;
-        tl.setLineWidth(qMax(1, wrap - indent));
-        tl.setPosition(QPointF(kHPad + indent, line.visLines[v].y));
-        first = false;
-    }
-    layout.endLayout();
-
-    const QTextLine tl = layout.lineAt(visIdx);
+    const QTextLine tl = layout->lineAt(visIdx);
     if (!tl.isValid()) return {};
 
     const int charPos = tl.xToCursor(static_cast<qreal>(vpPos.x()), QTextLine::CursorBetweenCharacters);
@@ -520,33 +527,16 @@ ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
         return {idx, 0};
 
     const qreal relY = docY - m_cumH[idx] - kVPad;
-    int visIdx = static_cast<int>(line.visLines.size()) - 1;
-    for (int v = 0; v < static_cast<int>(line.visLines.size()); ++v) {
-        if (relY < line.visLines[v].y + line.visLines[v].h) { visIdx = v; break; }
+
+    QTextLayout *layout = ensureLayout(line);
+
+    int visIdx = layout->lineCount() - 1;
+    for (int v = 0; v < layout->lineCount(); ++v) {
+        const QTextLine vl = layout->lineAt(v);
+        if (relY < vl.y() + vl.height()) { visIdx = v; break; }
     }
 
-    QTextLayout layout;
-    layout.setFont(m_font);
-    layout.setText(line.text);
-    QTextOption opt;
-    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-    layout.setTextOption(opt);
-
-    const int wrap  = wrapWidth();
-    const int hangW = lineHangW(line);
-    layout.beginLayout();
-    bool first = true;
-    for (int v = 0; v < static_cast<int>(line.visLines.size()); ++v) {
-        QTextLine tl = layout.createLine();
-        if (!tl.isValid()) break;
-        const int indent = (!first && line.hangIndent) ? hangW : 0;
-        tl.setLineWidth(qMax(1, wrap - indent));
-        tl.setPosition(QPointF(kHPad + indent, line.visLines[v].y));
-        first = false;
-    }
-    layout.endLayout();
-
-    const QTextLine tl = layout.lineAt(visIdx);
+    const QTextLine tl = layout->lineAt(visIdx);
     if (!tl.isValid()) return {idx, 0};
 
     const int charPos = tl.xToCursor(static_cast<qreal>(vpPos.x()), QTextLine::CursorBetweenCharacters);
@@ -637,12 +627,14 @@ void ChatView::layoutLine(ChatLine &line) const
         line.cachedH = kVPad + textH + imgH + kVPad;
         line.visLines = { {0, static_cast<int>(line.text.size()), static_cast<qreal>(cardX),
                             0, static_cast<qreal>(wrapWidth() - cardX + kHPad), static_cast<qreal>(line.cachedH)} };
+        line.layoutWidth = wrapWidth();
         return;
     }
 
     if (line.text.isEmpty()) {
         line.cachedH = fh + kVPad * 2;
         line.visLines = { {0, 0, static_cast<qreal>(kHPad), static_cast<qreal>(kVPad), static_cast<qreal>(wrapWidth()), static_cast<qreal>(fh)} };
+        line.layoutWidth = wrapWidth();
         return;
     }
 
@@ -685,12 +677,14 @@ void ChatView::layoutLine(ChatLine &line) const
     layout.beginLayout();
     qreal y    = kVPad;
     bool  first = true;
+    qreal naturalW = 0;
     while (true) {
         QTextLine tl = layout.createLine();
         if (!tl.isValid()) break;
         const int indent = (!first && line.hangIndent) ? hangW : 0;
         tl.setLineWidth(qMax(1, wrap - indent));
         tl.setPosition(QPointF(kHPad + indent, y));
+        if (first) naturalW = tl.naturalTextWidth();
 
         ChatLine::VisLine vl;
         vl.charStart = tl.textStart();
@@ -707,6 +701,74 @@ void ChatView::layoutLine(ChatLine &line) const
     layout.endLayout();
 
     line.cachedH = qMax(1, static_cast<int>(std::ceil(y))) + kVPad;
+    line.layoutWidth    = wrap;
+    // Natural width only meaningful for the single-visual-line case; it lets
+    // relayoutForWidth() skip lines that still fit after a width change.
+    line.cachedNaturalW = (line.visLines.size() == 1) ? naturalW : 0;
+}
+
+// Relayout a line for the current wrap width, skipping the QTextLayout pass
+// when the height cannot have changed: preview cards and empty lines have
+// width-independent heights, and single-visual-line messages that still fit
+// the new width keep their height.
+void ChatView::relayoutForWidth(ChatLine &line) const
+{
+    const int wrap = wrapWidth();
+    if (line.cachedH > 0 && line.layoutWidth == wrap) return;
+    line.cachedLayout.reset();
+
+    if (line.cachedH > 0) {
+        if (line.role == ChatLineRole::PreviewCard || line.text.isEmpty()) {
+            line.layoutWidth = wrap;
+            return;
+        }
+        if (line.visLines.size() == 1 && line.cachedNaturalW > 0
+            && line.cachedNaturalW <= wrap) {
+            line.layoutWidth = wrap;
+            return;
+        }
+    }
+
+    line.cachedH = 0;
+    line.visLines.clear();
+    layoutLine(line);
+}
+
+// Process remaining stale lines in chunks on a zero-interval timer, keeping
+// the top visible line anchored while cumulative heights are rebuilt.
+void ChatView::scheduleDeferredRelayout()
+{
+    if (!m_relayoutTimer) {
+        m_relayoutTimer = new QTimer(this);
+        m_relayoutTimer->setSingleShot(true);
+        m_relayoutTimer->setInterval(0);
+        connect(m_relayoutTimer, &QTimer::timeout, this, [this]{
+            const int wrap = wrapWidth();
+            constexpr int kChunk = 256;
+
+            const int scrollY   = verticalScrollBar()->value();
+            const int anchorIdx = lineAt(scrollY);
+            const int anchorOff = (anchorIdx >= 0 && anchorIdx < m_cumH.size())
+                                ? scrollY - m_cumH[anchorIdx] : 0;
+
+            int  processed = 0;
+            bool more      = false;
+            for (auto &l : m_lines) {
+                if (l.cachedH > 0 && l.layoutWidth == wrap) continue;
+                relayoutForWidth(l);
+                if (++processed >= kChunk) { more = true; break; }
+            }
+            if (processed > 0) {
+                rebuildCumH();
+                updateScrollRange();
+                if (!m_atBottom && anchorIdx >= 0 && anchorIdx < m_cumH.size())
+                    verticalScrollBar()->setValue(m_cumH[anchorIdx] + anchorOff);
+                viewport()->update();
+            }
+            if (more) m_relayoutTimer->start();
+        });
+    }
+    m_relayoutTimer->start();
 }
 
 QList<QTextLayout::FormatRange> ChatView::buildFormatRanges(const ChatLine &line) const
@@ -738,6 +800,47 @@ QList<QTextLayout::FormatRange> ChatView::buildFormatRanges(const ChatLine &line
     return result;
 }
 
+// Build (or reuse) the QTextLayout for a line at the current wrap width.
+// The layout is cached on the line so repaints during scrolling and selection
+// drags don't re-run text itemization and line breaking; paintEvent evicts
+// caches for lines that scroll out of view.
+QTextLayout *ChatView::ensureLayout(const ChatLine &line) const
+{
+    const int wrap = wrapWidth();
+    if (line.cachedLayout && line.layoutWidth == wrap)
+        return line.cachedLayout.get();
+
+    auto layout = std::make_shared<QTextLayout>();
+    layout->setFont(m_font);
+    layout->setText(line.text);
+    layout->setFormats(buildFormatRanges(line));
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    if (line.role == ChatLineRole::StatusLine)
+        opt.setAlignment(Qt::AlignCenter);
+    layout->setTextOption(opt);
+
+    const int hangW = lineHangW(line);
+
+    layout->beginLayout();
+    qreal y    = kVPad;
+    bool  first = true;
+    while (true) {
+        QTextLine tl = layout->createLine();
+        if (!tl.isValid()) break;
+        const int indent = (!first && line.hangIndent) ? hangW : 0;
+        tl.setLineWidth(qMax(1, wrap - indent));
+        tl.setPosition(QPointF(kHPad + indent, y));
+        y    += tl.height();
+        first = false;
+    }
+    layout->endLayout();
+
+    line.cachedLayout = std::move(layout);
+    line.layoutWidth  = wrap;
+    return line.cachedLayout.get();
+}
+
 void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
                          int selFrom, int selTo, int findFrom, int findTo) const
 {
@@ -748,32 +851,7 @@ void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
 
     if (line.text.isEmpty()) return;
 
-    QTextLayout layout;
-    layout.setFont(m_font);
-    layout.setText(line.text);
-    layout.setFormats(buildFormatRanges(line));
-    QTextOption opt;
-    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-    if (line.role == ChatLineRole::StatusLine)
-        opt.setAlignment(Qt::AlignCenter);
-    layout.setTextOption(opt);
-
-    const int wrap  = wrapWidth();
-    const int hangW = lineHangW(line);
-
-    layout.beginLayout();
-    qreal y    = kVPad;
-    bool  first = true;
-    while (true) {
-        QTextLine tl = layout.createLine();
-        if (!tl.isValid()) break;
-        const int indent = (!first && line.hangIndent) ? hangW : 0;
-        tl.setLineWidth(qMax(1, wrap - indent));
-        tl.setPosition(QPointF(kHPad + indent, y));
-        y    += tl.height();
-        first = false;
-    }
-    layout.endLayout();
+    QTextLayout *layout = ensureLayout(line);
 
     QList<QTextLayout::FormatRange> selections;
     if (selFrom >= 0 && selTo > selFrom) {
@@ -794,7 +872,7 @@ void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
     }
 
     p.setPen(viewport()->palette().color(QPalette::Text));
-    layout.draw(&p, QPointF(0, screenY), selections);
+    layout->draw(&p, QPointF(0, screenY), selections);
 }
 
 void ChatView::drawPreviewCard(QPainter &p, const ChatLine &line, int screenY) const

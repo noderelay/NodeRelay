@@ -3,6 +3,9 @@
 #include <QPixmap>
 #include <QString>
 #include <QTextCharFormat>
+#include <memory>
+
+class QTextLayout;
 
 enum class ChatLineRole { Message, EventGroup, PreviewCard, Reaction, StatusLine };
 
@@ -25,10 +28,16 @@ struct ChatLine {
     // Layout cache — invalidated on resize/font change
     mutable int     cachedH{0};
     mutable int     cachedHangPx{0}; // pixel width of prefix, computed from hangIndentChars
+    mutable int     layoutWidth{0};  // wrap width cachedH/visLines were computed for
+    mutable qreal   cachedNaturalW{0}; // natural text width when single visual line (0 = multi/unknown)
     struct VisLine {
         int    charStart;
         int    charEnd;
         qreal  x, y, w, h;
     };
     mutable QList<VisLine> visLines;
+
+    // Built QTextLayout, reused across repaints; held only for lines near the
+    // viewport (paintEvent evicts on scroll-away) so memory stays bounded.
+    mutable std::shared_ptr<QTextLayout> cachedLayout;
 };

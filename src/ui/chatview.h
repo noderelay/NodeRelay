@@ -6,6 +6,8 @@
 #include <QTextLayout>
 #include <QVector>
 
+class QTimer;
+
 class ChatView : public QAbstractScrollArea {
     Q_OBJECT
 public:
@@ -78,6 +80,9 @@ private:
     int              m_findLine{-1};
     int              m_findFrom{-1};
     int              m_findTo{-1};
+    int              m_paintFirst{-1};   // last painted line window, for layout eviction
+    int              m_paintLast{-1};
+    QTimer          *m_relayoutTimer{nullptr}; // deferred off-screen relayout after width change
 
     static constexpr int kMaxLines   = 2000;
     static constexpr int kVPad       = 2;
@@ -89,6 +94,9 @@ private:
     int      lineHangW(const ChatLine &line) const;
     int      totalHeight() const;
     void     layoutLine(ChatLine &line) const;
+    void     relayoutForWidth(ChatLine &line) const;
+    QTextLayout *ensureLayout(const ChatLine &line) const;
+    void     scheduleDeferredRelayout();
     void     invalidateHeights();
     void     rebuildCumH();
     void     updateScrollRange();
