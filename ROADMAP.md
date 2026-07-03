@@ -413,18 +413,20 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 ### Bigger / architectural
 
 **MainWindow refactor** — extract controllers from `mainwindow.cpp` (~5 000 lines) one at a time, no visual changes. Each extraction moves a self-contained block of logic into its own class:
-- [ ] `DccController` — all DCC send/receive UI, lifecycle, progress dialogs, passive pending map
-- [ ] `PreviewController` — link preview queue, cache insertion, hide/show preview actions, watchdog timer
-- [ ] `UpdateChecker` — extract auto-update logic from MainWindow into a dedicated class (feature done inline; extraction pending)
-- [ ] `InputController` — autocomplete, input history, emoji replacement, typing state, send button
+- [x] `DccController` — all DCC send/receive UI, lifecycle, progress dialogs, passive pending map (dcccontroller.cpp, 2026-07-02)
+- [x] `PreviewController` — link preview queue, watchdog timer, card storage; MainWindow keeps view insertion via cardStored signal (previewcontroller.cpp, 2026-07-02)
+- [x] `UpdateChecker` — auto-update check/download/install extracted to updatechecker.cpp (2026-07-02)
+- [x] `InputController` — input bar setup, submit, tab completion, history, emoji autocomplete, send button split to inputbar.cpp (file split, key routing stays in eventFilter) (2026-07-02)
 - [x] `NickContextMenuBuilder` — nick right-click actions extracted to contextmenus.cpp (2026-06-23)
-- [ ] `ChatRenderController` — message→ChatLine conversion, reaction/redaction updates, event condensation
+- [x] `ChatRenderController` — message append, reaction/redaction updates, event condensation, view refresh + scrollback pagination split to chatupdates.cpp (2026-07-02)
+
+mainwindow.cpp reduced 4 669 → 3 184 lines across the 2026-07-02 extractions.
 
 **ChatView performance** — reduce cost of relayout and rendering on large backlogs (5 000-line cap):
 - [x] Skip full relayout on height-only resize (width unchanged) (2026-06-18)
-- [ ] Deferred layout — only layout visible lines + a buffer zone; layout remaining lines lazily on scroll
-- [ ] Incremental relayout on width change — reuse cached heights for lines whose wrap width didn't change (e.g. preview cards with fixed width)
-- [ ] Profile `drawLine` paint path — ensure no per-line allocations in the hot paint loop
+- [x] Deferred layout — on width change only the visible window is relaid synchronously; remaining lines processed in idle-timer chunks with the top visible line anchored (2026-07-02)
+- [x] Incremental relayout on width change — preview cards, empty lines, and single-line messages that still fit skip the QTextLayout pass; per-line naturalTextWidth cached (2026-07-02)
+- [x] Profile `drawLine` paint path — QTextLayout now cached per line and reused across repaints (was rebuilt per visible line per paint); evicted when lines leave the painted window so memory stays bounded; anchorAt/hitTest reuse the same cached layout (2026-07-02)
 
 - [x] Keychain operations async — remove nested `QEventLoop` in `KeychainHelper`; load non-secret config first, then resolve secrets before connecting; avoids reentrancy hazard
 - [x] Targeted chat block updates — `BlockMsgid` userData tags each QTextBlock; onReactionsChanged and onMessageRedacted do targeted insert/replace/remove instead of full rebuild (v0.23.3)
