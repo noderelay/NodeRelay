@@ -92,7 +92,22 @@ struct Channel {
     void prependMessages(const QList<Message> &msgs)
     {
         if (msgs.isEmpty()) return;
-        messages = msgs + messages;
+        // Prepended history sits at the front; trimming drops the newest tail.
+        // Copy only the messages that survive the cap instead of concatenating
+        // the whole buffer and discarding the overflow afterwards.
+        const qsizetype keepOld = qMax<qsizetype>(0, kMessageBufferCap - msgs.size());
+        for (qsizetype i = keepOld; i < messages.size(); ++i) {
+            const QString &oldId = messages[i].msgid;
+            if (!oldId.isEmpty())
+                reactions.remove(oldId);
+        }
+        QList<Message> combined;
+        combined.reserve(qMin<qsizetype>(kMessageBufferCap, msgs.size() + messages.size()));
+        combined.append(msgs);
+        for (qsizetype i = 0; i < keepOld && i < messages.size(); ++i)
+            combined.append(messages[i]);
+        messages = std::move(combined);
+        // If the backfill batch alone exceeds the cap, trim its tail.
         while (messages.size() > kMessageBufferCap) {
             const QString oldId = messages.back().msgid;
             messages.removeLast();
