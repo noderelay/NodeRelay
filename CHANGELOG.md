@@ -31,6 +31,28 @@ No regressions. No known issues.
 Next: wait on AppImage PR; consider v1.0 milestone renumber on next release.
 -->
 
+<!--
+Session 2026-07-03:
+- ChatView perf landed: per-line QTextLayout cache, incremental width relayout, deferred chunked
+  relayout on resize. Fixes for relayout staleness, preview-queue leak, Tab-at-column-0 guard.
+- MainWindow decomposition: UpdateChecker, DccController, PreviewController extracted;
+  input bar and chat-view update logic split to inputbar.cpp / chatupdates.cpp.
+- Perf: batched nick-index rebuild on netjoin bursts (addNicks mirrors removeNicks) — O(m*n) → O(m+n log n);
+  prependMessages no longer copies the whole buffer on CHATHISTORY backfill.
+- Unified IRC format-code parser; fuzzer corpus expanded (24 new cases).
+No regressions. No known issues. Version bumped 0.25.55 → 0.25.56.
+-->
+
+## v0.25.56 — 2026-07-03
+
+- Smoother chat scrolling: per-line layout caching plus incremental and deferred relayout keep busy channels responsive
+- Fix: chat view could keep a stale layout after resize in some cases; corrected
+- Fix: link-preview queue no longer leaks its entry budget over a long session
+- Fix: pressing Tab at the start of an empty input no longer clobbers text
+- Topic "set by" label now shows just the nick instead of the full user@host mask
+- Faster nick-list updates when a batch of users returns after a netsplit (netjoin), and lighter history backfill
+- Internal: main window split into focused controllers (update checker, DCC, link previews, input bar, chat updates); unified IRC formatting-code parser with an expanded fuzz-test corpus
+
 ## v0.25.55 — 2026-06-27
 
 - AppImage now builds on Ubuntu 22.04 (glibc 2.35) for broader distro compatibility
