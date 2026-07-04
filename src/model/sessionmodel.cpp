@@ -950,18 +950,20 @@ void SessionModel::onNetjoinDetected(const QString &host, const QString &servers
 {
     auto *sess = session(ServerId{host});
     if (!sess) return;
-    QHash<QString, int> counts;
+    // Group returning nicks by channel so each nick list is rebuilt once.
+    QHash<QString, QStringList> perChannel;
     for (int i = 0; i < channels.size(); ++i) {
         const QString &channel = channels[i];
         const QString &nick    = i < nicks.size() ? nicks[i] : QString();
-        auto *ch = sess->get(channel);
-        if (!ch || nick.isEmpty()) continue;
-        ch->addNick(nick);
-        counts[channel]++;
+        if (nick.isEmpty() || !sess->get(channel)) continue;
+        perChannel[channel].append(nick);
     }
-    for (auto it = counts.cbegin(); it != counts.cend(); ++it) {
+    for (auto it = perChannel.cbegin(); it != perChannel.cend(); ++it) {
+        auto *ch = sess->get(it.key());
+        if (!ch) continue;
+        ch->addNicks(it.value());
         emit nickListChanged(ServerId{host}, BufferId{it.key()});
-        const int n = it.value();
+        const int n = static_cast<int>(it.value().size());
         const QString text = QString("Netjoin: %1 user%2 returned (%3)")
             .arg(n).arg(n == 1 ? "" : "s").arg(servers);
         postMessage(host, it.key(), Message::make(MessageType::Join, QString(), text));

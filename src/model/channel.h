@@ -141,7 +141,8 @@ struct Channel {
         e.account = (account == "*") ? QString() : account;
     }
 
-    void addNick(const QString &raw)
+    // Parse a raw NAMES-style token (optional prefix chars + nick) into an entry.
+    static NickEntry parseNick(const QString &raw)
     {
         NickEntry e;
         int i = 0;
@@ -152,9 +153,33 @@ struct Channel {
         e.recomputePrefix();
         e.nick = raw.mid(i);
         e.lowerNick = e.nick.toLower();
+        return e;
+    }
+
+    void addNick(const QString &raw)
+    {
+        NickEntry e = parseNick(raw);
         if (nickIndex.contains(e.lowerNick)) return;
         const qsizetype idx = std::lower_bound(nicks.cbegin(), nicks.cend(), e) - nicks.cbegin();
         nicks.insert(idx, e);
+        rebuildNickIndex();
+    }
+
+    // Batched insert for JOIN bursts (netjoin). Appends all new nicks, then
+    // sorts and rebuilds the index once — O(m + n log n) instead of O(m·n).
+    void addNicks(const QStringList &raw)
+    {
+        bool changed = false;
+        for (const QString &r : raw) {
+            NickEntry e = parseNick(r);
+            if (e.nick.isEmpty() || nickIndex.contains(e.lowerNick)) continue;
+            // Guard against duplicates within the batch itself.
+            nickIndex.insert(e.lowerNick, -1);
+            nicks.append(e);
+            changed = true;
+        }
+        if (!changed) return;
+        std::sort(nicks.begin(), nicks.end());
         rebuildNickIndex();
     }
 
