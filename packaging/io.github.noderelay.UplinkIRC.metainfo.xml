@@ -17,6 +17,8 @@
     <binary>Uplink</binary>
   </provides>
   <releases>
+    <release version="0.25.56" date="2026-07-03"/>
+    <release version="0.25.55" date="2026-06-27"/>
     <release version="0.25.54" date="2026-06-26"/>
   </releases>
   <content_rating type="oars-1.1"/>

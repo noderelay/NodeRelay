@@ -401,6 +401,8 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] `logMessage`: cache one `QFile*` per active log target in a `QHash`; flush periodically — open/close per message is the dominant bottleneck during history replay (`sessionmodel.cpp:156-180`)
 - [x] `m_ctcpTimestamps`: grows unbounded on long sessions with many unique nicks — cap at ~500 entries or evict on insert (`ircclient.cpp`)
 - [x] `removeNick`: patch `nickIndex` in-place (decrement indices > removed position) instead of full `rebuildNickIndex()` — O(n²) during netsplit QUIT storms (`channel.h`)
+- [x] Batch nick-index rebuild on netjoin bursts — `addNicks()` mirrors `removeNicks()`; `onNetjoinDetected` groups nicks per channel and rebuilds once, O(m·n) → O(m + n log n) (`channel.h`, v0.25.56)
+- [x] `prependMessages`: copy only the messages that survive the cap into a pre-reserved list instead of concatenating the whole buffer on CHATHISTORY backfill (`channel.h`, v0.25.56)
 
 ### Medium term
 - [x] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
