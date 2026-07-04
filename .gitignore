@@ -28,3 +28,6 @@ qrc_*.cpp
 ui_*.h
 *.user
 .qtc_clangd/
+
+# Qt installer (aqtinstall) log
+aqtinstall.log
