@@ -639,8 +639,13 @@ void IrcClient::reconnect()
 void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
 {
     emit socketError(m_serverName, sockErrorString());
-    // disconnected() and scheduleReconnect() are handled by onDisconnected()
-    // which Qt emits after every socket error that closes the connection.
+    // Qt emits disconnected() (→ onDisconnected → scheduleReconnect) only when a
+    // socket that reached ConnectedState loses it. A failed *connection attempt*
+    // (server down: ConnectionRefused/timeout) never emits disconnected(), so we
+    // must reschedule here or the retry loop dies after the first attempt.
+    // scheduleReconnect() is idempotent, so this is safe if both fire.
+    if (sockState() == QAbstractSocket::UnconnectedState)
+        scheduleReconnect();
 }
 
 void IrcClient::scheduleReconnect()
