@@ -137,6 +137,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 - [x] Hanging indent — wrapped message lines align past the timestamp+nick column; per-message pixel-accurate alignment via QTextLayout prefix measurement (2026-06-13 rewrite; original used QTextBlockFormat)
 - [x] Message search — Ctrl+F opens search bar; Enter/Shift+Enter next/prev with wrap; Escape closes
+- [x] Full-history log search — Ctrl+Shift+F scans the current buffer's on-disk log on a worker thread (newest 1000 matches, cancellable), substring or regex, newest-first; notice when logging is off (2026-07-06)
 - [x] Hamburger Close Menu button — explicit dismiss action at bottom of ☰ menu
 - [x] Logging — per-channel log files at `~/.config/uplink/logs/<server>/<channel>.log`; `log_messages` config key; Preferences toggle (v0.15.0)
 - [x] Ignore list — client-side suppress of incoming PRIVMSGs/NOTICEs/ACTIONs from specific nicks; right-click → Ignore/Unignore; /ignore /unignore /ignored commands; persists as [ignore] nicks in config.toml (v0.14.0)
