@@ -155,14 +155,26 @@ static QString sysinfoGPU()
     vk.start("vulkaninfo", {"--summary"});
     if (vk.waitForFinished(3000) && vk.exitCode() == 0) {
         const QString out = QString::fromLocal8Bit(vk.readAllStandardOutput());
-        QString deviceName, driverInfo;
+        // vulkaninfo lists every device; prefer a hardware GPU over a
+        // software renderer (llvmpipe/lavapipe) but fall back to the first.
+        QString deviceName, driverInfo, firstName, firstInfo, curName;
         for (const QString &line : out.split('\n')) {
             const QString t = line.trimmed();
-            if (t.startsWith("deviceName") && deviceName.isEmpty())
-                deviceName = t.section('=', 1).trimmed();
-            else if (t.startsWith("driverInfo") && driverInfo.isEmpty())
-                driverInfo = t.section('=', 1).trimmed();
+            if (t.startsWith("deviceName")) {
+                curName = t.section('=', 1).trimmed();
+            } else if (t.startsWith("driverInfo") && !curName.isEmpty()) {
+                const QString info = t.section('=', 1).trimmed();
+                if (firstName.isEmpty()) { firstName = curName; firstInfo = info; }
+                const bool software =
+                    curName.contains("llvmpipe", Qt::CaseInsensitive) ||
+                    curName.contains("lavapipe", Qt::CaseInsensitive) ||
+                    curName.contains("softpipe", Qt::CaseInsensitive) ||
+                    curName.contains("swrast",   Qt::CaseInsensitive);
+                if (!software && deviceName.isEmpty()) { deviceName = curName; driverInfo = info; }
+                curName.clear();
+            }
         }
+        if (deviceName.isEmpty()) { deviceName = firstName; driverInfo = firstInfo; }
         if (!deviceName.isEmpty()) {
             const qsizetype lp = driverInfo.lastIndexOf('(');
             const qsizetype rp = driverInfo.lastIndexOf(')');
