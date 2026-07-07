@@ -1023,6 +1023,8 @@ Press **Ctrl+F** to open the search bar below the chat area. Start typing to jum
 
 The search is case-insensitive and works on the full visible buffer for the current channel. It does not search across channels or across sessions — switch to the channel you want to search, then press Ctrl+F.
 
+To search *beyond* the loaded buffer — the channel's entire logged history — press **Ctrl+Shift+F**. This opens a separate window that scans the channel's on-disk log file and lists matches newest-first, with an optional **Regex** mode. It only covers history that was actually logged, so it requires message logging to be enabled in Preferences.
+
 ### How do I reply to a specific message?
 
 Right-click any message in the chat area and choose **Reply** from the context menu. A reply bar appears above the input box showing **↩ nick: preview** of the original message. Type your reply and press **Enter** to send it. Press **Escape** or click **✕** to cancel.

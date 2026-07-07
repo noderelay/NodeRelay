@@ -9,6 +9,7 @@
 #include "ui/aboutdialog.h"
 #include "ui/channellistdialog.h"
 #include "ui/docsdialog.h"
+#include "ui/logsearchdialog.h"
 #include "ui/fontdialog.h"
 #include "ui/preferencesdialog.h"
 #include "ui/serverdialog.h"
@@ -453,6 +454,9 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     auto *ctrlF = new QShortcut(QKeySequence::Find, this);
     connect(ctrlF, &QShortcut::activated, this, &MainWindow::showSearchBar);
+
+    auto *ctrlShiftF = new QShortcut(QKeySequence("Ctrl+Shift+F"), this);
+    connect(ctrlShiftF, &QShortcut::activated, this, &MainWindow::openLogSearch);
 
     m_quickSwitcher = new QuickSwitcher(model, this);
     connect(m_quickSwitcher, &QuickSwitcher::channelSelected, this, [this](ServerId host, BufferId channel){
@@ -3078,6 +3082,20 @@ void MainWindow::showSearchBar()
     m_searchBar->show();
     m_searchInput->setFocus();
     m_searchInput->selectAll();
+}
+
+void MainWindow::openLogSearch()
+{
+    const ServerId host   = m_model->activeHost();
+    const BufferId target = m_model->activeChannel();
+    if (host.str().isEmpty() || target.str().isEmpty())
+        return;
+
+    auto *dlg = new LogSearchDialog(target.str(),
+                                    m_model->logFilePath(host, target),
+                                    m_model->messageLoggingEnabled(), this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->show();
 }
 
 void MainWindow::clearReplyBar()

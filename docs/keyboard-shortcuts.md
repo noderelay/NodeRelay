@@ -12,6 +12,7 @@ All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cm
 | **Alt+Up / Down** | Previous / next channel |
 | **Alt+Left / Right** | Previous / next pane |
 | **Ctrl+F** | Search current buffer |
+| **Ctrl+Shift+F** | Search full logged history |
 | **Ctrl+W** | Minimize to tray |
 | **Ctrl+B / I / U / S** | Bold / italic / underline / strikethrough |
 | **Ctrl+O** | Clear all formatting |
@@ -111,6 +112,10 @@ Any `:shortcode:` patterns still in the text when you send are substituted autom
 | **Escape** | Close search and clear highlights |
 
 Search is case-insensitive and covers the full buffer for the current channel. It does not search across channels.
+
+### Full history (Ctrl+Shift+F)
+
+**Ctrl+Shift+F** opens a separate window that searches the current channel's entire **on-disk log**, not just the messages currently loaded in the buffer. Type to search (case-insensitive substring, or tick **Regex** for a regular expression); matches are listed newest-first. This requires message logging to be enabled in Preferences — without it, only the visible buffer exists to search.
 
 ---
 

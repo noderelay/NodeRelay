@@ -273,6 +273,16 @@ void SessionModel::logMessage(const QString &host, const QString &target, const 
     f->write(line.toUtf8());
 }
 
+QString SessionModel::logFilePath(ServerId host, BufferId target) const
+{
+    if (host.str().isEmpty() || target.str().isEmpty())
+        return {};
+    return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+           + "/.config/uplink/logs/"
+           + sanitizeFilename(host.str()) + "/"
+           + sanitizeFilename(target.str()) + ".log";
+}
+
 void SessionModel::addServer(const ServerConfig &sc)
 {
     if (sc.disabled) {

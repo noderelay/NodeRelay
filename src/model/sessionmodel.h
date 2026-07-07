@@ -37,6 +37,12 @@ public:
     ServerId activeHost()    const { return m_activeHost; }
     BufferId activeChannel() const { return m_activeChannel; }
 
+    // Log-file location for a buffer. The path is computed even when logging
+    // is currently off, so previously written logs stay searchable. Empty if
+    // either id is blank.
+    QString logFilePath(ServerId host, BufferId target) const;
+    bool    messageLoggingEnabled() const { return m_config.ui.logMessages; }
+
     // Send on behalf of a session
     void sendMessage(ServerId host, BufferId target, const QString &text,
                      const QString &replyToMsgid = {});

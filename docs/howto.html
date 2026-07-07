@@ -2435,6 +2435,10 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <div class="tip">
       <strong>Case-insensitive by default.</strong> The search uses Qt's built-in text search, so it is case-insensitive and matches partial words. Type a nick name, a phrase, or any keyword — it finds all occurrences in the current buffer.
     </div>
+
+    <h3>Full history search (Ctrl+Shift+F)</h3>
+    <p><kbd>Ctrl+F</kbd> only covers the messages currently loaded in the buffer. To search the current channel's <em>entire logged history</em>, press <kbd>Ctrl+Shift+F</kbd>. This opens a separate window that scans the channel's on-disk log file and lists matching lines newest-first. Tick <strong>Regex</strong> to match with a regular expression instead of a plain substring.</p>
+    <p>Because it reads the log on disk, full history search only covers messages that were actually logged — enable <strong>message logging</strong> in Preferences to record history. Without it, there is nothing on disk to search beyond the visible buffer.</p>
   </section>
 
   <!-- REPLY -->

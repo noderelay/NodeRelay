@@ -135,6 +135,7 @@ private:
     QString    msgidAtViewPos(const QPoint &viewPos) const;
     void       doSearch(bool backward);
     void       showSearchBar();
+    void       openLogSearch();
     void       clearReplyBar();
 
     // Channel / pane navigation (Alt+arrows)

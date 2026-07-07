@@ -43,6 +43,20 @@ Session 2026-07-03:
 No regressions. No known issues. Version bumped 0.25.55 → 0.25.56.
 -->
 
+<!--
+Session 2026-07-06:
+- /sysinfo Linux CPU/MEM: /proc/cpuinfo and /proc/meminfo report size 0, so the QTextStream
+  !atEnd() loops never ran — CPU fell back to the bare arch, MEM to Unknown. Now read line-by-line
+  until readLine() returns null. os-release (real file) and uptime (direct readLine) were unaffected.
+- /sysinfo GPU: prefer a hardware device over a software renderer (llvmpipe/lavapipe/softpipe/swrast),
+  falling back to the first device when only software is present.
+- Full-history search (Ctrl+Shift+F): new LogSearchDialog scans the current buffer's on-disk log on a
+  worker thread (bounded to the newest 1000 matches, cancellable), substring or regex, newest-first.
+  Shows a note when logging is off. Added SessionModel::logFilePath / messageLoggingEnabled. Existing
+  Ctrl+F in-buffer find untouched. Docs updated (keyboard-shortcuts, faq, howto, index.html).
+No regressions; 5/5 tests pass. No release tagged.
+-->
+
 ## v0.25.56 — 2026-07-03
 
 - Smoother chat scrolling: per-line layout caching plus incremental and deferred relayout keep busy channels responsive
