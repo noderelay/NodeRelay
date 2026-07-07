@@ -1,6 +1,21 @@
 # Changelog
 
 <!--
+Session 2026-07-07:
+- Fix: auto-reconnect stopped retrying after the first failed attempt, so clients never
+  came back on their own once a downed server returned (users had to reconnect manually).
+  Root cause: the reconnect loop relied solely on Qt's disconnected() to re-arm, but Qt
+  only emits that for a socket that reached ConnectedState — a failed connection *attempt*
+  (server still down: ConnectionRefused/timeout) emits only errorOccurred. onErrorOccurred
+  now calls scheduleReconnect() when the socket ends up UnconnectedState; scheduleReconnect()
+  is idempotent (guards on m_intentionalDisconnect + timer active) so genuine drops don't
+  double-schedule. Works for both TCP and WebSocket transports. ircclient.cpp only.
+- Merged as PR #13 (squash, admin-merge past branch protection since self-approval isn't
+  possible on a solo repo). CI green on ubuntu/windows/macos + sanitize.
+- No release tagged. FAQ already documented auto-reconnect as working; this fix makes that true.
+-->
+
+<!--
 Session 2026-07-02:
 - AppImage catalog PR #3778 MERGED by probonopd; UplinkIRC accepted, listing pending next site rebuild (not yet visible on appimage.github.io/apps).
 - MainWindow refactor complete: UpdateChecker, DccController, PreviewController extracted as classes;
