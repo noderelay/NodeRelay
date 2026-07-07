@@ -78,8 +78,8 @@ static QString sysinfoCPU()
     QFile f("/proc/cpuinfo");
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&f);
-        while (!in.atEnd()) {
-            const QString line = in.readLine();
+        QString line;
+        while (!(line = in.readLine()).isNull()) {
             if (line.startsWith("model name")) {
                 const qsizetype colon = line.indexOf(':');
                 if (colon != -1)
@@ -111,8 +111,9 @@ static QString sysinfoMEM()
     QFile f("/proc/meminfo");
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&f);
-        while (!in.atEnd()) {
-            const QStringList parts = in.readLine().split(' ', Qt::SkipEmptyParts);
+        QString line;
+        while (!(line = in.readLine()).isNull()) {
+            const QStringList parts = line.split(' ', Qt::SkipEmptyParts);
             if (parts.size() >= 2 && parts[0] == "MemTotal:") {
                 const quint64 kb = parts[1].toULongLong();
                 return QString("%1 GB").arg((kb + 512 * 1024) / (1024 * 1024));
