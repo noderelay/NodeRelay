@@ -1,6 +1,21 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (d):
+- Post-release fix (user-reported): quality.html still showed v0.25.56 in the page eyebrow
+  and footer. Root cause: release.sh and sync-site.sh only bumped index.html + README —
+  quality.html was never in either file list, so its version lagged every release. Bumped
+  to v2026.7.0 and added docs/quality.html to both scripts (release.sh uses targeted
+  patterns that leave the Qt/GCC test versions "6.11.1"/"16.1.1" alone; sync-site's
+  head -1 grab is safe because the eyebrow version sits above the test output).
+- Fixed disappearing AI nav bot icon: index.html's "AI" nav link had the bot SVG but
+  quality.html's was bare text, so the icon appeared to vanish when navigating between the
+  two pages. Gave quality.html the same icon. (howto.html uses a different doc-sidebar nav
+  with no AI link — no inconsistency there.)
+- Pushed e1caa90; verified live on uplinkirc.chat (0 stale version strings, icon present).
+-->
+
+<!--
 Session 2026-07-08 (c):
 - RELEASED v2026.7.0 — first release under the new CALENDAR VERSIONING scheme
   (year.month.fix): first release of a month is 2026.M.0, urgent same-month fixes bump
