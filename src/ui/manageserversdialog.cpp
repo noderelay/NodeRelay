@@ -63,13 +63,15 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     // ── Left panel: server list + management buttons ─────────────────────────
 
     m_serverList = new QListWidget;
-    m_serverList->setFixedWidth(180);
     m_serverList->setFrameShape(QFrame::NoFrame);
 
     auto *btnAdd    = new PillButton("Add");
     auto *btnRemove = new PillButton("Remove");
     auto *btnUp     = new PillButton("▲");
     auto *btnDown   = new PillButton("▼");
+    // Compact arrows so the four buttons fit inside the fixed-width left column.
+    btnUp->setFixedWidth(34);
+    btnDown->setFixedWidth(34);
 
     connect(btnAdd,    &QPushButton::clicked, this, &ManageServersDialog::addServer);
     connect(btnRemove, &QPushButton::clicked, this, &ManageServersDialog::removeServer);
@@ -78,20 +80,26 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
 
     auto *btnBar = new QHBoxLayout;
     btnBar->setContentsMargins(0, 0, 0, 0);
+    btnBar->setSpacing(4);
     btnBar->addWidget(btnAdd);
     btnBar->addWidget(btnRemove);
     btnBar->addStretch();
     btnBar->addWidget(btnUp);
     btnBar->addWidget(btnDown);
 
-    auto *leftPanel = new QVBoxLayout;
+    // Fixed-width left column: without this the button bar (wider than the list)
+    // stretches the whole column and shoves the form far to the right.
+    auto *leftContainer = new QWidget;
+    leftContainer->setFixedWidth(230);
+    auto *leftPanel = new QVBoxLayout(leftContainer);
     leftPanel->setContentsMargins(0, 0, 0, 0);
     leftPanel->addWidget(m_serverList, 1);
     leftPanel->addLayout(btnBar);
 
     // ── Right panel: server form ─────────────────────────────────────────────
 
-    m_disabled = new QCheckBox("Disabled — keep in config but do not connect on startup");
+    m_disabled = new QCheckBox("Disabled");
+    m_disabled->setToolTip("Keep this server in the config but do not connect on startup");
     m_name     = new QLineEdit;
     m_host     = new QLineEdit;
     m_host->setPlaceholderText("irc.example.org");
@@ -160,6 +168,10 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
 
     auto *form = new QFormLayout;
     form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    form->setLabelAlignment(Qt::AlignLeft);
+    // Hug the left: without this the (width-capped) form centers itself in the
+    // panel, leaving a big empty gap to the left of the labels.
+    form->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     form->addRow(sectionHeader("Connection"));
     form->addRow("",         m_disabled);
@@ -226,7 +238,9 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
 
     m_formPanel = new QWidget;
     auto *formVbox = new QVBoxLayout(m_formPanel);
-    formVbox->setContentsMargins(0, 0, 0, 0);
+    // Small left gap (~4 spaces) between the network-list border and the labels;
+    // right margin keeps the pill fields clear of the vertical scrollbar.
+    formVbox->setContentsMargins(24, 0, 16, 0);
     formVbox->addLayout(form);
     formVbox->addStretch();
 
@@ -253,7 +267,7 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     auto *body = new QHBoxLayout;
     body->setContentsMargins(0, 0, 0, 0);
     body->setSpacing(8);
-    body->addLayout(leftPanel);
+    body->addWidget(leftContainer);
     body->addWidget(sep);
     body->addWidget(scroll, 1);
 

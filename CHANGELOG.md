@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (f):
+- Manage Servers dialog layout fix. The whole form was shoved far to the right of
+  the server list with a big empty band beside the list. Root cause (found by
+  rendering the dialog offscreen and dumping widget geometry, not by eyeballing):
+  the Add/Remove/▲/▼ button bar's preferred width exceeded the 180px list, so
+  nothing constrained the left column and it ballooned to ~360px, pushing the
+  form panel right. Fix: wrap the list + buttons in a fixed-width (230px) left
+  container, give the ▲/▼ arrows a compact fixed width (34px) so all four buttons
+  fit without clipping "Remove", and left-align the form labels with a small
+  left margin. Also shortened the over-long "Disabled — keep in config…" checkbox
+  to "Disabled" + tooltip.
+  Lesson: for GUI layout bugs, render the widget (offscreen QWidget::grab) and
+  read actual geometry instead of guessing at margins.
+- Preferences dialog: added a Close button (QDialogButtonBox) at the bottom.
+  Settings already apply live, so a single Close is all it needs; previously the
+  only way out was the window's X.
+- Still held / not committed: docs/howto.html screenshot scaffolding (pending the
+  PNGs) and docs/shots-checklist.md (untracked working doc). See session (e).
+-->
+
+<!--
 Session 2026-07-08 (e):
 - Added .gitattributes to correct the GitHub Languages bar, which was reporting
   HTML/Python/Shell alongside C++. Marked docs/** + index.html as

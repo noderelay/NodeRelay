@@ -5,6 +5,7 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -104,12 +105,23 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     sep->setFrameShape(QFrame::VLine);
     sep->setFrameShadow(QFrame::Sunken);
 
-    auto *mainLayout = new QHBoxLayout(this);
+    auto *body = new QHBoxLayout;
+    body->setContentsMargins(0, 0, 0, 0);
+    body->setSpacing(8);
+    body->addWidget(m_navList);
+    body->addWidget(sep);
+    body->addWidget(m_pages, 1);
+
+    // Settings apply live, so a single Close button is all that's needed.
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
+    buttons->button(QDialogButtonBox::Close)->setIcon(MenuIcons::close());
+    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::accept);
+
+    auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(8, 8, 8, 8);
     mainLayout->setSpacing(8);
-    mainLayout->addWidget(m_navList);
-    mainLayout->addWidget(sep);
-    mainLayout->addWidget(m_pages, 1);
+    mainLayout->addLayout(body, 1);
+    mainLayout->addWidget(buttons);
 }
 
 // ── Appearance ───────────────────────────────────────────────────────────────
