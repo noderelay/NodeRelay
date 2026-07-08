@@ -14,6 +14,45 @@ Uplink aims to be **stable, secure, fast, and lightweight**. Every change is wei
 
 All submissions are built and run against the project's test suites, including unit tests (IRC parser, chat formatting) and fuzz testing. PRs that break existing tests or introduce untested behavior will not be merged. If your change touches protocol handling or message rendering, run `ctest --test-dir build` before submitting.
 
+### Running the tests
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release   # configure (tests are on by default)
+cmake --build build                          # compile
+ctest --test-dir build --output-on-failure   # run everything
+```
+
+This runs the unit tests plus a fuzz-corpus replay: every file in `tests/corpus/`
+(real-world IRC messages) and `tests/corpus_chatformat/` (hostile message content —
+mIRC colour codes, emoji sequences, invalid UTF-8) is fed through the parser and
+renderer to make sure none of them crash.
+
+### Fuzzing (optional, requires clang)
+
+The two fuzz harnesses can also run as real libFuzzer targets, which mutate the
+corpus to hunt for new crashes:
+
+```bash
+cmake -B build-fuzz -DCMAKE_CXX_COMPILER=clang++ -DUPLINK_BUILD_FUZZ=ON
+cmake --build build-fuzz
+
+# fuzz the IRC message parser for 60 seconds
+./build-fuzz/tests/fuzz_ircparser -max_total_time=60 tests/corpus
+
+# fuzz the chat renderer for 60 seconds
+./build-fuzz/tests/fuzz_chatformat -max_total_time=60 tests/corpus_chatformat
+```
+
+If a crash is found, libFuzzer writes a `crash-<hash>` file. Re-run the harness
+with that file as the only argument to reproduce it:
+
+```bash
+./build-fuzz/tests/fuzz_chatformat crash-abc123
+```
+
+If your change touches parsing or rendering, a short fuzz run before submitting
+is appreciated but not required — CI replays the corpus on every PR.
+
 ## Code style
 
 - Read the existing code before submitting changes. Match the style exactly.

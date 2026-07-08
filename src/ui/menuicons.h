@@ -78,4 +78,42 @@ inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon scripts        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",        c); }
 inline QIcon deleteIcon     (const QColor &c = {}) { return fromSvg(":/icons/mi-delete.svg",            c); }
 
+// Speech-bubble topic icon, drawn with painter primitives (no SVG asset).
+inline QIcon topicBubble(const QColor &color)
+{
+    const int sz = 14;
+    QPixmap pix(sz, sz);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPen pen(color, 1.3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+    // Speech bubble body
+    p.drawRoundedRect(QRectF(1.0, 1.0, 11.0, 8.5), 2.0, 2.0);
+    // Tail pointing bottom-left
+    QPolygonF tail;
+    tail << QPointF(2.5, 9.5) << QPointF(1.0, 13.0) << QPointF(5.5, 9.5);
+    p.drawPolyline(tail);
+    // Two text lines inside the bubble
+    p.setPen(QPen(color, 1.0, Qt::SolidLine, Qt::RoundCap));
+    p.drawLine(QPointF(3.5, 4.0), QPointF(9.5, 4.0));
+    p.drawLine(QPointF(3.5, 6.5), QPointF(7.5, 6.5));
+    return QIcon(pix);
+}
+
+// Groups glyph as a QPixmap (for QLabel::setPixmap).
+inline QPixmap groups(const QColor &color, int size = 16)
+{
+    QSvgRenderer renderer(QStringLiteral(":/icons/mi-groups.svg"));
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    renderer.render(&p);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(pix.rect(), color);
+    p.end();
+    return pix;
+}
+
 } // namespace MenuIcons

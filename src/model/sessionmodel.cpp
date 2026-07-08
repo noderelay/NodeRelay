@@ -76,18 +76,6 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
         client->connectToServer(*shared);
 }
 
-static QRegularExpression buildHighlightRe(const QString &words)
-{
-    QStringList parts;
-    for (const QString &w : words.split(',', Qt::SkipEmptyParts)) {
-        const QString t = w.trimmed();
-        if (!t.isEmpty())
-            parts << "\\b" + QRegularExpression::escape(t) + "\\b";
-    }
-    if (parts.isEmpty()) return {};
-    return QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
-}
-
 static QString sanitizeFilename(QString s)
 {
     const QString bad = QStringLiteral("/\\:*?\"<>|");

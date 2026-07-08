@@ -8,6 +8,12 @@ compile_commands.json
 build-appimage/
 build-san/
 build-heaptrack/
+build-fuzz/
+
+# libFuzzer artifacts
+crash-*
+oom-*
+timeout-*
 
 # Profiling
 heaptrack.*
