@@ -10,6 +10,16 @@ Do not submit a pull request without opening an issue first. Describe what you w
 
 Uplink aims to be **stable, secure, fast, and lightweight**. Every change is weighed against these goals. Features that add resource overhead, complexity, or attack surface without a clear need will be rejected.
 
+## Versioning
+
+Uplink uses calendar versioning: **`year.month.fix`**.
+
+- The first release of a month is `2026.M.0` — e.g. `2026.7.0` for July 2026.
+- A fix that can't wait for the next month bumps the last digit: `2026.7.1`, `2026.7.2`, …
+- Releases are cut when there is something worth shipping, not on a fixed schedule.
+
+Versions before `2026.7.0` used a `0.25.x` scheme; the changelog covers both eras.
+
 ## Testing
 
 All submissions are built and run against the project's test suites, including unit tests (IRC parser, chat formatting) and fuzz testing. PRs that break existing tests or introduce untested behavior will not be merged. If your change touches protocol handling or message rendering, run `ctest --test-dir build` before submitting.

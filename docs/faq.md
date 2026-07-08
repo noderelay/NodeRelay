@@ -828,6 +828,10 @@ Click **☰** (the hamburger button in the top-left) and choose **Check for Upda
 
 The check requires an internet connection. It sends one small HTTPS request to `api.github.com` and nothing else.
 
+### What do Uplink version numbers mean?
+
+Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme — the update checker handles both.)
+
 ### What do the signal bars mean? (lag / latency indicator)
 
 The four stair-step bars in the top-right of the server/channel list header show your connection latency to the active server. Hover over them to see the exact millisecond value.

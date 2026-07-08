@@ -1,12 +1,12 @@
 PORTNAME=	uplink
-DISTVERSION=	0.23.2
+DISTVERSION=	2026.7.0
 CATEGORIES=	irc net
 
-MAINTAINER=	your@email.com
+MAINTAINER=	joseph.d.harris78@gmail.com
 COMMENT=	Fast, secure IRCv3 IRC client
 WWW=		https://github.com/noderelay/UplinkIRC
 
-LICENSE=	MIT
+LICENSE=	GPLv3
 
 # tomlplusplus: header-only TOML parser — install devel/tomlplusplus so
 # CMake's find_package(tomlplusplus) succeeds without FetchContent.
