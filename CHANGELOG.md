@@ -1,6 +1,25 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (e):
+- Added .gitattributes to correct the GitHub Languages bar, which was reporting
+  HTML/Python/Shell alongside C++. Marked docs/** + index.html as
+  linguist-documentation, scripts/* + packaging/* as linguist-vendored, and
+  src/ui/emojidata.h as linguist-generated so the bar reflects the C++/Qt client.
+  Pushed 2191734 (bar recomputes on GitHub's side after the push).
+- How-to screenshots — scaffolding in place, images pending. Added a framed +
+  captioned figure.shot style (uses existing --surface/--subtle/--muted vars so it
+  adapts to light/dark) and 42 <figure> blocks throughout docs/howto.html, one per
+  visual feature, each pointing at docs/shots/<name>.png with loading="lazy".
+  Split into Tier 1 (essential, 18) and Tier 2 (24). Shots are Nord for
+  consistency, varying theme only on the theming/app-icon sections.
+  NOT committed to main yet — held back so the live site doesn't show broken
+  images until the PNGs exist. Filename manifest + per-shot "shoot this" notes
+  live in docs/shots-checklist.md (kept untracked as a working doc). howto.html
+  and its images get committed together once the screenshots are captured.
+-->
+
+<!--
 Session 2026-07-08 (d):
 - Post-release fix (user-reported): quality.html still showed v0.25.56 in the page eyebrow
   and footer. Root cause: release.sh and sync-site.sh only bumped index.html + README —
