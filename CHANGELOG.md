@@ -139,6 +139,20 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.0 — 2026-07-08
+
+> **New version scheme:** Uplink now uses calendar versioning — `year.month.fix`.
+> The first release of a month is `2026.M.0`; urgent fixes within the same month
+> increment the last digit. This release supersedes the old `0.25.x` numbering.
+
+- Full-history log search: Ctrl+Shift+F searches your entire on-disk log for the current buffer, not just the loaded scrollback
+- Fix: auto-reconnect kept retrying after a failed connection attempt — previously a server that was down when the first retry fired was never retried again, and you had to reconnect manually
+- Fix: highlight words are now actually highlighted — keywords set in Preferences → Notifications → Highlight Words render red bold in chat, as always intended (mention counting was unaffected)
+- Fix: /sysinfo reads CPU and memory info correctly on Linux and prefers the hardware GPU over a software renderer
+- Lower memory use and faster startup: the emoji table (1,906 entries) moved from heap-built structures to read-only static data
+- Hardening: a second fuzz harness now hammers the chat renderer with hostile input (mIRC codes, emoji sequences, RTL overrides, invalid UTF-8) — 149k sanitized executions, no crashes; the CI fuzz-corpus replay was also fixed to actually replay its inputs
+- Internal: main window construction split into a dedicated setup unit; icon builders unified with HiDPI-aware caching
+
 ## v0.25.56 — 2026-07-03
 
 - Smoother chat scrolling: per-line layout caching plus incremental and deferred relayout keep busy channels responsive

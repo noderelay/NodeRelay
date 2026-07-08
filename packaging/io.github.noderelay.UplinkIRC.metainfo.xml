@@ -17,6 +17,7 @@
     <binary>Uplink</binary>
   </provides>
   <releases>
+    <release version="2026.7.0" date="2026-07-08"/>
     <release version="0.25.56" date="2026-07-03"/>
     <release version="0.25.55" date="2026-06-27"/>
     <release version="0.25.54" date="2026-06-26"/>
