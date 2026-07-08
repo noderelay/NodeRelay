@@ -377,7 +377,7 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
             const QString code = beforeColon.mid(openColon + 1);
             static const QRegularExpression wordOnly(R"(^\w+$)");
             if (wordOnly.match(code).hasMatch()) {
-                const QString emoji = emojiByCode().value(code);
+                const QString emoji = emojiForCode(code);
                 if (!emoji.isEmpty()) {
                     QTextCursor tc = m_input->textCursor();
                     tc.setPosition(static_cast<int>(openColon));
@@ -412,8 +412,8 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     const int shown = static_cast<int>(qMin(matches.size(), qsizetype(8)));
     for (int i = 0; i < shown; ++i) {
         const auto &e = matches[i];
-        auto *item = new QListWidgetItem(e.ch + "  " + e.shortcode);
-        item->setData(Qt::UserRole, e.ch);
+        auto *item = new QListWidgetItem(e.ch.toString() + "  " + e.shortcode.toString());
+        item->setData(Qt::UserRole, e.ch.toString());
         m_emojiCompleter->addItem(item);
     }
     m_emojiCompleter->setCurrentRow(0);

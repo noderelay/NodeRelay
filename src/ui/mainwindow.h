@@ -124,6 +124,7 @@ private:
 
     QListWidgetItem *makeNickItem(const NickEntry &e, const Channel *ch, const ServerSession *sess);
     static int       findNickRow (QListWidget *list, const QString &nick);
+    static QString   topicAgeStr (quint64 ts);
 
     QString    formatMessage(const Message &msg) const;
     void       toggleEventGroupInView(ChatView *view, const QString &groupId,

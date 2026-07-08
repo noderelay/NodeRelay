@@ -77,6 +77,7 @@ qt_add_executable(Uplink WIN32
     src/model/message.h
     src/ui/mainwindow.cpp
     src/ui/mainwindow.h
+    src/ui/mainwindow_setup.cpp
     src/ui/contextmenus.cpp
     src/ui/nickpanel.cpp
     src/ui/commanddispatcher.cpp

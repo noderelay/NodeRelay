@@ -94,15 +94,15 @@ def load_gemoji(text):
 def generate_header(entries, gemoji_map):
     lines = []
     lines.append("#pragma once")
-    lines.append("#include <QVector>")
-    lines.append("#include <QHash>")
     lines.append("#include <QString>")
+    lines.append("#include <QStringView>")
+    lines.append("#include <QVector>")
     lines.append("")
-    lines.append("struct EmojiEntry { QString shortcode; QString ch; };")
+    lines.append("struct EmojiEntry { QStringView shortcode; QStringView ch; };")
     lines.append("")
-    lines.append("inline const QVector<EmojiEntry> &emojiTable()")
-    lines.append("{")
-    lines.append("    static const QVector<EmojiEntry> t = {")
+    lines.append("// Emoji data lives in .rodata as string literals — no heap allocation and no")
+    lines.append("// first-use construction cost.")
+    lines.append("inline constexpr EmojiEntry kEmojiTable[] = {")
 
     current_group = ""
     seen_shortcodes = set()
@@ -112,7 +112,7 @@ def generate_header(entries, gemoji_map):
         if group != current_group:
             if current_group:
                 lines.append("")
-            lines.append(f"        // {group}")
+            lines.append(f"    // {group}")
             current_group = group
 
         if emoji_ch in gemoji_map:
@@ -129,31 +129,27 @@ def generate_header(entries, gemoji_map):
 
         seen_shortcodes.add(shortcode)
         pad = max(1, 40 - len(shortcode))
-        lines.append(f'        {{"{shortcode}",{" " * pad}"{emoji_ch}"}},')
+        lines.append(f'    {{u"{shortcode}",{" " * pad}u"{emoji_ch}"}},')
         count += 1
 
-    lines.append("    };")
-    lines.append("    return t;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// Exact shortcode → emoji; empty if unknown.")
+    lines.append("inline QString emojiForCode(QStringView code)")
+    lines.append("{")
+    lines.append("    for (const auto &e : kEmojiTable)")
+    lines.append("        if (e.shortcode == code)")
+    lines.append("            return e.ch.toString();")
+    lines.append("    return {};")
     lines.append("}")
     lines.append("")
-    lines.append("inline QVector<EmojiEntry> emojiMatching(const QString &prefix)")
+    lines.append("inline QVector<EmojiEntry> emojiMatching(QStringView prefix)")
     lines.append("{")
     lines.append("    QVector<EmojiEntry> result;")
-    lines.append("    for (const auto &e : emojiTable())")
+    lines.append("    for (const auto &e : kEmojiTable)")
     lines.append("        if (e.shortcode.startsWith(prefix, Qt::CaseInsensitive))")
     lines.append("            result.append(e);")
     lines.append("    return result;")
-    lines.append("}")
-    lines.append("")
-    lines.append("inline const QHash<QString, QString> &emojiByCode()")
-    lines.append("{")
-    lines.append("    static const QHash<QString, QString> h = [] {")
-    lines.append("        QHash<QString, QString> m;")
-    lines.append("        for (const auto &e : emojiTable())")
-    lines.append("            m.insert(e.shortcode, e.ch);")
-    lines.append("        return m;")
-    lines.append("    }();")
-    lines.append("    return h;")
     lines.append("}")
     lines.append("")
 

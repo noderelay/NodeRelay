@@ -73,13 +73,13 @@ void EmojiPicker::buildButtons()
     QFont f = font();
     f.setPointSize(16);
 
-    for (const auto &entry : emojiTable()) {
+    for (const auto &entry : kEmojiTable) {
         auto *btn = new QToolButton(m_gridWidget);
-        btn->setText(entry.ch);
+        btn->setText(entry.ch.toString());
         btn->setFont(f);
         btn->setFixedSize(kBtnSize, kBtnSize);
         btn->setAutoRaise(true);
-        btn->setToolTip(entry.shortcode);
+        btn->setToolTip(entry.shortcode.toString());
         btn->setFocusPolicy(Qt::NoFocus);
         // Override global QToolButton styling (sidebar nav rules don't apply here)
         btn->setStyleSheet(
@@ -87,12 +87,12 @@ void EmojiPicker::buildButtons()
             "              background: transparent; border: none; }"
             "QToolButton:hover { background: rgba(128,128,128,0.2); }");
 
-        connect(btn, &QToolButton::clicked, this, [this, ch = entry.ch]{
+        connect(btn, &QToolButton::clicked, this, [this, ch = entry.ch.toString()]{
             hide();
             emit emojiSelected(ch);
         });
 
-        m_buttons.append({btn, entry.shortcode});
+        m_buttons.append({btn, entry.shortcode.toString()});
     }
 }
 
