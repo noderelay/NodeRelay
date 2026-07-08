@@ -72,6 +72,9 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
+    /* Hero is a pure opacity crossfade (no motion) — keep it running so the
+       images don't stack. Without this they all revert to opacity:1. */
+    .hero-shot img { animation: heroFade 15s infinite !important; }
   }
 
   body {
