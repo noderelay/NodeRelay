@@ -180,9 +180,11 @@
     font-family: var(--mono); font-size: 0.8rem; font-weight: 500;
     color: var(--gb-fg2);
     display: inline-flex; gap: 0.6rem; align-items: center;
+    flex-wrap: wrap; justify-content: center; row-gap: 0.15rem;
     border: 1px solid var(--gb-bg2); border-radius: 99px;
     padding: 0.3rem 1rem; margin-bottom: 1.75rem;
   }
+  .eyebrow span { white-space: nowrap; }
   .eyebrow b { color: var(--gb-green); font-weight: 600; }
   .eyebrow i { font-style: normal; color: var(--gb-bg4); }
   h1 {
@@ -278,6 +280,10 @@
   .dl-arch {
     font-family: var(--mono); font-size: 0.72rem; color: var(--gb-fg4);
     margin-top: auto; padding-top: 0.6rem;
+  }
+  .dl-card .note {
+    font-size: 0.75rem; color: var(--gb-fg4);
+    margin-top: 0.35rem; line-height: 1.5;
   }
   .dl-note {
     font-family: var(--mono); font-size: 0.82rem;
@@ -390,7 +396,9 @@
     width: 100%; border-collapse: collapse;
     font-family: var(--mono); font-size: 0.85rem;
     margin-bottom: 1.5rem;
+    display: block; overflow-x: auto; /* long code cells scroll on narrow screens */
   }
+  .qs-table code { overflow-wrap: anywhere; } /* long paths wrap instead of clipping */
   .qs-table th {
     text-align: left; color: var(--gb-fg4); font-weight: 600;
     border-bottom: 1px solid var(--gb-bg2);
@@ -494,7 +502,7 @@
 <header>
   <div class="wrap">
     <img class="hero-icon" data-uplink-icon src="assets/uplink-icon-192.png" alt="Uplink app icon" width="92" height="92">
-    <div class="eyebrow"><b>v2026.7.0</b> <i>·</i> Qt6 / C++ <i>·</i> GPLv3 <i>·</i> 37 <a href="https://ircv3.net/" style="color: inherit; text-decoration: underline;">IRCv3</a> caps</div>
+    <div class="eyebrow"><b>v2026.7.0</b> <i>·</i> <span>Qt6 / C++</span> <i>·</i> <span>GPLv3</span> <i>·</i> <span>37 <a href="https://ircv3.net/" style="color: inherit; text-decoration: underline;">IRCv3</a> caps</span></div>
     <h1>IRC, with everything<br>the protocol can do <span class="hl">today</span>.</h1>
     <p class="hero-sub">
       Uplink is a fast, secure, native IRC client with full IRCv3 support —
@@ -530,27 +538,31 @@
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-2026.7.0-x86_64.AppImage">
         <div class="dl-os">Linux</div>
         <div class="dl-pkg">AppImage — run anywhere</div>
+        <div class="note">chmod +x and run. Works on any distro with glibc 2.35+ (Ubuntu 22.04 era or newer).</div>
         <div class="dl-arch">x86_64 · .AppImage ↗</div>
       </a>
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.0-linux-x86_64.tar.gz">
         <div class="dl-os">Linux</div>
         <div class="dl-pkg">Tarball — for packagers</div>
+        <div class="note">Bare binary + themes. Needs system Qt 6 libraries — for packagers and manual installs.</div>
         <div class="dl-arch">x86_64 · .tar.gz ↗</div>
       </a>
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.0-windows-x64.zip">
         <div class="dl-os">Windows</div>
         <div class="dl-pkg">Portable zip — native</div>
+        <div class="note">Windows 10/11. Unzip anywhere and run Uplink.exe — no installer, no registry.</div>
         <div class="dl-arch">x64 · .zip ↗</div>
       </a>
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.0-macos-arm64.dmg">
         <div class="dl-os">macOS</div>
         <div class="dl-pkg">Disk image — Apple Silicon</div>
+        <div class="note">Unsigned — right-click → Open if Gatekeeper blocks it. Intel: runs via Rosetta 2.</div>
         <div class="dl-arch">arm64 · .dmg ↗</div>
-        <div class="dl-note" style="font-size:0.75rem;margin-top:0.35rem;opacity:0.7;">Unsigned — right-click → Open if Gatekeeper blocks it. Intel: runs via Rosetta 2.</div>
       </a>
       <a class="dl-card" href="#build">
         <div class="dl-os">FreeBSD</div>
         <div class="dl-pkg">Build from source</div>
+        <div class="note">Port files ship in packaging/freebsd — or build directly with cmake and qt6 from ports.</div>
         <div class="dl-arch">cmake + qt6 ↓</div>
       </a>
     </div>
@@ -566,7 +578,7 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-orange);">ircv3</span>
       <h2>The modern protocol, fully wired in</h2>
-      <p><a href="https://ircv3.net/" style="color: var(--gb-orange); text-decoration: underline;">IRCv3</a> isn't a checkbox here — it's the point. Uplink negotiates 21 capabilities and turns them into features you can actually see.</p>
+      <p><a href="https://ircv3.net/" style="color: var(--gb-orange); text-decoration: underline;">IRCv3</a> isn't a checkbox here — it's the point. Uplink implements 37 capabilities and extensions and turns them into features you can actually see.</p>
     </div>
     <div class="feat-grid">
       <div class="feat-card b-yellow">
