@@ -61,6 +61,20 @@ public:
     void setIgnore         (const QString &nick, IgnoreTypes flags = kIgnoreAll);
     void clearIgnore       (const QString &nick);
     void setHighlightWords (const QString &words);
+    // Comma-separated words → case-insensitive \b-anchored regex with one
+    // capture group (the renderer highlights group 1). Invalid = no matches.
+    static QRegularExpression buildHighlightRe(const QString &words)
+    {
+        QStringList parts;
+        for (const QString &w : words.split(',', Qt::SkipEmptyParts)) {
+            const QString t = w.trimmed();
+            if (!t.isEmpty())
+                parts << "\\b" + QRegularExpression::escape(t) + "\\b";
+        }
+        if (parts.isEmpty()) return {};
+        // Group 1 wraps the whole alternation — the renderer highlights group 1.
+        return QRegularExpression("(" + parts.join('|') + ")", QRegularExpression::CaseInsensitiveOption);
+    }
     bool isIgnored   (const QString &nick) const;
     bool isIgnoredFor(const QString &nick, IgnoreType type) const;
     IgnoreTypes ignoreFlags(const QString &nick) const;

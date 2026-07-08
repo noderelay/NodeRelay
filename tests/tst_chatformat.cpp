@@ -1,5 +1,6 @@
 #include <QtTest/QtTest>
 #include "ui/chatrenderer.h"
+#include "model/sessionmodel.h"
 
 using namespace ChatRenderer;
 
@@ -23,6 +24,8 @@ private slots:
     void linkifyHttps();
     void linkifyFtpSkipped();
     void linkifyNoUrl();
+    void highlightReCaptureGroup();
+    void highlightWordSegment();
 };
 
 void TstChatFormat::htmlAttrQuote()
@@ -126,6 +129,44 @@ void TstChatFormat::linkifyFtpSkipped()
 void TstChatFormat::linkifyNoUrl()
 {
     QCOMPARE(linkifyHtml(QStringLiteral("no url here")), QStringLiteral("no url here"));
+}
+
+void TstChatFormat::highlightReCaptureGroup()
+{
+    // The renderer highlights capture group 1 — the builder must provide it.
+    const QRegularExpression re = SessionModel::buildHighlightRe(QStringLiteral("uplink, irc"));
+    QVERIFY(re.isValid());
+    QCOMPARE(re.captureCount(), 1);
+    const auto m = re.match(QStringLiteral("try Uplink today"));
+    QVERIFY(m.hasMatch());
+    QCOMPARE(m.captured(1), QStringLiteral("Uplink"));
+    QVERIFY(SessionModel::buildHighlightRe(QStringLiteral("  ,  ")).pattern().isEmpty());
+}
+
+void TstChatFormat::highlightWordSegment()
+{
+    // End to end: a configured highlight word yields a red bold segment
+    // covering exactly that word in the formatted line.
+    Context ctx;
+    ctx.showTimestamps = false;
+    ctx.highlightRe    = SessionModel::buildHighlightRe(QStringLiteral("qt"));
+    const Message msg  = Message::make(MessageType::Privmsg,
+                                       QStringLiteral("alice"),
+                                       QStringLiteral("I like Qt a lot"));
+    const ChatLine line = formatMessageLine(msg, ctx);
+
+    const int wordPos = static_cast<int>(line.text.indexOf(QStringLiteral("Qt")));
+    QVERIFY(wordPos > 0);
+    bool found = false;
+    for (const ChatSegment &seg : line.segments) {
+        if (seg.start == wordPos && seg.length == 2
+            && seg.format.fontWeight() == QFont::Bold
+            && seg.format.foreground().color() == QColor(Qt::red)) {
+            found = true;
+            break;
+        }
+    }
+    QVERIFY(found);
 }
 
 QTEST_GUILESS_MAIN(TstChatFormat)

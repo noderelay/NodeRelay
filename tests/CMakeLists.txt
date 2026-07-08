@@ -35,31 +35,45 @@ uplink_test(tst_ignoretypes
 )
 
 # ---------------------------------------------------------------------------
-# Fuzz target — two build modes:
-#   Standalone replay (default): any compiler, reads files from argv
+# Fuzz targets — two build modes:
+#   Standalone replay (default): any compiler, replays corpus as a smoke test
 #   libFuzzer binary:            requires clang + UPLINK_BUILD_FUZZ=ON
 # ---------------------------------------------------------------------------
-option(UPLINK_BUILD_FUZZ "Build libFuzzer harness (requires clang)" OFF)
+option(UPLINK_BUILD_FUZZ "Build libFuzzer harnesses (requires clang)" OFF)
 
-add_executable(fuzz_ircparser
-    fuzz_ircparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/irc/ircparser.cpp
-)
-target_include_directories(fuzz_ircparser PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(fuzz_ircparser PRIVATE Qt6::Core)
-
-if(UPLINK_BUILD_FUZZ)
-    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        message(FATAL_ERROR "UPLINK_BUILD_FUZZ requires clang++ (CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID})")
-    endif()
-    target_compile_definitions(fuzz_ircparser PRIVATE UPLINK_LIBFUZZER)
-    target_compile_options(fuzz_ircparser PRIVATE -fsanitize=fuzzer,address,undefined)
-    target_link_options(fuzz_ircparser PRIVATE -fsanitize=fuzzer,address,undefined)
-else()
-    # Standalone driver — runs the corpus as a smoke test
-    target_compile_definitions(fuzz_ircparser PRIVATE)
-    add_test(NAME fuzz_ircparser_corpus
-        COMMAND fuzz_ircparser ${CMAKE_SOURCE_DIR}/tests/corpus
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
+if(UPLINK_BUILD_FUZZ AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(FATAL_ERROR "UPLINK_BUILD_FUZZ requires clang++ (CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID})")
 endif()
+
+function(uplink_fuzz TARGET)
+    cmake_parse_arguments("" "" "CORPUS" "SOURCES;LIBS" ${ARGN})
+    add_executable(${TARGET} ${_SOURCES})
+    target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_link_libraries(${TARGET} PRIVATE Qt6::Core ${_LIBS})
+    if(UPLINK_BUILD_FUZZ)
+        target_compile_definitions(${TARGET} PRIVATE UPLINK_LIBFUZZER)
+        target_compile_options(${TARGET} PRIVATE -fsanitize=fuzzer,address,undefined)
+        target_link_options(${TARGET} PRIVATE -fsanitize=fuzzer,address,undefined)
+    else()
+        # Standalone driver — runs the corpus as a smoke test
+        add_test(NAME ${TARGET}_corpus
+            COMMAND ${TARGET} ${CMAKE_SOURCE_DIR}/tests/${_CORPUS}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+    endif()
+endfunction()
+
+uplink_fuzz(fuzz_ircparser
+    SOURCES
+        fuzz_ircparser.cpp
+        ${CMAKE_SOURCE_DIR}/src/irc/ircparser.cpp
+    CORPUS corpus
+)
+
+uplink_fuzz(fuzz_chatformat
+    SOURCES
+        fuzz_chatformat.cpp
+        ${CMAKE_SOURCE_DIR}/src/ui/chatrenderer.cpp
+    LIBS Qt6::Gui
+    CORPUS corpus_chatformat
+)

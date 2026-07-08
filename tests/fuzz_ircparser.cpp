@@ -34,9 +34,25 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 // ---------------------------------------------------------------------------
 #ifndef UPLINK_LIBFUZZER
 
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <cstdio>
+
+static int replayFile(const QString &path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        QTextStream(stderr) << "fuzz_ircparser: cannot open " << path << "\n";
+        return 0;
+    }
+    const QByteArray data = f.readAll();
+    LLVMFuzzerTestOneInput(
+        reinterpret_cast<const uint8_t *>(data.constData()),
+        static_cast<size_t>(data.size()));
+    return 1;
+}
 
 int main(int argc, char *argv[])
 {
@@ -55,18 +71,21 @@ int main(int argc, char *argv[])
 
     int parsed = 0;
     for (int i = 1; i < argc; ++i) {
-        QFile f(argv[i]);
-        if (!f.open(QIODevice::ReadOnly)) {
-            QTextStream(stderr) << "fuzz_ircparser: cannot open " << argv[i] << "\n";
-            continue;
+        const QFileInfo info(QString::fromLocal8Bit(argv[i]));
+        if (info.isDir()) {
+            // Directory argument = corpus dir, matching libFuzzer semantics.
+            const QDir dir(info.filePath());
+            for (const QString &name : dir.entryList(QDir::Files, QDir::Name))
+                parsed += replayFile(dir.filePath(name));
+        } else {
+            parsed += replayFile(info.filePath());
         }
-        const QByteArray data = f.readAll();
-        LLVMFuzzerTestOneInput(
-            reinterpret_cast<const uint8_t *>(data.constData()),
-            static_cast<size_t>(data.size()));
-        ++parsed;
     }
     QTextStream(stdout) << "fuzz_ircparser: replayed " << parsed << " input(s) — no crashes\n";
+    if (parsed == 0) {
+        QTextStream(stderr) << "fuzz_ircparser: no inputs replayed\n";
+        return 1;
+    }
     return 0;
 }
 
