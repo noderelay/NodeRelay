@@ -1,6 +1,34 @@
 # Changelog
 
 <!--
+Session 2026-07-08:
+- Docs site (docs/index.html) only — no app change, no release tagged.
+- Hero crossfade "not fading" was a chain of issues, finally root-caused to the user's
+  KDE reduce-motion setting. The reduced-motion reset '* { animation: none !important }'
+  killed the opacity crossfade, so all three stacked screenshots showed at opacity:1 at
+  once (shorter light theme sitting on a darker one). Firefox (unlike Chromium) will NOT
+  let a more-specific !important rule re-enable an animation the universal reset disabled,
+  so the "keep it running" override worked in Chrome but not Firefox. Fix: don't blanket
+  animation:none under reduce-motion — heroFade is the page's only keyframe animation and
+  is motion-free, so only transitions are killed now. Verified in Firefox headless with
+  ui.prefersReducedMotion=1.
+- Also fixed along the way: switched the hero frame from CSS aspect-ratio (Firefox sizes
+  it too tall with border-box + border) to the padding-top ratio technique, which is
+  computed identically across browsers.
+- Screenshots: nord, gruvbox-light, harmonic16, humanoid-light were captured with the app
+  window on a solid black macOS desktop, so they showed a dark square on the cream page.
+  Replaced with transparent retina captures cropped to the window (1016x666).
+- Hero letterbox: the crossfade mixed two screenshot shapes (1016x824 gruvbox-dark/dracula
+  vs 1016x666 gruvbox-light), so the shorter one letterboxed in the fixed-ratio frame.
+  Rebuilt the hero from three same-shape clean captures (nord, gruvbox-light, harmonic16)
+  and sized the frame to 1016x666 so every layer fills it. gruvbox-dark/dracula remain in
+  the themes gallery. Themes gallery still mixes shapes but shows one-at-a-time (no frame),
+  so no letterbox; making the whole set uniform would mean re-shooting the six originals
+  as transparent captures.
+- Reference note saved: Firefox aspect-ratio + reduce-motion gotchas.
+-->
+
+<!--
 Session 2026-07-07:
 - Fix: auto-reconnect stopped retrying after the first failed attempt, so clients never
   came back on their own once a downed server returned (users had to reconnect manually).
