@@ -227,15 +227,18 @@
   .hero-frame img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: contain; object-position: center; display: block;
-    animation: heroFade 15s infinite;
+    animation: heroFade 21s ease-in-out infinite;
   }
   .hero-frame img:nth-child(1) { animation-delay: 0s; }
-  .hero-frame img:nth-child(2) { animation-delay: -10s; }
-  .hero-frame img:nth-child(3) { animation-delay: -5s; }
+  .hero-frame img:nth-child(2) { animation-delay: -14s; }
+  .hero-frame img:nth-child(3) { animation-delay: -7s; }
+  /* 21s cycle, 3 images: ~5s fully visible each, 2s crossfade.
+     Fade-out (23.8% → 33.33%) of one image lines up with the
+     fade-in (90.5% → 100%) of the next via the -7s delay steps. */
   @keyframes heroFade {
-    0%, 27%    { opacity: 1; }
-    33.33%, 94% { opacity: 0; }
-    100%       { opacity: 1; }
+    0%, 23.8%   { opacity: 1; }
+    33.33%, 90.5% { opacity: 0; }
+    100%        { opacity: 1; }
   }
 
   /* ── SECTIONS ── */
