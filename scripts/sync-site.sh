@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sync docs/index.html and README.md version strings to match CMakeLists.txt.
+# Sync docs/index.html, docs/quality.html, and README.md version strings to match CMakeLists.txt.
 # Run manually at session close, or automatically via release.yml after a tag build.
 set -euo pipefail
 
@@ -32,11 +32,12 @@ sync_file() {
 }
 
 sync_file "docs/index.html"
+sync_file "docs/quality.html"
 sync_file "README.md"
 
 if [ "$changed" -eq 1 ]; then
     echo "sync-site: files updated. Commit with:"
-    echo "  git add docs/index.html README.md && git commit -m \"docs: sync site to v${VERSION}\""
+    echo "  git add docs/index.html docs/quality.html README.md && git commit -m \"docs: sync site to v${VERSION}\""
 else
     echo "sync-site: nothing to update."
 fi

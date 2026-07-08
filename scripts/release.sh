@@ -39,8 +39,16 @@ sed -i -E \
      s|(class=\"version-tag\">)v[0-9]+\.[0-9]+\.[0-9]+(</div>)|\1${TAG}\2|g" \
     docs/index.html
 
+# docs/quality.html — page-eyebrow <b> tag + footer-logo display strings.
+# Targeted patterns only, so historical version references and the Qt test
+# version (e.g. "QtTest 6.11.1") are left untouched.
+sed -i -E \
+    "s|(<b>)v[0-9]+\.[0-9]+\.[0-9]+(</b>)|\1${TAG}\2|g;
+     s|(footer-logo\">Uplink )v[0-9]+\.[0-9]+\.[0-9]+(</div>)|\1${TAG}\2|g" \
+    docs/quality.html
+
 echo "Files updated. Staging..."
-git add CMakeLists.txt README.md docs/index.html
+git add CMakeLists.txt README.md docs/index.html docs/quality.html
 git diff --cached --stat
 
 echo ""
