@@ -1,0 +1,13 @@
+# GitHub Linguist overrides — keep the Languages bar reflecting the actual
+# C++/Qt6 client, not the docs site and helper scripts.
+
+# Docs site / landing page — documentation, not application code
+docs/**            linguist-documentation
+index.html         linguist-documentation
+
+# Build and utility scripts — not part of the shipped client
+scripts/*          linguist-vendored
+packaging/*        linguist-vendored
+
+# Generated source — do not count toward language stats
+src/ui/emojidata.h linguist-generated
