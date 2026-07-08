@@ -74,7 +74,7 @@
     *, *::before, *::after { animation: none !important; transition: none !important; }
     /* Hero is a pure opacity crossfade (no motion) — keep it running so the
        images don't stack. Without this they all revert to opacity:1. */
-    .hero-shot img { animation: heroFade 15s infinite !important; }
+    .hero-frame img { animation: heroFade 15s infinite !important; }
   }
 
   body {
@@ -210,18 +210,23 @@
   .btn-ghost { border: 1px solid var(--gb-bg3); color: var(--gb-fg); }
   .btn-ghost:hover { border-color: var(--gb-fg4); }
 
-  .hero-shot { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; position: relative; }
-  .hero-shot img {
-    width: 100%; height: auto; display: block;
+  .hero-shot { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+  /* Fixed-ratio frame so every screenshot occupies the same box regardless of
+     its own aspect ratio (some themes are shorter) — prevents a shorter image
+     from letting the one behind it peek out. */
+  .hero-frame {
+    position: relative; aspect-ratio: 1016 / 824;
     border-radius: 8px; border: 1px solid var(--gb-bg2);
-    box-shadow: 0 20px 50px rgba(60,56,54,0.22);
+    box-shadow: 0 20px 50px rgba(60,56,54,0.22); overflow: hidden;
+  }
+  .hero-frame img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; object-position: center; display: block;
     animation: heroFade 15s infinite;
   }
-  .hero-shot img:nth-child(2),
-  .hero-shot img:nth-child(3) { position: absolute; top: 0; left: 1.5rem; right: 1.5rem; }
-  .hero-shot img:nth-child(1) { animation-delay: 0s; }
-  .hero-shot img:nth-child(2) { animation-delay: -10s; }
-  .hero-shot img:nth-child(3) { animation-delay: -5s; }
+  .hero-frame img:nth-child(1) { animation-delay: 0s; }
+  .hero-frame img:nth-child(2) { animation-delay: -10s; }
+  .hero-frame img:nth-child(3) { animation-delay: -5s; }
   @keyframes heroFade {
     0%, 27%    { opacity: 1; }
     33.33%, 94% { opacity: 0; }
@@ -500,9 +505,11 @@
     </div>
   </div>
   <div class="hero-shot">
-    <img src="assets/gruvbox-dark.png" alt="Uplink in Gruvbox Dark theme" width="1016" height="824">
-    <img src="assets/dracula.png" alt="Uplink in Dracula theme" width="1016" height="824">
-    <img src="assets/gruvbox-light.png" alt="Uplink in Gruvbox Light theme" width="1016" height="698">
+    <div class="hero-frame">
+      <img src="assets/gruvbox-dark.png" alt="Uplink in Gruvbox Dark theme" width="1016" height="824">
+      <img src="assets/dracula.png" alt="Uplink in Dracula theme" width="1016" height="824">
+      <img src="assets/gruvbox-light.png" alt="Uplink in Gruvbox Light theme" width="1016" height="698">
+    </div>
   </div>
 </header>
 
