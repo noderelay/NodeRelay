@@ -215,7 +215,7 @@
      its own aspect ratio (some themes are shorter) — prevents a shorter image
      from letting the one behind it peek out. */
   .hero-frame {
-    position: relative; aspect-ratio: 1016 / 824;
+    position: relative; padding-top: calc(824 / 1016 * 100%);
     border-radius: 8px; border: 1px solid var(--gb-bg2);
     box-shadow: 0 20px 50px rgba(60,56,54,0.22); overflow: hidden;
   }
