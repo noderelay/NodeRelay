@@ -1,6 +1,41 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (c):
+- RELEASED v2026.7.0 — first release under the new CALENDAR VERSIONING scheme
+  (year.month.fix): first release of a month is 2026.M.0, urgent same-month fixes bump
+  the last digit. Chosen by the user over semver/1.0; supersedes 0.25.x numbering.
+  Update checker verified to parse the jump (numeric compare, 2026 > 0). Always use
+  THREE components (e.g. 2026.7.0, never 2026.7) — the updater regex requires X.Y.Z.
+  Released via scripts/release.sh 2026.7.0 (script needed zero changes); direct push to
+  main works for release commits. Release notes hand-written (auto-generated ones missed
+  the full-history search feature and the scheme explanation). All 5 assets published,
+  releases/latest verified.
+- Versioning documented: CONTRIBUTING (Versioning section), FAQ (what version numbers
+  mean), SECURITY.md (how fixes are versioned), CLAUDE.md (release flow).
+- Docs staleness sweep alongside: SECURITY.md had the old project name "DojoIRC", a wrong
+  maintainer link (@uplink), and claimed passwords sit in plaintext config (stale since
+  keychain migration). FreeBSD port Makefile was pinned to 0.23.2 with LICENSE=MIT on a
+  GPLv3 repo — all fixed. quality.html "77 releases" claim dropped (stale since the June
+  release cleanup).
+- Site polish (uplinkirc.chat, reviewed via headless-chromium screenshots at 1440px and
+  390px): hero eyebrow pill wrapped mid-token on phones (fixed with nowrap spans +
+  flex-wrap); download cards gained per-platform notes so the grid fills evenly next to
+  the tall macOS card; IRCv3 section said 21 caps vs hero's 37 (aligned to the 37
+  documented in ircv3.md — that number = count of ### entries there); quick-start tables
+  now scroll/wrap on mobile (Windows config path was clipped).
+- Hero crossfade slowed: 15s cycle/~1s fade → 21s cycle/2s ease-in-out fade, same ~5s
+  hold per screenshot; delays scale to -7s/-14s so fades stay aligned. Verified by
+  freezing the animation mid-fade (animation-play-state:paused + negative delay) and
+  screenshotting the blend. Reduced-motion exemption unaffected (it never kills
+  animations, only transitions).
+- uplinkirc.chat serves the repo docs (openresty, root redirect → /docs/), syncs from
+  main within ~3 minutes of a push. Verified all changes live.
+- Reminder for next session: uplinkbot needs a restart to pick up the new FAQ/howto/
+  configuration content (highlight words, versioning).
+-->
+
+<!--
 Session 2026-07-08 (b):
 - Fix: highlight words never actually highlighted in the chat view. The regex was built as a
   bare \bword\b alternation with no capture group, but the renderer highlights capture group 1
