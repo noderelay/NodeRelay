@@ -1,6 +1,45 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (b):
+- Fix: highlight words never actually highlighted in the chat view. The regex was built as a
+  bare \bword\b alternation with no capture group, but the renderer highlights capture group 1
+  (addSelfNickHighlight reads capturedStart(1), which returns -1 with no group → zero-length
+  segment → no visual effect). Found while writing the renderer fuzz harness. Fixed by
+  consolidating the three duplicate regex builders (two in mainwindow.cpp, one in
+  sessionmodel.cpp) into SessionModel::buildHighlightRe(), which wraps the alternation in a
+  group. Two regression tests added to tst_chatformat (builder contract + end-to-end red/bold
+  segment). Mention detection (hasMatch) was unaffected — only the visual highlight was broken.
+- New fuzz target: tests/fuzz_chatformat.cpp covers the ChatRenderer formatting path
+  (formatMessageLine/formatMessage/formatEventGroupLine/linkifyTopic/ircToHtml/wrapEmojiHtml)
+  with hostile input — mIRC colour codes, unterminated sequences, emoji/ZWJ runs, RTL overrides,
+  invalid UTF-8, redactions, replies. 11 seeds in tests/corpus_chatformat/. Ran under libFuzzer
+  + ASan/UBSan: 149k executions, no crashes (parser: 540k, no crashes).
+- Fix: the fuzz corpus replay smoke test in CI was replaying 0 inputs — the standalone driver
+  couldn't open a directory argument, so fuzz_ircparser_corpus passed while testing nothing.
+  Both drivers now expand directory args (libFuzzer semantics) and exit 1 on zero inputs.
+  tests/CMakeLists.txt fuzz section refactored into a shared uplink_fuzz() function.
+- RAM/startup: emojidata.h rewritten from ~1900 heap-allocated QString pairs (built on first
+  use, plus a full duplicate QHash copy) to an inline constexpr QStringView table in
+  .data.rel.ro (~61KB read-only, verified with readelf). emojiByCode() hash replaced by
+  emojiForCode() linear scan — only runs on user typing/send. scripts/generate_emojidata.py
+  updated to emit the new format so regeneration doesn't revert it.
+- MainWindow shave: one-time construction/wiring (setupToolbar, connectPreferences,
+  setupSidebar, setupNickPanel, setupChatArea, connectModel) split to mainwindow_setup.cpp
+  following the chatupdates.cpp idiom; NickDelegate/SidebarDelegate/RoundedPane moved to
+  mainwindowdelegates.h; five file-local icon builders folded into MenuIcons (topicBubble,
+  groups added; gear/hamburger/connectedServer wrappers inlined; makeSvgIcon replaced by the
+  cached DPR-aware MenuIcons::fromSvg). mainwindow.cpp 3200 → 1784 lines. Behavior-neutral;
+  icons should render identically (crisper on HiDPI due to fromSvg).
+- Known dead code left in place (not removed without asking): FixedRowDelegate in mainwindow.cpp.
+- Docs: quality.html stats corrected (assertions 90 → 198, fuzz inputs 26 → 61, chatformat
+  tests 15 → 17) and fuzz terminal now shows both harnesses; CONTRIBUTING.md gained a
+  beginner-level "running the tests" + fuzzing walkthrough; CLAUDE.md architecture/invariants
+  updated (mainwindow split, buildHighlightRe capture-group invariant, emojidata is generated).
+- No release tagged.
+-->
+
+<!--
 Session 2026-07-08:
 - Docs site (docs/index.html) only — no app change, no release tagged.
 - Hero crossfade "not fading" was a chain of issues, finally root-caused to the user's

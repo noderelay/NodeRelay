@@ -2933,6 +2933,12 @@ app_icon = "flat-black"</pre>
     <p>Toggle from <strong>⚙ → Tray Notifications</strong> in Preferences, or in config:</p>
     <pre>[ui]
 notifications = true</pre>
+
+    <h3>Highlight words</h3>
+    <p>Besides your nick, you can make any word act like a mention. Go to <strong>⚙ → Notifications → Highlight Words</strong> and enter a comma-separated list, or set it in config:</p>
+    <pre>[ui]
+highlight_words = "myproject, deploy, lunch"</pre>
+    <p>Messages containing one of these words show the word in <strong>red bold</strong> and count as mentions in the sidebar unread badge. Matching is case-insensitive and whole-word only — <code>deploy</code> matches "time to deploy" but not "deployment". Changes apply immediately.</p>
   </section>
 
   <hr />

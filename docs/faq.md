@@ -853,6 +853,24 @@ The server name (e.g. **LINUXDOJO**) in the sidebar highlights purple when there
 
 Click the server name in the sidebar to open the server window and read the messages. The highlight clears as soon as you switch to it.
 
+### How do I get alerted when someone mentions a specific word, not just my nick?
+
+Use **highlight words**. Open **☰ → Preferences → Notifications → Highlight Words** and type a comma-separated list of words:
+
+```
+myproject, deploy, lunch
+```
+
+From then on, any message containing one of those words is treated just like a mention of your nick:
+
+- the word is highlighted **red bold** in the chat
+- the channel gets the yellow mention indicator in the sidebar
+- it counts toward the mention badge if unread counts are enabled
+
+Matching is case-insensitive and whole-word only — `deploy` matches "time to deploy" but not "deployment". Changes apply immediately; no restart needed.
+
+You can also set it in the config file with `highlight_words = "myproject, deploy"` under the `[ui]` block — see the [configuration guide](configuration.md#the-ui-block).
+
 ### What can I do from the nick right-click menu?
 
 Right-click any nick — in the user list or directly on a nick link in the chat view — to open the full action menu:

@@ -438,11 +438,11 @@
       <div class="stat-label">Compiler warnings</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-aqua">90</div>
+      <div class="stat-num c-aqua">198</div>
       <div class="stat-label">Assertions</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-yellow">26</div>
+      <div class="stat-num c-yellow">61</div>
       <div class="stat-label">Fuzz inputs</div>
     </div>
     <div class="stat-cell">
@@ -531,8 +531,10 @@
 <span class="t-pass">PASS</span>   : TstChatFormat::linkifyHttps()
 <span class="t-pass">PASS</span>   : TstChatFormat::linkifyFtpSkipped()
 <span class="t-pass">PASS</span>   : TstChatFormat::linkifyNoUrl()
+<span class="t-pass">PASS</span>   : TstChatFormat::highlightReCaptureGroup()
+<span class="t-pass">PASS</span>   : TstChatFormat::highlightWordSegment()
 
-<span class="t-ok">Totals: 17 passed, 0 failed, 0 skipped, 2ms</span>
+<span class="t-ok">Totals: 19 passed, 0 failed, 0 skipped, 2ms</span>
 <span class="t-head">********* Finished testing of TstChatFormat *********</span></div>
         </div>
       </div>
@@ -544,18 +546,26 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">fuzz_ircparser — corpus replay</span>
+        <span class="terminal-label">fuzz harnesses — corpus replay</span>
       </div>
-      <div class="terminal-body"><span class="t-dim">$ ./build/tests/fuzz_ircparser tests/corpus/*</span>
+      <div class="terminal-body"><span class="t-dim">$ ./build/tests/fuzz_ircparser tests/corpus</span>
 
-<span class="t-dim">Replaying 26 real-world IRC messages against IrcParser::parse() …</span>
+<span class="t-dim">Replaying 50 real-world IRC messages against IrcParser::parse() …</span>
 <span class="t-dim">  001_basic_privmsg  002_numeric_001  003_ping_no_prefix  004_ircv3_tags</span>
 <span class="t-dim">  005_tag_escapes    006_extended_join  007_mode_multiparams  008_tags_no_prefix</span>
 <span class="t-dim">  009_tags_only_no_command  010_empty  011_crlf_only  012_topic  013_quit</span>
 <span class="t-dim">  014_client_tags  015_batch_open  016_batch_close  017_names_server_time</span>
-<span class="t-dim">  018_nick_change  019_kick  020_prefix_only  … +6 more</span>
+<span class="t-dim">  018_nick_change  019_kick  020_prefix_only  … +30 more</span>
 
-<span class="t-ok">fuzz_ircparser: replayed 26 input(s) — no crashes</span>
+<span class="t-ok">fuzz_ircparser: replayed 50 input(s) — no crashes</span>
+
+<span class="t-dim">$ ./build/tests/fuzz_chatformat tests/corpus_chatformat</span>
+
+<span class="t-dim">Replaying hostile message content against the chat renderer —</span>
+<span class="t-dim">mIRC colour codes, unterminated sequences, emoji/ZWJ runs, RTL</span>
+<span class="t-dim">overrides, invalid UTF-8, 300-char words, redactions, replies …</span>
+
+<span class="t-ok">fuzz_chatformat: replayed 11 input(s) — no crashes</span>
 
 <span class="t-dim">libFuzzer mode also available: cmake -DUPLINK_BUILD_FUZZ=ON (requires clang, ASan, libFuzzer)</span></div>
     </div>
@@ -565,7 +575,8 @@
       <code style="color:var(--gb-aqua)">cmake -B build -DUPLINK_BUILD_TESTS=ON</code> build.
       Source: <code style="color:var(--gb-fg2)">tests/tst_ircparser.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/tst_chatformat.cpp</code>,
-      <code style="color:var(--gb-fg2)">tests/fuzz_ircparser.cpp</code>.
+      <code style="color:var(--gb-fg2)">tests/fuzz_ircparser.cpp</code>,
+      <code style="color:var(--gb-fg2)">tests/fuzz_chatformat.cpp</code>.
     </p>
   </div>
 </section>
@@ -910,15 +921,17 @@
         <p>
           13 unit tests cover every edge case of the RFC 1459 / IRCv3 message format:
           tags, prefix types, multi-param, trailing-only, CRLF stripping, server-time decoding,
-          tag unescaping, and malformed input. Confirmed by 26 real-world message inputs in the fuzz corpus.
+          tag unescaping, and malformed input. Confirmed by 50 real-world message inputs in the fuzz corpus.
         </p>
       </div>
       <div class="principle-card">
         <h3 style="color:var(--gb-green)">Safe HTML rendering</h3>
         <p>
-          15 unit tests cover XSS-critical paths: <code>&lt;</code>, <code>&amp;</code>, <code>"</code>,
+          17 unit tests cover XSS-critical paths: <code>&lt;</code>, <code>&amp;</code>, <code>"</code>,
           mIRC bold/italic/underline/colour with proper reset, linkification that only wraps
-          http/https (not ftp), and empty-input edge cases. No raw IRC text reaches the browser engine unescaped.
+          http/https (not ftp), highlight-word rendering, and empty-input edge cases. A dedicated
+          fuzz harness also hammers the renderer with hostile input — mIRC codes, emoji/ZWJ runs,
+          RTL overrides, invalid UTF-8. No raw IRC text reaches the browser engine unescaped.
         </p>
       </div>
       <div class="principle-card">

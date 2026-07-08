@@ -157,6 +157,7 @@
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
 | **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Send File (Passive)**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick**, **Ignore / Unignore** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |
 | **Unread indicators** | A forum icon after the channel name for new activity; a yellow lightbulb icon for nick mentions. Both clear on focus. Your nick is highlighted **red bold** inline in messages that mention you. |
+| **Highlight words** | Extra keywords that act like mentions — highlighted **red bold** in chat and counted in the mention badge. Set from **Preferences → Notifications → Highlight Words** (e.g. `myproject, deploy`). Case-insensitive, whole words only. |
 
 ### 🔌 Connectivity & Servers
 
