@@ -198,6 +198,30 @@ static QString sysinfoGPU()
         }
     }
     return "Unknown";
+#elif defined(Q_OS_FREEBSD)
+    // pciconf is in the FreeBSD base system; find the display-class device block.
+    QProcess p;
+    p.start("pciconf", {"-lv"});
+    if (p.waitForFinished(3000)) {
+        const QString out = QString::fromLocal8Bit(p.readAllStandardOutput());
+        bool inDisplay = false;
+        QString vendor, device;
+        for (const QString &raw : out.split('\n')) {
+            if (!raw.isEmpty() && !raw.at(0).isSpace()) {          // device header line
+                if (inDisplay && !device.isEmpty()) break;
+                inDisplay = raw.contains("class=0x03");            // 0x03xxxx = display
+                vendor.clear();
+                device.clear();
+            } else if (inDisplay) {
+                const QString t = raw.trimmed();
+                if      (t.startsWith("vendor")) vendor = t.section('\'', 1, 1);
+                else if (t.startsWith("device")) device = t.section('\'', 1, 1);
+            }
+        }
+        if (!device.isEmpty())
+            return vendor.isEmpty() ? device : (vendor + " " + device);
+    }
+    return "Unknown";
 #elif defined(Q_OS_DARWIN)
     QProcess p;
     p.start("system_profiler", {"SPDisplaysDataType"});
