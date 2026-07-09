@@ -1,7 +1,7 @@
 # Changelog
 
 <!--
-Session 2026-07-09 (g):
+Session 2026-07-09 (g) — session close:
 - Themes: trimmed near-duplicate/redundant themes. Removed Discord-80-Saturation
   (near-identical to Discord) and all 11 black-metal-*-base16 variants (a cluster
   of near-identical dark themes named after bands). Bundled count 306 → 295
