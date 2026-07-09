@@ -1,6 +1,15 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (c):
+- Fix: /sysinfo showed "GPU: Unknown" on FreeBSD — sysinfoGPU() had no FreeBSD
+  branch and fell through to the Unknown default. Added a branch that parses
+  `pciconf -lv` (FreeBSD base system) for the display-class (0x03xxxx) device and
+  returns "<vendor> <device>". Verified it compiles by temporarily forcing the
+  branch on in a Linux build; runtime output to be confirmed on FreeBSD.
+-->
+
+<!--
 Session 2026-07-09 (b):
 - Fix: user scripts failed on FreeBSD — every bundled script (/weather /roll
   /uptime /music) reported "Script timed out (10s limit)". Cause: the runner
