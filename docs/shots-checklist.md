@@ -27,6 +27,7 @@ Tick each off as you shoot it.
 - [x] **quick-switcher.png** — The Ctrl+K quick-switcher popup open, with a filter typed and channels listed.
 - [x] **theme-picker.png** _(vary theme)_ — The Appearance page with the theme list expanded, a nice theme applied live.
 - [x] **text-formatting.png** — Chat messages showing bold, italic, underline, strikethrough, and a colored line.
+- [ ] **mirc-color.png** — The input box with the color menu open (via Ctrl+Shift+K or right-click → Color), showing the 16 text/background swatches. Bonus: a colored `A` in the format indicator.
 
 ---
 

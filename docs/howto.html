@@ -2453,7 +2453,7 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <p>Uplink both <strong>renders</strong> incoming mIRC formatting codes and lets you <strong>apply</strong> them in your own messages using keyboard shortcuts in the input box.</p>
 
     <h3>Keyboard shortcuts — applying formatting</h3>
-    <p>Formatting is applied <strong>visually as you type</strong> — bold text looks bold, italic looks italic, right in the input box. The IRC control codes are generated automatically when you send the message. A small <strong>B I U S</strong> indicator appears at the bottom-left of the input box showing which formats are currently active.</p>
+    <p>Formatting is applied <strong>visually as you type</strong> — bold text looks bold, italic looks italic, right in the input box. The IRC control codes are generated automatically when you send the message. A small <strong>B I U S</strong> indicator appears at the bottom-left of the input box showing which formats are currently active; a colored <strong>A</strong> joins it when a text or background color is set.</p>
 
     <table>
       <thead><tr><th>Shortcut</th><th>Format</th><th>What others see</th></tr></thead>
@@ -2462,6 +2462,7 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
         <tr><td><kbd>Ctrl+I</kbd></td><td>Italic</td><td><em>italic text</em></td></tr>
         <tr><td><kbd>Ctrl+U</kbd></td><td>Underline</td><td><u>underline text</u></td></tr>
         <tr><td><kbd>Ctrl+S</kbd></td><td>Strikethrough</td><td><s>strikethrough text</s></td></tr>
+        <tr><td><kbd>Ctrl+Shift+K</kbd></td><td>Color</td><td>Opens a color menu — pick a text and (optional) background color. See below.</td></tr>
         <tr><td><kbd>Ctrl+O</kbd></td><td>Reset all</td><td>Clears all active formatting at once. Back to plain text.</td></tr>
       </tbody>
     </table>
@@ -2478,6 +2479,20 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <h3>Example — stacking bold and underline</h3>
     <pre>[Ctrl+B][Ctrl+U]really important[Ctrl+O] — back to normal</pre>
     <p>Use <kbd>Ctrl+O</kbd> to reset all formatting at once instead of toggling each one off individually.</p>
+
+    <h3>Applying color</h3>
+    <p>Color works like the other formats — set it, type, and it is encoded when you send. There are two ways to open the color menu:</p>
+    <ul>
+      <li>Press <kbd>Ctrl+Shift+K</kbd> in the input box.</li>
+      <li><strong>Right-click</strong> the input box and open the <strong>Color</strong> submenu on the standard edit menu.</li>
+    </ul>
+    <p>Pick a <strong>Text color</strong> from the 16 standard mIRC colors and, optionally, a <strong>Background</strong>. The color applies to whatever you type next (or to a selection), and a colored <strong>A</strong> appears next to the <strong>B I U S</strong> indicator while it is active. Choose <strong>Reset color</strong> to return to the default, or press <kbd>Ctrl+O</kbd> to clear color along with every other format.</p>
+
+    <figure class="shot">
+      <img src="shots/mirc-color.png" loading="lazy"
+           alt="The Color menu open on the input box, showing the 16 mIRC text and background colors">
+      <figcaption>Open the color menu with <kbd>Ctrl+Shift+K</kbd> or by right-clicking the input box.</figcaption>
+    </figure>
 
     <h3>Received formatting — what Uplink renders</h3>
     <p>All standard mIRC formatting codes in incoming messages are rendered automatically:</p>

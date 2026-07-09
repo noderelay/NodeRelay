@@ -11,7 +11,12 @@ Session 2026-07-09 (a):
   Ctrl+Shift+K. Palette exposed once via ChatRenderer::mircColor/mircColorIndex
   so input and renderer share the exact 16 hex values (round-trips cleanly). Menu
   built once in makeColorMenu() and reused by both entry points.
-  ROADMAP "Send colored text" ticked; keyboard-shortcuts.md updated.
+  ROADMAP "Send colored text" ticked.
+- Docs sweep for colored text: howto.html (Ctrl+Shift+K row + "Applying color"
+  subsection + shots/mirc-color.png figure), faq.md (formatting Q extended to
+  color + right-click), keyboard-shortcuts.md, README feature row, and a
+  shots-checklist.md entry for mirc-color.png (screenshot still to be captured).
+  Note: uplinkbot RAG needs a restart to pick up the doc changes.
 - Cleanup: removed 3 stale local AppImages (0.25.32/33/43, ~207 MB, untracked).
 -->
 
