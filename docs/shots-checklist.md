@@ -39,7 +39,7 @@ Tick each off as you shoot it.
 - [ ] **typing-indicator.png** — The `alice is typing…` line above the input bar.
 - [ ] **nick-filter.png** — The nick list narrowed by the filter box (type a couple letters so it's clearly filtered).
 - [ ] **account-badge.png** — Hover tooltip on a nick showing its NickServ account name.
-- [ ] **user-metadata.png** — Hover tooltip showing a display name + avatar thumbnail (needs Ergo/soju).
+- [x] **user-metadata.png** — Hover tooltip showing a display name + avatar thumbnail (needs Ergo/soju).
 - [ ] **signal-bars.png** — Close-up of the signal bars in the sidebar header (ideally with the latency tooltip showing).
 - [ ] **system-tray.png** — The tray icon with its right-click menu open (bonus: an unread dot on the icon).
 - [ ] **notification.png** — A desktop notification toast for a mention/PM.
