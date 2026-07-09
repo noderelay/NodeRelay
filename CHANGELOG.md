@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (g):
+- Themes: trimmed near-duplicate/redundant themes. Removed Discord-80-Saturation
+  (near-identical to Discord) and all 11 black-metal-*-base16 variants (a cluster
+  of near-identical dark themes named after bands). Bundled count 306 → 295
+  (55 originals + 240 base16).
+- Docs: updated theme count across README, docs/configuration.md, docs/faq.md,
+  docs/index.html, docs/howto.html, docs/quality.html.
+- Reminder: uplinkbot RAG needs a restart to pick up this session's doc changes.
+-->
+
+<!--
 Session 2026-07-09 (f) — session close:
 - Theme: added themes/Gently.toml, ported from the KDE "Gently" color scheme —
   deep midnight-blue base (#050e15), pale-cyan text (#d7f1f8), blue accents

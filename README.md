@@ -108,7 +108,7 @@
 
 | Feature | Details |
 |---|---|
-| **306 built-in themes** | 55 hand-picked originals (Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and more) plus all 251 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes), named with a `-base16` suffix. Your favorite is almost certainly already in there — browse with arrow keys, apply with Enter. |
+| **295 built-in themes** | 55 hand-picked originals (Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and more) plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes), named with a `-base16` suffix. Your favorite is almost certainly already in there — browse with arrow keys, apply with Enter. |
 | **Reworked Preferences** | Theme as a collapsible list — browse and apply without closing. App icon as radio buttons. Hanging indent toggle and all other UI options. Open with the **⚙ gear icon** in the channel header. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
 | **Hamburger menu** | Click ☰ for About, **Check for Updates** (fetches latest release from GitHub, shows version comparison), **Manage Servers**, Documentation, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
