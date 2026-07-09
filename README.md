@@ -101,7 +101,7 @@
 | **STS (Strict Transport Security)** | When a server advertises STS, Uplink upgrades plain connections to TLS automatically and caches the policy to `~/.config/uplink/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
 | **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. Scrolling to the top fetches older messages via `CHATHISTORY BEFORE` — infinite scrollback until the server runs out. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |
-| **mIRC formatting** | Bold, italic, underline, strikethrough, reverse, 16 IRC colors (fg + bg). |
+| **mIRC formatting** | Renders bold, italic, underline, strikethrough, reverse, and 16 IRC colors (fg + bg). Apply them in your own messages too — `Ctrl+B/I/U/S`, plus color via `Ctrl+Shift+K` or right-click → Color. |
 | **CTCP** | Auto-replies to `VERSION` and `PING`. `/ping <nick>` shows round-trip time in channel. `/time <nick>` shows the user's local time in channel. Manual `/ctcp <target> <cmd>` for anything else. |
 
 ### 🎨 Interface & Themes

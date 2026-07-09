@@ -687,7 +687,7 @@ The nick list panel has a filter box directly above the list (below the header).
 
 The filter only changes what you see — nicks that don't match are temporarily hidden. They are still in the channel, still visible in tab completion, and come back the moment you clear the filter.
 
-### How do I send bold, italic, underlined, or strikethrough text?
+### How do I send bold, italic, underlined, strikethrough, or colored text?
 
 Press the formatting shortcut in the message input box before typing the text you want formatted:
 
@@ -697,11 +697,14 @@ Press the formatting shortcut in the message input box before typing the text yo
 | **Ctrl+I** | Italic |
 | **Ctrl+U** | Underline |
 | **Ctrl+S** | Strikethrough |
+| **Ctrl+Shift+K** | Color (text + background) |
 | **Ctrl+O** | Reset all formatting |
 
-Formatting is applied **visually as you type** — bold text looks bold in the input box, italic looks italic. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active. The IRC control codes are generated automatically at send time.
+Formatting is applied **visually as you type** — bold text looks bold in the input box, italic looks italic. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active; a colored `A` joins it when a color is set. The IRC control codes are generated automatically at send time.
 
 Shortcuts **stack**: press Ctrl+B then Ctrl+U to type bold+underlined text. Press a shortcut again to turn that one format off while keeping the others active. Press Ctrl+O to clear everything at once.
+
+**Color** works a little differently — it opens a menu instead of toggling. Press **Ctrl+Shift+K**, or **right-click the input box** and open the **Color** submenu, then pick a text color from the 16 standard mIRC colors and, optionally, a background. Choose **Reset color** to go back to the default.
 
 **Example — bold part of a message:**
 ```
