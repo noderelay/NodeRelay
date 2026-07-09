@@ -1,0 +1,42 @@
+# Uplink Theme — Gently (from the KDE "Gently" color scheme)
+
+[general]
+background   = "#050e15"
+text         = "#d7f1f8"
+border       = "#10222e"
+accent       = "#058bce"
+
+[sidebar]
+background   = "#02080d"
+text         = "#6f8790"
+active       = "#d7f1f8"
+unread       = "#75aae0"
+mention      = "#d86868"
+server       = "#4a6470"
+
+[buffer]
+background   = "#050e15"
+timestamp    = "#5c7783"
+server_line  = "#4a6470"
+action       = "#75aae0"
+nick_self    = "#8fc9e6"
+separator    = "#10222e"
+
+[highlights]
+mention_bg   = "#0a2233"
+mention_text = "#e88a8a"
+keyword      = "#5fb3d4"
+
+[nicklist]
+background   = "#02080d"
+text         = "#6f8790"
+op           = "#058bce"
+halfop       = "#5fb3d4"
+voice        = "#7fc0b8"
+away         = "#33454e"
+
+[input]
+background   = "#0c1a26"
+text         = "#d7f1f8"
+placeholder  = "#5c7783"
+nick_color   = "#8fc9e6"
