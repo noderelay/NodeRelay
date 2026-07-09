@@ -1,6 +1,21 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (a):
+- Feature: send colored text. A 16-color mIRC picker (Text color + optional
+  Background) for the input box, reachable two ways: Ctrl+Shift+K, or right-click
+  the input box → Color submenu (added to the standard edit menu). Colors are
+  held as QTextCharFormat brushes — same visual-format approach as Ctrl+B/I/U/S —
+  and encoded to `\x03fg[,bg]` in inputToIrcText() at send time; format indicator
+  shows a colored `A`. Ctrl+K stayed the quick switcher, so the shortcut is
+  Ctrl+Shift+K. Palette exposed once via ChatRenderer::mircColor/mircColorIndex
+  so input and renderer share the exact 16 hex values (round-trips cleanly). Menu
+  built once in makeColorMenu() and reused by both entry points.
+  ROADMAP "Send colored text" ticked; keyboard-shortcuts.md updated.
+- Cleanup: removed 3 stale local AppImages (0.25.32/33/43, ~207 MB, untracked).
+-->
+
+<!--
 Session 2026-07-08 (h):
 - How-to screenshots: added docs/shots/user-metadata.png (the nick-hover tooltip
   showing a display name + avatar). Already wired into howto.html #user-metadata;

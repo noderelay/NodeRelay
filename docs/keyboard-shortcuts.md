@@ -15,6 +15,7 @@ All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cm
 | **Ctrl+Shift+F** | Search full logged history |
 | **Ctrl+W** | Minimize to tray |
 | **Ctrl+B / I / U / S** | Bold / italic / underline / strikethrough |
+| **Ctrl+Shift+K** | Pick text / background color |
 | **Ctrl+O** | Clear all formatting |
 | **Ctrl+Plus / Minus** | Zoom font in / out |
 | **Tab** | Complete nick or command |
@@ -77,9 +78,12 @@ Apply mIRC formatting as you type. The input box shows formatted text live — b
 | **Ctrl+I** | Toggle italic |
 | **Ctrl+U** | Toggle underline |
 | **Ctrl+S** | Toggle strikethrough |
+| **Ctrl+Shift+K** | Pick text / background color |
 | **Ctrl+O** | Reset all formatting |
 
 Formats stack — press Ctrl+B then Ctrl+U to type bold underlined text. Press the same shortcut again to turn off just that format. Use Ctrl+O to clear everything at once.
+
+**Ctrl+Shift+K** — or **right-clicking the input box** and opening the **Color** submenu — shows the 16 mIRC colors, where you pick a **Text color** and, optionally, a **Background**. The chosen colors apply to what you type next (or to a selection), just like bold, and appear as a colored `A` in the format indicator. Choose **Reset color** to go back to the default.
 
 ```
 This is [Ctrl+B]important[Ctrl+B] now

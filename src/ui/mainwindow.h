@@ -40,6 +40,7 @@ class QTreeWidgetItem;
 class QLineEdit;
 class QPlainTextEdit;
 class QLabel;
+class QMenu;
 class QPushButton;
 class QListWidget;
 class QListWidgetItem;
@@ -150,6 +151,9 @@ private:
     void handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel);
     void repositionSendBtn();
     void updateFormatIndicator();
+    void showColorPicker();
+    QMenu *makeColorMenu(QWidget *parent);   // reused by Ctrl+Shift+K and right-click
+    void applyInputColor(int fg, int bg);    // -1 clears, -2 leaves unchanged
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
     int         m_tabWordStart{0};

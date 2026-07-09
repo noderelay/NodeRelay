@@ -39,6 +39,10 @@ QString formatEventGroup (const QList<Message> &msgs, const Context &ctx,
 QString linkifyTopic     (const QString &text);
 QColor  nickColor     (const QString &nick);
 
+// mIRC 16-color palette (shared by the renderer and the input color picker)
+QColor  mircColor      (int index);           // index 0-15, else invalid QColor
+int     mircColorIndex (const QColor &color);  // exact palette match, else -1
+
 // Lower-level helpers — exposed for unit tests
 QString htmlAttr      (const QString &s);
 QString ircToHtml     (const QString &raw);

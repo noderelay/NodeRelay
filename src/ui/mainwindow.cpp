@@ -703,6 +703,13 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
+    // Ctrl+Shift+K: mIRC color picker (Ctrl+K is the quick channel switcher).
+    if (ke->key() == Qt::Key_K
+        && (ke->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        showColorPicker();
+        return true;
+    }
+
     // mIRC formatting: toggle visual QTextCharFormat only — no control chars in the widget.
     // IRC codes are generated from the document formatting at send time (inputToIrcText).
     if (ke->modifiers() == Qt::ControlModifier) {
