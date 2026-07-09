@@ -226,6 +226,24 @@
     }
     tr:last-child td { border-bottom: none; }
 
+    /* ── SCREENSHOTS ───────────────────────────────── */
+    figure.shot { margin: 1.5rem 0; }
+    figure.shot img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--subtle);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.28);
+      background: var(--surface);
+    }
+    figure.shot figcaption {
+      margin-top: 0.55rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
     /* ── STEP BADGES ───────────────────────────────── */
     .step {
       display: inline-flex;
@@ -568,6 +586,12 @@
     <p>Uplink is a fast, secure IRC chat client built with Qt6 and C++17. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 306 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
     <p>It runs on Linux, macOS, Windows, and FreeBSD.</p>
 
+    <figure class="shot">
+      <img src="shots/about-dialog.png" loading="lazy"
+           alt="The About Uplink dialog showing the version and build information">
+      <figcaption>Help → About Uplink shows the version, Qt build, and license.</figcaption>
+    </figure>
+
     <div class="note">
       <strong>New to IRC?</strong> IRC is a real-time chat protocol that has been running since 1988. You connect to a <em>server</em>, join <em>channels</em> (chat rooms that start with <code>#</code>), and chat with other people. Uplink handles all the protocol details — you just type.
     </div>
@@ -712,6 +736,12 @@ cmake --build build</pre>
 
     <p>The app then connects to <strong>irc.linuxdojo.org</strong> and joins <strong>#uplink</strong> automatically. You'll see the server list on the left, the chat area in the middle, and the user list on the right.</p>
 
+    <figure class="shot">
+      <img src="shots/first-launch.png" loading="lazy"
+           alt="Uplink immediately after first launch, connected to #uplink">
+      <figcaption>Uplink on first launch — connected to #uplink with the sidebar, chat area, and nick list.</figcaption>
+    </figure>
+
     <p>To open the hamburger menu (the <code>☰</code> button in the channel header), click it to reach Preferences, Documentation, and other settings.</p>
 
     <div class="tip">
@@ -840,11 +870,23 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <h2>Manage Servers dialog</h2>
     <p>Click <strong>☰ → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. The dialog uses an integrated two-panel layout: server list on the left, server settings form on the right. Selecting a server loads its settings inline. Changes take effect immediately.</p>
 
+    <figure class="shot">
+      <img src="shots/manage-servers.png" loading="lazy"
+           alt="The Manage Servers dialog with the server list and settings form">
+      <figcaption>Manage Servers — the server list on the left, settings for the selected server on the right.</figcaption>
+    </figure>
+
     <h3>Adding a server</h3>
     <div class="step-row"><span class="step">1</span><div>Click <strong>☰ → Manage Servers...</strong></div></div>
     <div class="step-row"><span class="step">2</span><div>Click <strong>Add</strong> below the server list.</div></div>
     <div class="step-row"><span class="step">3</span><div>Fill in the fields in the right panel (see table below) and click <strong>OK</strong>.</div></div>
     <div class="step-row"><span class="step">4</span><div>The server is added to the sidebar and begins connecting immediately.</div></div>
+
+    <figure class="shot">
+      <img src="shots/add-server.png" loading="lazy"
+           alt="The add/edit server settings form filled in">
+      <figcaption>The server settings form — connection, identity, authentication, channels, and bouncer options.</figcaption>
+    </figure>
 
     <table>
       <thead><tr><th>Section</th><th>Fields</th></tr></thead>
@@ -957,6 +999,13 @@ channels = "#uplink, #linux"</pre>
   <section id="keychain">
     <h2>Password storage — OS keychain</h2>
     <p>Uplink stores all passwords in your <strong>OS keychain</strong>, not as plaintext in <code>config.toml</code>.</p>
+
+    <figure class="shot">
+      <img src="shots/keychain-prompt.png" loading="lazy"
+           alt="The OS keychain prompt shown when Uplink stores a password">
+      <figcaption>Passwords are handed to the OS keychain — never written to config.toml in plaintext.</figcaption>
+    </figure>
+
     <table>
       <tr><th>Platform</th><th>Backend</th></tr>
       <tr><td>Linux</td><td>Secret Service (GNOME Keyring, KWallet, or any compatible daemon)</td></tr>
@@ -1528,12 +1577,24 @@ channels = "#uplink"</pre>
       <li><strong>🔍 Search</strong> — opens the search bar (same as Ctrl+F).</li>
       <li><strong>✕ Close</strong> — closes the primary channel pane.</li>
     </ul>
+
+    <figure class="shot">
+      <img src="shots/channel-header.png" loading="lazy"
+           alt="The channel header showing the hamburger, gear, topic toggle, channel name and modes">
+      <figcaption>The channel header — hamburger and gear menus, topic toggle, channel name with modes, and search.</figcaption>
+    </figure>
   </section>
 
   <!-- SIDEBAR -->
   <section id="sidebar">
     <h2>Sidebar — server &amp; channel list</h2>
     <p>The sidebar on the left shows all your servers and channels. It lives <strong>inside the same rounded floating card</strong> as the chat area and the nick list — all three columns share one seamless surface with a matching background color. Each server is a heading; its channels are listed beneath it.</p>
+
+    <figure class="shot">
+      <img src="shots/sidebar.png" loading="lazy"
+           alt="The sidebar showing servers and channels with unread and mention indicators">
+      <figcaption>The sidebar — servers with a connected globe, channels with activity and mention indicators.</figcaption>
+    </figure>
 
     <ul>
       <li>Click a channel to open it in the chat area.</li>
@@ -1552,6 +1613,12 @@ channels = "#uplink"</pre>
   <section id="channel-panes">
     <h2>Channel panes — view multiple channels at once</h2>
     <p>Uplink can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained — it has its own chat history, nick list, topic bar, and input bar.</p>
+
+    <figure class="shot">
+      <img src="shots/channel-panes.png" loading="lazy"
+           alt="Multiple channels open side by side in the chat area">
+      <figcaption>Up to four channels side by side — each with its own history, nick list, topic, and input.</figcaption>
+    </figure>
 
     <h3>Opening a pane</h3>
     <p><strong>Right-click</strong> any <code>#channel</code> in the sidebar and choose <strong>Open in Pane</strong>. The channel opens as a new column next to the current view. You can continue typing in either pane independently.</p>
@@ -1608,6 +1675,13 @@ channels = "#uplink"</pre>
     <h2>Event condensation</h2>
     <p>In busy channels, individual join, part, quit, nick-change, and kick lines would otherwise flood the chat view. Uplink automatically collapses consecutive server events into a single compact line:</p>
     <pre>21:03  ▸  → halloy2109 sumeetj_ bustacheeze  ← CrystalDotGay AJ_Z0</pre>
+
+    <figure class="shot">
+      <img src="shots/event-condensation.png" loading="lazy"
+           alt="A collapsed join/part/quit group shown as a single compact line">
+      <figcaption>Consecutive joins, parts, and quits collapse into one compact line with a ▸ expander.</figcaption>
+    </figure>
+
     <p>The symbols mean:</p>
     <table>
       <thead><tr><th>Symbol</th><th>Event</th></tr></thead>
@@ -1627,6 +1701,12 @@ channels = "#uplink"</pre>
 21:03  <span style="color:#a6e3a1">→ halloy2109 (~halloy210@208.59.60.21) has joined #uplink</span>
 21:03  <span style="color:#a6e3a1">→ sumeetj_ (~sumeet@103.145.17.55) has joined #uplink</span>
 21:03  <span style="color:#a6e3a1">→ bustacheeze (~bust@user/bustacheeze) has joined #uplink</span></pre>
+    <figure class="shot">
+      <img src="shots/event-condensation-expanded.png" loading="lazy"
+           alt="An expanded event group showing every join and quit as a full line">
+      <figcaption>Expanded — every event as a full line with hostmasks and quit/part reasons.</figcaption>
+    </figure>
+
     <p>Click <strong>▾</strong> to collapse the group back to the compact view. Expanded state persists when you switch channels and come back.</p>
     <p>This is particularly useful for:</p>
     <ul>
@@ -1652,6 +1732,12 @@ channels = "#uplink"</pre>
   <section id="chat-area">
     <h2>Chat area</h2>
     <p>The large center panel is the chat area. Messages appear in reverse-chronological order (newest at the bottom). History messages replayed by your bouncer or server appear dimmed at the top with their original timestamps.</p>
+
+    <figure class="shot">
+      <img src="shots/main-window.png" loading="lazy"
+           alt="The full Uplink main window — sidebar, chat area, and nick list">
+      <figcaption>The main window — sidebar, chat area, and nick list sharing one floating card.</figcaption>
+    </figure>
 
     <ul>
       <li>Click any URL to open it in your browser.</li>
@@ -1686,6 +1772,13 @@ channels = "#uplink"</pre>
   <section id="quick-switcher">
     <h2>Quick channel switcher (Ctrl+K)</h2>
     <p>Press <strong>Ctrl+K</strong> (Cmd+K on macOS) to open a floating search popup listing all joined channels. Start typing to filter by channel name or server name — the list narrows as you type.</p>
+
+    <figure class="shot">
+      <img src="shots/quick-switcher.png" loading="lazy"
+           alt="The Ctrl+K quick channel switcher popup filtering channels">
+      <figcaption>Ctrl+K opens the quick switcher — type to filter across every joined channel.</figcaption>
+    </figure>
+
     <ul>
       <li><strong>Up/Down</strong> — select a channel from the list</li>
       <li><strong>Enter</strong> — switch to the selected channel</li>
@@ -1715,6 +1808,13 @@ channels = "#uplink"</pre>
 21:22  carol: just got here
 21:22  dave:  same
 21:23  alice: cool, let's talk</pre>
+
+    <figure class="shot">
+      <img src="shots/unread-separator.png" loading="lazy"
+           alt="The new-messages divider in the chat view">
+      <figcaption>A "new messages" divider marks exactly where you left off in a busy channel.</figcaption>
+    </figure>
+
     <p>The view scrolls automatically to show the separator at the top of the viewport, so you immediately see exactly where you left off — no hunting for your place in a busy channel. The separator clears as soon as you open the channel (unread count resets).</p>
 
     <h3>Scroll position memory</h3>
@@ -1732,6 +1832,13 @@ channels = "#uplink"</pre>
     <h2>Typing indicator</h2>
     <p>When someone in a channel starts typing a reply, a small line appears above the input bar:</p>
     <pre>alice is typing…</pre>
+
+    <figure class="shot">
+      <img src="shots/typing-indicator.png" loading="lazy"
+           alt="The typing indicator line above the input bar">
+      <figcaption>A "…is typing" line appears above the input bar when someone is composing a reply.</figcaption>
+    </figure>
+
     <p>When they stop typing (or send their message), the line disappears automatically.</p>
 
     <h3>Requirements</h3>
@@ -1769,6 +1876,12 @@ typing_indicator = true   # set to false to disable completely</pre>
     <h2>Nick list panel</h2>
     <p>The user list sits in a panel on the right side of the chat. The header shows the network name (<code>* Network</code>), a groups icon, the user count, and a close button (▦).</p>
 
+    <figure class="shot">
+      <img src="shots/nick-list.png" loading="lazy"
+           alt="The nick list panel showing users sorted by op, voice, and regular status">
+      <figcaption>The nick list — sorted by rank, with op/voice prefixes and bot icons.</figcaption>
+    </figure>
+
     <ul>
       <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears at the top-right of the chat area — click it to expand the panel again.</li>
       <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
@@ -1785,6 +1898,12 @@ typing_indicator = true   # set to false to disable completely</pre>
   <section id="nick-filter">
     <h2>Nick list filter</h2>
     <p>A small filter box sits directly above the nick list, below the panel header. Type any letters to instantly narrow the nick list to only the nicks that <strong>start with</strong> those characters.</p>
+
+    <figure class="shot">
+      <img src="shots/nick-filter.png" loading="lazy"
+           alt="The nick list narrowed by the filter box">
+      <figcaption>The filter box narrows the nick list to names starting with what you type.</figcaption>
+    </figure>
 
     <h3>How it works</h3>
     <p>The filter is always visible and always active. As you type, any nick that doesn't begin with your input disappears immediately — only matching nicks remain.</p>
@@ -1826,6 +1945,12 @@ typing_indicator = true   # set to false to disable completely</pre>
     <h2>Nick right-click menu</h2>
     <p>Right-clicking any nick — whether in the user list on the right or directly in the chat view — opens the same context menu. The menu title shows the nick in bold.</p>
 
+    <figure class="shot">
+      <img src="shots/nick-context-menu.png" loading="lazy"
+           alt="The right-click nick menu open over the nick list">
+      <figcaption>Right-click any nick for Message, Whois, CTCP, DCC, and channel-op actions.</figcaption>
+    </figure>
+
     <table>
       <thead><tr><th>Action</th><th>What it does</th></tr></thead>
       <tbody>
@@ -1863,6 +1988,12 @@ typing_indicator = true   # set to false to disable completely</pre>
       <li><strong>Chat view</strong> — hover over any coloured nick link in a message. Works in the primary chat view and all split panes.</li>
       <li><strong>Nick list panel</strong> — hover over any nick in the right-side user list.</li>
     </ul>
+
+    <figure class="shot">
+      <img src="shots/account-badge.png" loading="lazy"
+           alt="A hover tooltip showing a user's NickServ account name">
+      <figcaption>Hovering a nick reveals the NickServ account behind it — even after a nick change.</figcaption>
+    </figure>
 
     <p>The tooltip shows whatever the server has reported for that user:</p>
     <ul>
@@ -1924,6 +2055,12 @@ typing_indicator = true   # set to false to disable completely</pre>
     </p>
     <pre>[avatar image]  Alice Smith
                 alice</pre>
+
+    <figure class="shot">
+      <img src="shots/user-metadata.png" loading="lazy"
+           alt="A nick tooltip showing a display name and avatar thumbnail">
+      <figcaption>With draft/metadata-2, a nick tooltip shows the user's display name and avatar.</figcaption>
+    </figure>
     <p>
       Both locations show identical information. Uplink fetches the avatar image in the background as soon as the metadata arrives and caches it for the session; subsequent hovers are instant. Avatars are displayed at 32×32 — no upscaling, so small icons like favicons stay crisp.
     </p>
@@ -1999,6 +2136,12 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
 
     <p><strong>Hover over the bars</strong> to see your exact latency in milliseconds (e.g. <code>42 ms</code>), or the current connection state if not connected.</p>
 
+    <figure class="shot">
+      <img src="shots/signal-bars.png" loading="lazy"
+           alt="The signal bars in the sidebar header showing connection quality">
+      <figcaption>Signal bars in the header show live connection quality; hover for exact latency.</figcaption>
+    </figure>
+
     <table>
       <tr><th>Appearance</th><th>Meaning</th></tr>
       <tr><td>4 solid green bars</td><td>Connected, latency &lt; 50 ms (excellent)</td></tr>
@@ -2016,6 +2159,12 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
   <section id="tray">
     <h2>System tray</h2>
     <p>Closing the window minimizes Uplink to the system tray — it keeps running in the background.</p>
+
+    <figure class="shot">
+      <img src="shots/system-tray.png" loading="lazy"
+           alt="The Uplink tray icon with its right-click menu open">
+      <figcaption>Uplink minimizes to the tray — a dot signals unread mentions or messages.</figcaption>
+    </figure>
 
     <ul>
       <li><strong>Left-click</strong> the tray icon to show or hide the window.</li>
@@ -2043,6 +2192,12 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
   <section id="commands">
     <h2>Slash commands</h2>
     <p>Type a <code>/</code> to start a command. Tab-completion works on command names too — type <code>/p</code> and press <kbd>Tab</kbd> to cycle through <code>/part</code>, <code>/ping</code>, etc.</p>
+
+    <figure class="shot">
+      <img src="shots/command-autocomplete.png" loading="lazy"
+           alt="Slash-command autocomplete suggestions in the input bar">
+      <figcaption>Typing <code>/</code> offers command autocomplete — Tab cycles through the matches.</figcaption>
+    </figure>
 
     <table>
       <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
@@ -2119,6 +2274,12 @@ alice is identified as account: alice
 alice has been idle 2 minutes, signed on 14:30:01
 alice is using a secure TLS connection</pre>
 
+    <figure class="shot">
+      <img src="shots/whois.png" loading="lazy"
+           alt="A /whois response rendered in the active channel">
+      <figcaption>/whois output lands right in the channel you ran it from — no switching to the server buffer.</figcaption>
+    </figure>
+
     <p>You can also trigger it from the <strong>user list</strong> or <strong>chat view</strong> — right-click any nick → <strong>Whois</strong>. No need to type the command if you can see the nick.</p>
 
     <div class="tip">
@@ -2190,6 +2351,12 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <pre>/list</pre>
     <p>A <strong>Channel Browser</strong> dialog opens. Results stream in as the server sends them — you don't have to wait for the full list before you can start filtering.</p>
 
+    <figure class="shot">
+      <img src="shots/channel-list.png" loading="lazy"
+           alt="The Channel Browser dialog listing channels with user counts and topics">
+      <figcaption>/list opens the Channel Browser — sort by column, filter by name or topic, double-click to join.</figcaption>
+    </figure>
+
     <h3>Sorting and filtering</h3>
     <ul>
       <li>Click any column header (<strong>Channel</strong>, <strong>Users</strong>, <strong>Topic</strong>) to sort by that column. Click again to reverse. User count sorts numerically by default (highest first).</li>
@@ -2256,6 +2423,12 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <p>You can also right-click a nick in the user list <strong>or directly in the chat view</strong> and choose <strong>Message</strong> to open the buffer without typing a command.</p>
     <pre>/msg bob hey, are you around?</pre>
 
+    <figure class="shot">
+      <img src="shots/private-message.png" loading="lazy"
+           alt="A private message buffer open in the sidebar">
+      <figcaption>Each conversation gets its own buffer in the sidebar — incoming PMs open one automatically.</figcaption>
+    </figure>
+
     <h3>Messaging IRC services (NickServ, ChanServ…)</h3>
     <p>Services like NickServ and ChanServ are bots that live on the server and respond via private message. Uplink has shortcut commands for the most common ones:</p>
     <table>
@@ -2315,6 +2488,12 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <h3>Received formatting — what Uplink renders</h3>
     <p>All standard mIRC formatting codes in incoming messages are rendered automatically:</p>
 
+    <figure class="shot">
+      <img src="shots/text-formatting.png" loading="lazy"
+           alt="Bold, italic, underline, and colored text rendered in the chat view">
+      <figcaption>Uplink renders mIRC formatting — bold, italic, underline, strikethrough, and colors.</figcaption>
+    </figure>
+
     <table>
       <thead><tr><th>Code</th><th>Effect</th></tr></thead>
       <tbody>
@@ -2337,6 +2516,13 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <p>Start typing <code>:</code> followed by the emoji name. A completion list pops up:</p>
     <pre>:fire    →  shows completion list: 🔥 fire, ...
 :thumbs  →  shows: 👍 thumbsup, 👎 thumbsdown, ...</pre>
+
+    <figure class="shot">
+      <img src="shots/emoji-autocomplete.png" loading="lazy"
+           alt="The inline emoji shortcode autocomplete list in the input bar">
+      <figcaption>Type <code>:name</code> and an inline autocomplete list of matching emoji appears.</figcaption>
+    </figure>
+
     <p>Navigate with <kbd>↑</kbd> / <kbd>↓</kbd>, select with <kbd>Enter</kbd> or <kbd>Tab</kbd>, dismiss with <kbd>Escape</kbd>.</p>
 
     <h3>2. Type a full shortcode — instant substitution</h3>
@@ -2347,6 +2533,13 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
 
     <h3>3. Emoji picker button</h3>
     <p>Enable the button in config or Preferences, then click 😊 to open a searchable grid of 1,900+ emoji (Unicode 16.0, with GitHub-compatible shortcodes). The search box accepts plain words or shortcode style — <code>poop</code> and <code>:poop</code> both work. Press <kbd>Enter</kbd> to commit the first match without clicking.</p>
+
+    <figure class="shot">
+      <img src="shots/emoji-picker.png" loading="lazy"
+           alt="The emoji picker showing a searchable grid of emoji">
+      <figcaption>The 😊 picker opens a searchable grid of 1,900+ emoji with GitHub-compatible shortcodes.</figcaption>
+    </figure>
+
     <pre>[ui]
 show_emoji_button = true</pre>
 
@@ -2373,6 +2566,12 @@ show_send_button = false   # hide the paper-plane button; press Enter to send</p
 
     <h3>Composing</h3>
     <p>Press <kbd>Shift+Enter</kbd> to insert a line break. The box grows automatically from 1 to 4 lines as you type. Press <kbd>Enter</kbd> (without Shift) to send the whole message.</p>
+
+    <figure class="shot">
+      <img src="shots/multiline-compose.png" loading="lazy"
+           alt="The input box expanded to several lines while composing a message">
+      <figcaption>Shift+Enter adds line breaks — the input grows to fit up to four lines.</figcaption>
+    </figure>
 
     <h3>How it reaches the server</h3>
     <p>When the server supports IRCv3 <code>draft/multiline</code>, Uplink sends the message as a proper multi-line batch — all lines arrive as a single logical message. On servers without the capability, each line is sent as a separate <code>PRIVMSG</code> in sequence — no content is lost, though recipients without multi-line support see individual lines.</p>
@@ -2407,6 +2606,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
 /p[Tab][Tab]      →  /ping
 /p[Tab][Tab][Tab] →  /privmsg</pre>
 
+    <figure class="shot">
+      <img src="shots/tab-completion.png" loading="lazy"
+           alt="Tab completing a nickname in the input bar">
+      <figcaption>Tab completes nicks and commands — at the start of a line the nick gets a colon.</figcaption>
+    </figure>
+
     <div class="tip">
       <strong>Tip:</strong> if you're in a large channel and can't remember how a nick starts, use the <a href="#nick-filter">nick list filter</a> on the right to narrow the list first — then Tab-complete from the input. Both work off the same full nick list.
     </div>
@@ -2422,6 +2627,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <section id="search">
     <h2>Message search (Ctrl+F)</h2>
     <p>Press <kbd>Ctrl+F</kbd> anywhere in Uplink to open a search bar below the chat area. Start typing and the first match jumps into view immediately with the text highlighted.</p>
+
+    <figure class="shot">
+      <img src="shots/message-search.png" loading="lazy"
+           alt="The Ctrl+F search bar with matches highlighted in the chat view">
+      <figcaption>Ctrl+F searches the current buffer — matches highlight and Enter jumps between them.</figcaption>
+    </figure>
 
     <table>
       <tr><th>Key</th><th>Action</th></tr>
@@ -2440,6 +2651,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <h3 id="history-search">Full history search (Ctrl+Shift+F)</h3>
     <p><kbd>Ctrl+F</kbd> only covers the messages currently loaded in the buffer. To search the current channel's <em>entire logged history</em>, press <kbd>Ctrl+Shift+F</kbd>. This opens a separate window that scans the channel's on-disk log file and lists matching lines newest-first. Tick <strong>Regex</strong> to match with a regular expression instead of a plain substring.</p>
     <p>Because it reads the log on disk, full history search only covers messages that were actually logged — enable <strong>message logging</strong> in Preferences to record history. Without it, there is nothing on disk to search beyond the visible buffer.</p>
+
+    <figure class="shot">
+      <img src="shots/history-search.png" loading="lazy"
+           alt="The full history search window listing matching log lines">
+      <figcaption>Ctrl+Shift+F scans the channel's on-disk log — plain substring or regex, newest first.</figcaption>
+    </figure>
 
     <p><strong>Examples.</strong> With <strong>Regex</strong> ticked:</p>
     <table>
@@ -2468,6 +2685,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <pre>14:30 <span class="n">alice:</span> what's everyone using for backups these days?
 14:31 <span class="n">↩ alice  bob:</span> rsync + rclone to Backblaze, works great</pre>
 
+    <figure class="shot">
+      <img src="shots/reply.png" loading="lazy"
+           alt="A reply showing the quoted parent message it references">
+      <figcaption>Replies show a ↩ indicator pointing to the message they answer.</figcaption>
+    </figure>
+
     <div class="note">
       <strong>Compatibility:</strong> clients that do not understand <code>draft/reply</code> simply see your message as normal — the reply tag is invisible to them. No special server setup is needed beyond standard IRCv3 <code>message-tags</code>.
     </div>
@@ -2495,6 +2718,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <pre>14:22 &lt;alice&gt; anyone tried the new soju release?
 👍(2) ❤️(1)</pre>
 
+    <figure class="shot">
+      <img src="shots/reactions.png" loading="lazy"
+           alt="Emoji reactions shown beneath a message">
+      <figcaption>Reactions appear inline below a message as <code>emoji(count)</code>.</figcaption>
+    </figure>
+
     <div class="note">
       <strong>Server support required:</strong> the server must advertise the <code>draft/react</code> capability. On servers that do not support it, reactions are not sent and will not be received.
     </div>
@@ -2509,6 +2738,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Delete</strong> from the context menu.</div></div>
 
     <p>The message is replaced with <span style="color:gray;font-style:italic">[message deleted]</span> in grey italic. Other clients that support <code>draft/message-redaction</code> will also hide the message.</p>
+
+    <figure class="shot">
+      <img src="shots/message-deletion.png" loading="lazy"
+           alt="A deleted message shown as a grey italic placeholder">
+      <figcaption>A deleted message collapses to a grey <em>[message deleted]</em> placeholder.</figcaption>
+    </figure>
 
     <div class="note">
       <strong>Server support required:</strong> the <strong>Delete</strong> option only appears when the server has acknowledged the <code>draft/message-redaction</code> capability during the CAP handshake. You can only delete your own messages.
@@ -2579,6 +2814,12 @@ flags = ["invite"]    # invites only — messages still visible</pre>
     <p>Example — watch for a friend:</p>
     <pre>/monitor add alice</pre>
 
+    <figure class="shot">
+      <img src="shots/monitor.png" loading="lazy"
+           alt="An online notification for a monitored nick in the server buffer">
+      <figcaption>MONITOR posts <em>Now online</em> / <em>Now offline</em> notices for the nicks you watch.</figcaption>
+    </figure>
+
     <p>The watch list is saved to <code>config.toml</code> under <code>[monitor] nicks = [...]</code> and is re-sent on every reconnect. You can also edit it directly:</p>
     <pre>[monitor]
 nicks = ["alice", "bob"]</pre>
@@ -2615,6 +2856,12 @@ log_messages = true    # off by default — opt-in</pre>
 link_previews = true</pre>
 
     <p>When enabled, any message containing a URL causes Uplink to fetch a preview card and append it below the message:</p>
+
+    <figure class="shot">
+      <img src="shots/link-preview.png" loading="lazy"
+           alt="A link preview card with title and thumbnail below a message">
+      <figcaption>A preview card with the page title and thumbnail appears below a posted URL.</figcaption>
+    </figure>
 
     <ul>
       <li><strong>Web pages</strong> — shows the page title (from <code>og:title</code> or <code>&lt;title&gt;</code>) and a thumbnail if an Open Graph image is set.</li>
@@ -2663,6 +2910,12 @@ link_previews = true</pre>
 
     <h3>Receiving a file</h3>
     <p>When someone sends you a file (either mode), an accept/reject dialog appears showing the filename and size. Click <strong>Yes</strong>, choose where to save it, and a live progress dialog tracks the download. Either side can click <strong>Cancel</strong> to abort at any time.</p>
+
+    <figure class="shot">
+      <img src="shots/dcc-transfer.png" loading="lazy"
+           alt="A DCC file transfer progress dialog">
+      <figcaption>A live progress dialog tracks each DCC transfer; either side can cancel.</figcaption>
+    </figure>
     <p>The file is saved to a <code>.part</code> file during the transfer and renamed to the final filename only when the download completes successfully. If the transfer fails or is cancelled, the partial file is deleted automatically.</p>
     <p><strong>Receive limits</strong> are enforced before any data is written:</p>
     <ul>
@@ -2748,6 +3001,12 @@ link_previews = true</pre>
     <div class="step-row"><span class="step">3</span><div>Use <kbd>↑</kbd> / <kbd>↓</kbd> to browse, then press <kbd>Enter</kbd> or click a theme to apply it. The list stays open so you can keep trying themes.</div></div>
     <div class="step-row"><span class="step">4</span><div>The choice is saved automatically to <code>config.toml</code>. Click the theme button again to collapse the list.</div></div>
 
+    <figure class="shot">
+      <img src="shots/theme-picker.png" loading="lazy"
+           alt="The theme picker in Preferences with a live theme applied">
+      <figcaption>The Appearance page lets you browse all 306 themes and apply them live.</figcaption>
+    </figure>
+
     <p>Or set it directly in the config:</p>
     <pre>[ui]
 theme = "catppuccin-mocha"</pre>
@@ -2775,6 +3034,12 @@ theme = "catppuccin-mocha"</pre>
   <section id="fonts">
     <h2>Font sizes</h2>
     <p>Every part of the UI has its own independent font size. Open <strong>Preferences → Appearance → Font Config...</strong> and drag the sliders, or set them in config:</p>
+
+    <figure class="shot">
+      <img src="shots/font-config.png" loading="lazy"
+           alt="The Font Config dialog with per-zone size sliders">
+      <figcaption>Font Config sizes each zone independently — chat, sidebar, nick list, input, and more.</figcaption>
+    </figure>
 
     <pre>[ui]
 font_family = "IBM Plex Mono"   # any installed monospace font
@@ -2906,6 +3171,12 @@ hanging_indent = true   # default on</pre>
     <h2>App icon variant</h2>
     <p>Uplink ships with 15 icon variants across flat, colorful, gruvbox, and original styles. Pick one from the visual grid in <strong>Preferences → Appearance</strong> — the icon updates the window, system tray, and KDE Plasma taskbar live.</p>
 
+    <figure class="shot">
+      <img src="shots/app-icon-variants.png" loading="lazy"
+           alt="The app icon variant picker grid in Preferences">
+      <figcaption>Pick from 15 icon variants — the window, tray, and taskbar icon update live.</figcaption>
+    </figure>
+
     <p>Or set it directly in config:</p>
     <pre>[ui]
 app_icon = "flat-black"</pre>
@@ -2929,6 +3200,12 @@ app_icon = "flat-black"</pre>
   <section id="notifications">
     <h2>Tray notifications</h2>
     <p>When your nick is mentioned or you receive a PM while the window is not focused, a <strong>green dot</strong> appears on the tray icon. It clears the moment you focus the window.</p>
+
+    <figure class="shot">
+      <img src="shots/notification.png" loading="lazy"
+           alt="A desktop notification for a mention">
+      <figcaption>Mentions and PMs while unfocused surface a notification and a tray dot.</figcaption>
+    </figure>
 
     <p>Toggle from <strong>⚙ → Tray Notifications</strong> in Preferences, or in config:</p>
     <pre>[ui]
