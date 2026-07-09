@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # /uptime — show system uptime
 #
-# No dependencies — uses built-in commands on macOS and Linux.
+# No dependencies — uses built-in commands on macOS, Linux, and the BSDs.
 
 case "$(uname)" in
     Darwin)
@@ -13,7 +13,8 @@ case "$(uname)" in
         mins=$(( (secs % 3600) / 60 ))
         echo "⏱ Uptime: ${days}d ${hours}h ${mins}m"
         ;;
-    Linux)
+    Linux|*BSD|DragonFly)
+        # uptime -p is Linux-only; BSDs fall back to plain uptime
         up=$(uptime -p 2>/dev/null || uptime)
         echo "⏱ ${up}"
         ;;

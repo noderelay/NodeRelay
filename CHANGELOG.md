@@ -1,6 +1,22 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (b):
+- Fix: user scripts failed on FreeBSD — every bundled script (/weather /roll
+  /uptime /music) reported "Script timed out (10s limit)". Cause: the runner
+  exec'd the script directly via its `#!/bin/bash` shebang, but FreeBSD keeps
+  bash at /usr/local/bin, not /bin, so exec failed and was misreported as a
+  timeout. Now .sh scripts launch through `bash` resolved from PATH on all
+  platforms (was Windows-only), and a genuine failure-to-start now says so
+  ("Could not start script — is its interpreter … in PATH?") via waitForStarted.
+- FreeBSD support in bundled scripts: uptime.sh and music.sh case statements
+  extended to *BSD/DragonFly (were Linux-only, would print "Unsupported
+  platform"); shebangs changed to `#!/usr/bin/env bash`. Scripts are overwritten
+  on launch, so users get the fixes automatically. Note: bash must be installed
+  (pkg install bash).
+-->
+
+<!--
 Session 2026-07-09 (a):
 - Feature: send colored text. A 16-color mIRC picker (Text color + optional
   Background) for the input box, reachable two ways: Ctrl+Shift+K, or right-click

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # /roll [NdS] — roll N dice with S sides (default: 1d6)
 #
 # No dependencies — pure bash.

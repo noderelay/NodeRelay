@@ -791,12 +791,22 @@ void CommandDispatcher::executeScript(const ScriptBinding &binding,
         if (!args.isEmpty())
             argList = args.split(' ', Qt::SkipEmptyParts);
 
-#ifdef Q_OS_WIN
+        // Launch .sh scripts through bash resolved from PATH rather than trusting
+        // the script's shebang — FreeBSD keeps bash at /usr/local/bin/bash, so a
+        // `#!/bin/bash` script would otherwise fail to exec. Other scripts run
+        // directly and rely on their own interpreter line.
         if (scriptPath.endsWith(QLatin1String(".sh")))
             proc.start(QStringLiteral("bash"), QStringList{scriptPath} + argList);
         else
-#endif
             proc.start(scriptPath, argList);
+
+        if (!proc.waitForStarted(5000)) {
+            QMetaObject::invokeMethod(this, [this, host, channel]() {
+                m_model->localMessage(host, channel,
+                    "Could not start script — is its interpreter (e.g. bash) installed and in PATH?");
+            }, Qt::QueuedConnection);
+            return;
+        }
 
         if (!proc.waitForFinished(10000)) {
             proc.kill();

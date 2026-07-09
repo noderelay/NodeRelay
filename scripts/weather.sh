@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # /weather [city] — current weather from wttr.in
 #
 # Dependencies: curl (should be installed on any system)

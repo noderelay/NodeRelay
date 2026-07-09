@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # /music — show the currently playing track
 #
 # Dependencies:
@@ -23,7 +23,7 @@ case "$(uname)" in
         artist=$($NPC get artist 2>/dev/null)
         album=$($NPC get album 2>/dev/null)
         ;;
-    Linux)
+    Linux|*BSD|DragonFly)
         if command -v playerctl &>/dev/null; then
             title=$(playerctl metadata title 2>/dev/null)
             artist=$(playerctl metadata artist 2>/dev/null)
