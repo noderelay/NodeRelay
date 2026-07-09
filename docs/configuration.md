@@ -1051,7 +1051,7 @@ name = "#archlinux"
 
 Set `theme` in `[ui]` to any theme name from the list below. The name must match the `.toml` filename in the `themes/` folder without the extension.
 
-Uplink ships with 306 built-in themes — 55 hand-picked originals plus all 251 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
+Uplink ships with 295 built-in themes — 55 hand-picked originals plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
 
 Popular picks:
 

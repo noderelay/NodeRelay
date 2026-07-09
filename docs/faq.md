@@ -1157,7 +1157,7 @@ This means the server's certificate changed. To re-pin:
 2. Restart Uplink (or click **☰ → Reload Config**).
 3. Your theme appears in the **Preferences** theme list.
 
-The theme format uses named `{{key}}` placeholders for colors. Look at any of the 306 built-in themes for the full list of keys.
+The theme format uses named `{{key}}` placeholders for colors. Look at any of the 295 built-in themes for the full list of keys.
 
 ---
 
