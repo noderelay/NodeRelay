@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (f) — session close:
+- Theme: added themes/Gently.toml, ported from the KDE "Gently" color scheme —
+  deep midnight-blue base (#050e15), pale-cyan text (#d7f1f8), blue accents
+  (selection #058bce, link #75aae0), softened red for mentions; op/voice/halfop
+  kept in a cool blue→teal ramp since the source palette has no warm tones.
+  Shipped in PR #24.
+- A "GentlyT" unified-background variant was trialed locally only and discarded;
+  not committed.
+-->
+
+<!--
 Session 2026-07-09 (e) — session close:
 - Docs: added a "Footprint" section to quality.html with a ~60 MB resident-memory
   stat (reusing the existing stat-grid/stat-cell styles) alongside a real system-
