@@ -51,6 +51,20 @@ static const char* const kIrcPalette[16] = {
     "#0000FC","#FF00FF","#7F7F7F","#D2D2D2"
 };
 
+QColor mircColor(int index)
+{
+    if (index < 0 || index >= 16) return QColor();
+    return QColor(kIrcPalette[index]);
+}
+
+int mircColorIndex(const QColor &color)
+{
+    if (!color.isValid()) return -1;
+    for (int i = 0; i < 16; ++i)
+        if (QColor(kIrcPalette[i]).rgb() == color.rgb()) return i;
+    return -1;
+}
+
 struct IrcSpan {
     QString text;
     bool bold{false}, italic{false}, underline{false}, strike{false};

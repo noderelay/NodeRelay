@@ -334,7 +334,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [ ] Spellcheck — hunspell integration for the input box (on hold)
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets
 - [ ] More bundled scripts — /calc, /8ball, /shrug, /tableflip, etc.
-- [ ] Send colored text — mIRC color code input (foreground/background); rendering already supported. Options: Ctrl+K color entry, an input-bar color picker, or a /color command
+- [x] Send colored text — 16-color mIRC picker for text + background via Ctrl+Shift+K or right-click input → Color; stored as QTextCharFormat brushes like bold/italic and encoded (`\x03fg[,bg]`) at send time; format indicator shows a colored `A` (2026-07-09)
 
 ---
 

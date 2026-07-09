@@ -7,15 +7,19 @@
 #include "ui/emojipicker.h"
 #include "ui/emojidata.h"
 #include "ui/menuicons.h"
+#include "ui/chatrenderer.h"
 #include "model/sessionmodel.h"
 #include "config/config.h"
 
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMenu>
 #include <QMessageBox>
+#include <QPixmap>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -68,6 +72,17 @@ void MainWindow::setupInputBar()
     m_input->document()->setDocumentMargin(2);
     m_input->setFixedHeight(m_input->fontMetrics().lineSpacing() + 10);
     m_input->installEventFilter(this);
+
+    // Right-click: standard edit menu plus a Color submenu.
+    m_input->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_input, &QPlainTextEdit::customContextMenuRequested,
+            this, [this](const QPoint &pos) {
+        QMenu *menu = m_input->createStandardContextMenu();
+        menu->addSeparator();
+        menu->addMenu(makeColorMenu(menu));
+        menu->exec(m_input->mapToGlobal(pos));
+        delete menu;
+    });
 
     m_emojiBtn = new QPushButton("😊");
     m_emojiBtn->setFixedSize(30, 30);
@@ -256,7 +271,11 @@ void MainWindow::updateFormatIndicator()
     const bool italic = cf.fontItalic();
     const bool under  = cf.fontUnderline();
     const bool strike = cf.fontStrikeOut();
-    if (!bold && !italic && !under && !strike) {
+    const bool hasFg  = cf.hasProperty(QTextFormat::ForegroundBrush)
+        && ChatRenderer::mircColorIndex(cf.foreground().color()) >= 0;
+    const bool hasBg  = cf.hasProperty(QTextFormat::BackgroundBrush)
+        && ChatRenderer::mircColorIndex(cf.background().color()) >= 0;
+    if (!bold && !italic && !under && !strike && !hasFg && !hasBg) {
         m_formatIndicator->hide();
         return;
     }
@@ -265,12 +284,77 @@ void MainWindow::updateFormatIndicator()
     if (italic) { if (!text.isEmpty()) text += " "; text += "<i>I</i>"; }
     if (under)  { if (!text.isEmpty()) text += " "; text += "<u>U</u>"; }
     if (strike) { if (!text.isEmpty()) text += " "; text += "<s>S</s>"; }
+    if (hasFg || hasBg) {
+        if (!text.isEmpty()) text += " ";
+        const QString fg = hasFg ? cf.foreground().color().name() : QStringLiteral("inherit");
+        const QString bg = hasBg ? cf.background().color().name() : QStringLiteral("transparent");
+        text += QString("<span style='color:%1;background-color:%2'>A</span>").arg(fg, bg);
+    }
     m_formatIndicator->setText(text);
     m_formatIndicator->adjustSize();
     const int fy = m_input->height() - m_formatIndicator->height() - 3;
     m_formatIndicator->move(4, fy);
     m_formatIndicator->raise();
     m_formatIndicator->show();
+}
+
+// Build the mIRC color menu: "Text color" + "Background" swatch submenus and a
+// reset. Reused by the Ctrl+Shift+K popup and the input's right-click menu.
+// Colors are stored as QTextCharFormat brushes (like bold/italic) on the input
+// and encoded at send time.
+QMenu *MainWindow::makeColorMenu(QWidget *parent)
+{
+    static const char *const kNames[16] = {
+        "White", "Black", "Blue", "Green", "Red", "Brown", "Purple", "Orange",
+        "Yellow", "Light Green", "Cyan", "Light Cyan", "Light Blue", "Pink",
+        "Grey", "Light Grey"
+    };
+    auto swatch = [](int i) {
+        QPixmap pm(16, 16);
+        pm.fill(ChatRenderer::mircColor(i));
+        return QIcon(pm);
+    };
+
+    QMenu *menu = new QMenu(tr("Color"), parent);
+    QMenu *fgMenu = menu->addMenu(tr("Text color"));
+    QMenu *bgMenu = menu->addMenu(tr("Background"));
+    for (int i = 0; i < 16; ++i) {
+        const QString label = QString("%1  %2").arg(i, 2).arg(kNames[i]);
+        connect(fgMenu->addAction(swatch(i), label), &QAction::triggered,
+                this, [this, i] { applyInputColor(i, -2); });
+        connect(bgMenu->addAction(swatch(i), label), &QAction::triggered,
+                this, [this, i] { applyInputColor(-2, i); });
+    }
+    bgMenu->addSeparator();
+    connect(bgMenu->addAction(tr("None")), &QAction::triggered,
+            this, [this] { applyInputColor(-2, -1); });
+    menu->addSeparator();
+    connect(menu->addAction(tr("Reset color")), &QAction::triggered,
+            this, [this] { applyInputColor(-1, -1); });
+    return menu;
+}
+
+// Ctrl+Shift+K: pop the color menu open at the input's caret.
+void MainWindow::showColorPicker()
+{
+    QMenu *menu = makeColorMenu(this);
+    const QRect cr = m_input->cursorRect();
+    menu->exec(m_input->viewport()->mapToGlobal(cr.bottomLeft()));
+    delete menu;
+    m_input->setFocus();
+}
+
+// fg/bg: 0-15 sets that mIRC color, -1 clears it, -2 leaves it unchanged.
+void MainWindow::applyInputColor(int fg, int bg)
+{
+    QTextCharFormat cf = m_input->currentCharFormat();
+    if (fg == -1)      cf.clearProperty(QTextFormat::ForegroundBrush);
+    else if (fg >= 0)  cf.setForeground(ChatRenderer::mircColor(fg));
+    if (bg == -1)      cf.clearProperty(QTextFormat::BackgroundBrush);
+    else if (bg >= 0)  cf.setBackground(ChatRenderer::mircColor(bg));
+    m_input->textCursor().setCharFormat(cf);
+    m_input->setCurrentCharFormat(cf);
+    updateFormatIndicator();
 }
 
 void MainWindow::handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel)
@@ -469,13 +553,15 @@ void MainWindow::hideEmojiAutocomplete()
 }
 
 // Convert the input widget's rich-formatted document to an IRC-encoded string.
-// IRC control chars (bold \x02, italic \x1D, underline \x1F, strikethrough \x1E)
-// are emitted at format-change boundaries; the visible text has no box glyphs.
+// IRC control chars (bold \x02, italic \x1D, underline \x1F, strikethrough \x1E,
+// color \x03fg[,bg]) are emitted at format-change boundaries; the visible text
+// has no control glyphs.
 static QString inputToIrcText(QPlainTextEdit *edit)
 {
     const QTextDocument *doc = edit->document();
     QString result;
     bool curBold = false, curItalic = false, curUnder = false, curStrike = false;
+    int  curFg = -1, curBg = -1;   // active mIRC color indices, -1 = default
     bool firstBlock = true;
     for (QTextBlock block = doc->begin(); block != doc->end(); block = block.next()) {
         if (!firstBlock) result += '\n';
@@ -484,6 +570,28 @@ static QString inputToIrcText(QPlainTextEdit *edit)
             const QTextFragment frag = it.fragment();
             if (!frag.isValid()) continue;
             const QTextCharFormat fmt = frag.charFormat();
+            const int wFg = fmt.hasProperty(QTextFormat::ForegroundBrush)
+                ? ChatRenderer::mircColorIndex(fmt.foreground().color()) : -1;
+            const int wBg = fmt.hasProperty(QTextFormat::BackgroundBrush)
+                ? ChatRenderer::mircColorIndex(fmt.background().color()) : -1;
+
+            // Color transition. Clearing color needs \x0F, which also drops the
+            // other attributes, so reset their state and let the toggles below
+            // re-emit whatever is still active.
+            if (wFg != curFg || wBg != curBg) {
+                if (wFg < 0 && wBg < 0) {
+                    result += QChar(0x0F);
+                    curBold = curItalic = curUnder = curStrike = false;
+                } else {
+                    result += QChar(0x03);
+                    result += QString("%1").arg(wFg < 0 ? 99 : wFg, 2, 10, QChar('0'));
+                    if (wBg >= 0)
+                        result += ',' + QString("%1").arg(wBg, 2, 10, QChar('0'));
+                }
+                curFg = wFg;
+                curBg = wBg;
+            }
+
             const bool wB = (fmt.fontWeight() == QFont::Bold);
             const bool wI = fmt.fontItalic();
             const bool wU = fmt.fontUnderline();
@@ -495,7 +603,7 @@ static QString inputToIrcText(QPlainTextEdit *edit)
             result += frag.text();
         }
     }
-    if (curBold || curItalic || curUnder || curStrike)
+    if (curBold || curItalic || curUnder || curStrike || curFg >= 0 || curBg >= 0)
         result += QChar(0x0F);
     return result;
 }
