@@ -1,6 +1,20 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (g):
+- ROADMAP: added a "Send colored text" backlog item (mIRC color code input —
+  rendering is already supported; entry UX still open: Ctrl+K, an input-bar
+  picker, or a /color command).
+- How-to screenshots: added docs/shots-checklist.md as a tracked working doc
+  (was untracked) — the filename manifest + per-shot notes for docs/howto.html.
+  Committed + pushed 46446f8.
+- Captured the first Tier-1 shot: docs/shots/main-window.png (the anchor image —
+  full window: sidebar + chat + nick list). Ticked off in the checklist.
+- Tier-1 still to shoot: sidebar.png, channel-panes.png, first-launch.png.
+  howto.html figures stay held until enough PNGs exist to avoid broken images.
+-->
+
+<!--
 Session 2026-07-08 (f):
 - Manage Servers dialog layout fix. The whole form was shoved far to the right of
   the server list with a big empty band beside the list. Root cause (found by

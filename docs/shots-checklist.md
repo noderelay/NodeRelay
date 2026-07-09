@@ -11,7 +11,7 @@ Tick each off as you shoot it.
 ## Tier 1 — essential (shoot these first)
 
 - [x] **about-dialog.png** — Help → About Uplink dialog (version, Qt build, license). You can just re-save the existing `docs/about.png`.
-- [ ] **main-window.png** — The whole window: sidebar + chat area + nick list in one shot. This is the anchor image.
+- [x] **main-window.png** — The whole window: sidebar + chat area + nick list in one shot. This is the anchor image.
 - [x] **manage-servers.png** — The Manage Servers dialog with two or three servers in the list, one selected so the settings form shows.
 - [ ] **sidebar.png** — Just the left sidebar: a connected server (globe), a few channels, at least one with an unread/mention indicator.
 - [x] **channel-header.png** — The header row across the top of chat: hamburger, gear, topic toggle, `#channel +modes`, search.
