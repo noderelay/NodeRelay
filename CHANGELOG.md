@@ -1,12 +1,22 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (d) — session close:
+- Screenshots landed: shots/mirc-color.png (colored messages in chat) and
+  shots/typing-indicator.png (the "…is typing" line); both howto.html figures
+  were already wired, checklist entries ticked.
+- FreeBSD confirmed on the box (FreeBSD 15.1-RELEASE): /weather /roll /uptime
+  /music all run, and /sysinfo GPU now reads "Intel Corporation Ivy Bridge
+  mobile GT2 [HD Graphics 4000]" instead of Unknown.
+- Reminder: uplinkbot RAG needs a restart to pick up this session's doc changes.
+-->
+
+<!--
 Session 2026-07-09 (c):
 - Fix: /sysinfo showed "GPU: Unknown" on FreeBSD — sysinfoGPU() had no FreeBSD
   branch and fell through to the Unknown default. Added a branch that parses
   `pciconf -lv` (FreeBSD base system) for the display-class (0x03xxxx) device and
-  returns "<vendor> <device>". Verified it compiles by temporarily forcing the
-  branch on in a Linux build; runtime output to be confirmed on FreeBSD.
+  returns "<vendor> <device>". Confirmed on FreeBSD 15.1 (HD Graphics 4000).
 -->
 
 <!--
@@ -40,7 +50,7 @@ Session 2026-07-09 (a):
 - Docs sweep for colored text: howto.html (Ctrl+Shift+K row + "Applying color"
   subsection + shots/mirc-color.png figure), faq.md (formatting Q extended to
   color + right-click), keyboard-shortcuts.md, README feature row, and a
-  shots-checklist.md entry for mirc-color.png (screenshot still to be captured).
+  shots-checklist.md entry for mirc-color.png (screenshot captured in (d)).
   Note: uplinkbot RAG needs a restart to pick up the doc changes.
 - Cleanup: removed 3 stale local AppImages (0.25.32/33/43, ~207 MB, untracked).
 -->
