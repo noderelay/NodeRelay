@@ -37,7 +37,7 @@ Tick each off as you shoot it.
 - [ ] **keychain-prompt.png** — Your OS keychain unlock/save prompt appearing when Uplink stores a password.
 - [x] **event-condensation-expanded.png** — The same join/part group expanded to full lines (hostmasks + quit reasons).
 - [ ] **unread-separator.png** — The `── N new messages ──` divider in the chat view.
-- [ ] **typing-indicator.png** — The `alice is typing…` line above the input bar.
+- [x] **typing-indicator.png** — The `alice is typing…` line above the input bar.
 - [ ] **nick-filter.png** — The nick list narrowed by the filter box (type a couple letters so it's clearly filtered).
 - [ ] **account-badge.png** — Hover tooltip on a nick showing its NickServ account name.
 - [x] **user-metadata.png** — Hover tooltip showing a display name + avatar thumbnail (needs Ergo/soju).
