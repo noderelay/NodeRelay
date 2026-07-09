@@ -906,6 +906,37 @@
   </div>
 </section>
 
+<!-- FOOTPRINT -->
+<section>
+  <div class="wrap">
+    <span class="section-tag c-aqua">Footprint</span>
+    <h2>Light on memory</h2>
+    <p class="section-sub">
+      A full IRCv3 client — TLS, SASL, link previews, DCC — with a resident
+      footprint smaller than a browser tab. No Electron, no bundled Chromium.
+      Your mileage varies with how many networks, channels, and scrollback you
+      keep open, but the baseline stays light.
+    </p>
+
+    <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center; margin-top:2rem;">
+      <div class="stat-grid" style="margin:0; flex:0 0 auto;">
+        <div class="stat-cell">
+          <div class="stat-num c-aqua">~60 MB</div>
+          <div class="stat-label">Resident memory</div>
+        </div>
+      </div>
+      <figure style="flex:1 1 340px; margin:0;">
+        <img src="assets/memusage.png"
+             alt="System monitor sorted by memory: Uplink at 60.5 MiB, below Chromium and Mailspring"
+             style="width:100%; border:1px solid var(--gb-bg1); border-radius:10px; display:block;">
+        <figcaption style="font-size:0.75rem; color:var(--gb-fg4); margin-top:0.6rem;">
+          Applications sorted by memory. Uplink at 60.5 MiB — under Chromium (133.9) and Mailspring (61.7).
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
 <!-- WHAT THIS MEANS -->
 <section>
   <div class="wrap">
