@@ -1,6 +1,16 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (e) — session close:
+- Docs: added a "Footprint" section to quality.html with a ~60 MB resident-memory
+  stat (reusing the existing stat-grid/stat-cell styles) alongside a real system-
+  monitor screenshot (docs/assets/memusage.png — Uplink at 60.5 MiB, under Chromium
+  133.9 and Mailspring 61.7). Copy carries an honest caveat that usage scales with
+  open networks/channels/scrollback. Shipped in PR #22, live on Pages.
+- Reminder: uplinkbot RAG needs a restart to pick up this session's doc changes.
+-->
+
+<!--
 Session 2026-07-09 (d) — session close:
 - Screenshots landed: shots/mirc-color.png (colored messages in chat) and
   shots/typing-indicator.png (the "…is typing" line); both howto.html figures
