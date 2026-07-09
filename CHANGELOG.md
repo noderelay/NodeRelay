@@ -1,6 +1,19 @@
 # Changelog
 
 <!--
+Session 2026-07-08 (h):
+- How-to screenshots: added docs/shots/user-metadata.png (the nick-hover tooltip
+  showing a display name + avatar). Already wired into howto.html #user-metadata;
+  ticked off in docs/shots-checklist.md. Committed + pushed 3be416e.
+- No code changes; docs-only.
+- Corrected memory (project_overview): uplinkirc.chat is Porkbun Secure Static
+  Hosting via GitHub Connect (auto-deploys on push to main; openresty origin),
+  and it serves from the REPO ROOT — docs live at uplinkirc.chat/docs/... , so
+  how-to shots resolve to /docs/shots/*.png (NOT /shots/...). Verified the new
+  screenshot live at uplinkirc.chat/docs/howto.html.
+-->
+
+<!--
 Session 2026-07-08 (g):
 - ROADMAP: added a "Send colored text" backlog item (mIRC color code input —
   rendering is already supported; entry UX still open: Ctrl+K, an input-bar
