@@ -1412,7 +1412,7 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
     pane->setTypingEnabled(m_config.ui.typingIndicator);
     {
         const QColor ic(m_theme.valid ? m_theme.text : QStringLiteral("#e3e3e3"));
-        pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 16));
+        pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
         pane->setPopOutIcon(MenuIcons::pipEnter(ic));
     }
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });

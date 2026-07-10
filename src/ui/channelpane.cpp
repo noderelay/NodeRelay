@@ -57,16 +57,16 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
         "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }";
 
     m_popOutBtn = new QToolButton;
-    m_popOutBtn->setFixedSize(20, 20);
-    m_popOutBtn->setIconSize(QSize(16, 16));
+    m_popOutBtn->setFixedSize(28, 28);
+    m_popOutBtn->setIconSize(QSize(24, 24));
     m_popOutBtn->setAutoRaise(true);
     m_popOutBtn->setStyleSheet(headerBtnStyle);
     m_popOutBtn->setToolTip(QStringLiteral("Open in a window"));
     connect(m_popOutBtn, &QToolButton::clicked, this, &ChannelPane::popOutRequested);
 
     m_searchBtn = new QToolButton;
-    m_searchBtn->setFixedSize(20, 20);
-    m_searchBtn->setIconSize(QSize(16, 16));
+    m_searchBtn->setFixedSize(28, 28);
+    m_searchBtn->setIconSize(QSize(24, 24));
     m_searchBtn->setAutoRaise(true);
     m_searchBtn->setStyleSheet(headerBtnStyle);
     m_searchBtn->setToolTip(QStringLiteral("Search (Ctrl+F)"));
