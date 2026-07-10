@@ -4,6 +4,9 @@
 #include "mainwindow.h"
 #include "ui/mainwindowdelegates.h"
 #include "ui/commanddispatcher.h"
+#include "ui/uistyle.h"
+#include "ui/searchbar.h"
+#include "ui/nickfilteredit.h"
 #include "irc/ircclient.h"
 #include "ui/dcccontroller.h"
 #include "ui/trayicon.h"
@@ -207,7 +210,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     auto *ctrlF = new QShortcut(QKeySequence::Find, this);
-    connect(ctrlF, &QShortcut::activated, this, &MainWindow::showSearchBar);
+    connect(ctrlF, &QShortcut::activated, this, [this]{ m_searchBar->open(); });
 
     auto *ctrlShiftF = new QShortcut(QKeySequence("Ctrl+Shift+F"), this);
     connect(ctrlShiftF, &QShortcut::activated, this, &MainWindow::openLogSearch);
@@ -444,9 +447,7 @@ void MainWindow::applyFontSizes()
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     if (m_sidebarToggleBtn) {
         m_sidebarToggleBtn->setIcon(MenuIcons::gear(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
-        m_sidebarToggleBtn->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }"
-            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+        m_sidebarToggleBtn->setStyleSheet(UiStyle::headerButtonStyle());
     }
     if (m_sidebarCloseBtn)
         m_sidebarCloseBtn->setIcon(MenuIcons::fromSvg(
@@ -461,9 +462,7 @@ void MainWindow::applyFontSizes()
             MenuIcons::groups(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     if (m_hamburger) {
         m_hamburger->setIcon(MenuIcons::hamburger(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
-        m_hamburger->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }"
-            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+        m_hamburger->setStyleSheet(UiStyle::headerButtonStyle());
     }
     if (m_serversBtn)
         m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
@@ -601,19 +600,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
-    if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
-        auto *ke = static_cast<QKeyEvent *>(event);
-        if (ke->key() == Qt::Key_Escape) {
-            m_searchBar->hide();
-            m_chatView->clearFind();
-            m_input->setFocus();
-            return true;
-        }
-        if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
-            doSearch(ke->modifiers() & Qt::ShiftModifier);
-            return true;
-        }
-    }
 
 
     if (obj == m_primaryHeader && event->type() == QEvent::Resize && m_sidebarHeader)
@@ -664,15 +650,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
-    // Nick filter: Escape clears it
-    if (obj == m_nickFilter && event->type() == QEvent::KeyPress) {
-        auto *ke = static_cast<QKeyEvent *>(event);
-        if (ke->key() == Qt::Key_Escape) {
-            m_nickFilter->clear();
-            return true;
-        }
-    }
-
 if (obj == m_input && event->type() == QEvent::Resize) {
         repositionSendBtn();
         return QMainWindow::eventFilter(obj, event);
@@ -711,7 +688,7 @@ if (obj == m_input && event->type() == QEvent::Resize) {
     }
 
     if (ke->key() == Qt::Key_F && (ke->modifiers() & Qt::ControlModifier)) {
-        showSearchBar();
+        m_searchBar->open();
         return true;
     }
 
@@ -1041,7 +1018,7 @@ void MainWindow::onChannelAdded(ServerId host, BufferId channel)
 
     // Checked out to a floating window: re-mark, but don't select or raise —
     // (re)joins would otherwise steal focus and misplace the sidebar highlight.
-    if (m_paneWindows.contains(host.str() + "|" + channel.str().toLower())) {
+    if (m_paneWindows.contains(paneKey(host, channel))) {
         setChannelCheckedOut(host, channel, true);
         return;
     }
@@ -1070,8 +1047,8 @@ void MainWindow::onTopicChanged(ServerId host, BufferId channel, const QString &
         channel.str().toLower() == m_model->activeChannel().str().toLower())
         refreshTopicBar(host, channel);
 
-    const QString paneKey = host.str() + "|" + channel.str().toLower();
-    if (auto *pane = m_panes.value(paneKey))
+    const QString key = paneKey(host, channel);
+    if (auto *pane = m_panes.value(key))
         pane->setTopic(ChatRenderer::linkifyTopic(topic));
 }
 
@@ -1082,7 +1059,7 @@ void MainWindow::onNickListChanged(ServerId host, BufferId channel)
 
 void MainWindow::scheduleNickRefresh(ServerId host, BufferId channel)
 {
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     if (m_nickRefreshPending.contains(key)) return;
     m_nickRefreshPending.insert(key);
     QTimer::singleShot(50, this, [this, host, channel, key] {
@@ -1152,7 +1129,7 @@ void MainWindow::onTypingReceived(ServerId host, BufferId channel,
 
     // Lowercase the channel so lookups match regardless of source case
     // (restored panes carry lowercased names; the server sends its own case).
-    const QString key      = host.str() + "|" + channel.str().toLower();
+    const QString key      = paneKey(host, channel);
     const QString timerKey = key + "|" + nick;
 
     if (state == "active" || state == "paused") {
@@ -1191,7 +1168,7 @@ void MainWindow::onTypingReceived(ServerId host, BufferId channel,
 QString MainWindow::typingText(ServerId host, BufferId channel) const
 {
     if (!m_config.ui.typingIndicator) return {};
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     const QSet<QString> &typers = m_typingNicks.value(key);
     if (typers.isEmpty()) return {};
 
@@ -1234,8 +1211,8 @@ void MainWindow::navigateChannel(int direction)
         auto *srv = m_sidebar->topLevelItem(s);
         for (int c = 0; c < srv->childCount(); ++c) {
             auto *child = srv->child(c);
-            const QString key = child->data(0, Qt::UserRole).toString() + "|"
-                              + child->data(0, Qt::UserRole + 1).toString().toLower();
+            const QString key = paneKey(child->data(0, Qt::UserRole).toString(),
+                                         child->data(0, Qt::UserRole + 1).toString());
             if (m_paneWindows.contains(key)) continue; // checked out to a window
             channels.append(child);
         }
@@ -1320,8 +1297,8 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
 {
     // Checked out to a floating window — raise it instead of loading in main,
     // and keep the sidebar highlight on what the main view is actually showing.
-    const QString paneKey = host.str() + "|" + channel.str().toLower();
-    if (auto *win = m_paneWindows.value(paneKey)) {
+    const QString key = paneKey(host, channel);
+    if (auto *win = m_paneWindows.value(key)) {
         win->show();
         win->raise();
         win->activateWindow();
@@ -1329,6 +1306,16 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
             m_sidebar->setCurrentItem(active);
         else
             m_sidebar->clearSelection(); // don't leave the checked-out row highlighted
+        return;
+    }
+
+    // Already docked in a visible pane — don't also load it into the primary
+    // view. Same reasoning as the floating-window case above.
+    if (m_panes.contains(key)) {
+        if (auto *active = findChannelItem(m_model->activeHost(), m_model->activeChannel()))
+            m_sidebar->setCurrentItem(active);
+        else
+            m_sidebar->clearSelection();
         return;
     }
 
@@ -1345,8 +1332,7 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
 
     m_primaryPanel->setVisible(true);
 
-    const bool isChannel = channel.str().startsWith('#') || channel.str().startsWith('&')
-                           || channel.str().startsWith('+') || channel.str().startsWith('!');
+    const bool isChannel = isChannelName(channel.str());
 
     // Nick panel: only meaningful in channels
     if (m_nickPanel) {
@@ -1439,7 +1425,7 @@ void MainWindow::openChannelList(ServerId host)
 // decides where it lives — docked (openChannelPane) or floating (popOutChannel).
 ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
 {
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     if (m_panes.contains(key)) return nullptr;
 
     auto *pane = new ChannelPane(host, channel, this);
@@ -1602,7 +1588,7 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
 // (or the pane's ✕) drops it back to the server list without leaving the buffer.
 void MainWindow::popOutChannel(ServerId host, BufferId channel)
 {
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     // Already a window → just raise it. Already a docked pane → float that one.
     if (auto *win = m_paneWindows.value(key)) {
         win->show(); win->raise(); win->activateWindow();
@@ -1690,14 +1676,14 @@ void MainWindow::setChannelCheckedOut(ServerId host, BufferId channel, bool out)
 // falling back to the server buffer if that channel was the only one.
 void MainWindow::switchAwayFromChannel(ServerId host, BufferId channel)
 {
-    const QString skipKey = host.str() + "|" + channel.str().toLower();
+    const QString skipKey = paneKey(host, channel);
     for (int s = 0; s < m_sidebar->topLevelItemCount(); ++s) {
         auto *srv = m_sidebar->topLevelItem(s);
         for (int c = 0; c < srv->childCount(); ++c) {
             auto *child = srv->child(c);
-            const QString key = child->data(0, Qt::UserRole).toString() + "|"
-                              + child->data(0, Qt::UserRole + 1).toString().toLower();
-            if (key == skipKey || m_paneWindows.contains(key)) continue;
+            const QString key = paneKey(child->data(0, Qt::UserRole).toString(),
+                                         child->data(0, Qt::UserRole + 1).toString());
+            if (key == skipKey || m_paneWindows.contains(key) || m_panes.contains(key)) continue;
             m_sidebar->setCurrentItem(child);
             onSidebarSelectionChanged();
             return;
@@ -1731,7 +1717,7 @@ bool MainWindow::isOverPrimary(const QPoint &globalPos) const
 
 void MainWindow::closeChannelPane(ServerId host, BufferId channel)
 {
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     auto *pane = m_panes.take(key);
     if (!pane) return;
 
@@ -1914,20 +1900,6 @@ QString MainWindow::msgidAtViewPos(const QPoint & /*viewPos*/) const
 {
     // Phase 3: implement via ChatView hit-test
     return {};
-}
-
-void MainWindow::doSearch(bool backward)
-{
-    const QString text = m_searchInput ? m_searchInput->text() : QString{};
-    if (text.isEmpty()) { m_chatView->clearFind(); return; }
-    m_chatView->findText(text, backward);
-}
-
-void MainWindow::showSearchBar()
-{
-    m_searchBar->show();
-    m_searchInput->setFocus();
-    m_searchInput->selectAll();
 }
 
 void MainWindow::openLogSearch()

@@ -329,8 +329,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
     if (cmd == "/join" || cmd == "/j") {
         m_model->sendJoin(host, BufferId{args.section(' ', 0, 0)}, args.section(' ', 1, 1));
     } else if (cmd == "/part" || cmd == "/leave" || cmd == "/close") {
-        const bool isChannel = channel.str().startsWith('#') || channel.str().startsWith('&');
-        if (isChannel)
+        if (isChannelName(channel.str()))
             m_model->sendPart(host, channel, args);
         else
             m_model->closeBuffer(host, channel);
@@ -342,7 +341,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         const QString target = args.section(' ', 0, 0);
         const QString body   = args.section(' ', 1);
         m_model->sendMessage(host, BufferId{target}, body);
-        if (!target.startsWith('#') && !target.startsWith('&'))
+        if (!isChannelName(target))
             emit switchChannel(host, BufferId{target});
     } else if (cmd == "/query") {
         const QString target = args.trimmed().section(' ', 0, 0);
@@ -481,7 +480,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
     } else if (cmd == "/topic") {
         QString topicTarget = channel.str();
         QString topicText   = args;
-        if (args.startsWith('#') || args.startsWith('&')) {
+        if (isChannelName(args)) {
             topicTarget = args.section(' ', 0, 0);
             topicText   = args.section(' ', 1);
         }

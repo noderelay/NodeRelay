@@ -355,8 +355,7 @@ void SessionModel::closeBuffer(ServerId host, BufferId target)
     auto *sess = session(ServerId{host});
     if (!sess) return;
 
-    const bool isChannel = target.str().startsWith('#') || target.str().startsWith('&');
-    if (isChannel) {
+    if (isChannelName(target.str())) {
         for (IrcClient *cl : m_clients)
             if (cl->serverName() == host.str()) { cl->part(target.str()); break; }
     }
@@ -398,7 +397,7 @@ IrcClient *SessionModel::clientFor(ServerId host)
 void SessionModel::openPM(ServerId host, const QString &nick)
 {
     auto *sess = session(ServerId{host});
-    if (!sess || nick.isEmpty() || nick.startsWith('#') || nick.startsWith('&')) return;
+    if (!sess || nick.isEmpty() || isChannelName(nick)) return;
     const bool isNew = !sess->get(nick);
     sess->getOrCreate(nick);
     if (isNew)
@@ -415,8 +414,7 @@ void SessionModel::sendMessage(ServerId host, BufferId target, const QString &te
     else
         cl->privmsg(target.str(), text, replyToMsgid);
     // Open a PM tab for outgoing private messages
-    const bool isPM = !target.str().startsWith('#') && !target.str().startsWith('&')
-                      && !target.str().startsWith('!') && target.str() != "(server)";
+    const bool isPM = !isChannelName(target.str()) && target.str() != "(server)";
     if (isPM) openPM(host, target.str());
     // If echo-message is acked, the server will echo back the PRIVMSG with the
     // server-assigned msgid — use that echo as the display so msgid is set correctly.
@@ -784,8 +782,7 @@ void SessionModel::onMessage(const QString &host, const QString &target,
 {
     auto *sess = session(ServerId{host});
     const bool isSelf = sess && (nick.toLower() == sess->nick.toLower());
-    const bool isPM = !target.startsWith('#') && !target.startsWith('&')
-                      && !target.startsWith('!');
+    const bool isPM = !isChannelName(target);
     if (isPM && !isSelf && isIgnoredFor(nick, IgnoreType::PM)) return;
     const QString pmNick = isSelf ? target : nick;
     const QString buf = isPM ? pmNick : target;
@@ -814,7 +811,7 @@ void SessionModel::onNotice(const QString &host, const QString &target,
                             const QString &msgid, const QString &replyTo)
 {
     auto *sess2 = session(ServerId{host});
-    const bool isChannelNotice = target.startsWith('#') || target.startsWith('&');
+    const bool isChannelNotice = isChannelName(target);
     if (!isChannelNotice && isIgnoredFor(nick, IgnoreType::Notice)) return;
     QString dest;
     if (isChannelNotice) {
@@ -838,8 +835,7 @@ void SessionModel::onAction(const QString &host, const QString &target,
                             const QDateTime &serverTime, bool isHistory,
                             const QString &msgid)
 {
-    const bool isPrivateAction = !target.startsWith('#') && !target.startsWith('&')
-                                 && !target.startsWith('!');
+    const bool isPrivateAction = !isChannelName(target);
     if (isPrivateAction && isIgnoredFor(nick, IgnoreType::PM)) return;
     auto *sessA = session(ServerId{host});
     QString actionAccount;
@@ -1045,7 +1041,7 @@ void SessionModel::onModesReceived(const QString &host, const QString &channel, 
     auto *sess = session(ServerId{host});
     if (!sess) return;
 
-    const bool isChannel = channel.startsWith('#') || channel.startsWith('&');
+    const bool isChannel = isChannelName(channel);
 
     if (isChannel) {
         auto *ch = sess->get(channel);
@@ -1224,7 +1220,7 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
                                     const QString &emoji)
 {
     if (msgid.isEmpty() || emoji.isEmpty()) return;
-    const bool isChannel = target.startsWith('#') || target.startsWith('&');
+    const bool isChannel = isChannelName(target);
     const QString buf = isChannel ? target : nick;
     auto *ch = channel(ServerId{host}, BufferId{buf});
     if (!ch) return;
@@ -1280,7 +1276,7 @@ void SessionModel::onMessageRedacted(const QString &host, const QString &senderN
     Q_UNUSED(reason) // reason is not surfaced in the UI; keep parameter for signal compat
     auto *sess = session(ServerId{host});
     if (!sess) return;
-    const bool isChannel = target.startsWith('#') || target.startsWith('&');
+    const bool isChannel = isChannelName(target);
     const QString bufName = isChannel ? target : senderNick;
     auto *ch = sess->get(bufName);
     if (!ch) return;

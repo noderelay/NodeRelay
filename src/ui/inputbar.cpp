@@ -8,6 +8,7 @@
 #include "ui/emojidata.h"
 #include "ui/menuicons.h"
 #include "ui/chatrenderer.h"
+#include "ui/searchbar.h"
 #include "model/sessionmodel.h"
 #include "config/config.h"
 
@@ -128,36 +129,8 @@ void MainWindow::setupInputBar()
     m_typingLabel->setVisible(m_config.ui.typingIndicator);
 
     // Search bar (Ctrl+F)
-    m_searchBar = new QWidget;
-    m_searchBar->setObjectName("searchBar");
-    {
-        auto *shbox = new QHBoxLayout(m_searchBar);
-        shbox->setContentsMargins(4, 2, 4, 2);
-        shbox->setSpacing(4);
-        m_searchInput = new QLineEdit;
-        m_searchInput->setPlaceholderText("Search in buffer…");
-        m_searchInput->installEventFilter(this);
-        connect(m_searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
-            if (text.isEmpty()) m_chatView->clearFind();
-            else m_chatView->findText(text, false);
-        });
-        auto *closeBtn = new QToolButton;
-        closeBtn->setText("✕");
-        closeBtn->setFixedSize(22, 22);
-        closeBtn->setAutoRaise(true);
-        closeBtn->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }"
-            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-        );
-        connect(closeBtn, &QToolButton::clicked, this, [this]{
-            m_searchBar->hide();
-            m_chatView->clearFind();
-            m_input->setFocus();
-        });
-        shbox->addWidget(m_searchInput, 1);
-        shbox->addWidget(closeBtn);
-    }
-    m_searchBar->hide();
+    m_searchBar = new SearchBar(m_chatView);
+    connect(m_searchBar, &SearchBar::dismissed, this, [this]{ m_input->setFocus(); });
 
     // Reply indicator bar
     m_replyBar = new QWidget;

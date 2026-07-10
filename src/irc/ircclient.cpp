@@ -2,6 +2,7 @@
 #include "ircparser.h"
 #include "stsstore.h"
 #include "config/config.h"
+#include "model/ids.h"
 #include "version.h"
 
 #include <QCryptographicHash>
@@ -1477,7 +1478,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             const QString &channel = params[1];
             const QString &nick    = params[5];
             const QString &flags   = params[6];
-            if (channel.startsWith('#') || channel.startsWith('&'))
+            if (isChannelName(channel))
                 emit whoEntryReceived(m_serverName, channel, nick, flags);
         }
         break;

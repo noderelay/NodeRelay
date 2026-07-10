@@ -92,21 +92,21 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
         }
     }
 
-    const QString paneKey = host.str() + "|" + channel.str().toLower();
-    if (auto *pane = m_panes.value(paneKey)) {
+    const QString key = paneKey(host, channel);
+    if (auto *pane = m_panes.value(key)) {
         auto *pCh = m_model->channel(host, channel);
         if (pCh) appendToView(pane->chatView(), pCh);
     }
 
     // Suppress when either the main window or this channel's own popped-out
     // window is focused — the user is already looking at the message.
-    auto *paneWin = m_paneWindows.value(paneKey);
+    auto *paneWin = m_paneWindows.value(key);
     const bool channelWindowActive = paneWin && paneWin->isActiveWindow();
     if (m_config.ui.notifications && m_tray && !isActiveWindow() && !channelWindowActive
         && (msg.type == MessageType::Privmsg || msg.type == MessageType::Action))
     {
         const QString myNick = m_model->selfNick(host);
-        const bool isPM = !channel.str().startsWith('#') && !channel.str().startsWith('&');
+        const bool isPM = !isChannelName(channel.str());
         const bool isMention = !isPM && !myNick.isEmpty()
                                && msg.text.contains(myNick, Qt::CaseInsensitive);
         if (isPM || isMention)
@@ -142,7 +142,7 @@ void MainWindow::onReactionsChanged(ServerId host, BufferId channel, const QStri
     }
 
     for (auto *pane : std::as_const(m_panes)) {
-        if (pane->host() != host || pane->channel().str().toLower() != channel.str().toLower()) continue;
+        if (pane->key() != paneKey(host, channel)) continue;
         auto *pCh = m_model->channel(host, channel);
         if (pCh) updateView(pane->chatView(), pCh);
     }
@@ -182,7 +182,7 @@ void MainWindow::onMessageRedacted(ServerId host, BufferId channel, const QStrin
     }
 
     for (auto *pane : std::as_const(m_panes)) {
-        if (pane->host() != host || pane->channel().str().toLower() != channel.str().toLower()) continue;
+        if (pane->key() != paneKey(host, channel)) continue;
         auto *pCh = m_model->channel(host, channel);
         if (pCh) updateView(pane->chatView(), pCh);
     }

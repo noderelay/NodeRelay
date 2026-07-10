@@ -2,6 +2,7 @@
 #include "ui/chatrenderer.h"
 #include "ui/channelpane.h"
 #include "ui/menuicons.h"
+#include "ui/nickfilteredit.h"
 #include "model/sessionmodel.h"
 
 #include <QBuffer>
@@ -151,7 +152,7 @@ void MainWindow::onNickAdded(ServerId host, BufferId channel, const QString &nic
         }
     }
 
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     if (auto *pane = m_panes.value(key)) {
         pane->nickList()->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
         pane->setNickCount(static_cast<int>(ch->nicks.size()));
@@ -174,14 +175,14 @@ void MainWindow::onNickRemoved(ServerId host, BufferId channel, const QString &n
         }
     }
 
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     if (auto *pane = m_panes.value(key)) {
         const int row = findNickRow(pane->nickList(), nick);
         if (row >= 0) delete pane->nickList()->takeItem(row);
         if (ch) pane->setNickCount(static_cast<int>(ch->nicks.size()));
     }
 
-    const QString timerKey = host.str() + "|" + channel.str().toLower() + "|" + nick;
+    const QString timerKey = paneKey(host, channel) + "|" + nick;
     if (auto *t = m_typingNickTimers.value(timerKey)) {
         t->stop();
         t->deleteLater();
@@ -212,7 +213,7 @@ void MainWindow::onNickRenamed(ServerId host, BufferId channel,
                            channel.str().toLower() == m_model->activeChannel().str().toLower());
     if (isActive) apply(m_nickList);
 
-    const QString key = host.str() + "|" + channel.str().toLower();
+    const QString key = paneKey(host, channel);
     if (auto *pane = m_panes.value(key)) apply(pane->nickList());
 }
 

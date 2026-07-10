@@ -21,6 +21,9 @@
 #include "ui/manageserversdialog.h"
 #include "ui/appicons.h"
 #include "ui/themeloader.h"
+#include "ui/uistyle.h"
+#include "ui/searchbar.h"
+#include "ui/nickfilteredit.h"
 #include "ui/linkpreview.h"
 #include "ui/previewcontroller.h"
 #include "ui/emojipicker.h"
@@ -125,9 +128,7 @@ void MainWindow::setupToolbar()
     m_hamburger->setFixedSize(28, 28);
     m_hamburger->setIconSize(QSize(24, 24));
     m_hamburger->setAutoRaise(true);
-    m_hamburger->setStyleSheet(
-        "QToolButton { background: transparent; border: none; }"
-        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+    m_hamburger->setStyleSheet(UiStyle::headerButtonStyle());
     m_hamburger->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_hamburger, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
     m_hamburger->setObjectName("hamburger");
@@ -217,15 +218,9 @@ void MainWindow::connectPreferences()
             }
         }
         if (m_sidebarCloseBtn)
-            m_sidebarCloseBtn->setStyleSheet(
-                "QToolButton { background: transparent; border: none; }"
-                "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-            );
+            m_sidebarCloseBtn->setStyleSheet(UiStyle::headerButtonStyle());
         if (m_sidebarRevealBtn)
-            m_sidebarRevealBtn->setStyleSheet(
-                "QToolButton { background: transparent; border: none; }"
-                "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-            );
+            m_sidebarRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
         saveConfig();
     });
 
@@ -506,9 +501,7 @@ void MainWindow::setupSidebar()
     m_sidebarToggleBtn->setFixedSize(28, 28);
     m_sidebarToggleBtn->setIconSize(QSize(20, 20));
     m_sidebarToggleBtn->setAutoRaise(true);
-    m_sidebarToggleBtn->setStyleSheet(
-        "QToolButton { background: transparent; border: none; }"
-        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+    m_sidebarToggleBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_sidebarToggleBtn->setObjectName("sidebarToggleBtn");
     m_sidebarToggleBtn->setToolTip(tr("Preferences"));
     m_sidebarToggleBtn->setIcon(MenuIcons::gear(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
@@ -550,9 +543,7 @@ void MainWindow::setupSidebar()
         m_serversBtn->setFixedSize(32, 32);
         m_serversBtn->setIconSize(QSize(28, 28));
         m_serversBtn->setAutoRaise(true);
-        m_serversBtn->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }"
-            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+        m_serversBtn->setStyleSheet(UiStyle::headerButtonStyle());
         m_serversBtn->setToolTip(tr("Add / Manage Servers"));
         m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
         connect(m_serversBtn, &QToolButton::clicked, this, [this]{
@@ -594,10 +585,7 @@ void MainWindow::setupSidebar()
     m_sidebarCloseBtn->setFixedSize(28, 28);
     m_sidebarCloseBtn->setIconSize(QSize(20, 20));
     m_sidebarCloseBtn->setAutoRaise(true);
-    m_sidebarCloseBtn->setStyleSheet(
-        "QToolButton { background: transparent; border: none; }"
-        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-    );
+    m_sidebarCloseBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_sidebarCloseBtn->setToolTip(tr("Hide channel list"));
     m_sidebarCloseBtn->setIcon(MenuIcons::fromSvg(
         QStringLiteral(":/icons/mi-left-panel-close.svg"),
@@ -693,19 +681,7 @@ void MainWindow::setupNickPanel()
     hbox->addWidget(m_nickCountLabel);
     hbox->addWidget(m_userInfoLabel, 1);
 
-    m_nickFilter = new QLineEdit;
-    m_nickFilter->setObjectName("nickFilter");
-    m_nickFilter->setPlaceholderText("filter users…");
-    m_nickFilter->setClearButtonEnabled(true);
-    m_nickFilter->installEventFilter(this);
-    connect(m_nickFilter, &QLineEdit::textChanged, this, [this](const QString &text) {
-        const QString lower = text.toLower();
-        for (int i = 0; i < m_nickList->count(); ++i) {
-            auto *item = m_nickList->item(i);
-            const QString nick = item->data(Qt::UserRole).toString().toLower();
-            item->setHidden(!lower.isEmpty() && !nick.startsWith(lower));
-        }
-    });
+    m_nickFilter = new NickFilterEdit(m_nickList);
 
     m_nickPanel = new QWidget;
     m_nickPanel->setObjectName("nickPanel");
@@ -782,27 +758,21 @@ void MainWindow::setupChatArea()
         m_searchBtn->setFixedSize(28, 28);
         m_searchBtn->setIconSize(QSize(24, 24));
         m_searchBtn->setAutoRaise(true);
-        m_searchBtn->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }"
-            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-        );
+        m_searchBtn->setStyleSheet(UiStyle::headerButtonStyle());
         m_searchBtn->setToolTip(tr("Search (Ctrl+F)"));
         m_searchBtn->setIcon(MenuIcons::fromSvg(
             QStringLiteral(":/icons/mi-search.svg"),
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
         connect(m_searchBtn, &QToolButton::clicked, this, [this]{
-            if (m_searchBar->isVisible()) { m_searchBar->hide(); m_searchInput->clear(); }
-            else showSearchBar();
+            if (m_searchBar->isVisible()) m_searchBar->dismiss();
+            else m_searchBar->open();
         });
 
         m_popOutBtn = new QToolButton;
         m_popOutBtn->setFixedSize(28, 28);
         m_popOutBtn->setIconSize(QSize(24, 24));
         m_popOutBtn->setAutoRaise(true);
-        m_popOutBtn->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }"
-            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-        );
+        m_popOutBtn->setStyleSheet(UiStyle::headerButtonStyle());
         m_popOutBtn->setToolTip(tr("Open this channel in a window"));
         m_popOutBtn->setIcon(MenuIcons::pipEnter(
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
@@ -810,7 +780,7 @@ void MainWindow::setupChatArea()
             const ServerId host = m_model->activeHost();
             const BufferId ch   = m_model->activeChannel();
             const QString c = ch.str();
-            if (c.startsWith('#') || c.startsWith('&') || c.startsWith('+') || c.startsWith('!'))
+            if (isChannelName(c))
                 popOutChannel(host, ch);
         });
 
@@ -985,8 +955,8 @@ void MainWindow::setupChatArea()
             if (atBottom) m_chatView->scrollToBottom();
         }
 
-        const QString paneKey = host.str() + "|" + channel.str().toLower();
-        if (auto *pane = m_panes.value(paneKey)) {
+        const QString key = paneKey(host, channel);
+        if (auto *pane = m_panes.value(key)) {
             const bool atBottom = pane->chatView()->isAtBottom();
             ChatView *cv = pane->chatView();
             if (!msgid.isEmpty() && cv->findLine(msgid) >= 0)
@@ -1027,10 +997,7 @@ void MainWindow::setupChatArea()
     m_nickRevealBtn->setFixedSize(28, 28);
     m_nickRevealBtn->setIconSize(QSize(20, 20));
     m_nickRevealBtn->setAutoRaise(true);
-    m_nickRevealBtn->setStyleSheet(
-        "QToolButton { background: transparent; border: none; }"
-        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-    );
+    m_nickRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_nickRevealBtn->setToolTip(tr("Show user list"));
     m_nickRevealBtn->setIcon(MenuIcons::fromSvg(
         QStringLiteral(":/icons/mi-left-panel-close.svg"),
@@ -1094,10 +1061,7 @@ void MainWindow::setupChatArea()
     m_sidebarRevealBtn->setFixedSize(28, 28);
     m_sidebarRevealBtn->setIconSize(QSize(20, 20));
     m_sidebarRevealBtn->setAutoRaise(true);
-    m_sidebarRevealBtn->setStyleSheet(
-        "QToolButton { background: transparent; border: none; }"
-        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
-    );
+    m_sidebarRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_sidebarRevealBtn->setToolTip(tr("Show channel list"));
     m_sidebarRevealBtn->setIcon(MenuIcons::fromSvg(
         QStringLiteral(":/icons/mi-right-panel-open.svg"),

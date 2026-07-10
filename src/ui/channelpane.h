@@ -9,11 +9,12 @@
 #include <QHash>
 
 class ChatView;
+class SearchBar;
+class NickFilterEdit;
 class QListWidget;
 class QPlainTextEdit;
 class QLabel;
 class QToolButton;
-class QLineEdit;
 
 class ChannelPane : public QWidget {
     Q_OBJECT
@@ -21,7 +22,7 @@ public:
     explicit ChannelPane(ServerId host, BufferId channel, QWidget *parent = nullptr);
     const ServerId &host()    const { return m_host; }
     const BufferId &channel() const { return m_channel; }
-    QString         key()     const { return m_host.str() + "|" + m_channel.str().toLower(); }
+    QString         key()     const { return paneKey(m_host, m_channel); }
     ChatView     *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
     QPlainTextEdit *input()  const { return m_input; }
@@ -55,7 +56,6 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 private:
-    void hideSearch();
     void positionNickRevealBtn();
     void updateInputHeight();
     void guardFont(QWidget *w, const QFont &f);
@@ -74,15 +74,14 @@ private:
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
     QToolButton  *m_nickRevealBtn{nullptr};
-    QLineEdit    *m_nickFilter{nullptr};
+    NickFilterEdit *m_nickFilter{nullptr};
     QPlainTextEdit *m_input{nullptr};
     QLabel       *m_nickPrefix{nullptr};
     QLabel       *m_typingLabel{nullptr};
     QToolButton  *m_closeBtn{nullptr};
     QToolButton  *m_searchBtn{nullptr};
     QToolButton  *m_popOutBtn{nullptr};
-    QWidget      *m_searchBar{nullptr};
-    QLineEdit    *m_searchInput{nullptr};
+    SearchBar    *m_searchBar{nullptr};
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_topicToggle{nullptr};
