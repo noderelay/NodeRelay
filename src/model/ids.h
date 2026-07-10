@@ -40,3 +40,22 @@ public:
 
 inline size_t qHash(const ServerId &id, size_t seed = 0) { return qHash(id.str(), seed); }
 inline size_t qHash(const BufferId &id, size_t seed = 0) { return qHash(id.str(), seed); }
+
+// Composite key used to track which host|channel a pane/window belongs to
+// (docked ChannelPane, popped-out window, timers, etc). Channel is
+// lower-cased for case-insensitive lookups.
+inline QString paneKey(const QString &host, const QString &channel) {
+    return host + "|" + channel.toLower();
+}
+inline QString paneKey(const ServerId &host, const BufferId &channel) {
+    return paneKey(host.str(), channel.str());
+}
+
+// RFC 2811 channel name prefixes: '#' (standard), '&' (local-only),
+// '+' (modeless), '!' (safe). Networks that advertise a narrower
+// ISUPPORT CHANTYPES simply never issue the others, so checking all
+// four here is always safe.
+inline bool isChannelName(const QString &name) {
+    return name.startsWith('#') || name.startsWith('&')
+        || name.startsWith('+') || name.startsWith('!');
+}

@@ -18,6 +18,8 @@ class CommandDispatcher;
 class SidebarDelegate;
 class NickDelegate;
 class TrayIcon;
+class SearchBar;
+class NickFilterEdit;
 class SignalBars;
 class AboutDialog;
 class ChannelListDialog;
@@ -37,7 +39,6 @@ class ChatView;
 class QTimer;
 class QTreeWidget;
 class QTreeWidgetItem;
-class QLineEdit;
 class QPlainTextEdit;
 class QLabel;
 class QMenu;
@@ -142,8 +143,6 @@ private:
                                          ServerId host, BufferId channel);
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
     QString    msgidAtViewPos(const QPoint &viewPos) const;
-    void       doSearch(bool backward);
-    void       showSearchBar();
     void       openLogSearch();
     void       clearReplyBar();
 
@@ -214,7 +213,7 @@ private:
     QListWidget  *m_nickList;
     QWidget      *m_nickPanel{nullptr};
     QWidget      *m_nickPanelHeader{nullptr};
-    QLineEdit    *m_nickFilter{nullptr};
+    NickFilterEdit *m_nickFilter{nullptr};
     QLabel       *m_nickGroupsIconLabel{nullptr};
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
@@ -244,8 +243,7 @@ private:
     QLabel       *m_appLabel{nullptr};
     QLabel       *m_typingLabel{nullptr};
     QWidget      *m_inputBar{nullptr};
-    QWidget      *m_searchBar{nullptr};
-    QLineEdit    *m_searchInput{nullptr};
+    SearchBar    *m_searchBar{nullptr};
     QWidget      *m_replyBar{nullptr};
     QLabel       *m_replyLabel{nullptr};
     QString       m_pendingReplyMsgid;

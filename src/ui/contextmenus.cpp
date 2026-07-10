@@ -241,16 +241,16 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
                 syncSidebarOrderToConfig();
             });
         }
-    } else if (channel.str().startsWith('#') || channel.str().startsWith('&')) {
-        const QString paneKey = host.str() + "|" + channel.str().toLower();
-        if (!m_panes.contains(paneKey)) {
+    } else if (isChannelName(channel.str())) {
+        const QString key = paneKey(host, channel);
+        if (!m_panes.contains(key)) {
             menu->addAction("Open in Pane", this, [this, host, channel]{
                 openChannelPane(host, channel);
             });
             menu->addAction("Open in Window", this, [this, host, channel]{
                 popOutChannel(host, channel);
             });
-        } else if (m_paneWindows.contains(paneKey)) {
+        } else if (m_paneWindows.contains(key)) {
             menu->addAction("Close Window", this, [this, host, channel]{
                 closeChannelPane(host, channel);
             });

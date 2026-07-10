@@ -1,6 +1,9 @@
 #include "channelpane.h"
 #include "ui/chatview.h"
 #include "ui/fadescrollbar.h"
+#include "ui/uistyle.h"
+#include "ui/searchbar.h"
+#include "ui/nickfilteredit.h"
 
 #include <QListWidget>
 #include <QScroller>
@@ -52,15 +55,11 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     f.setBold(true);
     nameLabel->setFont(f);
 
-    const QString headerBtnStyle =
-        "QToolButton { background: transparent; border: none; }"
-        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }";
-
     m_popOutBtn = new QToolButton;
     m_popOutBtn->setFixedSize(28, 28);
     m_popOutBtn->setIconSize(QSize(24, 24));
     m_popOutBtn->setAutoRaise(true);
-    m_popOutBtn->setStyleSheet(headerBtnStyle);
+    m_popOutBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_popOutBtn->setToolTip(QStringLiteral("Open in a window"));
     connect(m_popOutBtn, &QToolButton::clicked, this, &ChannelPane::popOutRequested);
 
@@ -68,11 +67,11 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_searchBtn->setFixedSize(28, 28);
     m_searchBtn->setIconSize(QSize(24, 24));
     m_searchBtn->setAutoRaise(true);
-    m_searchBtn->setStyleSheet(headerBtnStyle);
+    m_searchBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_searchBtn->setToolTip(QStringLiteral("Search (Ctrl+F)"));
     connect(m_searchBtn, &QToolButton::clicked, this, [this]{
-        if (m_searchBar->isVisible()) hideSearch();
-        else { m_searchBar->show(); m_searchInput->setFocus(); m_searchInput->selectAll(); }
+        if (m_searchBar->isVisible()) m_searchBar->dismiss();
+        else m_searchBar->open();
     });
 
     m_closeBtn = new QToolButton;
@@ -161,18 +160,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     nhbox->addWidget(m_nickCountLabel);
     nhbox->addStretch(1);
 
-    m_nickFilter = new QLineEdit;
-    m_nickFilter->setObjectName("nickFilter");
-    m_nickFilter->setPlaceholderText("filter users…");
-    m_nickFilter->setClearButtonEnabled(true);
-    connect(m_nickFilter, &QLineEdit::textChanged, this, [this](const QString &text){
-        const QString lower = text.toLower();
-        for (int i = 0; i < m_nickList->count(); ++i) {
-            auto *item = m_nickList->item(i);
-            const QString nick = item->data(Qt::UserRole).toString().toLower();
-            item->setHidden(!lower.isEmpty() && !nick.startsWith(lower));
-        }
-    });
+    m_nickFilter = new NickFilterEdit(m_nickList);
 
     m_nickWrapper = new QWidget;
     m_nickWrapper->setObjectName("nickPanel");
@@ -190,7 +178,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_nickRevealBtn->setFixedSize(28, 28);
     m_nickRevealBtn->setIconSize(QSize(20, 20));
     m_nickRevealBtn->setAutoRaise(true);
-    m_nickRevealBtn->setStyleSheet(headerBtnStyle);
+    m_nickRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_nickRevealBtn->setToolTip(QStringLiteral("Show user list"));
     m_nickRevealBtn->hide();
     connect(m_nickToggleBtn, &QToolButton::clicked, this, [this]{
@@ -213,28 +201,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     vbox->addWidget(bodySplitter, 1);
 
     // Search bar (hidden until the magnifier is clicked)
-    m_searchBar = new QWidget;
-    m_searchBar->setObjectName("searchBar");
-    {
-        auto *shbox = new QHBoxLayout(m_searchBar);
-        shbox->setContentsMargins(4, 2, 4, 2);
-        shbox->setSpacing(4);
-        m_searchInput = new QLineEdit;
-        m_searchInput->setPlaceholderText(QStringLiteral("Search in buffer…"));
-        m_searchInput->installEventFilter(this);
-        connect(m_searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
-            if (text.isEmpty()) m_chatView->clearFind();
-            else m_chatView->findText(text, false);
-        });
-        auto *sClose = new QToolButton;
-        sClose->setText(QStringLiteral("✕"));
-        sClose->setFixedSize(22, 22);
-        sClose->setAutoRaise(true);
-        connect(sClose, &QToolButton::clicked, this, [this]{ hideSearch(); });
-        shbox->addWidget(m_searchInput, 1);
-        shbox->addWidget(sClose);
-    }
-    m_searchBar->hide();
+    m_searchBar = new SearchBar(m_chatView);
     vbox->addWidget(m_searchBar);
 
     // Typing indicator (hidden until someone is typing)
@@ -344,14 +311,6 @@ void ChannelPane::setPopOutIcon(const QIcon &icon)
 void ChannelPane::setPopOutVisible(bool visible)
 {
     if (m_popOutBtn) m_popOutBtn->setVisible(visible);
-}
-
-void ChannelPane::hideSearch()
-{
-    if (!m_searchBar) return;
-    m_searchBar->hide();
-    m_searchInput->clear();
-    m_chatView->clearFind();
 }
 
 void ChannelPane::setTyping(const QString &text)
@@ -482,11 +441,6 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
             }
         }
         return false;
-    }
-
-    if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
-        auto *ke = static_cast<QKeyEvent*>(event);
-        if (ke->key() == Qt::Key_Escape) { hideSearch(); return true; }
     }
 
     if (obj == m_input && event->type() == QEvent::KeyPress) {
