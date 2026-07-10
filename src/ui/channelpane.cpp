@@ -120,6 +120,8 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
+        if (m_nickRevealBtn && m_nickRevealBtn->isVisible())
+            positionNickRevealBtn();
     });
 
     // Chat view
@@ -131,18 +133,80 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_nickList->setUniformItemSizes(true);
     QScroller::grabGesture(m_nickList->viewport(), QScroller::LeftMouseButtonGesture);
 
-    auto *nickWrapper = new QWidget;
-    nickWrapper->setObjectName("nickPanel");
-    auto *nwvbox = new QVBoxLayout(nickWrapper);
+    // Nick panel header — same widgets as the main window's user list
+    m_nickToggleBtn = new QToolButton;
+    m_nickToggleBtn->setFixedSize(28, 28);
+    m_nickToggleBtn->setIconSize(QSize(20, 20));
+    m_nickToggleBtn->setAutoRaise(true);
+    m_nickToggleBtn->setToolTip(QStringLiteral("Hide user list"));
+
+    m_nickGroupsIcon = new QLabel;
+    m_nickGroupsIcon->setObjectName("nickGroupsIcon");
+    m_nickGroupsIcon->setContentsMargins(4, 0, 2, 0);
+    m_nickGroupsIcon->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+
+    m_nickCountLabel = new QLabel(QStringLiteral("0"));
+    m_nickCountLabel->setObjectName("nickCountLabel");
+    m_nickCountLabel->setContentsMargins(0, 0, 4, 0);
+    m_nickCountLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+
+    auto *nickHeader = new QWidget;
+    nickHeader->setObjectName("nickPanelHeader");
+    auto *nhbox = new QHBoxLayout(nickHeader);
+    nhbox->setContentsMargins(2, 0, 2, 0);
+    nhbox->setSpacing(2);
+    nhbox->addWidget(m_nickToggleBtn);
+    nhbox->addWidget(m_nickGroupsIcon);
+    nhbox->addSpacing(2);
+    nhbox->addWidget(m_nickCountLabel);
+    nhbox->addStretch(1);
+
+    m_nickFilter = new QLineEdit;
+    m_nickFilter->setObjectName("nickFilter");
+    m_nickFilter->setPlaceholderText("filter users…");
+    m_nickFilter->setClearButtonEnabled(true);
+    connect(m_nickFilter, &QLineEdit::textChanged, this, [this](const QString &text){
+        const QString lower = text.toLower();
+        for (int i = 0; i < m_nickList->count(); ++i) {
+            auto *item = m_nickList->item(i);
+            const QString nick = item->data(Qt::UserRole).toString().toLower();
+            item->setHidden(!lower.isEmpty() && !nick.startsWith(lower));
+        }
+    });
+
+    m_nickWrapper = new QWidget;
+    m_nickWrapper->setObjectName("nickPanel");
+    m_nickWrapper->setMinimumWidth(24);
+    auto *nwvbox = new QVBoxLayout(m_nickWrapper);
     nwvbox->setContentsMargins(0, 0, 0, 0);
     nwvbox->setSpacing(0);
+    nwvbox->addWidget(nickHeader);
+    nwvbox->addWidget(m_nickFilter);
     nwvbox->addWidget(m_nickList, 100);
     nwvbox->addStretch(1);
+
+    // Floating reveal button — shown over the chat when the list is hidden
+    m_nickRevealBtn = new QToolButton(this);
+    m_nickRevealBtn->setFixedSize(28, 28);
+    m_nickRevealBtn->setIconSize(QSize(20, 20));
+    m_nickRevealBtn->setAutoRaise(true);
+    m_nickRevealBtn->setStyleSheet(headerBtnStyle);
+    m_nickRevealBtn->setToolTip(QStringLiteral("Show user list"));
+    m_nickRevealBtn->hide();
+    connect(m_nickToggleBtn, &QToolButton::clicked, this, [this]{
+        m_nickWrapper->hide();
+        positionNickRevealBtn();
+        m_nickRevealBtn->show();
+    });
+    connect(m_nickRevealBtn, &QToolButton::clicked, this, [this]{
+        m_nickRevealBtn->hide();
+        m_nickWrapper->show();
+    });
 
     auto *bodySplitter = new QSplitter(Qt::Horizontal);
     bodySplitter->setHandleWidth(0);
     bodySplitter->addWidget(m_chatView);
-    bodySplitter->addWidget(nickWrapper);
+    bodySplitter->addWidget(m_nickWrapper);
     bodySplitter->setStretchFactor(0, 1);
     bodySplitter->setStretchFactor(1, 0);
     bodySplitter->setSizes({999, 120});
@@ -194,18 +258,14 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->document()->setDocumentMargin(2);
-    m_input->setFixedHeight(m_input->fontMetrics().lineSpacing() + 10);
     m_input->installEventFilter(this);
     ibox->addWidget(m_nickPrefix);
     ibox->addWidget(m_input, 1);
     vbox->addWidget(inputBar);
+    updateInputHeight();
 
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
-        const QString text = m_input->toPlainText();
-        const int lineH = m_input->fontMetrics().lineSpacing();
-        const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-        const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
-        m_input->setFixedHeight(lines * lineH + margins);
+        updateInputHeight();
     });
 }
 
@@ -217,6 +277,49 @@ void ChannelPane::setNick(const QString &nick)
 void ChannelPane::setNickVisible(bool visible)
 {
     if (m_nickPrefix) m_nickPrefix->setVisible(visible);
+}
+
+void ChannelPane::setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups)
+{
+    if (m_nickToggleBtn)  m_nickToggleBtn->setIcon(hide);
+    if (m_nickRevealBtn)  m_nickRevealBtn->setIcon(reveal);
+    if (m_nickGroupsIcon) m_nickGroupsIcon->setPixmap(groups);
+}
+
+void ChannelPane::setNickPanelFont(const QFont &f)
+{
+    guardFont(m_nickWrapper, f);
+    guardFont(m_nickCountLabel, f);
+}
+
+void ChannelPane::setNickCount(int count)
+{
+    if (!m_nickCountLabel) return;
+    const QString countStr = QString::number(count);
+    m_nickCountLabel->setText(countStr);
+    m_nickCountLabel->setToolTip(countStr + " users");
+}
+
+void ChannelPane::clearNickFilter()
+{
+    if (m_nickFilter) m_nickFilter->clear();
+}
+
+void ChannelPane::positionNickRevealBtn()
+{
+    if (!m_nickRevealBtn) return;
+    const int topY = m_header->height()
+                   + (m_topicBar && m_topicBar->isVisible() ? m_topicBar->height() : 0)
+                   + 4;
+    m_nickRevealBtn->move(width() - m_nickRevealBtn->width() - 4, topY);
+    m_nickRevealBtn->raise();
+}
+
+void ChannelPane::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    if (m_nickRevealBtn && m_nickRevealBtn->isVisible())
+        positionNickRevealBtn();
 }
 
 void ChannelPane::setCloseIcon(const QIcon &icon)
@@ -265,20 +368,61 @@ void ChannelPane::setTypingEnabled(bool on)
 
 void ChannelPane::setTypingFont(const QFont &f)
 {
-    if (m_typingLabel) m_typingLabel->setFont(f);
+    guardFont(m_typingLabel, f);
+}
+
+// Repolishes (reparenting under the app stylesheet — QTBUG-45332) reset
+// programmatic fonts to the app default, and on some platforms that happens
+// asynchronously after the pane is laid out. Remember every font we assign
+// and re-assert it whenever a FontChange deviates from it.
+void ChannelPane::guardFont(QWidget *w, const QFont &f)
+{
+    if (!w) return;
+    m_fontGuards[w] = f;
+    w->setFont(f);
+    w->installEventFilter(this);
 }
 
 void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
 {
-    if (m_nickPrefix) m_nickPrefix->setFont(nickFont);
-    if (m_input)      m_input->setFont(inputFont);
+    guardFont(m_nickPrefix, nickFont);
+    if (m_input) {
+        guardFont(m_input, inputFont);
+        updateInputHeight();
+    }
+}
+
+void ChannelPane::setChatFont(const QFont &f)
+{
+    if (!m_chatView) return;
+    m_fontGuards[m_chatView] = f;
+    m_chatView->setFont(f); // ChatView's own setFont (also fonts the viewport)
+    m_chatView->installEventFilter(this);
+}
+
+void ChannelPane::setNickListFont(const QFont &f)
+{
+    guardFont(m_nickList, f);
+}
+
+// Auto-resize: 1 to 4 lines. Polish first — the stylesheet's input padding
+// only lands in contentsMargins() once the widget is polished, and measuring
+// before that undersizes the box.
+void ChannelPane::updateInputHeight()
+{
+    if (!m_input) return;
+    m_input->ensurePolished();
+    const int lineH   = m_input->fontMetrics().lineSpacing();
+    const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
+    const int lines   = qMin(4, static_cast<int>(m_input->toPlainText().count('\n')) + 1);
+    m_input->setFixedHeight(lines * lineH + margins);
 }
 
 void ChannelPane::setTopicFont(const QFont &f)
 {
     m_topicFontPt = f.pointSize();
     if (m_topicText) {
-        m_topicText->setFont(f);
+        guardFont(m_topicText, f);
         if (!m_rawTopicHtml.isEmpty())
             m_topicText->setText(
                 QString("<span style='font-size:%1pt;'>%2</span>").arg(m_topicFontPt).arg(m_rawTopicHtml));
@@ -319,6 +463,27 @@ void ChannelPane::setDragHighlight(bool on)
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
+    // A repolish reset a guarded widget's font — put ours back. Compare the
+    // attributes we care about (not QFont equality, whose resolve-mask
+    // comparison never matches a resolved widget font) and latch against the
+    // FontChange our own setFont re-triggers.
+    if (event->type() == QEvent::FontChange && !m_fontGuardBusy) {
+        auto *w = qobject_cast<QWidget*>(obj);
+        const auto it = w ? m_fontGuards.constFind(w) : m_fontGuards.constEnd();
+        if (it != m_fontGuards.constEnd()) {
+            const QFont cur = w->font();
+            if (cur.families() != it->families()
+                || !qFuzzyCompare(cur.pointSizeF(), it->pointSizeF())) {
+                m_fontGuardBusy = true;
+                if (w == m_chatView) m_chatView->setFont(it.value());
+                else                 w->setFont(it.value());
+                m_fontGuardBusy = false;
+                if (w == m_input) updateInputHeight();
+            }
+        }
+        return false;
+    }
+
     if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent*>(event);
         if (ke->key() == Qt::Key_Escape) { hideSearch(); return true; }

@@ -1,6 +1,33 @@
 # Changelog
 
 <!--
+Session 2026-07-10 — session close:
+- Channel panes reach full parity with the main view:
+  - Pane user list now has the main view's header (hide/reveal toggle, groups
+    icon, live user count) and the "filter users…" box; count tracks
+    join/part/quit, filter clears on list rebuild; reveal button floats over
+    the chat when the list is hidden (repositions on resize/topic toggle).
+  - Pane input height matched the main input: the QSS input padding only lands
+    in contentsMargins() after polish, so ChannelPane now polishes before
+    measuring (shared updateInputHeight()); height also recomputes on font
+    changes.
+  - Root cause of "pane fonts bigger than main": reparenting under the app
+    stylesheet (dock/float/rebuild all setParent) resets programmatic fonts to
+    the app default 12pt (QTBUG-45332), and on Wayland the repolish can land
+    asynchronously after any re-apply. Two-layer fix: applyFontSizes() runs
+    after rebuildPaneLayout()/floatPane(), and ChannelPane now guards every
+    font it owns — on a FontChange that deviates in family/point size it
+    re-asserts the configured font (re-entry latch; attribute compare, not
+    QFont operator== which never matches resolved fonts).
+  - Pane fonts built identically to the main window's (emoji fallback
+    families; previously QFont(fam) + Monospace hint).
+  - Pane nick header/count use font_nick_dock like the main panel.
+- Docs: howto channel-panes notes the pane user-list controls.
+- Roadmap: added horizontal pane splits and multi-window drag/arrange.
+- Reminder: uplinkbot RAG needs a restart to pick up this session's doc changes.
+-->
+
+<!--
 Session 2026-07-09 (i) — session close:
 - Code review pass over the pop-out window work (PRs #28/#29): 8 finder angles +
   verification; 13 confirmed findings, all fixed:
