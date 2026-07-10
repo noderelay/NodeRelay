@@ -212,7 +212,7 @@ void MainWindow::connectPreferences()
                     MenuIcons::topicBubble(QColor(m_theme.placeholder)),
                     MenuIcons::topicBubble(QColor(m_theme.accent)));
                 const QColor ic(m_theme.text);
-                pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 16));
+                pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
                 pane->setPopOutIcon(MenuIcons::pipEnter(ic));
             }
         }
