@@ -142,6 +142,7 @@ public:
 static constexpr int kDefaultWindowW  = 900;
 static constexpr int kDefaultWindowH  = 650;
 static constexpr int kMaxExtraPanes   = 3;
+static constexpr int kMaxPaneWindows  = 4;
 
 
 // ---------------------------------------------------------------------------
@@ -326,12 +327,20 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         s.setValue("windowState", saveState());
         s.setValue("nickSplitter", m_chatSplitter->saveState());
         s.setValue("sidebarWidth", m_sidebarExpandedWidth);
+        // Persist original-case host|channel (not the lowercased pane key):
+        // the restore path rebuilds BufferIds from these strings, and a
+        // lowercased channel breaks case-sensitive lookups (typing state)
+        // and window titles.
         QStringList paneList;
         for (auto *p : std::as_const(m_orderedPanes))
-            paneList << p->key();
+            paneList << p->host().str() + "|" + p->channel().str();
         s.setValue("panes", paneList);
         s.setValue("primarySlot", m_primarySlot);
-        s.setValue("paneWindows", QStringList(m_paneWindows.keys()));
+        QStringList winList;
+        for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it)
+            if (auto *p = m_panes.value(it.key()))
+                winList << p->host().str() + "|" + p->channel().str();
+        s.setValue("paneWindows", winList);
     });
 
 #if defined(__linux__) && !defined(__MUSL__)
@@ -352,7 +361,14 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
 }
 
-MainWindow::~MainWindow() = default;
+MainWindow::~MainWindow()
+{
+    // Floating pane windows are parentless top-levels; delete them explicitly.
+    for (auto *win : std::as_const(m_paneWindows)) {
+        win->removeEventFilter(this);
+        delete win;
+    }
+}
 
 void MainWindow::correctStartupGeometry()
 {
@@ -574,7 +590,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             if (delta != 0 && applyZoom(obj, delta))
                 return true;
         }
-        if (ke->modifiers() & Qt::AltModifier) {
+        // Alt-navigation only applies to widgets living in the main window —
+        // a floating pane window shouldn't drive the main view's selection.
+        auto *kw = qobject_cast<QWidget *>(obj);
+        if ((ke->modifiers() & Qt::AltModifier) && kw && kw->window() == this) {
             if (ke->key() == Qt::Key_Up)   { navigateChannel(-1); return true; }
             if (ke->key() == Qt::Key_Down) { navigateChannel(+1); return true; }
             if (ke->key() == Qt::Key_Left) { navigatePane(-1);    return true; }
@@ -966,6 +985,23 @@ void MainWindow::onServerDisconnected(ServerId host)
                 m_botIconIdx.remove(bn);
         for (const QString &bn : sess->botNicks)
             m_botIconIdx.remove(bn);
+    } else {
+        // No session left → the server was removed (Manage Servers), not just
+        // dropped. Tear down its panes and floating windows or they linger
+        // as zombies pointing at the removed session.
+        closePanesForHost(host);
+    }
+}
+
+// Closes every docked pane and floating window belonging to a server.
+void MainWindow::closePanesForHost(ServerId host)
+{
+    const QString prefix = host.str() + "|";
+    const QStringList keys = m_panes.keys();
+    for (const QString &k : keys) {
+        if (!k.startsWith(prefix)) continue;
+        if (auto *pane = m_panes.value(k))
+            closeChannelPane(pane->host(), pane->channel());
     }
 }
 
@@ -974,11 +1010,8 @@ void MainWindow::onServerClosed(ServerId host)
     auto *srv = findServerItem(host);
     if (!srv) return;
 
-    // Close any open panes for channels on this server
-    for (int i = srv->childCount() - 1; i >= 0; --i) {
-        const BufferId ch{srv->child(i)->data(0, Qt::UserRole + 1).toString()};
-        closeChannelPane(host, ch);
-    }
+    // Close any open panes/windows for channels on this server
+    closePanesForHost(host);
 
     // Prune per-channel caches for this server
     const QString prefix = host.str() + '\t';
@@ -1006,9 +1039,12 @@ void MainWindow::onChannelAdded(ServerId host, BufferId channel)
     item->setData(0, Qt::UserRole,     host.str());
     item->setData(0, Qt::UserRole + 1, channel.str());
 
-    // Restored floating window for this channel: re-mark it as checked out.
-    if (m_paneWindows.contains(host.str() + "|" + channel.str().toLower()))
+    // Checked out to a floating window: re-mark, but don't select or raise —
+    // (re)joins would otherwise steal focus and misplace the sidebar highlight.
+    if (m_paneWindows.contains(host.str() + "|" + channel.str().toLower())) {
         setChannelCheckedOut(host, channel, true);
+        return;
+    }
 
     m_sidebar->setCurrentItem(item);
     switchToChannel(host, channel);
@@ -1114,8 +1150,10 @@ void MainWindow::onTypingReceived(ServerId host, BufferId channel,
 {
     if (!m_config.ui.typingIndicator) return;
 
-    const QString key      = host.str() + "|" + channel.str();
-    const QString timerKey = host.str() + "|" + channel.str() + "|" + nick;
+    // Lowercase the channel so lookups match regardless of source case
+    // (restored panes carry lowercased names; the server sends its own case).
+    const QString key      = host.str() + "|" + channel.str().toLower();
+    const QString timerKey = key + "|" + nick;
 
     if (state == "active" || state == "paused") {
         m_typingNicks[key].insert(nick);
@@ -1153,7 +1191,7 @@ void MainWindow::onTypingReceived(ServerId host, BufferId channel,
 QString MainWindow::typingText(ServerId host, BufferId channel) const
 {
     if (!m_config.ui.typingIndicator) return {};
-    const QString key = host.str() + "|" + channel.str();
+    const QString key = host.str() + "|" + channel.str().toLower();
     const QSet<QString> &typers = m_typingNicks.value(key);
     if (typers.isEmpty()) return {};
 
@@ -1289,6 +1327,8 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
         win->activateWindow();
         if (auto *active = findChannelItem(m_model->activeHost(), m_model->activeChannel()))
             m_sidebar->setCurrentItem(active);
+        else
+            m_sidebar->clearSelection(); // don't leave the checked-out row highlighted
         return;
     }
 
@@ -1410,6 +1450,7 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
 
     pane->input()->installEventFilter(this);
     pane->setTypingEnabled(m_config.ui.typingIndicator);
+    pane->setTyping(typingText(pane->host(), pane->channel())); // seed current typers
     {
         const QColor ic(m_theme.valid ? m_theme.text : QStringLiteral("#e3e3e3"));
         pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
@@ -1555,6 +1596,7 @@ void MainWindow::popOutChannel(ServerId host, BufferId channel)
         win->show(); win->raise(); win->activateWindow();
         return;
     }
+    if (m_paneWindows.size() >= kMaxPaneWindows) return;
     if (auto *existing = m_panes.value(key)) { floatPane(existing); return; }
 
     if (auto *pane = createPane(std::move(host), std::move(channel)))
@@ -1565,7 +1607,9 @@ void MainWindow::popOutChannel(ServerId host, BufferId channel)
 // top-level window and checks the channel out of the main view.
 void MainWindow::floatPane(ChannelPane *pane)
 {
-    if (!pane) return;
+    // Cap check must precede the m_orderedPanes removal so a refused
+    // docked pane stays docked untouched.
+    if (!pane || m_paneWindows.size() >= kMaxPaneWindows) return;
     const QString  key     = pane->key();
     const ServerId host    = pane->host();
     const BufferId channel = pane->channel();
@@ -1603,8 +1647,12 @@ void MainWindow::floatPane(ChannelPane *pane)
         switchAwayFromChannel(host, channel);
     setChannelCheckedOut(host, channel, true);
 
-    refreshPaneChatView(pane);
-    refreshPaneNickList(pane);
+    // A previously docked pane is already rendered; reparenting keeps its
+    // content, so only freshly created panes need the initial fill.
+    if (!wasDocked) {
+        refreshPaneChatView(pane);
+        refreshPaneNickList(pane);
+    }
 }
 
 // Italicises/dims a channel's sidebar row while it's checked out to a floating
@@ -1617,7 +1665,8 @@ void MainWindow::setChannelCheckedOut(ServerId host, BufferId channel, bool out)
     f.setItalic(out);
     item->setFont(0, f);
     if (out)
-        item->setForeground(0, QColor("#6c7086"));
+        item->setForeground(0, QColor(m_theme.valid ? m_theme.placeholder
+                                                    : QStringLiteral("#6c7086")));
     else
         item->setData(0, Qt::ForegroundRole, QVariant()); // reset to default
 }
@@ -1677,9 +1726,13 @@ void MainWindow::closeChannelPane(ServerId host, BufferId channel)
         win->removeEventFilter(this);
         win->deleteLater(); // deletes the pane it owns
         setChannelCheckedOut(host, channel, false);
-        if (auto *item = findChannelItem(host, channel)) {
-            m_sidebar->setCurrentItem(item);
-            switchToChannel(host, channel); // available again → show in main
+        // Skip the reselect while the server itself is being torn down —
+        // no point churning the main view through dying buffers.
+        if (m_model->session(host)) {
+            if (auto *item = findChannelItem(host, channel)) {
+                m_sidebar->setCurrentItem(item);
+                switchToChannel(host, channel); // available again → show in main
+            }
         }
         return;
     }
@@ -1881,6 +1934,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
         hide();
         event->ignore();
     } else {
+        // Quitting: close floating pane windows too, or the app stays alive
+        // with only a channel window and no way back to the main UI. Detach
+        // our filter first and keep m_paneWindows intact so the aboutToQuit
+        // handler still persists them for the next launch.
+        for (auto *win : std::as_const(m_paneWindows)) {
+            win->removeEventFilter(this);
+            win->close();
+        }
         event->accept();
     }
 }

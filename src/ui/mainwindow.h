@@ -120,6 +120,7 @@ private:
     void popOutChannel   (ServerId host, BufferId channel);
     void floatPane       (ChannelPane *pane);
     void closeChannelPane(ServerId host, BufferId channel);
+    void closePanesForHost(ServerId host);
     ChannelPane *createPane(ServerId host, BufferId channel);
     void setChannelCheckedOut(ServerId host, BufferId channel, bool out);
     void switchAwayFromChannel(ServerId host, BufferId channel);

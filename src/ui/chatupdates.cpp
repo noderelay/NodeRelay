@@ -98,7 +98,11 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
         if (pCh) appendToView(pane->chatView(), pCh);
     }
 
-    if (m_config.ui.notifications && m_tray && !isActiveWindow()
+    // Suppress when either the main window or this channel's own popped-out
+    // window is focused — the user is already looking at the message.
+    auto *paneWin = m_paneWindows.value(paneKey);
+    const bool channelWindowActive = paneWin && paneWin->isActiveWindow();
+    if (m_config.ui.notifications && m_tray && !isActiveWindow() && !channelWindowActive
         && (msg.type == MessageType::Privmsg || msg.type == MessageType::Action))
     {
         const QString myNick = m_model->selfNick(host);

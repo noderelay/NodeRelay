@@ -1,6 +1,36 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (i) — session close:
+- Code review pass over the pop-out window work (PRs #28/#29): 8 finder angles +
+  verification; 13 confirmed findings, all fixed:
+  - closeEvent now closes floating windows on quit (app no longer stays alive
+    headless when the main window closes with a window open, no-tray case);
+    ~MainWindow deletes the parentless windows (shutdown leak).
+  - Server removal (Manage Servers) now tears down that host's panes/windows —
+    new closePanesForHost() helper, also used by onServerClosed; the floating-
+    close reselect is skipped during server teardown (no churn).
+  - New kMaxPaneWindows = 4 cap in popOutChannel/floatPane (the kMaxExtraPanes
+    cap only covered docked panes; windows were unbounded).
+  - Typing-state keys lowercased at write+read (restored mixed-case channels
+    showed no typing indicator); settings now persist original-case
+    host|channel for "panes"/"paneWindows" (window titles keep case).
+  - Tray notifications suppressed when the channel's own popped-out window is
+    focused; onChannelAdded no longer raises/steals focus for checked-out
+    channels on (re)join; Alt+arrow navigation ignored from floating windows;
+    checked-out dim color now m_theme.placeholder (was hardcoded #6c7086);
+    floatPane skips the redundant re-render when floating a docked pane;
+    new panes seed the typing label with current typers.
+- Deferred (verified, not fixed): shared keyFor()/isCheckedOut() helper for the
+  ~10 hand-rolled pane-key sites; shared SearchBar widget (inputbar/channelpane
+  duplication); shared theme-aware header-button style (14 copies of the white
+  rgba hover); duplicate-buffer display when primary shows a docked pane's
+  channel (partly pre-existing).
+- Docs: howto channel-panes limits note the 4-window cap.
+- Reminder: uplinkbot RAG needs a restart to pick up this session's doc changes.
+-->
+
+<!--
 Session 2026-07-09 (h) — session close:
 - Feature: pop-out channel windows. Any channel can float into its own top-level
   window — via a new pop-out (picture-in-picture) button in the channel header
