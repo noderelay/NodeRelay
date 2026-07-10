@@ -73,7 +73,7 @@
     html { scroll-behavior: auto; }
     /* Kill transitions/smooth-scroll under reduced-motion, but NOT animations:
        the only keyframe animation on the page is the hero opacity crossfade,
-       which is motion-free (just a fade) and must keep running or the three
+       which is motion-free (just a fade) and must keep running or the four
        stacked screenshots all show at opacity:1 at once. Firefox refuses to let
        a more-specific !important rule re-enable an animation the universal
        reset killed, so we simply never kill it. */
@@ -220,25 +220,26 @@
      its own aspect ratio (some themes are shorter) — prevents a shorter image
      from letting the one behind it peek out. */
   .hero-frame {
-    position: relative; padding-top: calc(666 / 1016 * 100%);
+    position: relative; padding-top: calc(824 / 1016 * 100%);
     border-radius: 8px; border: 1px solid var(--gb-bg2);
     box-shadow: 0 20px 50px rgba(60,56,54,0.22); overflow: hidden;
   }
   .hero-frame img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: contain; object-position: center; display: block;
-    animation: heroFade 21s ease-in-out infinite;
+    animation: heroFade 28s ease-in-out infinite;
   }
   .hero-frame img:nth-child(1) { animation-delay: 0s; }
-  .hero-frame img:nth-child(2) { animation-delay: -14s; }
-  .hero-frame img:nth-child(3) { animation-delay: -7s; }
-  /* 21s cycle, 3 images: ~5s fully visible each, 2s crossfade.
-     Fade-out (23.8% → 33.33%) of one image lines up with the
-     fade-in (90.5% → 100%) of the next via the -7s delay steps. */
+  .hero-frame img:nth-child(2) { animation-delay: -21s; }
+  .hero-frame img:nth-child(3) { animation-delay: -14s; }
+  .hero-frame img:nth-child(4) { animation-delay: -7s; }
+  /* 28s cycle, 4 images: ~5s fully visible each, 2s crossfade.
+     Fade-out (17.86% → 25%) of one image lines up with the
+     fade-in (92.86% → 100%) of the next via the -7s delay steps. */
   @keyframes heroFade {
-    0%, 23.8%   { opacity: 1; }
-    33.33%, 90.5% { opacity: 0; }
-    100%        { opacity: 1; }
+    0%, 17.86%   { opacity: 1; }
+    25%, 92.86%  { opacity: 0; }
+    100%         { opacity: 1; }
   }
 
   /* ── SECTIONS ── */
@@ -520,9 +521,10 @@
   </div>
   <div class="hero-shot">
     <div class="hero-frame">
-      <img src="assets/nord.png" alt="Uplink in Nord theme" width="1016" height="666">
-      <img src="assets/gruvbox-light.png" alt="Uplink in Gruvbox Light theme" width="1016" height="666">
-      <img src="assets/harmonic16.png" alt="Uplink in Harmonic16 theme" width="1016" height="666">
+      <img src="assets/gruvbox-dark.png" alt="Uplink in Gruvbox Dark theme" width="1016" height="824">
+      <img src="assets/flexor-dark.png" alt="Uplink in Flexor Dark theme" width="1016" height="824">
+      <img src="assets/kde.png" alt="Uplink joined to #kde on Libera" width="1016" height="824">
+      <img src="assets/archlinux.png" alt="Uplink joined to #archlinux on Libera" width="1016" height="824">
     </div>
   </div>
 </header>
@@ -761,8 +763,8 @@
         <p>ZNC and soju are native citizens: <code>znc.in/playback</code>, <code>soju.im/bouncer-networks</code>, read markers, and self-message echo all work out of the box.</p>
       </div>
       <div class="feat-card b-yellow">
-        <h3>Channel panes</h3>
-        <p>Open up to four channels at once — each pane gets its own history, nick list, topic bar, and input. Auto-layout from side-by-side to a 2×2 grid.</p>
+        <h3>Channel panes &amp; pop-out windows</h3>
+        <p>Open up to four channels at once — each pane gets its own history, nick list, topic bar, search, and input. Auto-layout from side-by-side to a 2×2 grid, or pop any channel out into its own window.</p>
       </div>
       <div class="feat-card b-green">
         <h3>Watch list &amp; logging</h3>

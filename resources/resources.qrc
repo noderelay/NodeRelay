@@ -33,6 +33,8 @@
         <file alias="mi-badge.svg">icons/mi-badge.svg</file>
         <file alias="mi-emoji-emotions.svg">icons/mi-emoji-emotions.svg</file>
         <file alias="mi-pending.svg">icons/mi-pending.svg</file>
+        <file alias="mi-pip-exit.svg">icons/mi-pip-exit.svg</file>
+        <file alias="mi-pip.svg">icons/mi-pip.svg</file>
         <file alias="mi-signal-cellular-alt.svg">icons/mi-signal-cellular-alt.svg</file>
         <file alias="mi-format-color-text.svg">icons/mi-format-color-text.svg</file>
         <file alias="mi-logout.svg">icons/mi-logout.svg</file>

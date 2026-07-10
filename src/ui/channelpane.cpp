@@ -7,6 +7,7 @@
 #include <QPlainTextEdit>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QLineEdit>
 #include <QToolButton>
 #include <QSplitter>
 #include <QVBoxLayout>
@@ -22,6 +23,11 @@
 ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
 {
+    // Paint a themed background (bufferBg) so the compose strip — typing
+    // indicator + input bar — sits on the chat colour like the main window.
+    setObjectName("channelPane");
+    setAttribute(Qt::WA_StyledBackground, true);
+
     auto *vbox = new QVBoxLayout(this);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
@@ -46,18 +52,43 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     f.setBold(true);
     nameLabel->setFont(f);
 
-    auto *closeBtn = new QToolButton;
-    closeBtn->setText(QStringLiteral("✕"));
-    closeBtn->setFixedSize(16, 16);
-    closeBtn->setStyleSheet(
+    const QString headerBtnStyle =
+        "QToolButton { background: transparent; border: none; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }";
+
+    m_popOutBtn = new QToolButton;
+    m_popOutBtn->setFixedSize(20, 20);
+    m_popOutBtn->setIconSize(QSize(16, 16));
+    m_popOutBtn->setAutoRaise(true);
+    m_popOutBtn->setStyleSheet(headerBtnStyle);
+    m_popOutBtn->setToolTip(QStringLiteral("Open in a window"));
+    connect(m_popOutBtn, &QToolButton::clicked, this, &ChannelPane::popOutRequested);
+
+    m_searchBtn = new QToolButton;
+    m_searchBtn->setFixedSize(20, 20);
+    m_searchBtn->setIconSize(QSize(16, 16));
+    m_searchBtn->setAutoRaise(true);
+    m_searchBtn->setStyleSheet(headerBtnStyle);
+    m_searchBtn->setToolTip(QStringLiteral("Search (Ctrl+F)"));
+    connect(m_searchBtn, &QToolButton::clicked, this, [this]{
+        if (m_searchBar->isVisible()) hideSearch();
+        else { m_searchBar->show(); m_searchInput->setFocus(); m_searchInput->selectAll(); }
+    });
+
+    m_closeBtn = new QToolButton;
+    m_closeBtn->setText(QStringLiteral("✕"));
+    m_closeBtn->setFixedSize(16, 16);
+    m_closeBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; padding: 0px; }"
         "QToolButton:hover { color: palette(highlight); }"
     );
-    connect(closeBtn, &QToolButton::clicked, this, &ChannelPane::closeRequested);
+    connect(m_closeBtn, &QToolButton::clicked, this, &ChannelPane::closeRequested);
 
     hbox->addWidget(m_topicToggle);
     hbox->addWidget(nameLabel, 1);
-    hbox->addWidget(closeBtn);
+    hbox->addWidget(m_popOutBtn);
+    hbox->addWidget(m_searchBtn);
+    hbox->addWidget(m_closeBtn);
     vbox->addWidget(m_header);
 
     m_header->installEventFilter(this);
@@ -117,6 +148,38 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     bodySplitter->setSizes({999, 120});
     vbox->addWidget(bodySplitter, 1);
 
+    // Search bar (hidden until the magnifier is clicked)
+    m_searchBar = new QWidget;
+    m_searchBar->setObjectName("searchBar");
+    {
+        auto *shbox = new QHBoxLayout(m_searchBar);
+        shbox->setContentsMargins(4, 2, 4, 2);
+        shbox->setSpacing(4);
+        m_searchInput = new QLineEdit;
+        m_searchInput->setPlaceholderText(QStringLiteral("Search in buffer…"));
+        m_searchInput->installEventFilter(this);
+        connect(m_searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
+            if (text.isEmpty()) m_chatView->clearFind();
+            else m_chatView->findText(text, false);
+        });
+        auto *sClose = new QToolButton;
+        sClose->setText(QStringLiteral("✕"));
+        sClose->setFixedSize(22, 22);
+        sClose->setAutoRaise(true);
+        connect(sClose, &QToolButton::clicked, this, [this]{ hideSearch(); });
+        shbox->addWidget(m_searchInput, 1);
+        shbox->addWidget(sClose);
+    }
+    m_searchBar->hide();
+    vbox->addWidget(m_searchBar);
+
+    // Typing indicator (hidden until someone is typing)
+    m_typingLabel = new QLabel;
+    m_typingLabel->setObjectName("typingLabel");
+    m_typingLabel->setContentsMargins(8, 2, 8, 2);
+    m_typingLabel->hide();
+    vbox->addWidget(m_typingLabel);
+
     // Input bar
     auto *inputBar = new QWidget;
     inputBar->setObjectName("inputBar");
@@ -154,6 +217,55 @@ void ChannelPane::setNick(const QString &nick)
 void ChannelPane::setNickVisible(bool visible)
 {
     if (m_nickPrefix) m_nickPrefix->setVisible(visible);
+}
+
+void ChannelPane::setCloseIcon(const QIcon &icon)
+{
+    if (!m_closeBtn) return;
+    m_closeBtn->setText({});
+    m_closeBtn->setIcon(icon);
+    m_closeBtn->setIconSize(QSize(14, 14));
+    m_closeBtn->setToolTip(QStringLiteral("Close window"));
+}
+
+void ChannelPane::setSearchIcon(const QIcon &icon)
+{
+    if (m_searchBtn) m_searchBtn->setIcon(icon);
+}
+
+void ChannelPane::setPopOutIcon(const QIcon &icon)
+{
+    if (m_popOutBtn) m_popOutBtn->setIcon(icon);
+}
+
+void ChannelPane::setPopOutVisible(bool visible)
+{
+    if (m_popOutBtn) m_popOutBtn->setVisible(visible);
+}
+
+void ChannelPane::hideSearch()
+{
+    if (!m_searchBar) return;
+    m_searchBar->hide();
+    m_searchInput->clear();
+    m_chatView->clearFind();
+}
+
+void ChannelPane::setTyping(const QString &text)
+{
+    // Text only — the label keeps its (reserved) space so the input bar
+    // doesn't jump. Overall visibility is governed by setTypingEnabled().
+    if (m_typingLabel) m_typingLabel->setText(text);
+}
+
+void ChannelPane::setTypingEnabled(bool on)
+{
+    if (m_typingLabel) m_typingLabel->setVisible(on);
+}
+
+void ChannelPane::setTypingFont(const QFont &f)
+{
+    if (m_typingLabel) m_typingLabel->setFont(f);
 }
 
 void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
@@ -207,6 +319,11 @@ void ChannelPane::setDragHighlight(bool on)
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent*>(event);
+        if (ke->key() == Qt::Key_Escape) { hideSearch(); return true; }
+    }
+
     if (obj == m_input && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent*>(event);
         if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {

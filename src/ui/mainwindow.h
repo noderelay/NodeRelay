@@ -115,8 +115,14 @@ private:
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
     void updateTypingLabel();
+    QString typingText(ServerId host, BufferId channel) const;
     void openChannelPane (ServerId host, BufferId channel);
+    void popOutChannel   (ServerId host, BufferId channel);
+    void floatPane       (ChannelPane *pane);
     void closeChannelPane(ServerId host, BufferId channel);
+    ChannelPane *createPane(ServerId host, BufferId channel);
+    void setChannelCheckedOut(ServerId host, BufferId channel, bool out);
+    void switchAwayFromChannel(ServerId host, BufferId channel);
     ChannelPane *paneAt(const QPoint &globalPos) const;
     bool         isOverPrimary(const QPoint &globalPos) const;
     void refreshPaneChatView(ChannelPane *pane);
@@ -202,6 +208,7 @@ private:
     QWidget      *m_primaryHeader{nullptr};
     QToolButton  *m_primaryTopicBtn{nullptr};
     QToolButton  *m_searchBtn{nullptr};
+    QToolButton  *m_popOutBtn{nullptr};
     QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;
     QWidget      *m_nickPanel{nullptr};
@@ -220,7 +227,8 @@ private:
     QSplitter    *m_chatSplitter{nullptr};
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
-    QList<ChannelPane*>          m_orderedPanes; // insertion order for layout
+    QList<ChannelPane*>          m_orderedPanes; // insertion order for layout (docked panes only)
+    QHash<QString, QWidget*>     m_paneWindows;  // key -> top-level window for popped-out panes
     QSet<QString>                m_nickRefreshPending;    // channels with a debounced refresh queued
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
     ChannelPane                 *m_dragHighlighted{nullptr};
