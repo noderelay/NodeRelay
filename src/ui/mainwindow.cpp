@@ -489,9 +489,9 @@ void MainWindow::applyFontSizes()
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
     for (auto *p : std::as_const(m_panes)) {
-        const QFont chatFont = makeFont(fs.chat);
-        p->chatView()->setFont(chatFont);
-        p->nickList()->setFont(makeFont(fs.nickList));
+        p->setChatFont(makeFont(fs.chat));
+        p->setNickListFont(makeFont(fs.nickList));
+        p->setNickPanelFont(makeFont(fs.nickDock));
         p->setTopicFont(makeFont(fs.topicText));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
         p->setTypingFont(makeFont(fs.typing));
@@ -1455,6 +1455,10 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
         const QColor ic(m_theme.valid ? m_theme.text : QStringLiteral("#e3e3e3"));
         pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
         pane->setPopOutIcon(MenuIcons::pipEnter(ic));
+        pane->setNickPanelIcons(
+            MenuIcons::fromSvg(QStringLiteral(":/icons/mi-right-panel-close.svg"), ic, 20),
+            MenuIcons::fromSvg(QStringLiteral(":/icons/mi-left-panel-close.svg"), ic, 20),
+            MenuIcons::groups(ic, 20));
     }
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,
@@ -1494,10 +1498,18 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
     {
         const FontSizes &fs = m_config.ui.fontSizes;
         const QString   &fam = m_config.ui.fontFamily;
-        auto makeFont = [&](double pt){ QFont f(fam); f.setPointSizeF(pt); f.setStyleHint(QFont::Monospace); return f; };
-        const QFont chatFont = makeFont(fs.chat);
-        pane->chatView()->setFont(chatFont);
-        pane->nickList()->setFont(makeFont(fs.nickList));
+        auto makeFont = [&](double pt){
+            QFont f;
+            f.setFamilies({fam,
+                           QStringLiteral("Noto Color Emoji"),
+                           QStringLiteral("Segoe UI Emoji"),
+                           QStringLiteral("Apple Color Emoji")});
+            f.setPointSizeF(pt);
+            return f;
+        };
+        pane->setChatFont(makeFont(fs.chat));
+        pane->setNickListFont(makeFont(fs.nickList));
+        pane->setNickPanelFont(makeFont(fs.nickDock));
         {
             auto *nd = new NickDelegate(pane->nickList());
             if (m_theme.valid)
@@ -1630,6 +1642,9 @@ void MainWindow::floatPane(ChannelPane *pane)
     pane->setCloseIcon(MenuIcons::pipExit(
         QColor(m_theme.valid ? m_theme.placeholder : QStringLiteral("#888888"))));
     pane->setPopOutVisible(false); // it's already a window now
+    // Reparenting into the window repolishes the pane and resets programmatic
+    // fonts to the app default — re-apply the configured fonts.
+    applyFontSizes();
     win->show();
 
     if (wasDocked) {
@@ -1821,10 +1836,16 @@ void MainWindow::rebuildPaneLayout()
         QList<int> sizes(m_panesSplitter->count(), each);
         m_panesSplitter->setSizes(sizes);
     }
+
+    // The setParent(nullptr) detach above makes the style engine repolish
+    // every pane, which resets programmatic fonts to the app default —
+    // re-apply the configured fonts.
+    applyFontSizes();
 }
 
 void MainWindow::refreshPaneNickList(ChannelPane *pane)
 {
+    pane->clearNickFilter();
     pane->nickList()->clear();
     auto *ch   = m_model->channel(pane->host(), pane->channel());
     if (!ch) return;
@@ -1832,6 +1853,8 @@ void MainWindow::refreshPaneNickList(ChannelPane *pane)
 
     for (const auto &e : std::as_const(ch->nicks))
         pane->nickList()->addItem(makeNickItem(e, ch, sess));
+
+    pane->setNickCount(static_cast<int>(ch->nicks.size()));
 }
 
 QString MainWindow::topicAgeStr(quint64 ts)

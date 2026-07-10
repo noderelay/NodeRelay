@@ -5,6 +5,8 @@
 #include <QString>
 #include <QPoint>
 #include <QIcon>
+#include <QFont>
+#include <QHash>
 
 class ChatView;
 class QListWidget;
@@ -25,6 +27,10 @@ public:
     QPlainTextEdit *input()  const { return m_input; }
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
+    void setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups);
+    void setNickPanelFont(const QFont &f);
+    void setNickCount(int count);
+    void clearNickFilter();
     void setCloseIcon(const QIcon &icon);
     void setSearchIcon(const QIcon &icon);
     void setPopOutIcon(const QIcon &icon);
@@ -33,6 +39,8 @@ public:
     void setTypingEnabled(bool on);
     void setTypingFont(const QFont &f);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
+    void setChatFont(const QFont &f);
+    void setNickListFont(const QFont &f);
     void setTopicFont(const QFont &f);
     void setTopic(const QString &html);
     void setTopicIcon(const QIcon &collapsed, const QIcon &expanded);
@@ -45,8 +53,12 @@ signals:
     void dragDropped(const QString &sourceKey, const QPoint &globalPos);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 private:
     void hideSearch();
+    void positionNickRevealBtn();
+    void updateInputHeight();
+    void guardFont(QWidget *w, const QFont &f);
 private:
     ServerId              m_host;
     BufferId              m_channel;
@@ -57,6 +69,12 @@ private:
     bool          m_dragging{false};
     ChatView     *m_chatView{nullptr};
     QListWidget  *m_nickList{nullptr};
+    QWidget      *m_nickWrapper{nullptr};
+    QLabel       *m_nickGroupsIcon{nullptr};
+    QLabel       *m_nickCountLabel{nullptr};
+    QToolButton  *m_nickToggleBtn{nullptr};
+    QToolButton  *m_nickRevealBtn{nullptr};
+    QLineEdit    *m_nickFilter{nullptr};
     QPlainTextEdit *m_input{nullptr};
     QLabel       *m_nickPrefix{nullptr};
     QLabel       *m_typingLabel{nullptr};
@@ -70,4 +88,6 @@ private:
     QToolButton  *m_topicToggle{nullptr};
     int           m_topicFontPt{11};
     QString       m_rawTopicHtml;
+    QHash<QWidget*, QFont> m_fontGuards;
+    bool          m_fontGuardBusy{false};
 };

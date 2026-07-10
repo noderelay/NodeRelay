@@ -152,8 +152,10 @@ void MainWindow::onNickAdded(ServerId host, BufferId channel, const QString &nic
     }
 
     const QString key = host.str() + "|" + channel.str().toLower();
-    if (auto *pane = m_panes.value(key))
+    if (auto *pane = m_panes.value(key)) {
         pane->nickList()->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
+        pane->setNickCount(static_cast<int>(ch->nicks.size()));
+    }
 }
 
 void MainWindow::onNickRemoved(ServerId host, BufferId channel, const QString &nick)
@@ -176,6 +178,7 @@ void MainWindow::onNickRemoved(ServerId host, BufferId channel, const QString &n
     if (auto *pane = m_panes.value(key)) {
         const int row = findNickRow(pane->nickList(), nick);
         if (row >= 0) delete pane->nickList()->takeItem(row);
+        if (ch) pane->setNickCount(static_cast<int>(ch->nicks.size()));
     }
 
     const QString timerKey = host.str() + "|" + channel.str().toLower() + "|" + nick;
