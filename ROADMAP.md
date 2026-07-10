@@ -449,6 +449,12 @@ mainwindow.cpp reduced 4 669 → 3 184 lines across the 2026-07-02 extractions.
 - [x] Cap `m_botIconIdx` — unbounded growth per unique bot nick; capped at 500 entries with FIFO eviction (2026-06-18)
 - [x] Update check JSON parsing — replaced regex `tag_name` extraction with `QJsonDocument`; added 15s transfer timeout (2026-06-18)
 
+### PR #30 review follow-ups (2026-07-10)
+- [x] Shared `paneKey()` / `isChannelName()` helpers (`model/ids.h`) — replace ~35 hand-rolled `host|channel` key constructions and inconsistent channel-prefix checks; prefix checks widened to the full RFC set (`#&+!`)
+- [x] Shared `SearchBar` / `NickFilterEdit` widgets (`searchbar.cpp`, `nickfilteredit.cpp`) — replace duplicated search-bar and nick-filter code between `MainWindow` and `ChannelPane`; also fixes pane-search next/prev and nick-filter Escape-to-clear parity gaps
+- [x] Shared header-button hover QSS — `UiStyle::headerButtonStyle()` replaces 13 copies (`uistyle.h`)
+- [x] Fixed duplicate-buffer display — a channel already docked in a pane no longer also loads into the primary view
+
 ---
 
 ## Stability Backlog

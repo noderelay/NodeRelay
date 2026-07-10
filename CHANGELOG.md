@@ -1,6 +1,25 @@
 # Changelog
 
 <!--
+Session 2026-07-10 (ii) — PR #30 review cleanup (#32):
+- Shared paneKey()/isChannelName() helpers (model/ids.h) replace ~35 hand-rolled
+  host|channel key constructions and inconsistent channel-prefix checks that
+  had accumulated across ui/ and model/; channel-prefix checks widened to the
+  full RFC set (#&+!).
+- New SearchBar and NickFilterEdit widgets, shared by MainWindow and
+  ChannelPane, replace duplicated search-bar and nick-filter code. Fixes two
+  parity gaps: the docked-pane search bar now supports Enter/Shift+Enter
+  next/prev (previously main-window only), and the pane nick filter now
+  clears on Escape (previously main-window only).
+- Fix: a channel already docked in a ChannelPane no longer also loads into
+  the primary view when selected from the sidebar (switchToChannel/
+  switchAwayFromChannel now check m_panes, not just the popped-out-window map).
+- Header-button hover QSS deduped into UiStyle::headerButtonStyle() (13 copies
+  -> 1).
+- No version bump — internal cleanup + small bug fixes, no new features.
+-->
+
+<!--
 Session 2026-07-10 — session close:
 - Channel panes reach full parity with the main view:
   - Pane user list now has the main view's header (hide/reveal toggle, groups
