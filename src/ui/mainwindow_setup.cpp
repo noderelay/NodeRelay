@@ -211,6 +211,9 @@ void MainWindow::connectPreferences()
                 pane->setTopicIcon(
                     MenuIcons::topicBubble(QColor(m_theme.placeholder)),
                     MenuIcons::topicBubble(QColor(m_theme.accent)));
+                const QColor ic(m_theme.text);
+                pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 16));
+                pane->setPopOutIcon(MenuIcons::pipEnter(ic));
             }
         }
         if (m_sidebarCloseBtn)
@@ -314,6 +317,10 @@ void MainWindow::connectPreferences()
         } else {
             m_typingLabel->setText("");
             m_typingLabel->setVisible(true);
+        }
+        for (auto *pane : std::as_const(m_panes)) {
+            pane->setTyping("");
+            pane->setTypingEnabled(on);
         }
     });
 
@@ -788,6 +795,25 @@ void MainWindow::setupChatArea()
             else showSearchBar();
         });
 
+        m_popOutBtn = new QToolButton;
+        m_popOutBtn->setFixedSize(28, 28);
+        m_popOutBtn->setIconSize(QSize(24, 24));
+        m_popOutBtn->setAutoRaise(true);
+        m_popOutBtn->setStyleSheet(
+            "QToolButton { background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+        );
+        m_popOutBtn->setToolTip(tr("Open this channel in a window"));
+        m_popOutBtn->setIcon(MenuIcons::pipEnter(
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+        connect(m_popOutBtn, &QToolButton::clicked, this, [this]{
+            const ServerId host = m_model->activeHost();
+            const BufferId ch   = m_model->activeChannel();
+            const QString c = ch.str();
+            if (c.startsWith('#') || c.startsWith('&') || c.startsWith('+') || c.startsWith('!'))
+                popOutChannel(host, ch);
+        });
+
         m_topicLabel = new QLabel;
         m_topicLabel->setObjectName("channelLabel");
 
@@ -803,6 +829,7 @@ void MainWindow::setupChatArea()
         hbox->addSpacing(10);
         hbox->addWidget(m_topicSetByLabel);
         hbox->addStretch(1);
+        hbox->addWidget(m_popOutBtn);
         hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
     }

@@ -11,6 +11,7 @@ class QListWidget;
 class QPlainTextEdit;
 class QLabel;
 class QToolButton;
+class QLineEdit;
 
 class ChannelPane : public QWidget {
     Q_OBJECT
@@ -24,6 +25,13 @@ public:
     QPlainTextEdit *input()  const { return m_input; }
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
+    void setCloseIcon(const QIcon &icon);
+    void setSearchIcon(const QIcon &icon);
+    void setPopOutIcon(const QIcon &icon);
+    void setPopOutVisible(bool visible);
+    void setTyping(const QString &text);
+    void setTypingEnabled(bool on);
+    void setTypingFont(const QFont &f);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
     void setTopicFont(const QFont &f);
     void setTopic(const QString &html);
@@ -31,11 +39,14 @@ public:
     void setDragHighlight(bool on);
 signals:
     void closeRequested();
+    void popOutRequested();
     void inputSubmitted(const QString &text);
     void dragActive (const QString &sourceKey, const QPoint &globalPos);
     void dragDropped(const QString &sourceKey, const QPoint &globalPos);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
+private:
+    void hideSearch();
 private:
     ServerId              m_host;
     BufferId              m_channel;
@@ -48,6 +59,12 @@ private:
     QListWidget  *m_nickList{nullptr};
     QPlainTextEdit *m_input{nullptr};
     QLabel       *m_nickPrefix{nullptr};
+    QLabel       *m_typingLabel{nullptr};
+    QToolButton  *m_closeBtn{nullptr};
+    QToolButton  *m_searchBtn{nullptr};
+    QToolButton  *m_popOutBtn{nullptr};
+    QWidget      *m_searchBar{nullptr};
+    QLineEdit    *m_searchInput{nullptr};
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_topicToggle{nullptr};

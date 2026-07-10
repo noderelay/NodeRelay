@@ -1594,7 +1594,7 @@ channels = "#uplink"</pre>
       <li>Click a channel to open it in the chat area.</li>
       <li>Channels with new activity show a small <strong>forum icon</strong> after the channel name. Channels where your nick was mentioned show a yellow <strong>lightbulb icon</strong> instead.</li>
       <li>The server heading shows a <strong>globe icon</strong> when connected. The globe turns <strong>red</strong> when the server status pane has unread messages — click the server name to open it and clear the indicator.</li>
-      <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
+      <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), <strong>Open in Window</strong> (float it into its own window), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
       <li>Right-click a server for: Disconnect, Reconnect, <strong>Close Server</strong> (removes from sidebar without deleting from config), <strong>Move Up</strong>, <strong>Move Down</strong> (reorder servers — saved to config).</li>
       <li>Drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.</li>
       <li>Click the <strong>close button</strong> in the top-left corner of the sidebar panel to collapse the sidebar so the chat fills the card. A <strong>reveal button</strong> appears at the bottom-left of the chat area — click it to bring the sidebar back.</li>
@@ -1615,7 +1615,7 @@ channels = "#uplink"</pre>
     </figure>
 
     <h3>Opening a pane</h3>
-    <p><strong>Right-click</strong> any <code>#channel</code> in the sidebar and choose <strong>Open in Pane</strong>. The channel opens as a new column next to the current view. You can continue typing in either pane independently.</p>
+    <p><strong>Right-click</strong> any <code>#channel</code> in the sidebar and choose <strong>Open in Pane</strong>. The channel opens as a new column next to the current view. You can continue typing in either pane independently. Each pane header carries its own <strong>pop-out</strong> and <strong>search</strong> buttons alongside the topic toggle and close button, mirroring the main channel header.</p>
     <div class="note"><strong>Note:</strong> Right-clicking does not navigate away from the channel you are currently viewing — only a left-click does that.</div>
 
     <h3>Layout</h3>
@@ -1633,6 +1633,19 @@ channels = "#uplink"</pre>
 
     <h3>Rearranging panes</h3>
     <p>Click and drag any pane's header bar to swap it with another pane. Drop it on the header of any other pane — or on the primary channel area — to swap their positions. The layout rebuilds instantly without losing any content.</p>
+
+    <h3>Popping a channel out into its own window</h3>
+    <p>Any channel can float free of the main window as a standalone window — handy for a second monitor or keeping one conversation visible while you work elsewhere. There are three ways to do it:</p>
+    <ul>
+      <li><strong>From the channel header:</strong> click the <strong>pop-out icon</strong> (picture-in-picture) just to the left of the search magnifier to pop out the channel you are currently viewing.</li>
+      <li><strong>From a pane:</strong> every pane header has the same pop-out icon — click it to float that pane into its own window.</li>
+      <li><strong>From the sidebar:</strong> right-click a <code>#channel</code> and choose <strong>Open in Window</strong>.</li>
+    </ul>
+    <p>While a channel is popped out it is <strong>checked out</strong> of the main window: its sidebar row is dimmed and italic, and clicking it simply raises its window instead of loading it into the main view. Everything stays live in the window — incoming messages, the nick list, the typing indicator, tab completion, and search all work exactly as they do in the main window.</p>
+    <p>To bring it back, <strong>close the window</strong> (its close button uses an <em>exit picture-in-picture</em> icon) or press the pane's <code>✕</code> — the channel returns to the main view and its sidebar row un-dims. You never leave the channel. Popped-out windows are remembered across restarts, just like docked panes.</p>
+
+    <h3>Per-pane search and typing indicator</h3>
+    <p>Every pane and popped-out window carries the same <strong>search magnifier</strong> in its header — click it to search that pane's own scrollback, and press <kbd>Esc</kbd> to close. The <strong>typing indicator</strong> also appears in each pane and window, showing who is typing in that specific channel. The compose area (typing line plus input bar) sits on the same chat background as the main window for a consistent look.</p>
 
     <h3>Per-pane topic bar</h3>
     <p>Each pane has a header bar showing the channel name. Click the small <strong>speech bubble icon</strong> on the left of the header to show or hide the channel topic below it. The topic updates live whenever it changes on the server. The icon is muted (grey) when the topic is hidden and turns <strong>accent-colored</strong> when the topic is visible — so you can read the state at a glance without clicking.</p>

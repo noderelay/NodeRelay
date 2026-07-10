@@ -289,6 +289,12 @@ QListWidget::item:hover:!selected {
     background-color: {{border}};
 }
 
+/* ── Channel pane (docked + popped-out): compose strip on the chat colour ── */
+QWidget#channelPane,
+QWidget#paneWindow {
+    background-color: {{bufferBg}};
+}
+
 /* ── Input bar ── */
 QWidget#inputBar {
     background-color: {{bufferBg}};

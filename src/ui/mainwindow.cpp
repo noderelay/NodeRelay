@@ -303,6 +303,17 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         });
     }
 
+    const QStringList savedPaneWindows = settings.value("paneWindows").toStringList();
+    if (!savedPaneWindows.isEmpty()) {
+        QTimer::singleShot(0, this, [this, savedPaneWindows]{
+            for (const QString &k : savedPaneWindows) {
+                const qsizetype sep = k.indexOf('|');
+                if (sep < 0) continue;
+                popOutChannel(ServerId{k.left(sep)}, BufferId{k.mid(sep + 1)});
+            }
+        });
+    }
+
     connect(m_mainSplitter, &QSplitter::splitterMoved, this, [this](int, int){
         const int w = m_mainSplitter->sizes().value(0);
         if (m_sidebarExpanded && w > 0)
@@ -320,6 +331,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             paneList << p->key();
         s.setValue("panes", paneList);
         s.setValue("primarySlot", m_primarySlot);
+        s.setValue("paneWindows", QStringList(m_paneWindows.keys()));
     });
 
 #if defined(__linux__) && !defined(__MUSL__)
@@ -403,6 +415,9 @@ void MainWindow::applyFontSizes()
         m_searchBtn->setIcon(MenuIcons::fromSvg(
             QStringLiteral(":/icons/mi-search.svg"),
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
+    if (m_popOutBtn)
+        m_popOutBtn->setIcon(MenuIcons::pipEnter(
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
     if (m_nickToggleBtn)
         m_nickToggleBtn->setIcon(MenuIcons::fromSvg(
             QStringLiteral(":/icons/mi-right-panel-close.svg"),
@@ -457,12 +472,13 @@ void MainWindow::applyFontSizes()
     }
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
-    for (auto *p : std::as_const(m_orderedPanes)) {
+    for (auto *p : std::as_const(m_panes)) {
         const QFont chatFont = makeFont(fs.chat);
         p->chatView()->setFont(chatFont);
         p->nickList()->setFont(makeFont(fs.nickList));
         p->setTopicFont(makeFont(fs.topicText));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
+        p->setTypingFont(makeFont(fs.typing));
     }
     if (m_typingLabel) {
         QFont f = makeFont(fs.typing);
@@ -488,7 +504,7 @@ double *MainWindow::fontFieldForWidget(QObject *obj, const QPoint &pos)
     };
 
     // Check pane widgets first
-    for (auto *pane : std::as_const(m_orderedPanes)) {
+    for (auto *pane : std::as_const(m_panes)) {
         if (isOrChild(pane->chatView()))  return &m_config.ui.fontSizes.chat;
         if (isOrChild(pane->nickList()))   return &m_config.ui.fontSizes.nickList;
         if (isOrChild(pane->input()))      return &m_config.ui.fontSizes.input;
@@ -519,6 +535,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
+
+    // A popped-out pane window was closed via its OS title-bar button.
+    if (event->type() == QEvent::Close && !m_paneWindows.isEmpty()) {
+        for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it) {
+            if (it.value() == obj) {
+                if (auto *pane = m_panes.value(it.key()))
+                    closeChannelPane(pane->host(), pane->channel());
+                return false; // let the close proceed
+            }
+        }
+    }
 
     // Ctrl+wheel or Ctrl+Plus/Minus: zoom the focused region's font
     auto applyZoom = [this](QObject *target, double delta, const QPoint &pos = {}) -> bool {
@@ -603,7 +630,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
     // Check if obj is a pane input bar
     if (event->type() == QEvent::KeyPress) {
-        for (auto *pane : std::as_const(m_orderedPanes)) {
+        for (auto *pane : std::as_const(m_panes)) {
             if (obj == pane->input()) {
                 auto *ke = static_cast<QKeyEvent *>(event);
                 if (ke->key() == Qt::Key_Tab) {
@@ -979,6 +1006,10 @@ void MainWindow::onChannelAdded(ServerId host, BufferId channel)
     item->setData(0, Qt::UserRole,     host.str());
     item->setData(0, Qt::UserRole + 1, channel.str());
 
+    // Restored floating window for this channel: re-mark it as checked out.
+    if (m_paneWindows.contains(host.str() + "|" + channel.str().toLower()))
+        setChannelCheckedOut(host, channel, true);
+
     m_sidebar->setCurrentItem(item);
     switchToChannel(host, channel);
 }
@@ -1118,31 +1149,30 @@ void MainWindow::onTypingReceived(ServerId host, BufferId channel,
 }
 
 
-void MainWindow::updateTypingLabel()
+// Builds the "X is typing..." string for a buffer, or empty if nobody is.
+QString MainWindow::typingText(ServerId host, BufferId channel) const
 {
-    const QString key = m_model->activeHost().str() + "|" + m_model->activeChannel().str();
+    if (!m_config.ui.typingIndicator) return {};
+    const QString key = host.str() + "|" + channel.str();
     const QSet<QString> &typers = m_typingNicks.value(key);
-
-    if (!m_config.ui.typingIndicator) {
-        m_typingLabel->setVisible(false);
-        return;
-    }
-
-    if (typers.isEmpty()) {
-        m_typingLabel->setText("");
-        return;
-    }
+    if (typers.isEmpty()) return {};
 
     QStringList names(typers.begin(), typers.end());
-    QString text;
-    if (names.size() == 1)
-        text = names[0] + " is typing...";
-    else if (names.size() == 2)
-        text = names[0] + " and " + names[1] + " are typing...";
-    else
-        text = QString::number(names.size()) + " people are typing...";
+    if (names.size() == 1) return names[0] + " is typing...";
+    if (names.size() == 2) return names[0] + " and " + names[1] + " are typing...";
+    return QString::number(names.size()) + " people are typing...";
+}
 
-    m_typingLabel->setText(text);
+void MainWindow::updateTypingLabel()
+{
+    if (!m_config.ui.typingIndicator)
+        m_typingLabel->setVisible(false);
+    else
+        m_typingLabel->setText(typingText(m_model->activeHost(), m_model->activeChannel()));
+
+    // Panes (docked and popped-out) carry their own typing indicator.
+    for (auto *pane : std::as_const(m_panes))
+        pane->setTyping(typingText(pane->host(), pane->channel()));
 }
 
 // ---------------------------------------------------------------------------
@@ -1164,8 +1194,13 @@ void MainWindow::navigateChannel(int direction)
     QList<QTreeWidgetItem*> channels;
     for (int s = 0; s < m_sidebar->topLevelItemCount(); ++s) {
         auto *srv = m_sidebar->topLevelItem(s);
-        for (int c = 0; c < srv->childCount(); ++c)
-            channels.append(srv->child(c));
+        for (int c = 0; c < srv->childCount(); ++c) {
+            auto *child = srv->child(c);
+            const QString key = child->data(0, Qt::UserRole).toString() + "|"
+                              + child->data(0, Qt::UserRole + 1).toString().toLower();
+            if (m_paneWindows.contains(key)) continue; // checked out to a window
+            channels.append(child);
+        }
     }
     if (channels.isEmpty()) return;
 
@@ -1245,6 +1280,18 @@ void MainWindow::dispatchInput(const QString &text, ServerId host, BufferId chan
 
 void MainWindow::switchToChannel(ServerId host, BufferId channel)
 {
+    // Checked out to a floating window — raise it instead of loading in main,
+    // and keep the sidebar highlight on what the main view is actually showing.
+    const QString paneKey = host.str() + "|" + channel.str().toLower();
+    if (auto *win = m_paneWindows.value(paneKey)) {
+        win->show();
+        win->raise();
+        win->activateWindow();
+        if (auto *active = findChannelItem(m_model->activeHost(), m_model->activeChannel()))
+            m_sidebar->setCurrentItem(active);
+        return;
+    }
+
     // Save scroll position for the channel we're leaving (only if not at bottom)
     if (m_chatView) {
         const QString prevKey = m_model->activeHost().str() + '\t' + m_model->activeChannel().str();
@@ -1348,11 +1395,12 @@ void MainWindow::openChannelList(ServerId host)
 // Channel panes
 // ---------------------------------------------------------------------------
 
-void MainWindow::openChannelPane(ServerId host, BufferId channel)
+// Creates and fully wires a ChannelPane, registering it in m_panes. The caller
+// decides where it lives — docked (openChannelPane) or floating (popOutChannel).
+ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
 {
     const QString key = host.str() + "|" + channel.str().toLower();
-    if (m_panes.contains(key)) return;
-    if (m_orderedPanes.size() >= kMaxExtraPanes) return;
+    if (m_panes.contains(key)) return nullptr;
 
     auto *pane = new ChannelPane(host, channel, this);
     if (m_theme.valid)
@@ -1361,6 +1409,13 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
                                     QColor(m_theme.border));
 
     pane->input()->installEventFilter(this);
+    pane->setTypingEnabled(m_config.ui.typingIndicator);
+    {
+        const QColor ic(m_theme.valid ? m_theme.text : QStringLiteral("#e3e3e3"));
+        pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 16));
+        pane->setPopOutIcon(MenuIcons::pipEnter(ic));
+    }
+    connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,
             [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
         if (anchor.startsWith(QLatin1String("evgrp:"))) {
@@ -1412,6 +1467,7 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
         }
         pane->setTopicFont(makeFont(fs.topicText));
         pane->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
+        pane->setTypingFont(makeFont(fs.typing));
     }
 
     if (auto *ch = m_model->channel(host, channel))
@@ -1464,19 +1520,129 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
     });
 
     m_panes[key] = pane;
-    m_orderedPanes.append(pane);
-    m_primaryHeader->setVisible(true);
-    m_primaryCloseBtn->setVisible(true);
 
     if (m_theme.valid) {
         pane->setTopicIcon(
             MenuIcons::topicBubble(QColor(m_theme.placeholder)),
             MenuIcons::topicBubble(QColor(m_theme.accent)));
     }
+    return pane;
+}
+
+// Docks a channel as a tiled pane in the main window.
+void MainWindow::openChannelPane(ServerId host, BufferId channel)
+{
+    if (m_orderedPanes.size() >= kMaxExtraPanes) return;
+    auto *pane = createPane(std::move(host), std::move(channel));
+    if (!pane) return;
+
+    m_orderedPanes.append(pane);
+    m_primaryHeader->setVisible(true);
+    m_primaryCloseBtn->setVisible(true);
 
     rebuildPaneLayout();
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);
+}
+
+// Opens a channel in its own floating top-level window. Closing the window
+// (or the pane's ✕) drops it back to the server list without leaving the buffer.
+void MainWindow::popOutChannel(ServerId host, BufferId channel)
+{
+    const QString key = host.str() + "|" + channel.str().toLower();
+    // Already a window → just raise it. Already a docked pane → float that one.
+    if (auto *win = m_paneWindows.value(key)) {
+        win->show(); win->raise(); win->activateWindow();
+        return;
+    }
+    if (auto *existing = m_panes.value(key)) { floatPane(existing); return; }
+
+    if (auto *pane = createPane(std::move(host), std::move(channel)))
+        floatPane(pane);
+}
+
+// Moves a pane (freshly created or currently docked) into its own floating
+// top-level window and checks the channel out of the main view.
+void MainWindow::floatPane(ChannelPane *pane)
+{
+    if (!pane) return;
+    const QString  key     = pane->key();
+    const ServerId host    = pane->host();
+    const BufferId channel = pane->channel();
+
+    const bool wasDocked = m_orderedPanes.removeOne(pane);
+    if (m_dragHighlighted == pane) m_dragHighlighted = nullptr;
+
+    auto *win = new QWidget(nullptr, Qt::Window);
+    win->setObjectName("paneWindow");
+    win->setWindowTitle(channel.str() + " — " + host.str());
+    auto *lay = new QVBoxLayout(win);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->addWidget(pane); // reparents the pane into the window
+    win->resize(820, 620);
+    win->installEventFilter(this); // catch the OS close button
+    m_paneWindows[key] = win;
+
+    pane->setCloseIcon(MenuIcons::pipExit(
+        QColor(m_theme.valid ? m_theme.placeholder : QStringLiteral("#888888"))));
+    pane->setPopOutVisible(false); // it's already a window now
+    win->show();
+
+    if (wasDocked) {
+        m_primarySlot = qMin(m_primarySlot, static_cast<int>(m_orderedPanes.size()));
+        if (m_orderedPanes.isEmpty()) {
+            m_primaryCloseBtn->setVisible(false);
+            m_primaryPanel->setVisible(true);
+        }
+        rebuildPaneLayout();
+    }
+
+    // Checked out to the window — remove it from the main view and mark it.
+    if (host == m_model->activeHost() &&
+        channel.str().toLower() == m_model->activeChannel().str().toLower())
+        switchAwayFromChannel(host, channel);
+    setChannelCheckedOut(host, channel, true);
+
+    refreshPaneChatView(pane);
+    refreshPaneNickList(pane);
+}
+
+// Italicises/dims a channel's sidebar row while it's checked out to a floating
+// window, or restores it to normal.
+void MainWindow::setChannelCheckedOut(ServerId host, BufferId channel, bool out)
+{
+    auto *item = findChannelItem(host, channel);
+    if (!item) return;
+    QFont f = item->font(0);
+    f.setItalic(out);
+    item->setFont(0, f);
+    if (out)
+        item->setForeground(0, QColor("#6c7086"));
+    else
+        item->setData(0, Qt::ForegroundRole, QVariant()); // reset to default
+}
+
+// Moves the main view off host/channel to another available (non-popped) buffer,
+// falling back to the server buffer if that channel was the only one.
+void MainWindow::switchAwayFromChannel(ServerId host, BufferId channel)
+{
+    const QString skipKey = host.str() + "|" + channel.str().toLower();
+    for (int s = 0; s < m_sidebar->topLevelItemCount(); ++s) {
+        auto *srv = m_sidebar->topLevelItem(s);
+        for (int c = 0; c < srv->childCount(); ++c) {
+            auto *child = srv->child(c);
+            const QString key = child->data(0, Qt::UserRole).toString() + "|"
+                              + child->data(0, Qt::UserRole + 1).toString().toLower();
+            if (key == skipKey || m_paneWindows.contains(key)) continue;
+            m_sidebar->setCurrentItem(child);
+            onSidebarSelectionChanged();
+            return;
+        }
+    }
+    if (auto *srv = findServerItem(host)) {
+        m_sidebar->setCurrentItem(srv);
+        onSidebarSelectionChanged();
+    }
 }
 
 ChannelPane *MainWindow::paneAt(const QPoint &globalPos) const
@@ -1504,6 +1670,19 @@ void MainWindow::closeChannelPane(ServerId host, BufferId channel)
     const QString key = host.str() + "|" + channel.str().toLower();
     auto *pane = m_panes.take(key);
     if (!pane) return;
+
+    // Floating pane: tear down its window and return to the server list.
+    if (auto *win = m_paneWindows.take(key)) {
+        if (m_dragHighlighted == pane) m_dragHighlighted = nullptr;
+        win->removeEventFilter(this);
+        win->deleteLater(); // deletes the pane it owns
+        setChannelCheckedOut(host, channel, false);
+        if (auto *item = findChannelItem(host, channel)) {
+            m_sidebar->setCurrentItem(item);
+            switchToChannel(host, channel); // available again → show in main
+        }
+        return;
+    }
 
     m_orderedPanes.removeOne(pane);
     m_primarySlot = qMin(m_primarySlot, static_cast<int>(m_orderedPanes.size()));

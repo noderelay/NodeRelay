@@ -247,6 +247,13 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
             menu->addAction("Open in Pane", this, [this, host, channel]{
                 openChannelPane(host, channel);
             });
+            menu->addAction("Open in Window", this, [this, host, channel]{
+                popOutChannel(host, channel);
+            });
+        } else if (m_paneWindows.contains(paneKey)) {
+            menu->addAction("Close Window", this, [this, host, channel]{
+                closeChannelPane(host, channel);
+            });
         } else {
             menu->addAction("Close Pane", this, [this, host, channel]{
                 closeChannelPane(host, channel);

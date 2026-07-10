@@ -1,6 +1,33 @@
 # Changelog
 
 <!--
+Session 2026-07-09 (h) — session close:
+- Feature: pop-out channel windows. Any channel can float into its own top-level
+  window — via a new pop-out (picture-in-picture) button in the channel header
+  (left of the search magnifier), the same button now added to every pane header,
+  or right-click → "Open in Window". Popped-out channels are "checked out" of the
+  main view: sidebar row dimmed/italic, clicking raises the window, channel-nav
+  skips it; closing the window (exit-PiP icon) returns it. Floating panes stay
+  fully live (messages, nick list, typing, tab-complete, search) and persist
+  across restarts (settings key "paneWindows").
+- Feature: per-pane search + typing indicator. Each ChannelPane header now has a
+  search magnifier wired to its own ChatView (Esc closes), and its own typing
+  indicator with reserved (non-jumping) space like the main window.
+- Refactor: extracted createPane() (shared docked/floating setup) and floatPane()
+  (docked pane → window); typing/font/tab loops now iterate m_panes so floating
+  panes stay covered.
+- UI: pane compose strip (typing + input) painted on bufferBg (#channelPane /
+  #paneWindow) so it matches the main chat colour instead of the window colour.
+- Icons: added resources/icons/mi-pip.svg + mi-pip-exit.svg with MenuIcons
+  pipEnter()/pipExit() builders.
+- Site: swapped the docs hero to a 4-shot crossfade (gruvbox-dark, flexor-dark,
+  and two new Libera screenshots — docs/assets/kde.png, archlinux.png).
+- Docs: howto.html channel-panes section (pop-out windows, per-pane search/typing,
+  header buttons), README + docs/index.html feature entries.
+- Reminder: uplinkbot RAG needs a restart to pick up this session's doc changes.
+-->
+
+<!--
 Session 2026-07-09 (g) — session close:
 - Themes: trimmed near-duplicate/redundant themes. Removed Discord-80-Saturation
   (near-identical to Discord) and all 11 black-metal-*-base16 variants (a cluster
