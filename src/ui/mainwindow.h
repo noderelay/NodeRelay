@@ -125,8 +125,6 @@ private:
     ChannelPane *createPane(ServerId host, BufferId channel);
     void setChannelCheckedOut(ServerId host, BufferId channel, bool out);
     void switchAwayFromChannel(ServerId host, BufferId channel);
-    ChannelPane *paneAt(const QPoint &globalPos) const;
-    bool         isOverPrimary(const QPoint &globalPos) const;
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
     void rebuildPaneLayout();
@@ -231,7 +229,6 @@ private:
     QHash<QString, QWidget*>     m_paneWindows;  // key -> top-level window for popped-out panes
     QSet<QString>                m_nickRefreshPending;    // channels with a debounced refresh queued
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
-    ChannelPane                 *m_dragHighlighted{nullptr};
     int                          m_primarySlot{0}; // position of primary panel in layout order
     bool          m_nickExpanded{true};
     QLabel       *m_topicLabel{nullptr};    // #channel (modes)

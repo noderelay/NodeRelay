@@ -22,6 +22,11 @@
 #include <QMouseEvent>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QDrag>
+#include <QMimeData>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 
 ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
@@ -30,6 +35,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     // indicator + input bar — sits on the chat colour like the main window.
     setObjectName("channelPane");
     setAttribute(Qt::WA_StyledBackground, true);
+    setAcceptDrops(true);
 
     auto *vbox = new QVBoxLayout(this);
     vbox->setContentsMargins(0, 0, 0, 0);
@@ -420,6 +426,47 @@ void ChannelPane::setDragHighlight(bool on)
     m_header->setStyleSheet(on ? "background: palette(highlight);" : "");
 }
 
+QString ChannelPane::mimeType()
+{
+    return QStringLiteral("application/x-uplink-panekey");
+}
+
+void ChannelPane::dragEnterEvent(QDragEnterEvent *event)
+{
+    const QByteArray fmt = mimeType().toUtf8();
+    if (event->mimeData()->hasFormat(fmt)
+        && QString::fromUtf8(event->mimeData()->data(fmt)) != key()) {
+        event->acceptProposedAction();
+        setDragHighlight(true);
+    } else {
+        event->ignore();
+    }
+}
+
+void ChannelPane::dragMoveEvent(QDragMoveEvent *event)
+{
+    const QByteArray fmt = mimeType().toUtf8();
+    if (event->mimeData()->hasFormat(fmt)
+        && QString::fromUtf8(event->mimeData()->data(fmt)) != key())
+        event->acceptProposedAction();
+    else
+        event->ignore();
+}
+
+void ChannelPane::dragLeaveEvent(QDragLeaveEvent *)
+{
+    setDragHighlight(false);
+}
+
+void ChannelPane::dropEvent(QDropEvent *event)
+{
+    setDragHighlight(false);
+    const QByteArray fmt = mimeType().toUtf8();
+    const QString sourceKey = QString::fromUtf8(event->mimeData()->data(fmt));
+    event->acceptProposedAction();
+    emit dropReceived(sourceKey);
+}
+
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
     // A repolish reset a guarded widget's font — put ours back. Compare the
@@ -457,6 +504,53 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
+    // While a drag is pending/active for this pane, track it from ANY
+    // mouse-move or release in the application, not just events landing on
+    // m_header's own children. Under this environment's Wayland/KDE
+    // integration there's no reliable implicit mouse capture on press, so
+    // once the cursor drifts off the (thin) header strip onto a sibling
+    // widget — e.g. the topic bar — further move/release events are
+    // delivered there instead, starving a header-scoped check and leaving
+    // the gesture stuck. Watching qApp catches them regardless of target
+    // widget; this is pure Qt-internal event dispatch, unaffected by the
+    // platform grab limitation. Installed/removed just-in-time (below) so
+    // the app-wide filter only exists while actually needed.
+    if (m_dragPending || m_dragging) {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            if (m_dragPending) {
+                m_dragPending = false;
+                qApp->removeEventFilter(this);
+            }
+            return false;
+        }
+        if (event->type() == QEvent::MouseMove) {
+            auto *me = static_cast<QMouseEvent *>(event);
+            const QPoint gp = me->globalPosition().toPoint();
+
+            if (m_dragPending) {
+                if (!(me->buttons() & Qt::LeftButton)) {
+                    m_dragPending = false;
+                    qApp->removeEventFilter(this);
+                    return false;
+                }
+                if ((gp - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
+                    return false;
+                m_dragPending = false;
+                m_dragging    = true;
+
+                auto *mime = new QMimeData;
+                mime->setData(mimeType(), key().toUtf8());
+                auto *drag = new QDrag(this);
+                drag->setMimeData(mime);
+                drag->exec(Qt::MoveAction); // blocks until drop or cancel
+
+                m_dragging = false;
+                qApp->removeEventFilter(this);
+            }
+            return false; // never swallow moves/releases meant for other widgets
+        }
+    }
+
     bool isHeaderArea = (obj == m_header);
     if (!isHeaderArea)
         for (auto *w : m_header->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))
@@ -465,38 +559,18 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 
     if (event->type() == QEvent::MouseButtonPress) {
         auto *me = static_cast<QMouseEvent *>(event);
-        if (me->button() == Qt::LeftButton) {
+        // Guards against installing the filter twice: a single click can
+        // legitimately deliver MouseButtonPress here more than once (e.g.
+        // once for a header child label that ignores it, then again for
+        // m_header itself, via Qt's ignore-then-propagate-to-parent
+        // behavior) — Qt calls an event filter once per installation, so
+        // installing twice for one gesture would run this filter twice per
+        // event for the rest of the drag.
+        if (me->button() == Qt::LeftButton && !m_dragPending && !m_dragging) {
             m_dragPending  = true;
             m_dragStartPos = me->globalPosition().toPoint();
+            qApp->installEventFilter(this);
         }
-    } else if (event->type() == QEvent::MouseMove) {
-        if (!m_dragPending && !m_dragging) return false;
-        auto *me = static_cast<QMouseEvent *>(event);
-        const QPoint gp = me->globalPosition().toPoint();
-
-        if (m_dragPending) {
-            if (!(me->buttons() & Qt::LeftButton)) { m_dragPending = false; return false; }
-            if ((gp - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
-                return false;
-            m_dragPending = false;
-            m_dragging    = true;
-            m_header->grabMouse(Qt::ClosedHandCursor);
-        }
-
-        if (m_dragging) {
-            emit dragActive(key(), gp);
-            return true;
-        }
-    } else if (event->type() == QEvent::MouseButtonRelease) {
-        if (m_dragging) {
-            auto *me = static_cast<QMouseEvent *>(event);
-            m_header->releaseMouse();
-            m_header->unsetCursor();
-            m_dragging = false;
-            emit dragDropped(key(), me->globalPosition().toPoint());
-            return true;
-        }
-        m_dragPending = false;
     }
     return false;
 }

@@ -1,6 +1,36 @@
 # Changelog
 
 <!--
+Session 2026-07-10/11 (iv) — Fix docked-pane drag-to-rearrange:
+- Root cause of drag-to-rearrange silently not working under this session's
+  desktop environment: ChannelPane's header drag used QWidget::grabMouse(),
+  which Wayland only permits for popup-type surfaces. Replaced with native
+  QDrag/QMimeData -- the sanctioned cross-surface tracking mechanism.
+- A second, independent issue surfaced once QDrag was in place: without an
+  OS-level grab, once the cursor drifted off the (thin) header strip onto a
+  sibling widget (e.g. the topic bar), further move/release events landed
+  there instead of the header, starving the drag-start threshold check.
+  Fixed by watching mouse move/release app-wide (via qApp) while a drag is
+  pending for a given pane, installed/removed just-in-time rather than a
+  permanent filter, and guarded against Qt's double-filter-invocation
+  pitfall (a single click can legitimately deliver MouseButtonPress twice
+  here, once to a header child label, once to the header itself).
+- Architecture fix: m_primaryPanel had the sidebar physically embedded
+  inside it (setupChatArea's m_mainSplitter held [sidebar, chat section] as
+  primary's own child layout), so swapping primary into a shared/stacked
+  pane slot squeezed the whole sidebar into a slot never built to hold it.
+  Moved the sidebar one level up -- m_mainSplitter now wraps
+  [sidebar, panesSplitter] as a permanent sibling, so primary is a
+  self-contained pane like any other and can safely land in any slot.
+- New reflow behavior for pane <-> primary drag: the dragged pane stays
+  exactly where it is; primary takes over its stack-mate's slot instead of
+  the dragged pane's own slot, so the stack-mate gets promoted to the
+  vacated lone column. Generalizes across 2/3/4-pane layouts via one
+  siblingSlot() helper; falls back to a plain swap when the dragged pane
+  has no stack-mate.
+-->
+
+<!--
 Session 2026-07-10 (iii) — Horizontal pane splits:
 - New `pane_stack_rows` config option (Preferences -> Interface -> Stack Panes
   in Rows): transposes the docked-pane auto layout so panes stack in

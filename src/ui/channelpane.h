@@ -46,15 +46,19 @@ public:
     void setTopic(const QString &html);
     void setTopicIcon(const QIcon &collapsed, const QIcon &expanded);
     void setDragHighlight(bool on);
+    static QString mimeType();
 signals:
     void closeRequested();
     void popOutRequested();
     void inputSubmitted(const QString &text);
-    void dragActive (const QString &sourceKey, const QPoint &globalPos);
-    void dragDropped(const QString &sourceKey, const QPoint &globalPos);
+    void dropReceived(const QString &sourceKey);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 private:
     void positionNickRevealBtn();
     void updateInputHeight();

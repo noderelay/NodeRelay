@@ -79,6 +79,9 @@
 #include <QToolTip>
 #include <QCursor>
 #include <QMouseEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QTextDocument>
 #include <QTextFrame>
 #include <QTextCursor>
@@ -147,18 +150,18 @@ static constexpr int kDefaultWindowH  = 650;
 static constexpr int kMaxExtraPanes   = 3;
 static constexpr int kMaxPaneWindows  = 4;
 
-// m_primaryPanel physically embeds the sidebar (see setupChatArea: its own
-// layout holds m_mainSplitter, which holds the sidebar + chat section). It
-// must therefore always occupy a full, unshared column/row in the pane
-// splitter — never a slot shared with another pane in a nested cross-
-// splitter, or the sidebar gets squeezed into that shared slot alongside it.
-// Mirrors the slot shapes rebuildPaneLayout() actually builds for
-// n<=2 / n==3 / n==4.
-static bool isFullPaneSlot(qsizetype totalSlots, int slot)
+// Returns the slot index sharing a nested cross-splitter ("stack") with
+// `slot`, or -1 if `slot` is a full/lone top-level column with no stack-
+// mate. Mirrors the slot shapes rebuildPaneLayout() actually builds for
+// n<=2 / n==3 / n==4:
+//   n<=2  — every slot is a lone top-level column, no stacking at all.
+//   n==3  — slot 0 is lone; slots 1 and 2 share one stack.
+//   n==4  — slots (0,1) share one stack, slots (2,3) share the other.
+static int siblingSlot(qsizetype totalSlots, int slot)
 {
-    if (totalSlots <= 2) return true;      // flat: every slot is a full top-level column
-    if (totalSlots == 3) return slot == 0; // only slot 0 is full; 1 and 2 share a stack
-    return false;                          // n == 4: every slot pairs into a shared stack
+    if (totalSlots <= 2) return -1;
+    if (totalSlots == 3) return slot == 0 ? -1 : 3 - slot;
+    return slot ^ 1; // n == 4
 }
 
 
@@ -573,6 +576,61 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     closeChannelPane(pane->host(), pane->channel());
                 return false; // let the close proceed
             }
+        }
+    }
+
+    // Pane header dropped onto the primary view: pane <-> primary swap.
+    if (obj == m_primaryPanel) {
+        if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
+            auto *de = static_cast<QDragMoveEvent *>(event);
+            if (de->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
+                de->acceptProposedAction();
+            else
+                de->ignore();
+            return true;
+        }
+        if (event->type() == QEvent::DragLeave) {
+            return true;
+        }
+        if (event->type() == QEvent::Drop) {
+            auto *de = static_cast<QDropEvent *>(event);
+            const QByteArray fmt = ChannelPane::mimeType().toUtf8();
+            const QString sourceKey = QString::fromUtf8(de->mimeData()->data(fmt));
+            de->acceptProposedAction();
+
+            // pane <-> primary: the dragged pane stays exactly where it is;
+            // primary takes over whichever slot the dragged pane's stack-
+            // mate currently holds (or the dragged pane's own slot directly,
+            // if it has no stack-mate). E.g. dragging one of two stacked
+            // panes onto a lone primary column: primary joins the stack
+            // alongside the dragged pane, and the pane displaced from the
+            // stack is promoted to the now-vacant lone column. Reduces to a
+            // plain swap when the dragged pane has no stack-mate.
+            ChannelPane *source = m_panes.value(sourceKey);
+            const qsizetype srcIdx = source ? m_orderedPanes.indexOf(source) : -1;
+            if (srcIdx >= 0) {
+                const qsizetype nSlots = 1 + m_orderedPanes.size();
+                const int srcSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
+                const int sib = siblingSlot(nSlots, srcSlot);
+                const int swapSlot = (sib >= 0) ? sib : srcSlot;
+
+                QList<ChannelPane*> combined; // nullptr marks the primary slot
+                int pi = 0;
+                for (int i = 0; i < nSlots; i++)
+                    combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
+
+                ChannelPane *tmp = combined[m_primarySlot];
+                combined[m_primarySlot] = combined[swapSlot];
+                combined[swapSlot] = tmp;
+
+                m_orderedPanes.clear();
+                for (int i = 0; i < nSlots; i++) {
+                    if (!combined[i]) m_primarySlot = i;
+                    else m_orderedPanes.append(combined[i]);
+                }
+                rebuildPaneLayout();
+            }
+            return true;
         }
     }
 
@@ -1532,60 +1590,16 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
     connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
         dispatchInput(text, host, channel);
     });
-    connect(pane, &ChannelPane::dragActive, this, [this](const QString &sourceKey, const QPoint &gp){
-        ChannelPane *target = paneAt(gp);
-        if (target == m_panes.value(sourceKey)) target = nullptr;
-        if (m_dragHighlighted && m_dragHighlighted != target) {
-            m_dragHighlighted->setDragHighlight(false);
-            m_dragHighlighted = nullptr;
-        }
-        if (target && !m_dragHighlighted) {
-            target->setDragHighlight(true);
-            m_dragHighlighted = target;
-        }
-    });
-    connect(pane, &ChannelPane::dragDropped, this, [this](const QString &sourceKey, const QPoint &gp){
-        if (m_dragHighlighted) {
-            m_dragHighlighted->setDragHighlight(false);
-            m_dragHighlighted = nullptr;
-        }
+    connect(pane, &ChannelPane::dropReceived, this, [this, pane](const QString &sourceKey){
         ChannelPane *source = m_panes.value(sourceKey);
-        if (!source) return;
-        ChannelPane *target = paneAt(gp);
-        if (target && target != source) {
+        ChannelPane *target = pane;
+        if (!source || source == target) return;
+
+        const qsizetype fromIdx = m_orderedPanes.indexOf(source);
+        const qsizetype toIdx   = m_orderedPanes.indexOf(target);
+        if (fromIdx >= 0 && toIdx >= 0) {
             // pane ↔ pane swap
-            const qsizetype fromIdx = m_orderedPanes.indexOf(source);
-            const qsizetype toIdx   = m_orderedPanes.indexOf(target);
-            if (fromIdx >= 0 && toIdx >= 0) {
-                m_orderedPanes.swapItemsAt(fromIdx, toIdx);
-                rebuildPaneLayout();
-            }
-        } else if (!target && isOverPrimary(gp)) {
-            // pane ↔ primary swap: true position swap — primary and the
-            // dragged pane trade slots, every other pane's slot is untouched.
-            const qsizetype srcIdx = m_orderedPanes.indexOf(source);
-            if (srcIdx < 0) return;
-
-            const qsizetype nSlots = 1 + m_orderedPanes.size();
-            const int srcSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
-            // Refuse a swap that would push primary (sidebar embedded inside
-            // it) into a slot shared with another pane — see isFullPaneSlot.
-            if (!isFullPaneSlot(nSlots, srcSlot)) return;
-
-            QList<ChannelPane*> combined; // nullptr marks the primary slot
-            int pi = 0;
-            for (int i = 0; i < nSlots; i++)
-                combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
-
-            ChannelPane *tmp = combined[m_primarySlot];
-            combined[m_primarySlot] = combined[srcSlot];
-            combined[srcSlot] = tmp;
-
-            m_orderedPanes.clear();
-            for (int i = 0; i < nSlots; i++) {
-                if (!combined[i]) m_primarySlot = i;
-                else m_orderedPanes.append(combined[i]);
-            }
+            m_orderedPanes.swapItemsAt(fromIdx, toIdx);
             rebuildPaneLayout();
         }
     });
@@ -1645,7 +1659,6 @@ void MainWindow::floatPane(ChannelPane *pane)
     const BufferId channel = pane->channel();
 
     const bool wasDocked = m_orderedPanes.removeOne(pane);
-    if (m_dragHighlighted == pane) m_dragHighlighted = nullptr;
 
     auto *win = new QWidget(nullptr, Qt::Window);
     win->setObjectName("paneWindow");
@@ -1727,26 +1740,6 @@ void MainWindow::switchAwayFromChannel(ServerId host, BufferId channel)
     }
 }
 
-ChannelPane *MainWindow::paneAt(const QPoint &globalPos) const
-{
-    QWidget *w = QApplication::widgetAt(globalPos);
-    while (w) {
-        if (auto *p = qobject_cast<ChannelPane *>(w)) return p;
-        w = w->parentWidget();
-    }
-    return nullptr;
-}
-
-bool MainWindow::isOverPrimary(const QPoint &globalPos) const
-{
-    QWidget *w = QApplication::widgetAt(globalPos);
-    while (w) {
-        if (w == m_primaryPanel) return true;
-        w = w->parentWidget();
-    }
-    return false;
-}
-
 void MainWindow::closeChannelPane(ServerId host, BufferId channel)
 {
     const QString key = paneKey(host, channel);
@@ -1755,7 +1748,6 @@ void MainWindow::closeChannelPane(ServerId host, BufferId channel)
 
     // Floating pane: tear down its window and return to the server list.
     if (auto *win = m_paneWindows.take(key)) {
-        if (m_dragHighlighted == pane) m_dragHighlighted = nullptr;
         win->removeEventFilter(this);
         win->deleteLater(); // deletes the pane it owns
         setChannelCheckedOut(host, channel, false);
