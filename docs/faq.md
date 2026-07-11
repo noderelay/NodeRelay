@@ -817,7 +817,7 @@ Accept?   [Yes]  [No]
 
 They click **Yes**, choose where to save it, and a progress dialog tracks the download. Either side can click **Cancel** to abort.
 
-The file is written to a `.part` file while downloading and renamed to the final name only when the transfer completes. If the transfer fails or is cancelled, the partial file is deleted automatically.
+The file is written to a `.part` file while downloading and renamed to the final name only when the transfer completes. If the transfer fails or is cancelled, the partial file is deleted automatically. Stalled transfers — where the other side stops responding for over a minute — are aborted with an error rather than hanging forever.
 
 Uplink enforces two receive limits before accepting a transfer:
 

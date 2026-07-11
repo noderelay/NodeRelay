@@ -1204,9 +1204,7 @@ void MainWindow::onSelfNickChanged(ServerId host, const QString &nick)
 {
     if (host == m_model->activeHost()) {
         m_nickPrefix->setText(nick);
-        m_selfNickRe = nick.isEmpty() ? QRegularExpression{}
-            : QRegularExpression("(\\b" + QRegularExpression::escape(nick) + "\\b)",
-                                 QRegularExpression::CaseInsensitiveOption);
+        m_selfNickRe = SessionModel::buildHighlightRe(nick);
     }
 
     for (auto *pane : std::as_const(m_panes))
@@ -1457,9 +1455,7 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
 
     if (auto *sess = m_model->session(host)) {
         m_nickPrefix->setText(sess->nick);
-        m_selfNickRe = sess->nick.isEmpty() ? QRegularExpression{}
-            : QRegularExpression("(\\b" + QRegularExpression::escape(sess->nick) + "\\b)",
-                                 QRegularExpression::CaseInsensitiveOption);
+        m_selfNickRe = SessionModel::buildHighlightRe(sess->nick);
         if (m_nickDelegate)
             m_nickDelegate->setSelfAway(sess->nick, sess->away);
     }

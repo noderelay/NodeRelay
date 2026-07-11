@@ -48,10 +48,7 @@ static QList<Message> collectEventGroup(const Channel *ch, const QString &selfNi
 QRegularExpression MainWindow::selfNickReFor(const ServerId &host) const
 {
     if (host == m_model->activeHost()) return m_selfNickRe;
-    const QString nick = m_model->selfNick(host);
-    return nick.isEmpty() ? QRegularExpression{}
-        : QRegularExpression("(\\b" + QRegularExpression::escape(nick) + "\\b)",
-                             QRegularExpression::CaseInsensitiveOption);
+    return SessionModel::buildHighlightRe(m_model->selfNick(host));
 }
 
 void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &msg)

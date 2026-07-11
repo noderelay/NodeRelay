@@ -2940,7 +2940,7 @@ link_previews = true</pre>
            alt="A DCC file transfer progress dialog">
       <figcaption>A live progress dialog tracks each DCC transfer; either side can cancel.</figcaption>
     </figure>
-    <p>The file is saved to a <code>.part</code> file during the transfer and renamed to the final filename only when the download completes successfully. If the transfer fails or is cancelled, the partial file is deleted automatically.</p>
+    <p>The file is saved to a <code>.part</code> file during the transfer and renamed to the final filename only when the download completes successfully. If the transfer fails or is cancelled, the partial file is deleted automatically. Stalled transfers — where the other side stops responding for over a minute — are aborted with an error rather than left hanging.</p>
     <p><strong>Receive limits</strong> are enforced before any data is written:</p>
     <ul>
       <li><strong>Maximum file size: 2 GiB.</strong> Offers larger than this are rejected before the dialog appears.</li>

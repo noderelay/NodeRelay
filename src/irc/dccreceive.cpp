@@ -95,7 +95,7 @@ bool DccReceive::listenPassive(quint32 expectedIp)
     m_server = new QTcpServer(this);
     if (!m_server->listen(QHostAddress::Any, 0)) {
         emit error("Cannot bind listen port");
-        m_file.close();
+        cancel(); // closes and removes the freshly created .part file
         return false;
     }
 

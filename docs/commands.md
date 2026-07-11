@@ -260,6 +260,8 @@ The file is written to a `.part` file while downloading and renamed to the final
 | Maximum file size | 2 GiB |
 | Disk space | Checked against available space before starting — transfer is rejected if there is not enough room |
 
+**Stall detection:** if the other side stops responding mid-transfer — no data acknowledged for over a minute — Uplink aborts the transfer with an error instead of hanging forever. Slow transfers are fine; only a genuinely stalled connection is aborted.
+
 > **NAT and firewalls:** Active DCC requires the sender's port to be reachable from the internet. If the sender is behind a home router, use **Send File (Passive)** — this flips who opens the port. If *both* sides are behind NAT, neither mode will work without a relay.
 
 ---
