@@ -1,6 +1,36 @@
 # Changelog
 
 <!--
+Session 2026-07-10/11 — session close:
+- Built/fixed this session, in order: PR #30 review cleanup (#32) — shared
+  paneKey()/isChannelName() helpers, SearchBar/NickFilterEdit widgets,
+  header-button QSS dedup, duplicate-buffer display fix. Horizontal pane
+  splits (#33) — pane_stack_rows config option, panes stack in rows instead
+  of columns. Docked-pane drag-to-rearrange properly fixed + sidebar
+  decoupled from primary panel (#34) — see full details below.
+- Bugs found and fixed: duplicate-buffer display when a channel was docked
+  in a pane (#32, pre-existing); pane<->primary drag-to-rearrange could
+  corrupt the layout in 3/4-pane arrangements (pre-existing since v0.18.0 —
+  first patched with a refuse-the-swap guard in #33, then properly fixed by
+  decoupling the sidebar in #34); docked-pane header drag not registering at
+  all under genuine Wayland/KDE desktop identification, because the
+  pre-existing mechanism relied on QWidget::grabMouse(), which Wayland only
+  permits for popup surfaces (#34).
+- Also resolved (not an app bug): a stale ~/.bashrc on this dev machine was
+  spoofing XDG_CURRENT_DESKTOP=Hyprland and disabling window decorations for
+  every terminal-launched app, masking/confusing the real drag bug above.
+  Removed; unrelated to the Uplink codebase.
+- Explored and deliberately abandoned: pop-out (floating) window
+  drag-to-swap between separate top-level windows. Fully built and confirmed
+  working, then reverted at user's request — not needed for independent
+  floating windows.
+- No regressions found. Known open items unchanged: floating-window
+  geometry isn't persisted across restarts (reopens at fixed 820x620);
+  /calc /8ball /shrug /tableflip bundled scripts, accessibility pass, and
+  history-search v2/v3 remain on the backlog (see ROADMAP.md).
+-->
+
+<!--
 Session 2026-07-10/11 (iv) — Fix docked-pane drag-to-rearrange:
 - Root cause of drag-to-rearrange silently not working under this session's
   desktop environment: ChannelPane's header drag used QWidget::grabMouse(),
