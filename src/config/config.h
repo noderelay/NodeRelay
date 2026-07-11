@@ -118,6 +118,7 @@ struct UiConfig {
     bool      showUnreadCounts{true};
     QString   appIcon{"flat-black"};
     QString   nickBrackets{"<>"};
+    bool      paneStackRows{false};   // false = columns (default), true = rows
 };
 
 inline const QString kKeychainSentinel = QStringLiteral("<keychain>");

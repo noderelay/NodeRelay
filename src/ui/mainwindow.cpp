@@ -147,6 +147,20 @@ static constexpr int kDefaultWindowH  = 650;
 static constexpr int kMaxExtraPanes   = 3;
 static constexpr int kMaxPaneWindows  = 4;
 
+// m_primaryPanel physically embeds the sidebar (see setupChatArea: its own
+// layout holds m_mainSplitter, which holds the sidebar + chat section). It
+// must therefore always occupy a full, unshared column/row in the pane
+// splitter — never a slot shared with another pane in a nested cross-
+// splitter, or the sidebar gets squeezed into that shared slot alongside it.
+// Mirrors the slot shapes rebuildPaneLayout() actually builds for
+// n<=2 / n==3 / n==4.
+static bool isFullPaneSlot(qsizetype totalSlots, int slot)
+{
+    if (totalSlots <= 2) return true;      // flat: every slot is a full top-level column
+    if (totalSlots == 3) return slot == 0; // only slot 0 is full; 1 and 2 share a stack
+    return false;                          // n == 4: every slot pairs into a shared stack
+}
+
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -1547,14 +1561,32 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
                 rebuildPaneLayout();
             }
         } else if (!target && isOverPrimary(gp)) {
-            // pane ↔ primary swap: move primary to source's old slot
-            const qsizetype srcIdx  = m_orderedPanes.indexOf(source);
-            if (srcIdx >= 0) {
-                // combined slot of source (accounts for primary's current position)
-                const int paneSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
-                m_primarySlot = paneSlot;
-                rebuildPaneLayout();
+            // pane ↔ primary swap: true position swap — primary and the
+            // dragged pane trade slots, every other pane's slot is untouched.
+            const qsizetype srcIdx = m_orderedPanes.indexOf(source);
+            if (srcIdx < 0) return;
+
+            const qsizetype nSlots = 1 + m_orderedPanes.size();
+            const int srcSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
+            // Refuse a swap that would push primary (sidebar embedded inside
+            // it) into a slot shared with another pane — see isFullPaneSlot.
+            if (!isFullPaneSlot(nSlots, srcSlot)) return;
+
+            QList<ChannelPane*> combined; // nullptr marks the primary slot
+            int pi = 0;
+            for (int i = 0; i < nSlots; i++)
+                combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
+
+            ChannelPane *tmp = combined[m_primarySlot];
+            combined[m_primarySlot] = combined[srcSlot];
+            combined[srcSlot] = tmp;
+
+            m_orderedPanes.clear();
+            for (int i = 0; i < nSlots; i++) {
+                if (!combined[i]) m_primarySlot = i;
+                else m_orderedPanes.append(combined[i]);
             }
+            rebuildPaneLayout();
         }
     });
 
@@ -1777,46 +1809,54 @@ void MainWindow::rebuildPaneLayout()
             delete s;
     }
 
-    auto makeVert = []() -> QSplitter * {
-        auto *s = new QSplitter(Qt::Vertical);
+    // Columns mode (default): primary top-level splitter is horizontal, any
+    // stacking within a slot uses a nested vertical splitter. Rows mode is
+    // the same shapes transposed 90°.
+    const Qt::Orientation mainAxis  = m_config.ui.paneStackRows ? Qt::Vertical : Qt::Horizontal;
+    const Qt::Orientation crossAxis = m_config.ui.paneStackRows ? Qt::Horizontal : Qt::Vertical;
+    m_panesSplitter->setOrientation(mainAxis);
+
+    auto makeCross = [crossAxis]() -> QSplitter * {
+        auto *s = new QSplitter(crossAxis);
         s->setHandleWidth(2);
         return s;
     };
 
     const qsizetype n = widgets.size();
     if (n <= 2) {
-        // 1 or 2 panes: flat horizontal
+        // 1 or 2 panes: flat along the main axis
         for (auto *w : std::as_const(widgets)) {
             m_panesSplitter->addWidget(w);
             w->show();
         }
     } else if (n == 3) {
-        // primary full-height left, two panes stacked right
+        // primary full-length in the first slot, two panes stacked in the second
         m_panesSplitter->addWidget(widgets[0]);
         widgets[0]->show();
-        auto *right = makeVert();
-        right->addWidget(widgets[1]);
-        right->addWidget(widgets[2]);
+        auto *second = makeCross();
+        second->addWidget(widgets[1]);
+        second->addWidget(widgets[2]);
         widgets[1]->show();
         widgets[2]->show();
-        m_panesSplitter->addWidget(right);
+        m_panesSplitter->addWidget(second);
     } else { // n == 4  (2×2 grid)
-        auto *left = makeVert();
-        left->addWidget(widgets[0]);
-        left->addWidget(widgets[1]);
+        auto *first = makeCross();
+        first->addWidget(widgets[0]);
+        first->addWidget(widgets[1]);
         widgets[0]->show();
         widgets[1]->show();
-        auto *right = makeVert();
-        right->addWidget(widgets[2]);
-        right->addWidget(widgets[3]);
+        auto *second = makeCross();
+        second->addWidget(widgets[2]);
+        second->addWidget(widgets[3]);
         widgets[2]->show();
         widgets[3]->show();
-        m_panesSplitter->addWidget(left);
-        m_panesSplitter->addWidget(right);
+        m_panesSplitter->addWidget(first);
+        m_panesSplitter->addWidget(second);
     }
 
-    // Equalize top-level columns
-    const int total = m_panesSplitter->width();
+    // Equalize top-level slices along whichever axis is now the main one
+    const int total = (mainAxis == Qt::Horizontal) ? m_panesSplitter->width()
+                                                    : m_panesSplitter->height();
     if (total > 0 && m_panesSplitter->count() > 0) {
         const int each = total / m_panesSplitter->count();
         QList<int> sizes(m_panesSplitter->count(), each);

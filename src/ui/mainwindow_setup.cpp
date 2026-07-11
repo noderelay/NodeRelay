@@ -364,6 +364,12 @@ void MainWindow::connectPreferences()
         m_sidebar->viewport()->update();
     });
 
+    connect(m_prefsDialog, &PreferencesDialog::paneStackRowsToggled, this, [this](bool on){
+        m_config.ui.paneStackRows = on;
+        saveConfig();
+        rebuildPaneLayout();
+    });
+
     connect(m_prefsDialog, &PreferencesDialog::timestampsToggled, this, [this](bool on){
         m_config.ui.showTimestamps = on;
         saveConfig();

@@ -165,7 +165,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Detachable channel panes (v0.17.0) — right-click sidebar channel → Open in Pane; each pane has its own chat view, nick list, per-pane topic bar (toggle), and input bar; auto layout (2=side-by-side, 3=primary+two stacked, 4=2×2 grid); max 4 total; primary column header + close button when panes are open
 - [x] Pane drag-to-rearrange — drag header bar to swap any pane with another pane or the primary panel (v0.18.0)
 - [x] Pane layout persistence — save/restore pane arrangement across sessions
-- [ ] Horizontal pane splits — option to stack panes in horizontal rows, not just the current column-based auto layouts. Drag-to-rearrange becomes more valuable once this lands.
+- [x] Horizontal pane splits — `pane_stack_rows` config option (Preferences → Interface → Stack Panes in Rows) transposes the auto layout: panes stack in horizontal rows instead of columns. Same shapes for 1-4 panes, rotated 90°.
 - [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
 - [x] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
 - [x] /list command — sends LIST to server; RPL_LIST (322) and RPL_LISTEND (323) displayed in server buffer with user count and topic (v0.25.2)

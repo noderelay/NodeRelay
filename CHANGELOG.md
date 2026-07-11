@@ -1,6 +1,37 @@
 # Changelog
 
 <!--
+Session 2026-07-10 (iii) — Horizontal pane splits:
+- New `pane_stack_rows` config option (Preferences -> Interface -> Stack Panes
+  in Rows): transposes the docked-pane auto layout so panes stack in
+  horizontal rows instead of columns. rebuildPaneLayout() now derives a
+  main/cross axis pair from the setting instead of hardcoding
+  horizontal-main/vertical-cross; same shapes for 1-4 panes, rotated 90 deg.
+  Applies live via the existing rebuildPaneLayout() call, no restart needed.
+- Docs: configuration.md (full example + options table), howto.html (Layout
+  section + a stale line fixed: left-clicking a pane's channel no longer also
+  loads it into primary, per the PR #32 fix — the how-to still described the
+  old behavior).
+- Explored and abandoned earlier this session: pop-out (floating) window
+  drag-to-swap. Fully implemented and confirmed working (QDrag-based content
+  swap between floating windows, since Wayland disallows client-side window
+  repositioning), then reverted at user's request -- independent floating
+  windows don't need this; docked-pane drag-to-rearrange remains as-is and
+  gets more useful now that rows mode exists.
+- Fix: pane <-> primary drag-to-rearrange (v0.18.0) could corrupt the layout
+  in 3/4-pane arrangements. m_primaryPanel physically embeds the sidebar
+  (setupChatArea's m_mainSplitter), so it must always land in a full,
+  unshared splitter slot -- the old swap logic only moved m_primarySlot
+  without relocating the dragged pane, so an uninvolved third pane would
+  shift to the wrong slot, and swapping primary into a shared/stacked slot
+  squeezed the whole sidebar+chat bundle into it. Rewrote the swap as a true
+  slot exchange (every other pane's position is now untouched) and added
+  isFullPaneSlot() to refuse any swap that would place primary in a shared
+  slot (blocks all 4-pane primary swaps, and 3-pane swaps not targeting the
+  one full slot) instead of corrupting the layout.
+-->
+
+<!--
 Session 2026-07-10 (ii) — PR #30 review cleanup (#32):
 - Shared paneKey()/isChannelName() helpers (model/ids.h) replace ~35 hand-rolled
   host|channel key constructions and inconsistent channel-prefix checks that
