@@ -72,7 +72,10 @@ QString DccSend::initPassive()
 void DccSend::connectOut(quint32 ip, quint16 port)
 {
     m_socket = new QTcpSocket(this);
-    connect(m_socket, &QTcpSocket::connected,          this, [this]{ sendNextChunk(); });
+    connect(m_socket, &QTcpSocket::connected,          this, [this]{
+        armStallGuard();
+        sendNextChunk();
+    });
     connect(m_socket, &QTcpSocket::readyRead,          this, &DccSend::onReadyRead);
     connect(m_socket, &QTcpSocket::bytesWritten,       this, &DccSend::onBytesWritten);
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
@@ -124,14 +127,32 @@ void DccSend::onNewConnection()
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
         if (!m_finished) emit error(m_socket->errorString());
     });
-    // Stall guard: if no ACK arrives within 60s of starting, abort.
-    QTimer::singleShot(60000, this, [this]{
-        if (m_socket && m_sent > 0 && !m_finished) {
+    armStallGuard();
+    sendNextChunk();
+}
+
+// Stall guard: abort only when the peer's cumulative ACK count has not
+// advanced between two 60s checks — a one-shot deadline would kill any
+// healthy transfer that simply takes longer than 60s.
+void DccSend::armStallGuard()
+{
+    auto *stall = new QTimer(this);
+    connect(stall, &QTimer::timeout, this, [this, stall]{
+        if (m_finished || !m_socket) {
+            stall->stop();
+            stall->deleteLater();
+            return;
+        }
+        if (m_acked == m_lastAckSeen) {
+            stall->stop();
+            stall->deleteLater();
             cancel();
             emit error("Transfer stalled: no ACK received");
+            return;
         }
+        m_lastAckSeen = m_acked;
     });
-    sendNextChunk();
+    stall->start(60000);
 }
 
 void DccSend::onReadyRead()
@@ -140,7 +161,8 @@ void DccSend::onReadyRead()
     while (m_socket->bytesAvailable() >= 4) {
         quint32 raw;
         m_socket->read(reinterpret_cast<char *>(&raw), 4);
-        if (static_cast<qint64>(qFromBigEndian(raw)) >= filesize()) {
+        m_acked = qMax(m_acked, static_cast<qint64>(qFromBigEndian(raw)));
+        if (m_acked >= filesize()) {
             m_finished = true;
             emit finished();
             return;

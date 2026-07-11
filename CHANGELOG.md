@@ -1,6 +1,47 @@
 # Changelog
 
 <!--
+Session 2026-07-11 (later) — whole-codebase surgical audit:
+- Targeted review of security paths (SSRF guard, DCC, TLS, CTCP parsing),
+  resource caps (message buffer, reactions, batches, previews, ChatView,
+  log search), and the fresh #35 pane code. Almost everything already had
+  caps/timeouts/validation; four findings, all fixed same session:
+- Fix: DCC send stall guard was a one-shot 60s deadline that killed ANY
+  active-mode transfer still running after 60s ("Transfer stalled: no ACK
+  received" on healthy large/slow sends). Replaced with armStallGuard():
+  recurring 60s timer that tracks the peer's cumulative ACK (new m_acked,
+  recorded in onReadyRead) and aborts only when it hasn't advanced between
+  ticks. Also armed on the passive connectOut() path, which had no guard.
+- Fix: Channel::reactions grew without bound for fabricated msgids — the
+  per-msgid caps (16 emojis x 50 nicks) never limited DISTINCT msgid keys,
+  and eviction pruning only fires for msgids of real buffered messages. A
+  hostile client sending TAGMSG reacts with random msgids leaked memory
+  forever. onReactReceived now requires ch->hasMessage(msgid) (new helper,
+  same linear-scan idiom as the redaction handler). No behavior loss:
+  orphan reactions were never renderable anyway.
+- Fix: DccReceive::listenPassive left a zero-byte .part file behind when
+  the listen bind failed — now calls cancel(), which already does the
+  close-and-remove.
+- Cleanup: the (\bnick\b) self-nick regex was hand-built in three places
+  (onSelfNickChanged, refresh path, selfNickReFor). All three now call
+  SessionModel::buildHighlightRe(nick) — identical pattern for a single
+  word, and finally consistent with the "build highlight regexes only via
+  buildHighlightRe()" invariant.
+- CLAUDE.md TLS invariant reworded: "ignoreSslErrors() is gone" was stale —
+  the TOFU pinning flow legitimately calls it for a pinned-fingerprint
+  match only. New wording says exactly that, so the pinning doesn't get
+  "fixed" away later.
+- Everything else surveyed came back clean: SSRF guard covers IPv4-mapped
+  IPv6 + all special ranges, batches capped (count + per-batch size), raw
+  line buffer capped 64 KB, ChatView trims to kMaxLines and evicts
+  offscreen layouts, preview pipeline has queue caps + watchdog +
+  generation counters, log search streams line-by-line on a cancelable
+  worker.
+- Docs: stall detection noted in README, commands.md, faq.md, howto.html;
+  quality.html hardening blurb extended. 6/6 tests pass. No release tagged.
+-->
+
+<!--
 Session 2026-07-11 — pane/pop-out review hardening + drop-frame highlight:
 - Full code review of the pane / pop-out window layer; all findings fixed
   the same session, each verified by the user on Linux.

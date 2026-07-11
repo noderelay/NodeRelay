@@ -78,6 +78,13 @@ struct Channel {
     bool             joined{false};
     QDateTime        lastRead;  // soju.im/read marker
 
+    bool hasMessage(const QString &msgid) const
+    {
+        for (const auto &m : messages)
+            if (m.msgid == msgid) return true;
+        return false;
+    }
+
     void addMessage(const Message &msg)
     {
         messages.append(msg);

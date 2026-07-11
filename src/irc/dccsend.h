@@ -36,12 +36,15 @@ private slots:
 
 private:
     void sendNextChunk();
+    void armStallGuard();
 
     QTcpServer *m_server{nullptr};
     QTcpSocket *m_socket{nullptr};
     QFile       m_file;
     QString     m_token;
     qint64      m_sent{0};
+    qint64      m_acked{0};       // highest cumulative ACK from the peer
+    qint64      m_lastAckSeen{0}; // m_acked at the previous stall check
     qint64      m_filesize{0};
     std::optional<QHostAddress> m_expectedPeer;
 

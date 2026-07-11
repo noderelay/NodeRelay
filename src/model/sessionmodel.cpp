@@ -1234,6 +1234,9 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     const QString buf = isChannel ? target : nick;
     auto *ch = channel(ServerId{host}, BufferId{buf});
     if (!ch) return;
+    // Only react to messages we actually hold — fabricated msgids would
+    // grow the reactions map without bound (eviction never prunes them).
+    if (!ch->hasMessage(msgid)) return;
 
     auto &perEmoji = ch->reactions[msgid];
     static constexpr int kMaxEmojis = 16;
