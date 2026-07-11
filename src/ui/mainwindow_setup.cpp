@@ -712,6 +712,8 @@ void MainWindow::setupChatArea()
 
     // Primary panel — first column in the panes splitter
     m_primaryPanel = new QWidget;
+    m_primaryPanel->setAcceptDrops(true);
+    m_primaryPanel->installEventFilter(this);
     auto *primaryVbox = new QVBoxLayout(m_primaryPanel);
     primaryVbox->setContentsMargins(0, 0, 0, 0);
     primaryVbox->setSpacing(0);
@@ -1085,14 +1087,10 @@ void MainWindow::setupChatArea()
         m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
     });
 
-    m_mainSplitter = new QSplitter(Qt::Horizontal);
-    m_mainSplitter->setHandleWidth(0);
-    m_mainSplitter->addWidget(m_sidebarPanel);
-    m_mainSplitter->addWidget(chatSection);
-    m_mainSplitter->setStretchFactor(0, 0);
-    m_mainSplitter->setStretchFactor(1, 1);
-    m_mainSplitter->setMinimumSize(1, 1);
-    primaryVbox->addWidget(m_mainSplitter, 1);
+    // m_primaryPanel is self-contained (just like any other ChannelPane) —
+    // no sidebar inside it — so it can safely land in any pane slot the
+    // pane splitter builds, including a shared/stacked one.
+    primaryVbox->addWidget(chatSection, 1);
 
     // setupInputBar will append search/reply/typing/input into chatSection
 
@@ -1106,7 +1104,18 @@ void MainWindow::setupChatArea()
     cwLayout->setContentsMargins(0, 0, 0, 0);
     cwLayout->setSpacing(0);
     cwLayout->addWidget(m_panesSplitter);
-    vbox->addWidget(chatWrapper, 1);
+
+    // The sidebar lives one level above the pane splitter, as a permanent
+    // sibling of it, so it's always present no matter how panes (including
+    // the primary pane) get rearranged.
+    m_mainSplitter = new QSplitter(Qt::Horizontal);
+    m_mainSplitter->setHandleWidth(0);
+    m_mainSplitter->addWidget(m_sidebarPanel);
+    m_mainSplitter->addWidget(chatWrapper);
+    m_mainSplitter->setStretchFactor(0, 0);
+    m_mainSplitter->setStretchFactor(1, 1);
+    m_mainSplitter->setMinimumSize(1, 1);
+    vbox->addWidget(m_mainSplitter, 1);
 
     setCentralWidget(m_rightContent);
 }
