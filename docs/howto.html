@@ -1630,6 +1630,7 @@ channels = "#uplink"</pre>
       </tbody>
     </table>
     <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen.</p>
+    <p>By default panes stack in <strong>columns</strong> (as in the table above). If you'd rather stack them in <strong>horizontal rows</strong> instead — handy on a portrait or vertically-oriented monitor — turn on <strong>Preferences → Interface → Stack Panes in Rows</strong>. The layout re-flows immediately and the choice is remembered across restarts (<code>pane_stack_rows</code> in <code>config.toml</code>). Every shape in the table above is simply rotated 90°: 2 panes stack top/bottom, 3 panes become a full-width row plus two side by side beneath it, and 4 panes stay a 2×2 grid with rows and columns swapped.</p>
 
     <h3>Rearranging panes</h3>
     <p>Click and drag any pane's header bar to swap it with another pane. Drop it on the header of any other pane — or on the primary channel area — to swap their positions. The layout rebuilds instantly without losing any content.</p>
@@ -1668,8 +1669,7 @@ channels = "#uplink"</pre>
     <h3>Limits and notes</h3>
     <ul>
       <li>Maximum 4 panes total (1 primary + 3 extras), plus up to 4 popped-out windows at a time.</li>
-      <li>The same channel cannot appear in both the primary view and a pane simultaneously. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically.</li>
-      <li>Left-clicking a channel that is open in a pane loads it in the primary view as well — the pane stays open.</li>
+      <li>The same channel never appears in both the primary view and a pane at the same time. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically. Left-clicking a channel that is already open in a pane just keeps the primary view where it was — it does not also load it there.</li>
       <li>All slash commands work in pane input bars — <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
       <li><strong>Tab completion works in pane input bars.</strong> Pressing <kbd>Tab</kbd> completes nicks from that pane's own channel, not the primary channel — so you always get the right suggestions regardless of which input is focused.</li>
       <li>Font sizes set in <strong>Preferences → Font Config</strong> apply consistently to all panes — chat text, nick list, topic bar, and input label all inherit the same configured sizes whether the pane is opened at launch or mid-session.</li>

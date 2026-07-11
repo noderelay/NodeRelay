@@ -53,6 +53,7 @@ hanging_indent    = true
 show_timestamps   = true
 highlight_words   = ""           # comma-separated words that trigger highlight (e.g. "myproject,alert")
 nick_brackets     = "<>"         # "<>" angle, "[]" square, "::::" double-colon, "" none
+pane_stack_rows   = false        # false = stack panes in columns, true = stack in rows
 font_family       = "IBM Plex Mono"
 font_toolbar    = 10
 font_sidebar    = 10
@@ -134,6 +135,7 @@ Config Config::load(const QString &path)
             if (cfg.ui.appIcon == "dark")  cfg.ui.appIcon = "flat-black";
             if (cfg.ui.appIcon == "light") cfg.ui.appIcon = "original-flat-shine";
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
+            cfg.ui.paneStackRows   = (*ui)["pane_stack_rows"].value_or(false);
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10.0);
@@ -332,6 +334,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "highlight_words = " << tomlQuote(cfg.ui.highlightWords) << "\n";
     out << "app_icon = " << tomlQuote(cfg.ui.appIcon) << "\n";
     out << "nick_brackets = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
+    out << "pane_stack_rows = " << boolStr(cfg.ui.paneStackRows) << "\n";
     out << "notifications = " << boolStr(cfg.ui.notifications) << "\n";
     out << "font_family = " << tomlQuote(cfg.ui.fontFamily) << "\n";
     out << "font_toolbar = " << cfg.ui.fontSizes.toolbar << "\n";

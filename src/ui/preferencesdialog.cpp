@@ -307,6 +307,11 @@ QWidget *PreferencesDialog::createInterfacePage(const Config &cfg)
     connect(m_unreadCountsCheck, &QCheckBox::toggled, this, [this](bool on){ emit unreadCountsToggled(on); });
     vbox->addWidget(m_unreadCountsCheck);
 
+    m_paneStackRowsCheck = new QCheckBox("Stack Panes in Rows");
+    m_paneStackRowsCheck->setChecked(cfg.ui.paneStackRows);
+    connect(m_paneStackRowsCheck, &QCheckBox::toggled, this, [this](bool on){ emit paneStackRowsToggled(on); });
+    vbox->addWidget(m_paneStackRowsCheck);
+
     vbox->addStretch();
     return page;
 }
