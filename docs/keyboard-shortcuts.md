@@ -10,7 +10,7 @@ All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cm
 |---|---|
 | **Ctrl+K** | Quick channel switcher |
 | **Alt+Up / Down** | Previous / next channel |
-| **Alt+Left / Right** | Previous / next pane |
+| **Alt+Left / Right** | Move focus to the previous / next pane |
 | **Ctrl+F** | Search current buffer |
 | **Ctrl+Shift+F** | Search full logged history |
 | **Ctrl+W** | Minimize to tray |
@@ -34,12 +34,14 @@ Navigate between channels and panes without touching the mouse. These shortcuts 
 | **Ctrl+K** | Quick channel switcher — type to filter, Enter to jump |
 | **Alt+Up** | Switch to the previous channel in the sidebar |
 | **Alt+Down** | Switch to the next channel in the sidebar |
-| **Alt+Left** | Switch to the previous open pane |
-| **Alt+Right** | Switch to the next open pane |
+| **Alt+Left** | Move keyboard focus to the previous open pane |
+| **Alt+Right** | Move keyboard focus to the next open pane |
 
 **Ctrl+K** opens a floating search popup listing all joined channels. Start typing to filter by channel name or server — the list narrows as you type. Use Up/Down to select and Enter to switch. Press Escape to dismiss.
 
-Alt+arrow shortcuts wrap around — pressing Alt+Down on the last channel jumps back to the first.
+**Alt+Left / Alt+Right** cycles keyboard focus through the open panes' input bars — the primary view's input included — in layout order. The panes stay exactly where they are; only the focus (and therefore where your typing goes) moves.
+
+Alt+arrow shortcuts wrap around — pressing Alt+Down on the last channel jumps back to the first, and Alt+Right on the last pane wraps to the first.
 
 ---
 
@@ -116,6 +118,8 @@ Any `:shortcode:` patterns still in the text when you send are substituted autom
 | **Escape** | Close search and clear highlights |
 
 Search is case-insensitive and covers the full buffer for the current channel. It does not search across channels.
+
+Panes have their own search: with focus inside a docked pane, **Ctrl+F** opens that pane's search bar instead of the primary one. Popped-out channel windows respond to **Ctrl+F** too. The magnifier button in each pane or window header does the same thing.
 
 ### Full history (Ctrl+Shift+F)
 

@@ -34,6 +34,10 @@ public:
 
     // Active selection — UI drives this
     void    setActive      (ServerId host, BufferId channel);
+    // Clear unread state without changing the active buffer — used for
+    // channels the user is already watching in a docked pane or pop-out
+    // window, which never become active.
+    void    markRead       (ServerId host, BufferId channel);
     ServerId activeHost()    const { return m_activeHost; }
     BufferId activeChannel() const { return m_activeChannel; }
 

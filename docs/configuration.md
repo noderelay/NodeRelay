@@ -1053,7 +1053,7 @@ name = "#archlinux"
 
 Set `theme` in `[ui]` to any theme name from the list below. The name must match the `.toml` filename in the `themes/` folder without the extension.
 
-Uplink ships with 295 built-in themes — 55 hand-picked originals plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
+Uplink ships with 297 built-in themes — 57 hand-picked originals plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
 
 Popular picks:
 
@@ -1070,6 +1070,8 @@ Popular picks:
 | `tokyo-night-dark-base16` | Tokyo Night dark, base16 variant |
 | `rose-pine-base16` | Rosé Pine, base16 variant |
 | `one-dark` | Atom One Dark |
+| `mactahoe26` | macOS Tahoe dark — Apple system grays |
+| `mactahoe26-light` | macOS Tahoe light variant |
 | `default` | Built-in fallback theme |
 
 Themes can be switched live from the **Preferences → Appearance** page (click **⚙** in the channel header) without restarting.

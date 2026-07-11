@@ -1,0 +1,42 @@
+# mactahoe26 — macOS Tahoe (macOS 26) "Liquid Glass" dark theme for UplinkIRC
+# Deep glass surfaces + Apple system accent colors
+
+[general]
+background   = "#1c1c1e"
+text         = "#f5f5f7"
+border       = "#38383a"
+accent       = "#0a84ff"
+
+[sidebar]
+background   = "#2c2c2e"
+text         = "#98989d"
+active       = "#f5f5f7"
+unread       = "#0a84ff"
+mention      = "#ff453a"
+server       = "#636366"
+
+[buffer]
+background   = "#1c1c1e"
+timestamp    = "#636366"
+server_line  = "#ff9f0a"
+action       = "#bf5af2"
+nick_self    = "#64d2ff"
+
+[highlights]
+mention_bg   = "#3a2224"
+mention_text = "#ff453a"
+keyword      = "#0a84ff"
+
+[nicklist]
+background   = "#2c2c2e"
+text         = "#98989d"
+op           = "#30d158"
+halfop       = "#5e5ce6"
+voice        = "#ffd60a"
+away         = "#636366"
+
+[input]
+background   = "#2c2c2e"
+text         = "#f5f5f7"
+placeholder  = "#8e8e93"
+nick_color   = "#64d2ff"

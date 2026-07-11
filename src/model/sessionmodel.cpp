@@ -507,6 +507,16 @@ void SessionModel::setActive(ServerId host, BufferId ch)
     }
 }
 
+void SessionModel::markRead(ServerId host, BufferId ch)
+{
+    auto *c = channel(host, ch);
+    if (!c || (c->unread == 0 && c->mentions == 0)) return;
+    c->unread         = 0;
+    c->mentions       = 0;
+    c->firstUnreadIdx = -1;
+    emit unreadChanged(host, ch, 0);
+}
+
 // ---------------------------------------------------------------------------
 // Wire up a client to all our handler slots
 // ---------------------------------------------------------------------------

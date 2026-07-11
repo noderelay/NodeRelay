@@ -42,6 +42,18 @@ static QList<Message> collectEventGroup(const Channel *ch, const QString &selfNi
     return group;
 }
 
+// Highlight regex for a host's own nick. m_selfNickRe tracks the active
+// host, but panes can belong to a different server where the user may be
+// under a different nick.
+QRegularExpression MainWindow::selfNickReFor(const ServerId &host) const
+{
+    if (host == m_model->activeHost()) return m_selfNickRe;
+    const QString nick = m_model->selfNick(host);
+    return nick.isEmpty() ? QRegularExpression{}
+        : QRegularExpression("(\\b" + QRegularExpression::escape(nick) + "\\b)",
+                             QRegularExpression::CaseInsensitiveOption);
+}
+
 void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &msg)
 {
     const QString selfNick = m_model->selfNick(host);
@@ -54,7 +66,7 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
         ctx.chatPt       = m_config.ui.fontSizes.chat;
         ctx.validTheme   = m_theme.valid;
         ctx.themeText    = m_theme.text;
-        ctx.selfNickRe   = m_selfNickRe;
+        ctx.selfNickRe   = selfNickReFor(host);
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
         ctx.channel      = ch;
@@ -95,7 +107,15 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
     const QString key = paneKey(host, channel);
     if (auto *pane = m_panes.value(key)) {
         auto *pCh = m_model->channel(host, channel);
-        if (pCh) appendToView(pane->chatView(), pCh);
+        if (pCh) {
+            appendToView(pane->chatView(), pCh);
+            if (m_config.ui.linkPreviews) {
+                appendPreviewCards(pane->chatView(), msg, host, channel);
+                if (pane->chatView()->isAtBottom()) pane->chatView()->scrollToBottom();
+            }
+        }
+        // Visible in a pane/window — never let it count as unread.
+        m_model->markRead(host, channel);
     }
 
     // Suppress when either the main window or this channel's own popped-out
@@ -158,7 +178,7 @@ void MainWindow::onMessageRedacted(ServerId host, BufferId channel, const QStrin
         ctx.chatPt       = m_config.ui.fontSizes.chat;
         ctx.validTheme   = m_theme.valid;
         ctx.themeText    = m_theme.text;
-        ctx.selfNickRe   = m_selfNickRe;
+        ctx.selfNickRe   = selfNickReFor(host);
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
         ctx.channel      = ch;
@@ -201,7 +221,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
-    ctx.selfNickRe   = m_selfNickRe;
+    ctx.selfNickRe   = selfNickReFor(pane->host());
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;
@@ -540,37 +560,49 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
 
     m_chatView->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
 
+    if (autoPreview)
+        appendPreviewCards(m_chatView, msg, host, channel);
+
+    if (m_chatView->isAtBottom()) m_chatView->scrollToBottom();
+}
+
+// Appends cached preview cards for URLs in msg to the given view, or queues
+// a fetch for new ones. Shared by the primary view and pane appends; the
+// PreviewController dedupes by URL, so both enqueueing for the same message
+// is safe when a channel is visible in two places.
+void MainWindow::appendPreviewCards(ChatView *view, const Message &msg,
+                                    const ServerId &host, const BufferId &channel)
+{
     const bool isText = (msg.type == MessageType::Privmsg ||
                          msg.type == MessageType::Action  ||
                          msg.type == MessageType::Notice);
-    if (autoPreview && isText) {
-        static const QRegularExpression urlRe(
-            R"(https?://[^ \t\r\n<>"]+)",
-            QRegularExpression::CaseInsensitiveOption);
-        auto it = urlRe.globalMatch(msg.text);
-        while (it.hasNext()) {
-            const QString urlStr = QUrl(it.next().captured(0)).toString();
-            if (urlStr.isEmpty()) continue;
-            if (ch) {
-                const auto p = ch->previews.constFind(urlStr);
-                if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr)) {
-                    ChatLine card;
-                    card.role   = ChatLineRole::PreviewCard;
-                    card.id     = "preview:" + urlStr;
-                    if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
-                    card.text   = p->title + "\n" + p->domain;
-                    ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
-                    seg.anchor = "preview:" + urlStr;
-                    card.segments.append(seg);
-                    m_chatView->appendLine(card);
-                    continue;
-                }
-            }
-            m_previews->enqueue(QUrl(urlStr), host, channel, msg.msgid);
-        }
-    }
+    if (!isText) return;
+    auto *ch = m_model->channel(host, channel);
 
-    if (m_chatView->isAtBottom()) m_chatView->scrollToBottom();
+    static const QRegularExpression urlRe(
+        R"(https?://[^ \t\r\n<>"]+)",
+        QRegularExpression::CaseInsensitiveOption);
+    auto it = urlRe.globalMatch(msg.text);
+    while (it.hasNext()) {
+        const QString urlStr = QUrl(it.next().captured(0)).toString();
+        if (urlStr.isEmpty()) continue;
+        if (ch) {
+            const auto p = ch->previews.constFind(urlStr);
+            if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr)) {
+                ChatLine card;
+                card.role   = ChatLineRole::PreviewCard;
+                card.id     = "preview:" + urlStr;
+                if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
+                card.text   = p->title + "\n" + p->domain;
+                ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
+                seg.anchor = "preview:" + urlStr;
+                card.segments.append(seg);
+                view->appendLine(card);
+                continue;
+            }
+        }
+        m_previews->enqueue(QUrl(urlStr), host, channel, msg.msgid);
+    }
 }
 
 QString MainWindow::formatMessage(const Message &msg) const

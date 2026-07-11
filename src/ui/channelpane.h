@@ -11,6 +11,8 @@
 class ChatView;
 class SearchBar;
 class NickFilterEdit;
+class DropFrame;
+class QShortcut;
 class QListWidget;
 class QPlainTextEdit;
 class QLabel;
@@ -46,6 +48,8 @@ public:
     void setTopic(const QString &html);
     void setTopicIcon(const QIcon &collapsed, const QIcon &expanded);
     void setDragHighlight(bool on);
+    void toggleSearch();
+    void enableSearchShortcut(); // for popped-out windows, where the main window's Ctrl+F can't reach
     static QString mimeType();
 signals:
     void closeRequested();
@@ -86,6 +90,8 @@ private:
     QToolButton  *m_searchBtn{nullptr};
     QToolButton  *m_popOutBtn{nullptr};
     SearchBar    *m_searchBar{nullptr};
+    DropFrame    *m_dropFrame{nullptr};
+    QShortcut    *m_findShortcut{nullptr};
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_topicToggle{nullptr};

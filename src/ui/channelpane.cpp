@@ -4,6 +4,7 @@
 #include "ui/uistyle.h"
 #include "ui/searchbar.h"
 #include "ui/nickfilteredit.h"
+#include "ui/dropframe.h"
 
 #include <QListWidget>
 #include <QScroller>
@@ -27,6 +28,8 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QShortcut>
+#include <QMainWindow>
 
 ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
@@ -75,10 +78,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_searchBtn->setAutoRaise(true);
     m_searchBtn->setStyleSheet(UiStyle::headerButtonStyle());
     m_searchBtn->setToolTip(QStringLiteral("Search (Ctrl+F)"));
-    connect(m_searchBtn, &QToolButton::clicked, this, [this]{
-        if (m_searchBar->isVisible()) m_searchBar->dismiss();
-        else m_searchBar->open();
-    });
+    connect(m_searchBtn, &QToolButton::clicked, this, &ChannelPane::toggleSearch);
 
     m_closeBtn = new QToolButton;
     m_closeBtn->setText(QStringLiteral("✕"));
@@ -421,9 +421,32 @@ void ChannelPane::setTopicIcon(const QIcon &collapsed, const QIcon &expanded)
     });
 }
 
+void ChannelPane::toggleSearch()
+{
+    if (m_searchBar->isVisible()) m_searchBar->dismiss();
+    else m_searchBar->open();
+}
+
+// Only for popped-out panes: a window-scoped Ctrl+F. Docked panes must NOT
+// have one — it would collide with the main window's Ctrl+F shortcut and
+// Qt would treat every press as ambiguous. The main window routes Ctrl+F
+// to docked panes by focus instead.
+void ChannelPane::enableSearchShortcut()
+{
+    if (m_findShortcut) return;
+    m_findShortcut = new QShortcut(QKeySequence::Find, this);
+    m_findShortcut->setContext(Qt::WindowShortcut);
+    connect(m_findShortcut, &QShortcut::activated, this, &ChannelPane::toggleSearch);
+}
+
 void ChannelPane::setDragHighlight(bool on)
 {
-    m_header->setStyleSheet(on ? "background: palette(highlight);" : "");
+    if (on) {
+        if (!m_dropFrame) m_dropFrame = new DropFrame(this);
+        m_dropFrame->activate();
+    } else if (m_dropFrame) {
+        m_dropFrame->hide();
+    }
 }
 
 QString ChannelPane::mimeType()
@@ -434,7 +457,10 @@ QString ChannelPane::mimeType()
 void ChannelPane::dragEnterEvent(QDragEnterEvent *event)
 {
     const QByteArray fmt = mimeType().toUtf8();
-    if (event->mimeData()->hasFormat(fmt)
+    // A popped-out pane isn't part of the docked layout — dropping on it
+    // can't rearrange anything, so don't advertise it as a target.
+    if (qobject_cast<QMainWindow *>(window())
+        && event->mimeData()->hasFormat(fmt)
         && QString::fromUtf8(event->mimeData()->data(fmt)) != key()) {
         event->acceptProposedAction();
         setDragHighlight(true);
@@ -566,7 +592,10 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
         // behavior) — Qt calls an event filter once per installation, so
         // installing twice for one gesture would run this filter twice per
         // event for the rest of the drag.
-        if (me->button() == Qt::LeftButton && !m_dragPending && !m_dragging) {
+        // Popped-out panes live in their own window — there's nothing a
+        // header drag from there can rearrange, so don't start one.
+        if (me->button() == Qt::LeftButton && !m_dragPending && !m_dragging
+            && qobject_cast<QMainWindow *>(window())) {
             m_dragPending  = true;
             m_dragStartPos = me->globalPosition().toPoint();
             qApp->installEventFilter(this);

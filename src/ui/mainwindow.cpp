@@ -30,6 +30,7 @@
 #include "ui/signalbars.h"
 #include "ui/fadescrollbar.h"
 #include "ui/channelpane.h"
+#include "ui/dropframe.h"
 #include "ui/chatrenderer.h"
 #include "ui/chatview.h"
 #include "config/config.h"
@@ -227,7 +228,16 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     auto *ctrlF = new QShortcut(QKeySequence::Find, this);
-    connect(ctrlF, &QShortcut::activated, this, [this]{ m_searchBar->open(); });
+    connect(ctrlF, &QShortcut::activated, this, [this]{
+        // Focus inside a docked pane → toggle that pane's own search bar.
+        if (QWidget *fw = QApplication::focusWidget())
+            for (auto *pane : std::as_const(m_panes))
+                if (pane->window() == this && pane->isAncestorOf(fw)) {
+                    pane->toggleSearch();
+                    return;
+                }
+        m_searchBar->open();
+    });
 
     auto *ctrlShiftF = new QShortcut(QKeySequence("Ctrl+Shift+F"), this);
     connect(ctrlShiftF, &QShortcut::activated, this, &MainWindow::openLogSearch);
@@ -361,6 +371,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             if (auto *p = m_panes.value(it.key()))
                 winList << p->host().str() + "|" + p->channel().str();
         s.setValue("paneWindows", winList);
+        for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it)
+            s.setValue("paneWinGeom/" + it.key(), it.value()->saveGeometry());
     });
 
 #if defined(__linux__) && !defined(__MUSL__)
@@ -583,13 +595,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (obj == m_primaryPanel) {
         if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
             auto *de = static_cast<QDragMoveEvent *>(event);
-            if (de->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
+            if (de->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8())) {
                 de->acceptProposedAction();
-            else
+                if (!m_primaryDropFrame)
+                    m_primaryDropFrame = new DropFrame(m_primaryPanel);
+                m_primaryDropFrame->activate();
+            } else {
                 de->ignore();
+            }
             return true;
         }
         if (event->type() == QEvent::DragLeave) {
+            if (m_primaryDropFrame) m_primaryDropFrame->hide();
             return true;
         }
         if (event->type() == QEvent::Drop) {
@@ -597,6 +614,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             const QByteArray fmt = ChannelPane::mimeType().toUtf8();
             const QString sourceKey = QString::fromUtf8(de->mimeData()->data(fmt));
             de->acceptProposedAction();
+            if (m_primaryDropFrame) m_primaryDropFrame->hide();
 
             // pane <-> primary: the dragged pane stays exactly where it is;
             // primary takes over whichever slot the dragged pane's stack-
@@ -605,14 +623,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             // panes onto a lone primary column: primary joins the stack
             // alongside the dragged pane, and the pane displaced from the
             // stack is promoted to the now-vacant lone column. Reduces to a
-            // plain swap when the dragged pane has no stack-mate.
+            // plain swap when the dragged pane has no stack-mate — or when
+            // its stack-mate IS the primary (swapping primary with its own
+            // slot would be a silent no-op).
             ChannelPane *source = m_panes.value(sourceKey);
             const qsizetype srcIdx = source ? m_orderedPanes.indexOf(source) : -1;
             if (srcIdx >= 0) {
                 const qsizetype nSlots = 1 + m_orderedPanes.size();
                 const int srcSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
                 const int sib = siblingSlot(nSlots, srcSlot);
-                const int swapSlot = (sib >= 0) ? sib : srcSlot;
+                const int swapSlot = (sib >= 0 && sib != m_primarySlot) ? sib : srcSlot;
 
                 QList<ChannelPane*> combined; // nullptr marks the primary slot
                 int pi = 0;
@@ -1301,31 +1321,38 @@ void MainWindow::navigateChannel(int direction)
     onSidebarSelectionChanged();
 }
 
+// Cycles keyboard focus across the docked panes' inputs and the primary
+// input, in layout slot order. Docked panes can't become the active buffer
+// (switchToChannel keeps them out of the primary view), so pane navigation
+// moves focus rather than sidebar selection.
 void MainWindow::navigatePane(int direction)
 {
     if (m_orderedPanes.isEmpty()) return;
 
-    int cur = -1;
-    for (int i = 0; i < m_orderedPanes.size(); ++i) {
-        auto *pane = m_orderedPanes[i];
-        if (pane->host() == m_model->activeHost() &&
-            pane->channel() == m_model->activeChannel()) {
-            cur = i;
-            break;
+    // Focus targets in slot order, with the primary input at m_primarySlot.
+    QList<QWidget*> targets;
+    int pi = 0;
+    const qsizetype nSlots = 1 + m_orderedPanes.size();
+    for (int i = 0; i < nSlots; i++)
+        targets.append(i == m_primarySlot ? static_cast<QWidget*>(m_input)
+                                          : m_orderedPanes[pi++]->input());
+
+    // Current slot: whichever pane holds the focus; anything else is primary.
+    int cur = m_primarySlot;
+    if (QWidget *fw = QApplication::focusWidget()) {
+        for (qsizetype i = 0; i < m_orderedPanes.size(); ++i) {
+            if (m_orderedPanes[i]->isAncestorOf(fw)) {
+                cur = static_cast<int>(i < m_primarySlot ? i : i + 1);
+                break;
+            }
         }
     }
 
-    const int count = static_cast<int>(m_orderedPanes.size());
-    int next = (cur < 0) ? 0 : cur + direction;
+    const int count = static_cast<int>(targets.size());
+    int next = cur + direction;
     if (next < 0) next = count - 1;
     if (next >= count) next = 0;
-
-    auto *pane = m_orderedPanes[next];
-    auto *item = findChannelItem(pane->host(), pane->channel());
-    if (item) {
-        m_sidebar->setCurrentItem(item);
-        onSidebarSelectionChanged();
-    }
+    targets[next]->setFocus();
 }
 
 // ---------------------------------------------------------------------------
@@ -1628,6 +1655,7 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
     rebuildPaneLayout();
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);
+    m_model->markRead(pane->host(), pane->channel());
 }
 
 // Opens a channel in its own floating top-level window. Closing the window
@@ -1662,19 +1690,43 @@ void MainWindow::floatPane(ChannelPane *pane)
 
     auto *win = new QWidget(nullptr, Qt::Window);
     win->setObjectName("paneWindow");
+    // Belt and suspenders for the pane's styled backgrounds: if any of the
+    // plain-QWidget surfaces (#channelPane/#topicDisplay/#inputBar) miss
+    // their QSS background after the reparent, the system palette would
+    // show through. Paint the window itself in the buffer colour — scoped
+    // to #paneWindow so it doesn't cascade into the children.
+    if (m_theme.valid)
+        win->setStyleSheet(QStringLiteral("QWidget#paneWindow { background-color: %1; }")
+                               .arg(m_theme.bufferBg));
     win->setWindowTitle(channel.str() + " — " + host.str());
     auto *lay = new QVBoxLayout(win);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->addWidget(pane); // reparents the pane into the window
-    win->resize(820, 620);
+    {
+        QSettings settings("uplink", "uplink");
+        const QByteArray geom = settings.value("paneWinGeom/" + key).toByteArray();
+        if (geom.isEmpty() || !win->restoreGeometry(geom))
+            win->resize(820, 620);
+    }
     win->installEventFilter(this); // catch the OS close button
     m_paneWindows[key] = win;
 
     pane->setCloseIcon(MenuIcons::pipExit(
         QColor(m_theme.valid ? m_theme.placeholder : QStringLiteral("#888888"))));
     pane->setPopOutVisible(false); // it's already a window now
-    // Reparenting into the window repolishes the pane and resets programmatic
-    // fonts to the app default — re-apply the configured fonts.
+    pane->enableSearchShortcut();  // main window's Ctrl+F can't reach this window
+    // Freshly created panes get their first style polish under the new
+    // window and paint correctly; a reparented docked pane relies on Qt's
+    // implicit repolish, which lands asynchronously on Wayland/KDE and can
+    // leave the QSS backgrounds (#channelPane, #topicDisplay, #inputBar)
+    // unpainted — the window then shows the system palette colour. Force
+    // the same full polish a fresh pane gets.
+    const auto paneKids = pane->findChildren<QWidget*>();
+    for (QWidget *w : paneKids) { w->style()->unpolish(w); w->style()->polish(w); }
+    pane->style()->unpolish(pane);
+    pane->style()->polish(pane);
+    // Repolishing resets programmatic fonts to the app default —
+    // re-apply the configured fonts.
     applyFontSizes();
     win->show();
 
@@ -1692,6 +1744,7 @@ void MainWindow::floatPane(ChannelPane *pane)
         channel.str().toLower() == m_model->activeChannel().str().toLower())
         switchAwayFromChannel(host, channel);
     setChannelCheckedOut(host, channel, true);
+    m_model->markRead(host, channel);
 
     // A previously docked pane is already rendered; reparenting keeps its
     // content, so only freshly created panes need the initial fill.
@@ -1748,6 +1801,8 @@ void MainWindow::closeChannelPane(ServerId host, BufferId channel)
 
     // Floating pane: tear down its window and return to the server list.
     if (auto *win = m_paneWindows.take(key)) {
+        QSettings settings("uplink", "uplink");
+        settings.setValue("paneWinGeom/" + key, win->saveGeometry());
         win->removeEventFilter(this);
         win->deleteLater(); // deletes the pane it owns
         setChannelCheckedOut(host, channel, false);
@@ -1777,6 +1832,15 @@ void MainWindow::closeChannelPane(ServerId host, BufferId channel)
 
 void MainWindow::rebuildPaneLayout()
 {
+    // The primary can be hidden via its ✕ button — a rebuild must not
+    // resurrect it. Capture before the detach below (setParent(nullptr)
+    // marks every detached widget hidden).
+    const bool primaryHidden = m_primaryPanel->isHidden();
+    auto showWidget = [this, primaryHidden](QWidget *w){
+        if (w == m_primaryPanel && primaryHidden) return;
+        w->show();
+    };
+
     // Collect widgets in display order, inserting primary at m_primarySlot.
     QList<QWidget*> widgets;
     int pi = 0;
@@ -1819,29 +1883,29 @@ void MainWindow::rebuildPaneLayout()
         // 1 or 2 panes: flat along the main axis
         for (auto *w : std::as_const(widgets)) {
             m_panesSplitter->addWidget(w);
-            w->show();
+            showWidget(w);
         }
     } else if (n == 3) {
         // primary full-length in the first slot, two panes stacked in the second
         m_panesSplitter->addWidget(widgets[0]);
-        widgets[0]->show();
+        showWidget(widgets[0]);
         auto *second = makeCross();
         second->addWidget(widgets[1]);
         second->addWidget(widgets[2]);
-        widgets[1]->show();
-        widgets[2]->show();
+        showWidget(widgets[1]);
+        showWidget(widgets[2]);
         m_panesSplitter->addWidget(second);
     } else { // n == 4  (2×2 grid)
         auto *first = makeCross();
         first->addWidget(widgets[0]);
         first->addWidget(widgets[1]);
-        widgets[0]->show();
-        widgets[1]->show();
+        showWidget(widgets[0]);
+        showWidget(widgets[1]);
         auto *second = makeCross();
         second->addWidget(widgets[2]);
         second->addWidget(widgets[3]);
-        widgets[2]->show();
-        widgets[3]->show();
+        showWidget(widgets[2]);
+        showWidget(widgets[3]);
         m_panesSplitter->addWidget(first);
         m_panesSplitter->addWidget(second);
     }

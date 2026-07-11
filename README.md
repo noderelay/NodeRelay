@@ -108,12 +108,12 @@
 
 | Feature | Details |
 |---|---|
-| **295 built-in themes** | 55 hand-picked originals (Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and more) plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes), named with a `-base16` suffix. Your favorite is almost certainly already in there — browse with arrow keys, apply with Enter. |
+| **297 built-in themes** | 57 hand-picked originals (Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and more) plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes), named with a `-base16` suffix. Your favorite is almost certainly already in there — browse with arrow keys, apply with Enter. |
 | **Reworked Preferences** | Theme as a collapsible list — browse and apply without closing. App icon as radio buttons. Hanging indent toggle and all other UI options. Open with the **⚙ gear icon** in the channel header. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
 | **Hamburger menu** | Click ☰ for About, **Check for Updates** (fetches latest release from GitHub, shows version comparison), **Manage Servers**, Documentation, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
-| **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), search, and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid — or stack in rows instead of columns via **Preferences → Interface → Stack Panes in Rows**. Drag any pane's header to rearrange. |
-| **Pop-out windows** | Float any channel into its own standalone window — via the pop-out icon in the channel/pane header or right-click → **Open in Window**. A popped-out channel is checked out of the main view (dimmed in the sidebar); closing the window returns it. Layout is remembered across restarts. |
+| **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), search, and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid — or stack in rows instead of columns via **Preferences → Interface → Stack Panes in Rows**. Drag any pane's header to rearrange — the drop target highlights with a frame while you drag. Channels open in a pane never accumulate unread badges: you're already watching them. |
+| **Pop-out windows** | Float any channel into its own standalone window — via the pop-out icon in the channel/pane header or right-click → **Open in Window**. A popped-out channel is checked out of the main view (dimmed in the sidebar); closing the window returns it. Layout — and each window's size and position, per channel — is remembered across restarts. |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
 | **Panel persistence** | Nick panel width saved on quit, restored on relaunch. |
@@ -142,7 +142,7 @@
 | **Tab completion** | Tab-completes nick names and slash commands. Cycles through candidates. |
 | **Input history** | Up/Down arrows cycle through sent messages. |
 | **Quick channel switcher** | **Ctrl+K** opens a floating popup — type to filter channels, Enter to jump. |
-| **Channel navigation** | **Alt+Up/Down** cycles channels, **Alt+Left/Right** cycles panes. |
+| **Channel navigation** | **Alt+Up/Down** cycles channels, **Alt+Left/Right** moves keyboard focus between open panes. |
 | **Jump to bottom** | Floating button appears when scrolled up in a busy channel — click to return to live chat. |
 | **Touch scrolling** | Kinetic flick-to-scroll with momentum on touchscreen and tablet devices — chat, sidebar, and nick list. |
 | **User scripts** | Link external scripts (any language) to custom `/commands` via Preferences → Scripts. Four bundled: `/music`, `/weather`, `/uptime`, `/roll`. Cross-platform — works on Linux, macOS, and Windows (via Git Bash). |

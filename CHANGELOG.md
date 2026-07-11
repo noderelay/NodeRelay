@@ -1,6 +1,62 @@
 # Changelog
 
 <!--
+Session 2026-07-11 — pane/pop-out review hardening + drop-frame highlight:
+- Full code review of the pane / pop-out window layer; all findings fixed
+  the same session, each verified by the user on Linux.
+- Fix: dragging the pane that shares a stack with the primary onto the
+  primary was a silent no-op — siblingSlot() returned the primary's own
+  slot, so it swapped with itself. Falls back to a plain swap now.
+- Fix: Alt+Left/Right pane navigation was dead code since the
+  sidebar/primary decoupling (#34) — switchToChannel refuses to load pane
+  channels, so selecting them via the sidebar did nothing. Reworked to
+  cycle keyboard focus across pane input bars (primary input included) in
+  layout slot order.
+- Fix: channels open in a pane or pop-out accumulated sidebar unread
+  badges forever — they can never become the active buffer, and setActive
+  was the only place unread cleared. New SessionModel::markRead() zeroes
+  unread/mentions without touching the active selection; called on pane
+  message append, pane open, and float.
+- Fix: popping out a previously-DOCKED pane rendered the topic bar, typing
+  strip, and input strip in the system palette color instead of the theme
+  buffer color (fresh pop-outs were fine — they get first-time polish under
+  the new window; reparented panes rely on Qt's implicit repolish, which
+  misses the QSS backgrounds on plain-QWidget surfaces). Two layers:
+  explicit unpolish/polish of the pane subtree in floatPane, plus a
+  #paneWindow-scoped buffer-bg stylesheet on the window as fallback.
+  Diagnosed from screenshot pixel forensics: the wrong color matched no
+  theme color, only the platform palette. Repro attempts offscreen all
+  rendered correctly — platform-timing dependent.
+- Drop highlight reworked per user request: dragging a pane now outlines
+  the ENTIRE target pane/primary with a 3px palette-highlight frame (new
+  src/ui/dropframe.h overlay widget) instead of tinting the thin header
+  strip. Gotcha: the overlay must set its own `background: transparent` —
+  the theme QSS has a generic `QWidget { background }` rule that otherwise
+  paints the overlay opaque and blanks the pane under it (that shipped
+  briefly and was caught by the user).
+- Link previews now fetched for channels living only in a pane/window —
+  card/enqueue logic extracted from appendMessage into shared
+  appendPreviewCards(); PreviewController already dedupes by URL.
+- Hidden primary column (✕ button) no longer resurrects on every pane
+  rearrange/open/close — rebuildPaneLayout captures isHidden before the
+  detach (which itself marks widgets hidden) and skips re-showing it.
+- Panes on a different server than the active one now highlight THAT
+  server's nick (selfNickReFor(host)) instead of the active server's.
+- Ctrl+F now works in panes: routes to the focused docked pane's search
+  bar; popped-out windows get their own window-scoped shortcut (docked
+  panes deliberately don't — two live shortcuts on one key in one window
+  makes Qt treat every press as ambiguous).
+- Floating pane windows no longer start header drags or accept pane drops;
+  both were dead ends that showed a working-looking drag cursor/highlight.
+- Pop-out window geometry (size + position) persisted per channel in
+  QSettings paneWinGeom/<key>; restored on re-float, saved on close/quit.
+  Was a known open item (fixed 820x620 every launch).
+- New themes from the user: mactahoe26 + mactahoe26-light (macOS Tahoe
+  system colors). Theme count 295 -> 297 across all docs.
+- No regressions found; 6/6 tests pass. No release tagged.
+-->
+
+<!--
 Session 2026-07-10/11 — session close:
 - Built/fixed this session, in order: PR #30 review cleanup (#32) — shared
   paneKey()/isChannelName() helpers, SearchBar/NickFilterEdit widgets,
