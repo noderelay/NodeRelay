@@ -29,6 +29,7 @@ class EmojiPicker;
 class DccController;
 class PreviewController;
 class ChannelPane;
+class DropFrame;
 class QuickSwitcher;
 class UpdateChecker;
 class QNetworkAccessManager;
@@ -114,6 +115,9 @@ private:
     void scheduleNickRefresh(ServerId host, BufferId channel);
     void refreshTopicBar(ServerId host, BufferId channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
+    void appendPreviewCards(ChatView *view, const Message &msg,
+                            const ServerId &host, const BufferId &channel);
+    QRegularExpression selfNickReFor(const ServerId &host) const;
     void applyFontSizes();
     void updateTypingLabel();
     QString typingText(ServerId host, BufferId channel) const;
@@ -203,6 +207,7 @@ private:
     QSplitter    *m_mainSplitter{nullptr};
     QWidget      *m_rightContent{nullptr};
     QWidget      *m_primaryPanel{nullptr};
+    DropFrame    *m_primaryDropFrame{nullptr};
     QWidget      *m_primaryHeader{nullptr};
     QToolButton  *m_primaryTopicBtn{nullptr};
     QToolButton  *m_searchBtn{nullptr};

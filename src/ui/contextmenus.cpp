@@ -66,7 +66,7 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
-    ctx.selfNickRe   = m_selfNickRe;
+    ctx.selfNickRe   = selfNickReFor(host);
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;

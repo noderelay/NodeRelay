@@ -1,0 +1,42 @@
+# mactahoe26-light — macOS Tahoe (macOS 26) "Clear Glass" light theme for UplinkIRC
+# Off-white glass surfaces + Apple's high-contrast light-mode system colors
+
+[general]
+background   = "#fbfbfd"
+text         = "#1c1c1e"
+border       = "#d1d1d6"
+accent       = "#007aff"
+
+[sidebar]
+background   = "#f0f0f2"
+text         = "#6e6e73"
+active       = "#1c1c1e"
+unread       = "#007aff"
+mention      = "#d70015"
+server       = "#8e8e93"
+
+[buffer]
+background   = "#fbfbfd"
+timestamp    = "#8e8e93"
+server_line  = "#bf5000"
+action       = "#8944ab"
+nick_self    = "#0071a4"
+
+[highlights]
+mention_bg   = "#fbe0e1"
+mention_text = "#d70015"
+keyword      = "#007aff"
+
+[nicklist]
+background   = "#f0f0f2"
+text         = "#6e6e73"
+op           = "#248a3d"
+halfop       = "#3634a3"
+voice        = "#8a6d00"
+away         = "#8e8e93"
+
+[input]
+background   = "#ffffff"
+text         = "#1c1c1e"
+placeholder  = "#8e8e93"
+nick_color   = "#0071a4"

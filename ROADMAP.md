@@ -166,6 +166,19 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Pane drag-to-rearrange — drag header bar to swap with another pane (v0.18.0); native QDrag/QMimeData under the hood (2026-07-11 — the original grabMouse()-based mechanism silently failed to track drags under some Wayland/KDE sessions). Dropping on the primary view uses a reflow: the dragged pane stays put, primary joins it, and the pane it displaces is promoted to the vacated lone column, instead of a blind position swap.
 - [x] Pane layout persistence — save/restore pane arrangement across sessions
 - [x] Horizontal pane splits — `pane_stack_rows` config option (Preferences → Interface → Stack Panes in Rows) transposes the auto layout: panes stack in horizontal rows instead of columns. Same shapes for 1-4 panes, rotated 90°.
+- [x] Pane/pop-out review hardening (2026-07-11) — full code review of the pane and pop-out layer; every finding fixed:
+  - Drop-target highlight is now a frame around the entire pane/primary (new `dropframe.h` overlay) instead of a header tint; the overlay carries its own `background: transparent` because the theme's generic QWidget rule would otherwise paint it opaque
+  - Fix: dragging the pane stacked alongside the primary onto the primary was a silent no-op (siblingSlot == primarySlot self-swap); now a plain swap
+  - Fix: Alt+Left/Right was dead after the sidebar/primary decoupling; now cycles keyboard focus across pane inputs + primary input in layout order
+  - Fix: channels open in a pane/window accumulated unread badges forever (they can never become active to clear them) — new `SessionModel::markRead()`; badges never accrue while visible
+  - Fix: popped-out (previously docked) panes rendered topic/typing/input strips in the system palette color — reparent misses the QSS background repolish; forced subtree unpolish/polish in floatPane + `#paneWindow` buffer-bg fallback stylesheet on the window
+  - Link previews now fetch for channels living only in a pane/window (shared `appendPreviewCards()`; PreviewController already dedupes by URL)
+  - Hidden primary column no longer resurrects on pane rearrange/open/close
+  - Panes on other servers highlight that server's nick, not the active server's (`selfNickReFor()`)
+  - Ctrl+F routes to the focused docked pane's search bar; popped-out windows get their own window-scoped Ctrl+F
+  - Floating pane windows no longer offer header drags or accept pane drops (both were dead ends)
+  - Pop-out window geometry persisted per channel in QSettings `paneWinGeom/` (was fixed 820×620 every time)
+- [x] mactahoe26 + mactahoe26-light themes — macOS Tahoe system-color themes (2026-07-11); theme count 295 → 297
 - [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
 - [x] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
 - [x] /list command — sends LIST to server; RPL_LIST (322) and RPL_LISTEND (323) displayed in server buffer with user count and topic (v0.25.2)

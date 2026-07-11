@@ -412,6 +412,10 @@ See [Channel panes](howto.html#channel-panes) in the how-to guide for a full wal
 
 Yes. Pressing <kbd>Tab</kbd> in any pane input bar completes nicks and slash commands exactly like the primary input. Completion candidates come from that pane's own channel, so you get the right nick list regardless of which pane has focus. The colon-suffix convention (`alice:` at the start of a line) also applies in panes.
 
+### Why doesn't a channel open in a pane show an unread counter?
+
+By design. A channel that's visible in a pane or popped-out window never accumulates an unread badge in the sidebar — its messages are already on screen, so counting them as unread would just leave a badge you could never clear. Once the pane or window is closed, unread counting resumes like any other background channel.
+
 ### Where is the Preferences button?
 
 The **⚙ gear icon** sits in the channel header row, to the left of the **☰** hamburger button. Click it to open the **Preferences** dialog — it stays open while you browse themes, toggle options, and try settings.
@@ -1157,7 +1161,7 @@ This means the server's certificate changed. To re-pin:
 2. Restart Uplink (or click **☰ → Reload Config**).
 3. Your theme appears in the **Preferences** theme list.
 
-The theme format uses named `{{key}}` placeholders for colors. Look at any of the 295 built-in themes for the full list of keys.
+The theme format uses named `{{key}}` placeholders for colors. Look at any of the 297 built-in themes for the full list of keys.
 
 ---
 

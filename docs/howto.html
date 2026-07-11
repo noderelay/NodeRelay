@@ -583,7 +583,7 @@
     </h1>
 
     <h2>What is Uplink?</h2>
-    <p>Uplink is a fast, secure IRC chat client built with Qt6 and C++17. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 295 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
+    <p>Uplink is a fast, secure IRC chat client built with Qt6 and C++17. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 297 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
     <p>It runs on Linux, macOS, Windows, and FreeBSD.</p>
 
     <figure class="shot">
@@ -1633,7 +1633,8 @@ channels = "#uplink"</pre>
     <p>By default panes stack in <strong>columns</strong> (as in the table above). If you'd rather stack them in <strong>horizontal rows</strong> instead — handy on a portrait or vertically-oriented monitor — turn on <strong>Preferences → Interface → Stack Panes in Rows</strong>. The layout re-flows immediately and the choice is remembered across restarts (<code>pane_stack_rows</code> in <code>config.toml</code>). Every shape in the table above is simply rotated 90°: 2 panes stack top/bottom, 3 panes become a full-width row plus two side by side beneath it, and 4 panes stay a 2×2 grid with rows and columns swapped.</p>
 
     <h3>Rearranging panes</h3>
-    <p>Click and drag any pane's header bar to rearrange it. Drop it on another pane's header to swap their positions. Drop it on the primary channel area instead, and the dragged pane stays exactly where it is — the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. The layout rebuilds instantly without losing any content.</p>
+    <p>Click and drag any pane's header bar to rearrange it. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop it on the primary channel area instead, and the dragged pane stays exactly where it is — the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content.</p>
+    <p>You can also cycle keyboard focus between the open panes without touching the mouse: <strong>Alt+Left / Alt+Right</strong> moves focus through the pane input bars (the primary input included), in layout order.</p>
 
     <h3>Popping a channel out into its own window</h3>
     <p>Any channel can float free of the main window as a standalone window — handy for a second monitor or keeping one conversation visible while you work elsewhere. There are three ways to do it:</p>
@@ -1642,11 +1643,11 @@ channels = "#uplink"</pre>
       <li><strong>From a pane:</strong> every pane header has the same pop-out icon — click it to float that pane into its own window.</li>
       <li><strong>From the sidebar:</strong> right-click a <code>#channel</code> and choose <strong>Open in Window</strong>.</li>
     </ul>
-    <p>While a channel is popped out it is <strong>checked out</strong> of the main window: its sidebar row is dimmed and italic, and clicking it simply raises its window instead of loading it into the main view. Everything stays live in the window — incoming messages, the nick list, the typing indicator, tab completion, and search all work exactly as they do in the main window.</p>
-    <p>To bring it back, <strong>close the window</strong> (its close button uses an <em>exit picture-in-picture</em> icon) or press the pane's <code>✕</code> — the channel returns to the main view and its sidebar row un-dims. You never leave the channel. Popped-out windows are remembered across restarts, just like docked panes.</p>
+    <p>While a channel is popped out it is <strong>checked out</strong> of the main window: its sidebar row is dimmed and italic, and clicking it simply raises its window instead of loading it into the main view. Everything stays live in the window — incoming messages, link previews, the nick list, the typing indicator, tab completion, and search all work exactly as they do in the main window.</p>
+    <p>To bring it back, <strong>close the window</strong> (its close button uses an <em>exit picture-in-picture</em> icon) or press the pane's <code>✕</code> — the channel returns to the main view and its sidebar row un-dims. You never leave the channel. Popped-out windows are remembered across restarts, just like docked panes — and each window's <strong>size and position</strong> are remembered per channel, so popping the same channel out again puts its window right back where you last had it.</p>
 
     <h3>Per-pane search and typing indicator</h3>
-    <p>Every pane and popped-out window carries the same <strong>search magnifier</strong> in its header — click it to search that pane's own scrollback, and press <kbd>Esc</kbd> to close. The <strong>typing indicator</strong> also appears in each pane and window, showing who is typing in that specific channel. The compose area (typing line plus input bar) sits on the same chat background as the main window for a consistent look.</p>
+    <p>Every pane and popped-out window carries the same <strong>search magnifier</strong> in its header — click it to search that pane's own scrollback, and press <kbd>Esc</kbd> to close. <kbd>Ctrl+F</kbd> does the same: with focus inside a docked pane it opens that pane's search bar, and popped-out windows respond to <kbd>Ctrl+F</kbd> on their own. The <strong>typing indicator</strong> also appears in each pane and window, showing who is typing in that specific channel. The compose area (typing line plus input bar) sits on the same chat background as the main window for a consistent look.</p>
 
     <h3>Per-pane topic bar</h3>
     <p>Each pane has a header bar showing the channel name. Click the small <strong>speech bubble icon</strong> on the left of the header to show or hide the channel topic below it. The topic updates live whenever it changes on the server. The icon is muted (grey) when the topic is hidden and turns <strong>accent-colored</strong> when the topic is visible — so you can read the state at a glance without clicking.</p>
@@ -1669,6 +1670,7 @@ channels = "#uplink"</pre>
     <h3>Limits and notes</h3>
     <ul>
       <li>Maximum 4 panes total (1 primary + 3 extras), plus up to 4 popped-out windows at a time.</li>
+      <li><strong>No unread counters for visible channels.</strong> A channel open in a pane or popped-out window never accumulates an unread badge in the sidebar — you're already looking at it. Once the pane or window closes, unread counting resumes as normal.</li>
       <li>The same channel never appears in both the primary view and a pane at the same time. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically. Left-clicking a channel that is already open in a pane just keeps the primary view where it was — it does not also load it there.</li>
       <li>All slash commands work in pane input bars — <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
       <li><strong>Tab completion works in pane input bars.</strong> Pressing <kbd>Tab</kbd> completes nicks from that pane's own channel, not the primary channel — so you always get the right suggestions regardless of which input is focused.</li>
@@ -3016,7 +3018,7 @@ link_previews = true</pre>
   <!-- THEMES -->
   <section id="themes">
     <h2>Picking a theme</h2>
-    <p>Uplink ships with 295 built-in color themes. The fastest way is to try them live:</p>
+    <p>Uplink ships with 297 built-in color themes. The fastest way is to try them live:</p>
 
     <div class="step-row"><span class="step">1</span><div>Click the <strong>⚙ gear icon</strong> in the channel header to open <strong>Preferences</strong>, then select the <strong>Appearance</strong> page.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click the <strong>theme button</strong> (shows your current theme name) to expand the list.</div></div>
@@ -3026,7 +3028,7 @@ link_previews = true</pre>
     <figure class="shot">
       <img src="shots/theme-picker.png" loading="lazy"
            alt="The theme picker in Preferences with a live theme applied">
-      <figcaption>The Appearance page lets you browse all 295 themes and apply them live.</figcaption>
+      <figcaption>The Appearance page lets you browse all 297 themes and apply them live.</figcaption>
     </figure>
 
     <p>Or set it directly in the config:</p>
