@@ -184,7 +184,7 @@ void MainWindow::connectPreferences()
 {
     connect(m_prefsDialog, &PreferencesDialog::themeChanged, this, [this](const QString &name){
         m_config.ui.theme = name;
-        ThemeLoader::apply(name);
+        ThemeLoader::apply(name, m_config.ui.panelCards);
         m_theme = ThemeLoader::load(name);
         if (m_chatView && m_theme.valid)
             m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
@@ -372,6 +372,13 @@ void MainWindow::connectPreferences()
         m_config.ui.paneStackRows = on;
         saveConfig();
         rebuildPaneLayout();
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::panelCardsToggled, this, [this](bool on){
+        m_config.ui.panelCards = on;
+        saveConfig();
+        ThemeLoader::apply(m_config.ui.theme, on);
+        applyPanelChrome();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::timestampsToggled, this, [this](bool on){
@@ -658,9 +665,10 @@ void MainWindow::setupNickPanel()
 
     auto positionRevealBtn = [this]{
         if (!m_nickRevealBtn || !m_chatSection) return;
-        const int topY = m_primaryHeader->height()
-                       + (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0)
-                       + 4;
+        // Same line the collapse button sat on (top of the nick panel,
+        // right below the header row) — not below the topic bar, which
+        // made the button visually "jump down" on collapse.
+        const int topY = m_primaryHeader->height();
         m_nickRevealBtn->move(m_chatSection->width() - m_nickRevealBtn->width() - 4, topY);
         m_nickRevealBtn->raise();
     };
@@ -672,6 +680,7 @@ void MainWindow::setupNickPanel()
             if (!m_nickExpanded) positionRevealBtn();
             m_nickRevealBtn->setVisible(!m_nickExpanded);
         }
+        setTopicRevealInset(!m_nickExpanded);
     };
 
     connect(m_nickToggleBtn, &QToolButton::clicked, this, toggleNickPanel);
@@ -1031,6 +1040,7 @@ void MainWindow::setupChatArea()
         m_nickExpanded = true;
         m_nickPanel->setVisible(true);
         m_nickRevealBtn->setVisible(false);
+        setTopicRevealInset(false);
     });
     m_scrollBottomBtn = new QToolButton(m_chatView->viewport());
     m_scrollBottomBtn->setFixedSize(32, 32);

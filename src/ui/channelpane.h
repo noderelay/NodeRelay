@@ -30,7 +30,7 @@ public:
     QPlainTextEdit *input()  const { return m_input; }
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
-    void setNickChrome(const QString &bg); // nick panel bg + rounded top, via local stylesheet
+    void setNickChrome(const QString &bg, bool rounded = true); // nick panel fill, painted by ChromePanel
     void setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups);
     void setNickPanelFont(const QFont &f);
     void setNickCount(int count);
@@ -66,6 +66,7 @@ protected:
     void dropEvent(QDropEvent *event) override;
 private:
     void positionNickRevealBtn();
+    void setTopicRevealInset(bool reserve);
     void updateInputHeight();
     void guardFont(QWidget *w, const QFont &f);
 private:

@@ -1,6 +1,21 @@
 # Changelog
 
 <!--
+Session 2026-07-11 (late night) — Panel Cards toggle:
+- New Preferences → Interface → "Panel Cards" checkbox (config key
+  panel_cards, default true): toggles the new two-tone rounded-card side
+  panels vs the classic flat pre-overhaul look, live, no restart.
+- Plumbing: ThemeLoader::toStyleSheet/apply take a panelCards flag; the
+  QSS template gained conditional vars (panelSidebarBg/panelNickBg/
+  panelBackdrop/rcBackdrop/panelRadius). Off = tree/nick surfaces on
+  bufferBg, radius 0, rightContent back to the old sidebarBg frame.
+  ChromePanel::setFill gained a rounded flag for the paintEvent side.
+- OFF state pixel-verified via scratch instance on the live display:
+  fully flat, matches the pre-overhaul look.
+- Docs: configuration.md ([ui] example + table), howto themes section.
+-->
+
+<!--
 Session 2026-07-11 (night) — theming overhaul: per-section backgrounds,
 full-height panels, rounded cards; the Wayland styled-background saga:
 - Theme sections finally mean something: [sidebar]/[nicklist] backgrounds

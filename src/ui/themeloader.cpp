@@ -136,7 +136,7 @@ static QString fill(QString tpl, const QHash<QString, QString> &vars)
     return tpl;
 }
 
-QString ThemeLoader::toStyleSheet(const Theme &t)
+QString ThemeLoader::toStyleSheet(const Theme &t, bool panelCards)
 {
     static const QString tpl = R"(
 /* ── Base ── */
@@ -191,15 +191,15 @@ QToolButton#sidebarToggleBtn {
     padding: 0px 2px;
 }
 QToolButton#sidebarToggleBtn:hover { color: {{accent}}; }
-/* Sidebar card: the panel is the window-bg backdrop the rounded corners
-   are cut against; header carries the top rounding, the tree below stays
-   flush/square at the bottom. Radii are painted by QSS — never use widget
-   masks for rounding (they mis-clip at fractional display scale). */
+/* Sidebar card: the panel/header are the backdrop the tree's rounded top
+   corners are cut against; the tree below stays flush/square at the
+   bottom. Radii are painted by QSS — never use widget masks for rounding
+   (they mis-clip at fractional display scale). */
 QWidget#sidebarPanel {
-    background-color: {{bg}};
+    background-color: {{panelBackdrop}};
 }
 QWidget#sidebarHeader {
-    background-color: {{bg}};
+    background-color: {{panelBackdrop}};
 }
 
 QSizeGrip {
@@ -243,12 +243,12 @@ QMenu::separator {
 
 /* ── Sidebar ── */
 QTreeWidget {
-    background-color: {{sidebarBg}};
+    background-color: {{panelSidebarBg}};
     color: {{sidebarText}};
     border: none;
     outline: none;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    border-top-left-radius: {{panelRadius}};
+    border-top-right-radius: {{panelRadius}};
 }
 QTreeWidget::item {
     padding: 2px 6px;
@@ -262,7 +262,7 @@ QTreeWidget::item:hover {
     background: transparent;
 }
 QTreeWidget::branch {
-    background-color: {{sidebarBg}};
+    background-color: {{panelSidebarBg}};
     border: none;
     image: none;
     width: 0px;
@@ -505,17 +505,17 @@ QSplitter::handle {
    carry the radii — the header fills the panel's top, so both must curve
    for the splitter's window-bg backdrop to show through the corners. */
 QWidget#nickPanel {
-    background-color: {{nicklistBg}};
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    background-color: {{panelNickBg}};
+    border-top-left-radius: {{panelRadius}};
+    border-top-right-radius: {{panelRadius}};
 }
 QWidget#nickPanelHeader {
-    background-color: {{nicklistBg}};
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    background-color: {{panelNickBg}};
+    border-top-left-radius: {{panelRadius}};
+    border-top-right-radius: {{panelRadius}};
 }
 QWidget#nickPanel QListWidget {
-    background-color: {{nicklistBg}};
+    background-color: {{panelNickBg}};
     color: {{text}};
 }
 QWidget#nickPanel QListWidget::item:selected {
@@ -534,7 +534,7 @@ QWidget#nickPanelHeader QLabel {
     color: {{text}};
 }
 QLineEdit#nickFilter {
-    background-color: {{nicklistBg}};
+    background-color: {{panelNickBg}};
     color: {{text}};
     border: none;
     border-bottom: 1px solid {{border}};
@@ -578,9 +578,9 @@ QDialogButtonBox QPushButton {
     min-width: 88px;
 }
 
-/* ── Right content area — window-bg backdrop behind panel margins/corners ── */
+/* ── Right content area — backdrop behind panel margins/corners ── */
 QWidget#rightContent {
-    background-color: {{bg}};
+    background-color: {{rcBackdrop}};
 }
 
 QLabel#channelLabel {
@@ -638,6 +638,14 @@ QLabel#typingLabel {
         {"placeholder",  t.placeholder},
         {"inputNick",    t.inputNick},
         {"srvText",      t.sidebarServer},
+        // Panel-cards look (Preferences → Interface → Panel Cards): the side
+        // panels use their own theme sections and rounded-top card styling.
+        // Off = classic flat look, everything on the buffer color.
+        {"panelSidebarBg", panelCards ? t.sidebarBg  : t.bufferBg},
+        {"panelNickBg",    panelCards ? t.nicklistBg : t.bufferBg},
+        {"panelBackdrop",  panelCards ? t.background : t.bufferBg},
+        {"rcBackdrop",     panelCards ? t.background : t.sidebarBg},
+        {"panelRadius",    panelCards ? QStringLiteral("10px") : QStringLiteral("0px")},
     });
 }
 
@@ -645,7 +653,7 @@ QLabel#typingLabel {
 // Apply to QApplication
 // ---------------------------------------------------------------------------
 
-void ThemeLoader::apply(const QString &name)
+void ThemeLoader::apply(const QString &name, bool panelCards)
 {
 #if defined(Q_OS_WIN)
     // On Windows, let the native style handle the default look.
@@ -677,5 +685,5 @@ void ThemeLoader::apply(const QString &name)
     pal.setColor(QPalette::PlaceholderText, QColor(t.placeholder));
     qApp->setPalette(pal);
 
-    qApp->setStyleSheet(toStyleSheet(t));
+    qApp->setStyleSheet(toStyleSheet(t, panelCards));
 }

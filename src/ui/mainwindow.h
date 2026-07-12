@@ -121,6 +121,7 @@ private:
     QRegularExpression selfNickReFor(const ServerId &host) const;
     void applyFontSizes();
     void applyPanelChrome();
+    void setTopicRevealInset(bool reserve);
     void updateTypingLabel();
     QString typingText(ServerId host, BufferId channel) const;
     void openChannelPane (ServerId host, BufferId channel);

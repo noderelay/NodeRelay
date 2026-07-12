@@ -41,6 +41,7 @@ notifications = true             # green dot on tray icon for mentions/PMs when 
 highlight_words = ""             # comma-separated words highlighted like mentions (e.g. "myproject,alert")
 nick_brackets = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 pane_stack_rows = false           # false = stack panes in columns (default), true = stack in rows
+panel_cards = true                # side panels use their own theme colors + rounded tops; false = classic flat look
 app_icon = "flat-black"
 font_family = "IBM Plex Mono"   # Windows default is "Consolas"
 font_toolbar = 10
@@ -119,6 +120,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `highlight_words` | string | `""` | Extra words that get treated like a mention of your nick: they render **red bold** in chat and count as mentions for unread indicators. Comma-separated, case-insensitive, whole words only — `highlight_words = "myproject, deploy, lunch"` highlights "deploy" but not "deployment". Leave empty to only highlight your own nick. Change live from **Preferences → Notifications → Highlight Words**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `pane_stack_rows` | bool | `false` | When you have 2+ [detachable channel panes](howto.html#channel-panes) open, `false` stacks them in columns (side by side), `true` stacks them in horizontal rows. Toggle live from **Preferences → Interface → Stack Panes in Rows**. |
+| `panel_cards` | bool | `true` | The server/channel list and user list use their own `[sidebar]`/`[nicklist]` theme backgrounds and are drawn as cards with rounded top corners. Set `false` for the classic flat look where the whole window sits on the buffer color. Toggle live from **Preferences → Interface → Panel Cards**. |
 | `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |

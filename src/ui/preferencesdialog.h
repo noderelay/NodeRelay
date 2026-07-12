@@ -33,6 +33,7 @@ signals:
     void highlightWordsChanged(const QString &words);
     void nickBracketsChanged(const QString &brackets);
     void paneStackRowsToggled(bool on);
+    void panelCardsToggled(bool on);
     void manageServersRequested();
     void aboutRequested();
     void docsRequested();
@@ -56,6 +57,7 @@ private:
     QCheckBox *m_emojiCheck{nullptr};
     QCheckBox *m_sendBtnCheck{nullptr};
     QCheckBox *m_paneStackRowsCheck{nullptr};
+    QCheckBox *m_panelCardsCheck{nullptr};
     QCheckBox *m_typingCheck{nullptr};
     QCheckBox *m_notificationsCheck{nullptr};
     QCheckBox *m_coloredNicksCheck{nullptr};

@@ -312,6 +312,13 @@ QWidget *PreferencesDialog::createInterfacePage(const Config &cfg)
     connect(m_paneStackRowsCheck, &QCheckBox::toggled, this, [this](bool on){ emit paneStackRowsToggled(on); });
     vbox->addWidget(m_paneStackRowsCheck);
 
+    m_panelCardsCheck = new QCheckBox("Panel Cards");
+    m_panelCardsCheck->setToolTip("Side panels use their own theme colors with rounded tops.\n"
+                                  "Uncheck for the classic flat look (everything on the chat color).");
+    m_panelCardsCheck->setChecked(cfg.ui.panelCards);
+    connect(m_panelCardsCheck, &QCheckBox::toggled, this, [this](bool on){ emit panelCardsToggled(on); });
+    vbox->addWidget(m_panelCardsCheck);
+
     vbox->addStretch();
     return page;
 }

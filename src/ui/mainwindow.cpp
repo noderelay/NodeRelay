@@ -194,7 +194,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     }
     resize(kDefaultWindowW, kDefaultWindowH);
 
-    ThemeLoader::apply(m_config.ui.theme);
+    ThemeLoader::apply(m_config.ui.theme, m_config.ui.panelCards);
     m_theme = ThemeLoader::load(m_config.ui.theme);
     setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
@@ -435,11 +435,22 @@ void MainWindow::applyPanelChrome()
 {
     if (!m_theme.valid) return;
     // Sidebar header (hamburger row) stays on the window bg — the sidebar
-    // card starts at the network tree below it.
-    static_cast<ChromePanel *>(m_nickPanel)->setFill(QColor(m_theme.nicklistBg));
-    static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(QColor(m_theme.nicklistBg));
+    // card starts at the network tree below it. With panel cards off, the
+    // nick panel flattens onto the buffer color with square corners.
+    const bool cards = m_config.ui.panelCards;
+    const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
+    static_cast<ChromePanel *>(m_nickPanel)->setFill(fill, cards);
+    static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(fill, cards);
     for (auto *pane : std::as_const(m_panes))
-        pane->setNickChrome(m_theme.nicklistBg);
+        pane->setNickChrome(fill.name(), cards);
+}
+
+// Right inset on the topic bar so its text wraps a little before the
+// floating show-user-list button instead of running underneath it.
+void MainWindow::setTopicRevealInset(bool reserve)
+{
+    if (auto *l = m_topicDisplay ? m_topicDisplay->layout() : nullptr)
+        l->setContentsMargins(8, 3, reserve ? 44 : 8, 3);
 }
 
 void MainWindow::applyFontSizes()
@@ -1454,6 +1465,7 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
         m_nickPanel->setVisible(show);
         if (m_nickRevealBtn)
             m_nickRevealBtn->setVisible(isChannel && !m_nickExpanded);
+        setTopicRevealInset(isChannel && !m_nickExpanded);
     }
 
     // Topic button + topic bar: only meaningful in channels
@@ -1558,7 +1570,8 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
             MenuIcons::fromSvg(QStringLiteral(":/icons/mi-left-panel-close.svg"), ic, 20),
             MenuIcons::groups(ic, 20));
         if (m_theme.valid)
-            pane->setNickChrome(m_theme.nicklistBg);
+            pane->setNickChrome(m_config.ui.panelCards ? m_theme.nicklistBg : m_theme.bufferBg,
+                                m_config.ui.panelCards);
     }
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,

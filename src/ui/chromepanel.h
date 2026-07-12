@@ -14,9 +14,10 @@ class ChromePanel : public QWidget {
 public:
     explicit ChromePanel(QWidget *parent = nullptr) : QWidget(parent) {}
 
-    void setFill(const QColor &c)
+    void setFill(const QColor &c, bool rounded = true)
     {
-        m_fill = c;
+        m_fill    = c;
+        m_rounded = rounded;
         update();
     }
 
@@ -25,9 +26,13 @@ protected:
     {
         if (!m_fill.isValid()) return;
         QPainter p(this);
-        p.setRenderHint(QPainter::Antialiasing);
         p.setPen(Qt::NoPen);
         p.setBrush(m_fill);
+        if (!m_rounded) {
+            p.drawRect(rect());
+            return;
+        }
+        p.setRenderHint(QPainter::Antialiasing);
         QPainterPath path;
         path.addRoundedRect(QRectF(rect()).adjusted(0, 0, 0, kRadius), kRadius, kRadius);
         p.drawPath(path);
@@ -35,5 +40,6 @@ protected:
 
 private:
     QColor m_fill;
+    bool   m_rounded{true};
     static constexpr int kRadius = 10;
 };
