@@ -1,6 +1,29 @@
 # Changelog
 
 <!--
+Session 2026-07-12 (night) — menu bar v2 (ROADMAP item):
+- Bookmarks menu (between Window and Plugins): "Bookmark This Channel"
+  toggles the active channel's presence in its server's auto-join list
+  ([[server.channel]] / channels key). Config is edited IN PLACE +
+  saveConfig() only — SessionModel::updateServer() is a full disconnect/
+  reconnect and must never be used for this. Saved channels listed per
+  network; click joins with the stored key (sendJoin) or just switches if
+  already joined; submenus disabled while a server is offline (JOIN on a
+  down socket is a silent no-op). Menu rebuilt on aboutToShow (Plugins
+  pattern); trigger lambdas capture server NAMES and re-resolve at fire
+  time. Names with space/comma refused (comma is the compact-form
+  separator). New helpers: isBookmarked/toggleBookmark/joinBookmark
+  (mainwindow_menubar.cpp); new mi-bookmark.svg + MenuIcons::bookmark.
+- Settings deep-links: Themes… (Appearance page, theme list expanded via
+  new setThemeListExpanded), App Icon… (Appearance page), Fonts… (opens
+  FontDialog directly via extracted MainWindow::openFontConfig — shared
+  with the fontConfigRequested signal), Profile… (Profile page).
+  PreferencesDialog::showPage(label) generalizes showScriptsPage.
+- Docs: configuration.md Channels section gains the Bookmarks GUI path.
+  No new config keys or shortcuts. Build warning-free, 6/6 tests pass.
+-->
+
+<!--
 Session 2026-07-12 (later) — menu bar rework (ROADMAP item):
 - The sidebar icon strip (hamburger ☰, Preferences gear, Manage Servers)
   is REPLACED by a real menu bar. New Preferences → Interface → Menu Style

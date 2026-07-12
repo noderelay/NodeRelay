@@ -143,6 +143,13 @@ private:
     void openPreferences();
     void openManageServers();
     void openIgnoreList();
+    void openFontConfig();
+
+    // Bookmarks = the per-server auto-join list (config [[server.channel]])
+    bool isBookmarked(ServerId host, BufferId channel) const;
+    void toggleBookmark(ServerId host, BufferId channel, bool on);
+    void joinBookmark(ServerId host, const QString &channelName);
+    void updateBookmarksMenu();
 
     // Shared setting appliers (Preferences signals + menu actions)
     void applyTopicBarSetting(bool on);
@@ -281,6 +288,7 @@ private:
     // Menu bar (menu_style = "menubar"); actions are parented to this window
     // and addAction()ed so their shortcuts fire in all three menu styles.
     QMenuBar *m_menuBarWidget{nullptr};
+    QMenu    *m_bookmarksMenu{nullptr};  // owned by m_menuBarWidget; kept current eagerly
     QAction  *m_actFind{nullptr};
     QAction  *m_actHistorySearch{nullptr};
     QAction  *m_actQuickSwitch{nullptr};

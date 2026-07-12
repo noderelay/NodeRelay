@@ -169,18 +169,8 @@ void MainWindow::connectPreferences()
         saveConfig();
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::fontConfigRequested, this, [this]{
-        FontDialog dlg(m_config.ui.fontFamily, m_config.ui.fontSizes, this);
-        if (dlg.exec() == QDialog::Accepted) {
-            m_config.ui.fontFamily = dlg.selectedFamily();
-            m_config.ui.fontSizes  = dlg.selectedSizes();
-            saveConfig();
-            QFont appFont(m_config.ui.fontFamily);
-            appFont.setStyleHint(QFont::Monospace);
-            QApplication::setFont(appFont);
-            applyFontSizes();
-        }
-    });
+    connect(m_prefsDialog, &PreferencesDialog::fontConfigRequested,
+            this, &MainWindow::openFontConfig);
 
 
     connect(m_prefsDialog, &PreferencesDialog::appIconChanged, this, [this](const QString &key){
@@ -432,7 +422,7 @@ void MainWindow::setupSidebar()
 void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
-    m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
+    FadeScrollBar::attachOverlay(m_nickList);   // floats — no reserved gutter
     m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
     m_nickList->setIconSize(QSize(16, 16));

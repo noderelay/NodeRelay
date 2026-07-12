@@ -133,7 +133,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_chatView = new ChatView;
 
     m_nickList = new QListWidget;
-    m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
+    FadeScrollBar::attachOverlay(m_nickList);   // floats — no reserved gutter
     m_nickList->setSpacing(0);
     m_nickList->setUniformItemSizes(true);
     QScroller::grabGesture(m_nickList->viewport(), QScroller::LeftMouseButtonGesture);
