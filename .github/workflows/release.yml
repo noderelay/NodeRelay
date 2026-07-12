@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install system deps (Linux)
         if: runner.os == 'Linux'
@@ -45,7 +45,7 @@ jobs:
 
       - name: Setup Python (Windows)
         if: runner.os == 'Windows'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -130,7 +130,7 @@ jobs:
 
       # ── Upload ───────────────────────────────────────────────────────────
       - name: Upload to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           files: |
