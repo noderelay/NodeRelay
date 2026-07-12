@@ -31,9 +31,9 @@ struct ChatLine {
     mutable int     layoutWidth{0};  // wrap width cachedH/visLines were computed for
     mutable qreal   cachedNaturalW{0}; // natural text width when single visual line (0 = multi/unknown)
     struct VisLine {
-        int    charStart;
-        int    charEnd;
-        qreal  x, y, w, h;
+        int    charStart{0};
+        int    charEnd{0};
+        qreal  x{0}, y{0}, w{0}, h{0};
     };
     mutable QList<VisLine> visLines;
 

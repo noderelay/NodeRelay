@@ -1,6 +1,30 @@
 # Changelog
 
 <!--
+Session 2026-07-12 — post-release full audit (second of the day):
+- Scope: everything changed since v2026.7.0 (49 commits) + re-check of the
+  security paths audited in #36 (unchanged since). Tools: manual review,
+  cppcheck (--library=qt), -Wconversion sweep, ASan/UBSan test run (6/6),
+  45s live libFuzzer on both harnesses (~84k runs each, no crashes;
+  generated corpus files cleaned per CLAUDE.md).
+- Verified clean: log-search v2 worker lifecycle (superseded threads exit
+  via cancel flag; queued results dropped when stale/destroyed), ChromePanel
+  paint path, panel-cards QSS plumbing, resolveLogBuffer, all #36-era caps
+  still intact (previews/reactions/batches/line buffer/ChatView).
+- Fixed (all trivial):
+  1. commanddispatcher.cpp qsizetype->int -Wconversion — the build's LAST
+     compiler warning; builds are now warning-free.
+  2. DccSend::connectOut guards against double connection (cppcheck).
+  3. DccSend::token() returns const ref (cppcheck perf nit).
+  4. ChatLine::VisLine members default-initialized (cppcheck).
+- Observations, no action: cppcheck's dccreceive null-deref warning is a
+  false positive (slot only fires from the live socket); all-buffers search
+  results are bounded per-buffer (200) but not globally — acceptable, the
+  input is the user's own logs; m_sidebarHeader is an unfilled ChromePanel
+  (paints nothing by design — card starts at the tree).
+-->
+
+<!--
 Session 2026-07-11 (late night) — Panel Cards toggle:
 - New Preferences → Interface → "Panel Cards" checkbox (config key
   panel_cards, default true): toggles the new two-tone rounded-card side

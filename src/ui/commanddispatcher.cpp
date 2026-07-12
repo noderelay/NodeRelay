@@ -861,7 +861,7 @@ void CommandDispatcher::executeScript(const ScriptBinding &binding,
 
             const QStringList lines = stdoutText.split('\n', Qt::SkipEmptyParts);
             const int maxLines = 5;
-            const int count = lines.size() < maxLines ? lines.size() : maxLines;
+            const int count = static_cast<int>(qMin<qsizetype>(lines.size(), maxLines));
             for (int i = 0; i < count; ++i) {
                 const QString line = lines[i].trimmed().left(450);
                 if (!line.isEmpty())
