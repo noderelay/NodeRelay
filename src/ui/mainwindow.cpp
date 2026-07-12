@@ -2003,8 +2003,20 @@ void MainWindow::openLogSearch()
 
     auto *dlg = new LogSearchDialog(target.str(),
                                     m_model->logFilePath(host, target),
+                                    SessionModel::logsRootPath(),
                                     m_model->messageLoggingEnabled(), this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dlg, &LogSearchDialog::jumpRequested, this,
+            [this](const QString &serverPart, const QString &bufferPart){
+        ServerId jumpHost;
+        BufferId jumpChannel;
+        if (!m_model->resolveLogBuffer(serverPart, bufferPart, jumpHost, jumpChannel))
+            return; // logs of a buffer that isn't open — nowhere to jump
+        if (auto *item = findChannelItem(jumpHost, jumpChannel)) {
+            m_sidebar->setCurrentItem(item);
+            onSidebarSelectionChanged();
+        }
+    });
     dlg->show();
 }
 

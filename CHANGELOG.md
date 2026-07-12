@@ -1,6 +1,34 @@
 # Changelog
 
 <!--
+Session 2026-07-11 (evening) — full-history search v2: all buffers:
+- "All buffers" checkbox in the Ctrl+Shift+F window. When ticked, the
+  worker thread scans every *.log under ~/.config/uplink/logs/<server>/
+  instead of just the current buffer's log. Same streaming/cancel design
+  as v1; memory bounded at the newest 200 matches per buffer.
+- Results grouped per buffer: bold header "buffer — server (count)"
+  followed by that buffer's matches newest-first. Double-click/Enter on
+  any row (header or match) jumps to the buffer via new signal
+  jumpRequested(serverPart, bufferPart).
+- New SessionModel::resolveLogBuffer() maps the sanitized log path
+  components back to a live (ServerId, BufferId) by re-sanitizing current
+  session/channel names and comparing (sanitizeFilename is lossy, so the
+  path is never parsed). Unresolvable results (logs of closed buffers)
+  jump nowhere, silently.
+- New SessionModel::logsRootPath() — the logs base dir was built inline
+  in three places (logMessage, logFilePath, and now the dialog); one
+  helper now.
+- Jump uses the QuickSwitcher pattern (findChannelItem + sidebar select)
+  so pane/pop-out routing in switchToChannel applies as usual.
+- Dialog input is no longer disabled when the current buffer has no log —
+  All buffers can still search other logs; the single-buffer no-log
+  notice moved into startSearch.
+- Docs: README, keyboard-shortcuts.md, faq.md, howto.html, ROADMAP.
+  6/6 tests pass. No release tagged. v3 (CHATHISTORY context jump) still
+  planned.
+-->
+
+<!--
 Session 2026-07-11 (later) — whole-codebase surgical audit:
 - Targeted review of security paths (SSRF guard, DCC, TLS, CTCP parsing),
   resource caps (message buffer, reactions, batches, previews, ChatView,

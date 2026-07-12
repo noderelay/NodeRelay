@@ -45,6 +45,11 @@ public:
     // is currently off, so previously written logs stay searchable. Empty if
     // either id is blank.
     QString logFilePath(ServerId host, BufferId target) const;
+    static QString logsRootPath();
+    // Reverse of logFilePath: sanitized "<server>/<buffer>" path components →
+    // live buffer. False when no open buffer matches (e.g. logs of a closed one).
+    bool    resolveLogBuffer(const QString &serverPart, const QString &bufferPart,
+                             ServerId &host, BufferId &buffer) const;
     bool    messageLoggingEnabled() const { return m_config.ui.logMessages; }
 
     // Send on behalf of a session
