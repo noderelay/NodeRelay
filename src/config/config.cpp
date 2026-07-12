@@ -55,6 +55,7 @@ highlight_words   = ""           # comma-separated words that trigger highlight 
 nick_brackets     = "<>"         # "<>" angle, "[]" square, "::::" double-colon, "" none
 pane_stack_rows   = false        # false = stack panes in columns, true = stack in rows
 panel_cards       = true         # side panels use their own theme colors + rounded tops; false = classic flat look
+menu_style        = "menubar"    # "menubar" File/Edit/... bar (joins the KDE global menu), "hidden" shortcuts only
 font_family       = "IBM Plex Mono"
 font_toolbar    = 10
 font_sidebar    = 10
@@ -138,6 +139,9 @@ Config Config::load(const QString &path)
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
             cfg.ui.paneStackRows   = (*ui)["pane_stack_rows"].value_or(false);
             cfg.ui.panelCards      = (*ui)["panel_cards"].value_or(true);
+            cfg.ui.menuStyle       = ustr("menu_style", "menubar");
+            if (cfg.ui.menuStyle != "hidden")
+                cfg.ui.menuStyle = "menubar";
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10.0);
@@ -338,6 +342,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "nick_brackets = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
     out << "pane_stack_rows = " << boolStr(cfg.ui.paneStackRows) << "\n";
     out << "panel_cards = " << boolStr(cfg.ui.panelCards) << "\n";
+    out << "menu_style = " << tomlQuote(cfg.ui.menuStyle) << "\n";
     out << "notifications = " << boolStr(cfg.ui.notifications) << "\n";
     out << "font_family = " << tomlQuote(cfg.ui.fontFamily) << "\n";
     out << "font_toolbar = " << cfg.ui.fontSizes.toolbar << "\n";

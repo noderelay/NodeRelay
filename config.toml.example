@@ -13,6 +13,7 @@ show_topic = true           # show the topic bar at the top
 show_emoji_button = false   # show emoji picker button next to input box
 show_send_button = true     # show send button (paper-plane) in the input box
 colored_nicks = true        # give each nick a unique color
+menu_style = "menubar"      # "menubar" File/Edit/... bar (joins the KDE global menu), "hidden" shortcuts only
 
 # ─── Profile ──────────────────────────────────────────────────────────────────
 #
@@ -21,7 +22,7 @@ colored_nicks = true        # give each nick a unique color
 # Other users see them in the nick list tooltip.
 #
 # You can set these here OR from the GUI:
-#   ☰ → Preferences → Profile → fill in Display Name / Avatar URL → Apply
+#   Settings → Preferences (Ctrl+,) → Profile → fill in Display Name / Avatar URL → Apply
 #
 # You can also set them on the fly with slash commands:
 #   /displayname Alice Smith
@@ -73,7 +74,7 @@ away_message = "Away from keyboard"
 
 # ─── User scripts ────────────────────────────────────────────────────────────
 # Link external scripts to custom slash commands.
-# Set these from the GUI: ☰ → Preferences → Scripts → Add Script
+# Set these from the GUI: Settings → Preferences (Ctrl+,) → Scripts → Add Script
 
 # [[script]]
 # command = "music"

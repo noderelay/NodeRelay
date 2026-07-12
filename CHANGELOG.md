@@ -1,6 +1,48 @@
 # Changelog
 
 <!--
+Session 2026-07-12 (later) — menu bar rework (ROADMAP item):
+- The sidebar icon strip (hamburger ☰, Preferences gear, Manage Servers)
+  is REPLACED by a real menu bar. New Preferences → Interface → Menu Style
+  (config key menu_style, default "menubar"): Menu bar (QMenuBar — joins
+  the KDE global menu via DBus automatically, renders in-window elsewhere)
+  / Hidden (shortcuts only). Applies live. Built as a three-way with a
+  legacy "icons" mode first; icons dropped same session after live testing
+  ("this menu looks great") — unknown/old config values fall back to menubar.
+- Menus: File, Edit, View, Window, Plugins, Settings, Help, Search — all
+  wired to existing actions in new src/ui/mainwindow_menubar.cpp.
+  setupToolbar()/hamburger dropdown and the sidebar header row deleted;
+  sidebar tree now starts flush at the top. Bookmarks menu + Settings
+  deep-links deferred to v2.
+- Signal bars moved permanently to the head of the channel header (left of
+  the topic bubble). Channel header now lives in the chat column — it ends
+  at the user-list boundary, so pop-out/search no longer hover above the
+  user-list card, which runs flush to the top with its own header.
+- Shortcut migration: Ctrl+F / Ctrl+Shift+F / Ctrl+K moved from QShortcuts
+  to window-level QActions shared with the menus (one owner per key);
+  new Ctrl+Q = quit, Ctrl+, = Preferences (the escape hatch in hidden
+  mode); Ctrl+Shift+K now also a QAction (input event-filter branch kept
+  for popped-out pane windows).
+- Shared appliers extracted (openManageServers dedup, setSidebarVisible,
+  setNickPanelVisible, apply*Setting, zoomFont, clearActiveBuffer);
+  PreferencesDialog::syncFromConfig keeps dialog/menu check-states in sync.
+- New Edit → Ignore List… dialog (src/ui/ignorelistdialog.{h,cpp}) — same
+  semantics as the nick right-click Ignore submenu.
+- Also fixed same session: preview-card thumbnails were unreliably clickable
+  until a channel revisit. Two card builders disagreed on anchor coverage
+  (live insert anchored only the title; the rebuild path anchored the whole
+  text) and ChatView::anchorAt x-mapped clicks onto the card's TEXT layout,
+  so image clicks only hit when the mouse x overlapped the title's pixel
+  width. anchorAt now treats the card's visual extent (title/domain/image,
+  width-clamped) as one link target — hover + click + right-click work
+  anywhere on the card in both build paths.
+- Docs: configuration.md ([ui] example + table + all ☰ references now menu
+  paths), keyboard-shortcuts.md (Ctrl+Q, Ctrl+,), config.toml.example.
+  Tests: tst_config covers menu_style load/round-trip/legacy-fallback.
+  Build warning-free, 6/6 tests pass.
+-->
+
+<!--
 Session 2026-07-12 — post-release full audit (second of the day):
 - Scope: everything changed since v2026.7.0 (49 commits) + re-check of the
   security paths audited in #36 (unchanged since). Tools: manual review,

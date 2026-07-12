@@ -114,72 +114,6 @@
 // ---------------------------------------------------------------------------
 
 
-void MainWindow::setupToolbar()
-{
-    auto *tb = addToolBar("Main");
-    tb->setMovable(false);
-    tb->setFloatable(false);
-    tb->setContentsMargins(0, 0, 0, 0);
-    if (tb->layout())
-        tb->layout()->setContentsMargins(0, 0, 0, 0);
-    tb->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tb, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
-
-    m_hamburger = new QToolButton;
-    m_hamburger->setFixedSize(28, 28);
-    m_hamburger->setIconSize(QSize(24, 24));
-    m_hamburger->setAutoRaise(true);
-    m_hamburger->setStyleSheet(UiStyle::headerButtonStyle());
-    m_hamburger->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_hamburger, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
-    m_hamburger->setObjectName("hamburger");
-    tb->hide();
-
-    connect(m_hamburger, &QToolButton::clicked, this, [this]{
-        auto *menu = new QMenu(m_hamburger);
-        menu->setAttribute(Qt::WA_DeleteOnClose);
-        const QColor ic(m_theme.valid ? m_theme.text : "#ffffff");
-
-        menu->addAction(MenuIcons::about(ic), "About Uplink", this, [this]{
-            if (!m_aboutDialog) m_aboutDialog = new AboutDialog(this);
-            m_aboutDialog->showCentered();
-        });
-
-        menu->addAction(MenuIcons::checkForUpdates(ic), "Check for Updates", this, [this]{
-            if (!m_updateChecker) m_updateChecker = new UpdateChecker(this);
-            m_updateChecker->check();
-        });
-
-        menu->addAction(MenuIcons::documentation(ic), "Documentation", this, [this]{
-            if (!m_docsDialog)
-                m_docsDialog = new DocsDialog(this);
-            m_docsDialog->show();
-            m_docsDialog->raise();
-            m_docsDialog->activateWindow();
-        });
-
-        menu->addSeparator();
-
-        menu->addAction(MenuIcons::servers(ic), "Open Config", this, []{
-            QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
-        });
-
-        menu->addAction(MenuIcons::connStatus(ic), "Reload Config", this, []{
-            // arguments() includes argv[0]; passing it verbatim would add a
-            // duplicate program path to the child's argv on every reload.
-            QProcess::startDetached(QCoreApplication::applicationFilePath(),
-                                    QCoreApplication::arguments().mid(1));
-            QCoreApplication::quit();
-        });
-
-        menu->addSeparator();
-        menu->addAction(MenuIcons::exit(ic), "Quit Uplink", this, []{ QCoreApplication::quit(); });
-
-        QPoint pos = m_hamburger->mapToGlobal(QPoint(0, m_hamburger->height()));
-        menu->exec(pos);
-    });
-}
-
 void MainWindow::connectPreferences()
 {
     connect(m_prefsDialog, &PreferencesDialog::themeChanged, this, [this](const QString &name){
@@ -225,6 +159,13 @@ void MainWindow::connectPreferences()
             m_sidebarCloseBtn->setStyleSheet(UiStyle::headerButtonStyle());
         if (m_sidebarRevealBtn)
             m_sidebarRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
+        // Menu bar icons are tinted with the theme text color at build time —
+        // rebuild the bar so a live theme switch doesn't leave stale tints.
+        if (m_menuBarWidget) {
+            setMenuBar(nullptr);
+            m_menuBarWidget = nullptr;
+            buildMenuBar();
+        }
         saveConfig();
     });
 
@@ -264,22 +205,8 @@ void MainWindow::connectPreferences()
         saveConfig();
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::topicBarToggled, this, [this](bool on){
-        const int scrollPos = m_nickList ? m_nickList->verticalScrollBar()->value() : 0;
-        const int sbScroll  = m_sidebar  ? m_sidebar->verticalScrollBar()->value()  : 0;
-        m_showTopic = on;
-        m_config.ui.showTopic = on;
-        m_topicDisplay->setVisible(on);
-        if (m_primaryTopicBtn) {
-            m_primaryTopicBtn->setChecked(on);
-            m_primaryTopicBtn->setText(on ? QStringLiteral("▾") : QStringLiteral("▸"));
-        }
-        QTimer::singleShot(0, this, [this, scrollPos, sbScroll]{
-            if (m_nickList) m_nickList->verticalScrollBar()->setValue(scrollPos);
-            if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
-        });
-        saveConfig();
-    });
+    connect(m_prefsDialog, &PreferencesDialog::topicBarToggled,
+            this, &MainWindow::applyTopicBarSetting);
 
     connect(m_prefsDialog, &PreferencesDialog::nickPrefixToggled, this, [this](bool on){
         m_showNickPrefix = on;
@@ -353,39 +280,23 @@ void MainWindow::connectPreferences()
         saveConfig();
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled, this, [this](bool on){
-        m_config.ui.showUnreadCounts = on;
+    connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled,
+            this, &MainWindow::applyUnreadCountsSetting);
+
+    connect(m_prefsDialog, &PreferencesDialog::paneStackRowsToggled,
+            this, &MainWindow::applyPaneStackRowsSetting);
+
+    connect(m_prefsDialog, &PreferencesDialog::panelCardsToggled,
+            this, &MainWindow::applyPanelCardsSetting);
+
+    connect(m_prefsDialog, &PreferencesDialog::menuStyleChanged, this, [this](const QString &style){
+        m_config.ui.menuStyle = style;
         saveConfig();
-        m_sidebarDelegate->setShowCounts(on);
-        if (!on) {
-            // Clear all stored counts from sidebar items
-            for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
-                auto *srv = m_sidebar->topLevelItem(i);
-                for (int j = 0; j < srv->childCount(); ++j)
-                    srv->child(j)->setData(0, Qt::UserRole + 3, QVariant());
-            }
-        }
-        m_sidebar->viewport()->update();
+        applyMenuStyle();
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::paneStackRowsToggled, this, [this](bool on){
-        m_config.ui.paneStackRows = on;
-        saveConfig();
-        rebuildPaneLayout();
-    });
-
-    connect(m_prefsDialog, &PreferencesDialog::panelCardsToggled, this, [this](bool on){
-        m_config.ui.panelCards = on;
-        saveConfig();
-        ThemeLoader::apply(m_config.ui.theme, on);
-        applyPanelChrome();
-    });
-
-    connect(m_prefsDialog, &PreferencesDialog::timestampsToggled, this, [this](bool on){
-        m_config.ui.showTimestamps = on;
-        saveConfig();
-        refreshChatView(m_model->activeHost(), m_model->activeChannel());
-    });
+    connect(m_prefsDialog, &PreferencesDialog::timestampsToggled,
+            this, &MainWindow::applyTimestampsSetting);
 
     connect(m_prefsDialog, &PreferencesDialog::highlightWordsChanged, this, [this](const QString &words){
         m_config.ui.highlightWords = words;
@@ -399,30 +310,8 @@ void MainWindow::connectPreferences()
         saveConfig();
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::manageServersRequested, this, [this]{
-        ManageServersDialog dlg(m_config.servers, this);
-        if (dlg.exec() != QDialog::Accepted) return;
-        const QList<ServerConfig> updated = dlg.servers();
-        for (const ServerConfig &old : m_config.servers) {
-            const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                [&](const ServerConfig &s){ return s.name == old.name; });
-            if (!stillPresent)
-                m_model->removeServer(ServerId{old.name});
-        }
-        for (const ServerConfig &sc : updated) {
-            const ServerConfig *existing = nullptr;
-            for (const ServerConfig &old : m_config.servers)
-                if (old.name == sc.name) { existing = &old; break; }
-            if (!existing) {
-                m_model->addServer(sc);
-            } else if (*existing != sc) {
-                m_model->updateServer(ServerId{existing->name}, sc);
-            }
-        }
-        m_config.servers = updated;
-        saveConfig(true);
-        syncSidebarOrderFromConfig();
-    });
+    connect(m_prefsDialog, &PreferencesDialog::manageServersRequested,
+            this, &MainWindow::openManageServers);
 
     connect(m_prefsDialog, &PreferencesDialog::aboutRequested, this, [this]{
         if (!m_aboutDialog) m_aboutDialog = new AboutDialog(this);
@@ -514,24 +403,6 @@ void MainWindow::setupSidebar()
     connect(m_sidebar, &QTreeWidget::customContextMenuRequested,
             this, &MainWindow::onSidebarContextMenu);
 
-    m_sidebarToggleBtn = new QToolButton;
-    m_sidebarToggleBtn->setFixedSize(28, 28);
-    m_sidebarToggleBtn->setIconSize(QSize(20, 20));
-    m_sidebarToggleBtn->setAutoRaise(true);
-    m_sidebarToggleBtn->setStyleSheet(UiStyle::headerButtonStyle());
-    m_sidebarToggleBtn->setObjectName("sidebarToggleBtn");
-    m_sidebarToggleBtn->setToolTip(tr("Preferences"));
-    m_sidebarToggleBtn->setIcon(MenuIcons::gear(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
-    connect(m_sidebarToggleBtn, &QToolButton::clicked, this, [this]{
-        if (!m_prefsDialog) {
-            m_prefsDialog = new PreferencesDialog(m_config, this);
-            connectPreferences();
-        }
-        m_prefsDialog->show();
-        m_prefsDialog->raise();
-        m_prefsDialog->activateWindow();
-    });
-
     m_sidebarPanel = new QWidget;
     m_sidebarPanel->setObjectName("sidebarPanel");
     m_sidebarPanel->setAttribute(Qt::WA_StyledBackground, true);
@@ -539,63 +410,6 @@ void MainWindow::setupSidebar()
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
-    m_sidebarHeader = new ChromePanel;
-    m_sidebarHeader->setObjectName("sidebarHeader");
-    m_sidebarHeader->setFixedHeight(34); // synced to primaryHeader+topicDisplay after show
-
-    auto positionSidebarRevealBtn = [this]{
-        if (!m_sidebarRevealBtn || !m_chatSection) return;
-        m_sidebarRevealBtn->move(4, m_chatSection->height() - m_sidebarRevealBtn->height() - 4);
-        m_sidebarRevealBtn->raise();
-    };
-
-    {
-        auto *shBox = new QHBoxLayout(m_sidebarHeader);
-        shBox->setContentsMargins(2, 2, 2, 2);
-        shBox->setSpacing(2);
-        shBox->setAlignment(Qt::AlignTop);
-        shBox->addWidget(m_hamburger);
-        shBox->addWidget(m_sidebarToggleBtn);
-
-        m_serversBtn = new QToolButton;
-        m_serversBtn->setFixedSize(32, 32);
-        m_serversBtn->setIconSize(QSize(28, 28));
-        m_serversBtn->setAutoRaise(true);
-        m_serversBtn->setStyleSheet(UiStyle::headerButtonStyle());
-        m_serversBtn->setToolTip(tr("Add / Manage Servers"));
-        m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
-        connect(m_serversBtn, &QToolButton::clicked, this, [this]{
-            ManageServersDialog dlg(m_config.servers, this);
-            if (dlg.exec() != QDialog::Accepted) return;
-            const QList<ServerConfig> updated = dlg.servers();
-            for (const ServerConfig &old : m_config.servers) {
-                const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                    [&](const ServerConfig &s){ return s.name == old.name; });
-                if (!stillPresent)
-                    m_model->removeServer(ServerId{old.name});
-            }
-            for (const ServerConfig &sc : updated) {
-                const ServerConfig *existing = nullptr;
-                for (const ServerConfig &old : m_config.servers)
-                    if (old.name == sc.name) { existing = &old; break; }
-                if (!existing) {
-                    m_model->addServer(sc);
-                } else if (*existing != sc) {
-                    m_model->updateServer(ServerId{existing->name}, sc);
-                }
-            }
-            m_config.servers = updated;
-            saveConfig(true);
-            syncSidebarOrderFromConfig();
-        });
-        shBox->addWidget(m_serversBtn);
-
-        shBox->addStretch(1);
-        m_signalBars = new SignalBars(m_sidebarHeader);
-        shBox->addWidget(m_signalBars, 0, Qt::AlignVCenter);
-    }
-
-    vbox->addWidget(m_sidebarHeader);
     vbox->addWidget(m_sidebar, 1);
 
     // Floating close button pinned to the bottom-left corner of the sidebar panel
@@ -610,17 +424,8 @@ void MainWindow::setupSidebar()
         QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     m_sidebarCloseBtn->move(4, 0);
     m_sidebarCloseBtn->raise();
-    connect(m_sidebarCloseBtn, &QToolButton::clicked, this, [this, positionSidebarRevealBtn]{
-        m_sidebarExpanded = false;
-        m_sidebarPanel->setVisible(false);
-        if (m_inputBar)
-            if (auto *l = qobject_cast<QHBoxLayout*>(m_inputBar->layout()))
-                l->setContentsMargins(40, 3, 4, 8);
-        if (m_sidebarRevealBtn) {
-            positionSidebarRevealBtn();
-            m_sidebarRevealBtn->setVisible(true);
-        }
-    });
+    connect(m_sidebarCloseBtn, &QToolButton::clicked,
+            this, [this]{ setSidebarVisible(false); });
     m_sidebarPanel->installEventFilter(this);
 }
 
@@ -663,27 +468,8 @@ void MainWindow::setupNickPanel()
         QStringLiteral(":/icons/mi-right-panel-close.svg"),
         QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
 
-    auto positionRevealBtn = [this]{
-        if (!m_nickRevealBtn || !m_chatSection) return;
-        // Same line the collapse button sat on (top of the nick panel,
-        // right below the header row) — not below the topic bar, which
-        // made the button visually "jump down" on collapse.
-        const int topY = m_primaryHeader->height();
-        m_nickRevealBtn->move(m_chatSection->width() - m_nickRevealBtn->width() - 4, topY);
-        m_nickRevealBtn->raise();
-    };
-
-    auto toggleNickPanel = [this, positionRevealBtn]{
-        m_nickExpanded = !m_nickExpanded;
-        m_nickPanel->setVisible(m_nickExpanded);
-        if (m_nickRevealBtn) {
-            if (!m_nickExpanded) positionRevealBtn();
-            m_nickRevealBtn->setVisible(!m_nickExpanded);
-        }
-        setTopicRevealInset(!m_nickExpanded);
-    };
-
-    connect(m_nickToggleBtn, &QToolButton::clicked, this, toggleNickPanel);
+    connect(m_nickToggleBtn, &QToolButton::clicked,
+            this, [this]{ setNickPanelVisible(!m_nickExpanded); });
 
     m_userInfoLabel = new QLabel;
     m_userInfoLabel->setObjectName("userInfoLabel");
@@ -736,7 +522,8 @@ void MainWindow::setupChatArea()
     primaryVbox->setContentsMargins(0, 0, 0, 0);
     primaryVbox->setSpacing(0);
 
-    // Primary panel header: hidden until the first extra pane is opened
+    // Primary panel header — always visible; hosts the topic toggle, channel
+    // label, pop-out/search buttons (and the signal bars in menu-bar mode)
     m_primaryHeader = new QWidget;
     m_primaryHeader->setObjectName("paneHeader");
     m_primaryHeader->setVisible(true);
@@ -820,6 +607,9 @@ void MainWindow::setupChatArea()
             QString("QLabel { color: %1; }").arg(m_theme.valid ? m_theme.placeholder : "#888888"));
         m_topicSetByLabel->hide();
 
+        // Connection meter leads the header row, left of the topic bubble
+        m_signalBars = new SignalBars(primaryHeader);
+        hbox->addWidget(m_signalBars, 0, Qt::AlignVCenter);
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
         hbox->addSpacing(10);
@@ -994,19 +784,15 @@ void MainWindow::setupChatArea()
         }
     });
 
-    // Header row: primaryHeader only — nickPanelHeader lives inside nickPanel now
-    auto *headerRow = new QWidget;
-    auto *hrBox = new QHBoxLayout(headerRow);
-    hrBox->setContentsMargins(0, 0, 0, 0);
-    hrBox->setSpacing(0);
-    hrBox->addWidget(primaryHeader, 1);
-    chatVbox->addWidget(headerRow);
-
+    // Channel header lives in the chat column — it ends at the user-list
+    // boundary so nothing hovers above the user-list card, which runs flush
+    // to the top with its own header (nickPanelHeader lives inside nickPanel)
     auto *chatLeft = new QWidget;
     chatLeft->setObjectName("chatColumn");
     auto *chatLeftVbox = new QVBoxLayout(chatLeft);
     chatLeftVbox->setContentsMargins(0, 0, 0, 0);
     chatLeftVbox->setSpacing(0);
+    chatLeftVbox->addWidget(primaryHeader);
     chatLeftVbox->addWidget(m_topicDisplay);
     chatLeftVbox->addWidget(m_chatView, 1);
     m_chatLeftVbox = chatLeftVbox; // setupInputBar appends the compose strip here
@@ -1101,16 +887,8 @@ void MainWindow::setupChatArea()
         QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     m_sidebarRevealBtn->setVisible(false);
     m_sidebarRevealBtn->raise();
-    connect(m_sidebarRevealBtn, &QToolButton::clicked, this, [this]{
-        m_sidebarExpanded = true;
-        m_sidebarPanel->setVisible(true);
-        m_sidebarRevealBtn->setVisible(false);
-        if (m_inputBar)
-            if (auto *l = qobject_cast<QHBoxLayout*>(m_inputBar->layout()))
-                l->setContentsMargins(4, 3, 4, 8);
-        const int total = m_mainSplitter->width();
-        m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-    });
+    connect(m_sidebarRevealBtn, &QToolButton::clicked,
+            this, [this]{ setSidebarVisible(true); });
 
     // m_primaryPanel is self-contained (just like any other ChannelPane) —
     // no sidebar inside it — so it can safely land in any pane slot the

@@ -11,6 +11,7 @@ class DocsDialog : public QDialog
 
 public:
     explicit DocsDialog(QWidget *parent = nullptr);
+    void showTab(const QString &title);
 
 private:
     void addTab(QTabWidget *tabs, const QString &title, const QString &resource);

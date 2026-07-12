@@ -50,6 +50,7 @@ class QToolButton;
 class QSplitter;
 class QVBoxLayout;
 class QAction;
+class QMenuBar;
 
 class MainWindow : public QMainWindow
 {
@@ -97,7 +98,6 @@ private slots:
                           const QString &nick, const QString &state);
 
 private:
-    void setupToolbar();
     void setupSidebar();
     void setupChatArea();
     void setupNickPanel();
@@ -136,6 +136,24 @@ private:
     void refreshPaneNickList(ChannelPane *pane);
     void rebuildPaneLayout();
 
+    // Menu bar (menu_style) — mainwindow_menubar.cpp
+    void setupMenuActions();
+    void buildMenuBar();
+    void applyMenuStyle();
+    void openPreferences();
+    void openManageServers();
+    void openIgnoreList();
+
+    // Shared setting appliers (Preferences signals + menu actions)
+    void applyTopicBarSetting(bool on);
+    void applyTimestampsSetting(bool on);
+    void applyUnreadCountsSetting(bool on);
+    void applyPanelCardsSetting(bool on);
+    void applyPaneStackRowsSetting(bool on);
+    void setSidebarVisible(bool on);
+    void setNickPanelVisible(bool on);
+    void clearActiveBuffer();
+
     QListWidgetItem *makeNickItem(const NickEntry &e, const Channel *ch, const ServerSession *sess);
     static int       findNickRow (QListWidget *list, const QString &nick);
     static QString   topicAgeStr (quint64 ts);
@@ -157,6 +175,7 @@ private:
 
     // Font zoom (Ctrl+wheel / Ctrl+±)
     double *fontFieldForWidget(QObject *obj, const QPoint &pos = {});
+    bool zoomFont(QObject *target, double delta, const QPoint &pos = {});
 
     // Tab completion
     void handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel);
@@ -202,9 +221,6 @@ private:
     QToolButton  *m_sendBtn{nullptr};
     QLabel       *m_formatIndicator{nullptr};
     QWidget      *m_sidebarPanel{nullptr};
-    QWidget      *m_sidebarHeader{nullptr};
-    QToolButton  *m_sidebarToggleBtn{nullptr};
-    QToolButton  *m_serversBtn{nullptr};
     bool          m_sidebarExpanded{true};
     int           m_sidebarExpandedWidth{180};
     QSplitter    *m_mainSplitter{nullptr};
@@ -231,7 +247,7 @@ private:
     QToolButton  *m_sidebarCloseBtn{nullptr};
     QWidget      *m_chatSection{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
-    QVBoxLayout  *m_chatLeftVbox{nullptr}; // chat column: topic/chat/search/reply/typing/input
+    QVBoxLayout  *m_chatLeftVbox{nullptr}; // chat column: header/topic/chat/search/reply/typing/input
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout (docked panes only)
@@ -245,7 +261,6 @@ private:
     QWidget      *m_topicDisplay{nullptr};  // topic text — shown when showTopic
     QLabel       *m_topicText{nullptr};
     QLabel       *m_topicSetByLabel{nullptr};
-    QToolButton  *m_hamburger;
     QLabel       *m_appLabel{nullptr};
     QLabel       *m_typingLabel{nullptr};
     QWidget      *m_inputBar{nullptr};
@@ -262,6 +277,23 @@ private:
     PreferencesDialog  *m_prefsDialog{nullptr};
     EmojiPicker       *m_emojiPicker{nullptr};
     QuickSwitcher     *m_quickSwitcher{nullptr};
+
+    // Menu bar (menu_style = "menubar"); actions are parented to this window
+    // and addAction()ed so their shortcuts fire in all three menu styles.
+    QMenuBar *m_menuBarWidget{nullptr};
+    QAction  *m_actFind{nullptr};
+    QAction  *m_actHistorySearch{nullptr};
+    QAction  *m_actQuickSwitch{nullptr};
+    QAction  *m_actInsertColor{nullptr};
+    QAction  *m_actQuit{nullptr};
+    QAction  *m_actPreferences{nullptr};
+    QAction  *m_actViewSidebar{nullptr};
+    QAction  *m_actViewUserList{nullptr};
+    QAction  *m_actViewTopic{nullptr};
+    QAction  *m_actViewTimestamps{nullptr};
+    QAction  *m_actViewUnread{nullptr};
+    QAction  *m_actViewCards{nullptr};
+    QAction  *m_actStackRows{nullptr};
 
     // Typing indicator state
     QTimer                      *m_typingOutTimer{nullptr};

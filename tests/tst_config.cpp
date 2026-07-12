@@ -50,6 +50,7 @@ typing_indicator = false
 log_messages = true
 show_timestamps = false
 highlight_words = "alert,urgent"
+menu_style = "hidden"
 )");
         QCOMPARE(cfg.ui.theme, "dracula");
         QVERIFY(!cfg.ui.showNickPrefix);
@@ -60,6 +61,16 @@ highlight_words = "alert,urgent"
         QVERIFY(cfg.ui.logMessages);
         QVERIFY(!cfg.ui.showTimestamps);
         QCOMPARE(cfg.ui.highlightWords, "alert,urgent");
+        QCOMPARE(cfg.ui.menuStyle, "hidden");
+    }
+
+    void menuStyleInvalidFallsBack()
+    {
+        LOAD(cfg, R"(
+[ui]
+menu_style = "icons"
+)");
+        QCOMPARE(cfg.ui.menuStyle, "menubar");
     }
 
     void loadMultipleServers()
@@ -211,6 +222,7 @@ nick = "joe"
         orig.ui.nickBrackets = "[]";
         orig.ui.logMessages = true;
         orig.ui.linkPreviews = true;
+        orig.ui.menuStyle = "hidden";
         orig.profileDisplayName = "Joe";
         orig.profileAvatarUrl = "https://example.com/avatar.png";
 
@@ -246,6 +258,7 @@ nick = "joe"
         QCOMPARE(loaded.ui.nickBrackets, "[]");
         QVERIFY(loaded.ui.logMessages);
         QVERIFY(loaded.ui.linkPreviews);
+        QCOMPARE(loaded.ui.menuStyle, "hidden");
         QCOMPARE(loaded.profileDisplayName, "Joe");
         QCOMPARE(loaded.profileAvatarUrl, "https://example.com/avatar.png");
 

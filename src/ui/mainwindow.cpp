@@ -198,7 +198,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_theme = ThemeLoader::load(m_config.ui.theme);
     setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
-    setupToolbar();
     setupSidebar();
     setupNickPanel();
     setupChatArea();
@@ -229,21 +228,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         if (m_tray && m_tray->isVisible()) hide();
     });
 
-    auto *ctrlF = new QShortcut(QKeySequence::Find, this);
-    connect(ctrlF, &QShortcut::activated, this, [this]{
-        // Focus inside a docked pane → toggle that pane's own search bar.
-        if (QWidget *fw = QApplication::focusWidget())
-            for (auto *pane : std::as_const(m_panes))
-                if (pane->window() == this && pane->isAncestorOf(fw)) {
-                    pane->toggleSearch();
-                    return;
-                }
-        m_searchBar->open();
-    });
-
-    auto *ctrlShiftF = new QShortcut(QKeySequence("Ctrl+Shift+F"), this);
-    connect(ctrlShiftF, &QShortcut::activated, this, &MainWindow::openLogSearch);
-
     m_quickSwitcher = new QuickSwitcher(model, this);
     connect(m_quickSwitcher, &QuickSwitcher::channelSelected, this, [this](ServerId host, BufferId channel){
         auto *item = findChannelItem(host, channel);
@@ -252,8 +236,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             onSidebarSelectionChanged();
         }
     });
-    auto *ctrlK = new QShortcut(QKeySequence("Ctrl+K"), this);
-    connect(ctrlK, &QShortcut::activated, m_quickSwitcher, &QuickSwitcher::showCentered);
+
+    // Ctrl+F / Ctrl+Shift+F / Ctrl+K / Ctrl+Shift+K / Ctrl+Q live on window-
+    // level QActions (shared with the menu bar) — see setupMenuActions().
+    setupMenuActions();
+    applyMenuStyle();
 
     statusBar()->hide();
 
@@ -320,8 +307,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-        if (m_primaryHeader && m_sidebarHeader)
-            m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
     });
 
     if (!savedPanes.isEmpty()) {
@@ -386,11 +371,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
     connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
     connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
-    connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{
-        if (m_chatView) m_chatView->clear();
-        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
-        if (ch) ch->messages.clear();
-    });
+    connect(m_dispatcher, &CommandDispatcher::clearChat,
+            this, &MainWindow::clearActiveBuffer);
     connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
 }
@@ -422,21 +404,18 @@ void MainWindow::correctStartupGeometry()
     const int total = m_mainSplitter->width();
     if (total > 0)
         m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-    if (m_primaryHeader && m_sidebarHeader)
-        m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
 }
 
 
-// Panel chrome strips (icon rows above the channel tree and the user list)
-// paint their own fill via ChromePanel — stylesheet backgrounds (app-wide
-// AND local per-widget sheets) are silently dropped for plain QWidgets in
-// some Wayland/KDE sessions, but a QPainter paintEvent always renders.
+// Panel chrome (the user-list card and its header row) paints its own fill
+// via ChromePanel — stylesheet backgrounds (app-wide AND local per-widget
+// sheets) are silently dropped for plain QWidgets in some Wayland/KDE
+// sessions, but a QPainter paintEvent always renders.
 void MainWindow::applyPanelChrome()
 {
     if (!m_theme.valid) return;
-    // Sidebar header (hamburger row) stays on the window bg — the sidebar
-    // card starts at the network tree below it. With panel cards off, the
-    // nick panel flattens onto the buffer color with square corners.
+    // With panel cards off, the nick panel flattens onto the buffer color
+    // with square corners.
     const bool cards = m_config.ui.panelCards;
     const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
     static_cast<ChromePanel *>(m_nickPanel)->setFill(fill, cards);
@@ -502,10 +481,6 @@ void MainWindow::applyFontSizes()
         m_nickRevealBtn->setIcon(MenuIcons::fromSvg(
             QStringLiteral(":/icons/mi-left-panel-close.svg"),
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
-    if (m_sidebarToggleBtn) {
-        m_sidebarToggleBtn->setIcon(MenuIcons::gear(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
-        m_sidebarToggleBtn->setStyleSheet(UiStyle::headerButtonStyle());
-    }
     if (m_sidebarCloseBtn)
         m_sidebarCloseBtn->setIcon(MenuIcons::fromSvg(
             QStringLiteral(":/icons/mi-left-panel-close.svg"),
@@ -517,12 +492,6 @@ void MainWindow::applyFontSizes()
     if (m_nickGroupsIconLabel)
         m_nickGroupsIconLabel->setPixmap(
             MenuIcons::groups(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
-    if (m_hamburger) {
-        m_hamburger->setIcon(MenuIcons::hamburger(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
-        m_hamburger->setStyleSheet(UiStyle::headerButtonStyle());
-    }
-    if (m_serversBtn)
-        m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_topicText) {
         const QFont tf = makeFont(fs.topicText);
@@ -563,6 +532,23 @@ void MainWindow::applyFontSizes()
 // ---------------------------------------------------------------------------
 // Event filter — Tab completion + input history
 // ---------------------------------------------------------------------------
+
+bool MainWindow::zoomFont(QObject *target, double delta, const QPoint &pos)
+{
+    double *field = fontFieldForWidget(target, pos);
+    if (!field) return false;
+    *field = qBound(6.0, *field + delta, 32.0);
+    applyFontSizes();
+    saveConfig();
+    return true;
+}
+
+void MainWindow::clearActiveBuffer()
+{
+    if (m_chatView) m_chatView->clear();
+    auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+    if (ch) ch->messages.clear();
+}
 
 double *MainWindow::fontFieldForWidget(QObject *obj, const QPoint &pos)
 {
@@ -683,20 +669,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
     // Ctrl+wheel or Ctrl+Plus/Minus: zoom the focused region's font
-    auto applyZoom = [this](QObject *target, double delta, const QPoint &pos = {}) -> bool {
-        double *field = fontFieldForWidget(target, pos);
-        if (!field) return false;
-        *field = qBound(6.0, *field + delta, 32.0);
-        applyFontSizes();
-        saveConfig();
-        return true;
-    };
-
     if (event->type() == QEvent::Wheel) {
         auto *we = static_cast<QWheelEvent *>(event);
         if (we->modifiers() & Qt::ControlModifier) {
-            if (applyZoom(obj, we->angleDelta().y() > 0 ? 0.5 : -0.5,
-                          we->position().toPoint()))
+            if (zoomFont(obj, we->angleDelta().y() > 0 ? 0.5 : -0.5,
+                         we->position().toPoint()))
                 return true;
         }
     }
@@ -706,7 +683,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             double delta = 0;
             if (ke->key() == Qt::Key_Plus || ke->key() == Qt::Key_Equal) delta = 0.5;
             else if (ke->key() == Qt::Key_Minus) delta = -0.5;
-            if (delta != 0 && applyZoom(obj, delta))
+            if (delta != 0 && zoomFont(obj, delta))
                 return true;
         }
         // Alt-navigation only applies to widgets living in the main window —
@@ -721,9 +698,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
 
-
-    if (obj == m_primaryHeader && event->type() == QEvent::Resize && m_sidebarHeader)
-        m_sidebarHeader->setFixedHeight(static_cast<QResizeEvent *>(event)->size().height());
 
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
