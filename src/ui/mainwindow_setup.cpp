@@ -422,7 +422,7 @@ void MainWindow::setupSidebar()
 void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
-    m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
+    FadeScrollBar::attachOverlay(m_nickList);   // floats — no reserved gutter
     m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
     m_nickList->setIconSize(QSize(16, 16));
