@@ -718,6 +718,21 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.1 — 2026-07-11
+
+- Theming overhaul: a theme's `[sidebar]` and `[nicklist]` backgrounds are now honored — 285 of 297 themes gain a layered, two-tone look. The side panels run the full window height and are drawn as cards with rounded top corners
+- New **Preferences → Interface → Panel Cards** toggle: switch between the new card look and the classic flat rendering, live, per your taste (`panel_cards` in config)
+- Full-history search v2: tick **All buffers** in the Ctrl+Shift+F window to search every logged channel and PM across all your servers at once — results are grouped per buffer with match counts; double-click one to jump straight to that buffer
+- Detachable panes matured: header drag-to-rearrange now works reliably on Wayland/KDE, panes can stack in rows (`pane_stack_rows`), the drop target highlights with a full frame, Ctrl+F reaches docked panes, pop-out windows remember their size and position, and channels open in a pane no longer accumulate phantom unread badges
+- Pop-out windows keep their themed colors after undocking, and panes on a different server than the active one now highlight the right nick
+- New themes: mactahoe26 and mactahoe26-light (macOS Tahoe system colors) — 297 themes total
+- Fix: the user list stopped a few pixels short of the window bottom on fractionally scaled displays (125–150%); side panels now render flush edge to edge
+- Fix: DCC sends longer than 60 seconds were aborted as "stalled" — the guard now tracks transfer progress instead of a fixed deadline, and passive sends get the same protection
+- Fix: reactions with fabricated message ids could grow memory without bound over a long session; reactions are only accepted for messages actually in the buffer
+- Fix: the show-user-list button now appears right where the hide button was instead of jumping below the topic bar, and topic text wraps before it instead of running underneath
+- Fix: ☰ → Reload Config no longer appends a duplicate program path to the process arguments on every reload
+- Hardening: full audit of the security-sensitive paths (SSRF guard, DCC, TLS, CTCP parsing) and memory caps — everything else came back clean
+
 ## v2026.7.0 — 2026-07-08
 
 > **New version scheme:** Uplink now uses calendar versioning — `year.month.fix`.
