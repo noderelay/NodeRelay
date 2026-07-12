@@ -259,12 +259,12 @@ void MainWindow::buildMenuBar()
         // the compact channels = "#a, #b" config form.
         const bool bookmarkable = isChannelName(chan)
                                   && !chan.contains(' ') && !chan.contains(',');
-        QAction *bm = bmMenu->addAction(MenuIcons::bookmark(ic), tr("Bookmark This Channel"));
-        bm->setCheckable(true);
+        const bool saved = bookmarkable && isBookmarked(host, channel);
+        QAction *bm = bmMenu->addAction(MenuIcons::bookmark(ic),
+            saved ? tr("Remove Bookmark") : tr("Bookmark This Channel"));
         bm->setEnabled(bookmarkable);
-        bm->setChecked(bookmarkable && isBookmarked(host, channel));
-        connect(bm, &QAction::triggered, this, [this, host, channel](bool on){
-            toggleBookmark(host, channel, on);
+        connect(bm, &QAction::triggered, this, [this, host, channel, saved]{
+            toggleBookmark(host, channel, !saved);
         });
         bmMenu->addSeparator();
 
@@ -466,6 +466,12 @@ void MainWindow::toggleBookmark(ServerId host, BufferId channel, bool on)
         if (on)
             sc.channels.append(ChannelConfig{channel.str(), QString()});
         saveConfig();
+        // Visible confirmation — the config write itself changes nothing on
+        // screen, so say what happened in the channel that was bookmarked.
+        m_model->localMessage(host, channel,
+            on ? channel.str() + " added to auto-join for " + sc.name
+                 + " — it will open automatically at startup"
+               : channel.str() + " removed from auto-join for " + sc.name);
         return;
     }
 }
