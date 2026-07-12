@@ -14,10 +14,10 @@ Uplink is configured with a single TOML file. On first launch it is created auto
 
 You can edit the file directly, or use the in-app tools:
 
-- **☰ → Open Config** — opens `config.toml` in your system's default text editor
-- **☰ → Reload Config** — restarts Uplink immediately, picking up all config changes (useful after a manual edit)
-- **☰ → Manage Servers** — add, edit, or remove servers; changes take effect immediately without editing config by hand
-- **⚙ (gear icon in channel header)** — opens **Preferences**, the GUI for themes, font sizes, and UI toggles; changes are saved automatically
+- **File → Open Config** — opens `config.toml` in your system's default text editor
+- **File → Reload Config** — restarts Uplink immediately, picking up all config changes (useful after a manual edit)
+- **File → Manage Servers** — add, edit, or remove servers; changes take effect immediately without editing config by hand
+- **Settings → Preferences (Ctrl+,)** — the GUI for themes, font sizes, and UI toggles; changes are saved automatically
 
 ---
 
@@ -42,6 +42,7 @@ highlight_words = ""             # comma-separated words highlighted like mentio
 nick_brackets = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 pane_stack_rows = false           # false = stack panes in columns (default), true = stack in rows
 panel_cards = true                # side panels use their own theme colors + rounded tops; false = classic flat look
+menu_style = "menubar"    # "menubar" File/Edit/... bar (joins the KDE global menu), "hidden" shortcuts only
 app_icon = "flat-black"
 font_family = "IBM Plex Mono"   # Windows default is "Consolas"
 font_toolbar = 10
@@ -121,9 +122,10 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `pane_stack_rows` | bool | `false` | When you have 2+ [detachable channel panes](howto.html#channel-panes) open, `false` stacks them in columns (side by side), `true` stacks them in horizontal rows. Toggle live from **Preferences → Interface → Stack Panes in Rows**. |
 | `panel_cards` | bool | `true` | The server/channel list and user list use their own `[sidebar]`/`[nicklist]` theme backgrounds and are drawn as cards with rounded top corners. Set `false` for the classic flat look where the whole window sits on the buffer color. Toggle live from **Preferences → Interface → Panel Cards**. |
+| `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the classic **File / Edit / View / Window / Plugins / Settings / Help / Search** menu bar — on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
 | `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
-| `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |
+| `font_toolbar` | integer | `10` | Legacy top-bar font size — kept for config compatibility |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
 | `font_chat` | integer | `10` | Font size (pt) for the message area |
 | `font_nick_list` | integer | `10` | Font size (pt) for the user list |
@@ -236,7 +238,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
 | `quit_message` | string | no | Message broadcast to the server when you disconnect or type `/quit` with no argument. Defaults to `"Uplink"` when omitted or blank. You can always override it for a single disconnect with `/quit <message>`. |
 | `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` sends `"Away"` as a fallback. You can always override for a single session with `/away <message>`. Use `/back` to clear away status. |
-| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **☰ → Manage Servers** → select the server → **Disabled** checkbox in the Connection section. Defaults to `false`. |
+| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **File → Manage Servers** → select the server → **Disabled** checkbox in the Connection section. Defaults to `false`. |
 
 ### Minimal server block
 
@@ -645,7 +647,7 @@ proxy_pass = "mypassword"
 
 ### GUI setup
 
-Go to **☰ → Manage Servers** and click **Add** (or select an existing server) to fill in the **SOCKS5 Proxy** section in the right panel. Leave the host field blank to connect directly without a proxy.
+Go to **File → Manage Servers** and click **Add** (or select an existing server) to fill in the **SOCKS5 Proxy** section in the right panel. Leave the host field blank to connect directly without a proxy.
 
 ### Notes
 
@@ -904,9 +906,9 @@ channels = "#linux"
 
 This is the safe alternative to commenting out a `[[server]]` block. Commented-out entries are not parsed by Uplink and will be **permanently removed** the next time the app writes the config file. `disabled = true` is the correct way to temporarily skip a server.
 
-**GUI:** Open **☰ → Manage Servers**, select the server, and tick the **Disabled** checkbox in the Connection section on the right. Uncheck it to re-enable the server — it will connect immediately.
+**GUI:** Open **File → Manage Servers**, select the server, and tick the **Disabled** checkbox in the Connection section on the right. Uncheck it to re-enable the server — it will connect immediately.
 
-**Re-enabling:** Remove the `disabled = true` line (or set it to `false`) and reload the config with **☰ → Reload Config**, or use the GUI checkbox.
+**Re-enabling:** Remove the `disabled = true` line (or set it to `false`) and reload the config with **File → Reload Config**, or use the GUI checkbox.
 
 ---
 
@@ -937,7 +939,7 @@ You can also set it per-disconnect using `/quit`:
 /quit Heading to bed        # uses "Heading to bed" just this once
 ```
 
-**GUI:** Open **☰ → Manage Servers**, select the server, and fill in **Quit Message** in the Identity section on the right.
+**GUI:** Open **File → Manage Servers**, select the server, and fill in **Quit Message** in the Identity section on the right.
 
 ---
 
@@ -967,7 +969,7 @@ You can still pass a one-off message to override it:
 /back                             # always clears away status regardless of config
 ```
 
-**GUI:** Open **☰ → Manage Servers**, select the server, and fill in **Away Message** in the Identity section on the right.
+**GUI:** Open **File → Manage Servers**, select the server, and fill in **Away Message** in the Identity section on the right.
 
 ---
 

@@ -44,6 +44,11 @@ const QList<QPair<QString,QString>> PreferencesDialog::s_bracketChoices = {
     { "",     "nick  (none)"      },
 };
 
+const QList<QPair<QString,QString>> PreferencesDialog::s_menuStyleChoices = {
+    { "menubar", "Menu bar"                  },
+    { "hidden",  "Hidden (shortcuts only)"   },
+};
+
 static QLabel *pageTitle(const QString &text)
 {
     auto *l = new QLabel(text);
@@ -318,6 +323,23 @@ QWidget *PreferencesDialog::createInterfacePage(const Config &cfg)
     m_panelCardsCheck->setChecked(cfg.ui.panelCards);
     connect(m_panelCardsCheck, &QCheckBox::toggled, this, [this](bool on){ emit panelCardsToggled(on); });
     vbox->addWidget(m_panelCardsCheck);
+
+    vbox->addSpacing(6);
+    vbox->addWidget(sectionLabel("Menu Style"));
+    {
+        m_menuStyleGroup = new QButtonGroup(this);
+        m_menuStyleGroup->setExclusive(true);
+        for (int i = 0; i < s_menuStyleChoices.size(); ++i) {
+            auto *rb = new QRadioButton(s_menuStyleChoices[i].second);
+            rb->setChecked(s_menuStyleChoices[i].first == cfg.ui.menuStyle);
+            m_menuStyleGroup->addButton(rb, i);
+            vbox->addWidget(rb);
+        }
+        connect(m_menuStyleGroup, &QButtonGroup::idClicked, this, [this](int idx){
+            if (idx >= 0 && idx < s_menuStyleChoices.size())
+                emit menuStyleChanged(s_menuStyleChoices[idx].first);
+        });
+    }
 
     vbox->addStretch();
     return page;
@@ -597,4 +619,29 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
 
     vbox->addStretch();
     return page;
+}
+
+// Re-sync toggle controls after a setting is changed from outside the dialog
+// (e.g. the View menu). Blocked signals — no re-emit loops.
+void PreferencesDialog::syncFromConfig(const Config &cfg)
+{
+    auto setCheck = [](QCheckBox *cb, bool on){
+        if (!cb) return;
+        QSignalBlocker block(cb);
+        cb->setChecked(on);
+    };
+    setCheck(m_topicCheck,         cfg.ui.showTopic);
+    setCheck(m_timestampsCheck,    cfg.ui.showTimestamps);
+    setCheck(m_unreadCountsCheck,  cfg.ui.showUnreadCounts);
+    setCheck(m_panelCardsCheck,    cfg.ui.panelCards);
+    setCheck(m_paneStackRowsCheck, cfg.ui.paneStackRows);
+}
+
+void PreferencesDialog::showScriptsPage()
+{
+    for (int i = 0; i < m_navList->count(); ++i)
+        if (m_navList->item(i)->text() == QLatin1String("Scripts")) {
+            m_navList->setCurrentRow(i);
+            return;
+        }
 }

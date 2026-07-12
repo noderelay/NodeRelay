@@ -74,6 +74,15 @@ void DocsDialog::addTab(QTabWidget *tabs, const QString &title, const QString &r
     tabs->addTab(browser, title);
 }
 
+void DocsDialog::showTab(const QString &title)
+{
+    for (int i = 0; i < m_tabs->count(); ++i)
+        if (m_tabs->tabText(i) == title) {
+            m_tabs->setCurrentIndex(i);
+            return;
+        }
+}
+
 void DocsDialog::searchCurrentTab(const QString &text)
 {
     auto *browser = qobject_cast<QTextBrowser *>(m_tabs->currentWidget());

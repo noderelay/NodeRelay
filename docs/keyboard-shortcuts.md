@@ -14,6 +14,8 @@ All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cm
 | **Ctrl+F** | Search current buffer |
 | **Ctrl+Shift+F** | Search full logged history |
 | **Ctrl+W** | Minimize to tray |
+| **Ctrl+Q** | Quit Uplink |
+| **Ctrl+,** | Open Preferences |
 | **Ctrl+B / I / U / S** | Bold / italic / underline / strikethrough |
 | **Ctrl+Shift+K** | Pick text / background color |
 | **Ctrl+O** | Clear all formatting |

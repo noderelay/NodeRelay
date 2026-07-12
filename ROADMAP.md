@@ -347,15 +347,17 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Planned — Future
 
-- [ ] Menu bar rework — rethink the hamburger + Preferences + Add/Manage Servers icon row. Three-way choice in Preferences → Interface: **Icons** (today's look) / **Menu bar** / **Hidden** (shortcuts only). The menu bar is a plain `QMenuBar` wired to existing actions — on KDE, Qt exports it to the WM's global menu over DBus automatically. In menu-bar/hidden mode the icon strip disappears, the signal-bars indicator moves to the topic bar's right end (next to the modes label), and the right side shifts up so the topic bar's top edge lines up flush with the tops of the server/channel and user-list cards. Menu breakdown (all existing features unless noted):
+- [x] Menu bar rework (2026-07-12) — the hamburger + Preferences + Add/Manage Servers icon row is REPLACED by a real menu bar. Two-way choice in Preferences → Interface: **Menu bar** (default) / **Hidden** (shortcuts only; Ctrl+, opens Preferences, Ctrl+Q quits). Plain `QMenuBar` wired to existing actions — on KDE, Qt exports it to the WM's global menu over DBus automatically; with no global-menu host it renders as a normal in-window strip at the top. The sidebar header row is gone (tree starts flush at the top), the signal-bars indicator lives at the head of the channel header left of the topic bubble toggle, and the channel header is confined to the chat column so pop-out/search sit at its right end without hovering above the user-list card, which runs flush to the top. (Originally built as a three-way with a legacy Icons mode; dropped after live testing the menu bar.) Menu breakdown (all existing features unless noted):
   - **File** — Add Server…, Manage Servers…, Connect/Disconnect, Open Config, Reload Config, Quit (Ctrl+Q)
   - **Edit** — Cut/Copy/Paste, Insert Color… (Ctrl+Shift+K), Clear Buffer, Ignore List…
-  - **View** — Server/Channel List, User List, Topic Bar, Timestamps, Unread Count Badges, Panel Cards, Stack Panes in Rows, Open Channel in Pane, Pop Out Channel, Font Size +/−
+  - **View** — Server/Channel List, User List, Topic Bar, Timestamps, Unread Count Badges, Panel Cards, Font Size +/−
+  - **Window** — Open Channel in Pane, Pop Out Channel, Stack Panes in Rows
   - **Bookmarks** — NET NEW (defer to v2): "Bookmark This Channel" adds to the server's auto-join list (`[[server.channel]]`), saved channels listed per network for one-click join
   - **Plugins** — Manage Scripts…, bundled commands (/music /weather /uptime /roll), Reload Scripts
   - **Settings** — Preferences… (v1: plain launcher; v2: deep-link Themes/App Icon/Fonts/Profile pages)
   - **Help** — Documentation, Keyboard Shortcuts, Check for Updates, About Uplink
   - **Search** — Find in Buffer (Ctrl+F), Search All History (Ctrl+Shift+F), Quick Switcher (Ctrl+K), Channel List (/list)
+- [ ] Menu bar v2 — Bookmarks menu (bookmark channel → auto-join list, per-network one-click join); Settings deep-links into Themes/App Icon/Fonts/Profile pages
 - [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat
 - [ ] Spellcheck — hunspell integration for the input box (on hold)
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets

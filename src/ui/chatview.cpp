@@ -489,6 +489,28 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
     const ChatLine &line = m_lines[idx];
     if (line.text.isEmpty() || line.visLines.isEmpty()) return {};
 
+    if (line.role == ChatLineRole::PreviewCard) {
+        // The whole card — title, domain line, and thumbnail — is one link
+        // target. The generic path below maps the click x onto the card's
+        // text layout, which misses the image whenever the title is narrower
+        // than the thumbnail, so hit-test the card's visual extent directly.
+        const ChatLine::VisLine &vl = line.visLines.first();
+        const qsizetype nl = line.text.indexOf('\n');
+        const QString title  = nl >= 0 ? line.text.left(nl) : line.text;
+        const QString domain = nl >= 0 ? line.text.mid(nl + 1) : QString();
+        QFont boldFont = m_font;
+        boldFont.setBold(true);
+        qreal cardW = qMax(QFontMetricsF(boldFont).horizontalAdvance(title),
+                           QFontMetricsF(m_font).horizontalAdvance(domain));
+        if (!line.image.isNull())
+            cardW = qMax(cardW, static_cast<qreal>(line.image.width()));
+        cardW = qMin(cardW, vl.w);
+        if (vpPos.x() < vl.x || vpPos.x() > vl.x + cardW) return {};
+        for (const auto &seg : line.segments)
+            if (!seg.anchor.isEmpty()) return seg.anchor;
+        return {};
+    }
+
     const qreal relY = docY - m_cumH[idx] - kVPad;
 
     QTextLayout *layout = ensureLayout(line);

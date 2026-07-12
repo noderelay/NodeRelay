@@ -13,6 +13,8 @@ class PreferencesDialog : public QDialog
     Q_OBJECT
 public:
     explicit PreferencesDialog(const Config &cfg, QWidget *parent = nullptr);
+    void syncFromConfig(const Config &cfg);
+    void showScriptsPage();
 
 signals:
     void themeChanged(const QString &name);
@@ -34,6 +36,7 @@ signals:
     void nickBracketsChanged(const QString &brackets);
     void paneStackRowsToggled(bool on);
     void panelCardsToggled(bool on);
+    void menuStyleChanged(const QString &style);
     void manageServersRequested();
     void aboutRequested();
     void docsRequested();
@@ -68,9 +71,11 @@ private:
     QCheckBox *m_timestampsCheck{nullptr};
     QLineEdit *m_highlightWordsEdit{nullptr};
     QButtonGroup *m_bracketsGroup{nullptr};
+    QButtonGroup *m_menuStyleGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
+    static const QList<QPair<QString,QString>> s_menuStyleChoices;
 };

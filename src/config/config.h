@@ -120,6 +120,7 @@ struct UiConfig {
     QString   nickBrackets{"<>"};
     bool      paneStackRows{false};   // false = columns (default), true = rows
     bool      panelCards{true};       // side panels use own theme colors + rounded-top cards
+    QString   menuStyle{"menubar"};   // "menubar" (File/Edit/... bar), "hidden" (shortcuts only)
 };
 
 inline const QString kKeychainSentinel = QStringLiteral("<keychain>");
