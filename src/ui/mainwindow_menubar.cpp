@@ -149,6 +149,7 @@ void MainWindow::buildMenuBar()
         m_model->addServer(sc);
         saveConfig(true);
         syncSidebarOrderFromConfig();
+        updateBookmarksMenu();
     });
     fileMenu->addAction(MenuIcons::manageServers(ic), tr("Manage Servers…"),
                         this, &MainWindow::openManageServers);
@@ -246,45 +247,11 @@ void MainWindow::buildMenuBar()
     });
 
     // ── Bookmarks ─────────────────────────────────────────────────────────
-    // Rebuilt on every open (same pattern as Plugins): "Bookmark This
-    // Channel" toggles the active channel's presence in its server's
-    // auto-join list; below it, saved channels are listed per network.
-    auto *bmMenu = m_menuBarWidget->addMenu(tr("&Bookmarks"));
-    connect(bmMenu, &QMenu::aboutToShow, this, [this, bmMenu, ic]{
-        bmMenu->clear();
-        const ServerId host    = m_model->activeHost();
-        const BufferId channel = m_model->activeChannel();
-        const QString  chan    = channel.str();
-        // Space/comma can't appear in valid channel names and would corrupt
-        // the compact channels = "#a, #b" config form.
-        const bool bookmarkable = isChannelName(chan)
-                                  && !chan.contains(' ') && !chan.contains(',');
-        const bool saved = bookmarkable && isBookmarked(host, channel);
-        QAction *bm = bmMenu->addAction(MenuIcons::bookmark(ic),
-            saved ? tr("Remove Bookmark") : tr("Bookmark This Channel"));
-        bm->setEnabled(bookmarkable);
-        connect(bm, &QAction::triggered, this, [this, host, channel, saved]{
-            toggleBookmark(host, channel, !saved);
-        });
-        bmMenu->addSeparator();
-
-        bool any = false;
-        for (const auto &sc : std::as_const(m_config.servers)) {
-            if (sc.channels.isEmpty()) continue;
-            any = true;
-            auto *sub = bmMenu->addMenu(sc.name);
-            auto *sess = m_model->session(ServerId{sc.name});
-            sub->setEnabled(sess && sess->connected);   // JOIN is a silent no-op offline
-            for (const auto &cc : sc.channels) {
-                connect(sub->addAction(cc.name), &QAction::triggered, this,
-                        [this, srv = sc.name, name = cc.name]{
-                    joinBookmark(ServerId{srv}, name);
-                });
-            }
-        }
-        if (!any)
-            bmMenu->addAction(tr("No bookmarked channels"))->setEnabled(false);
-    });
+    // Kept current eagerly (updateBookmarksMenu) instead of rebuilding on
+    // aboutToShow — the KDE global menu serves a pre-built layout instantly,
+    // but makes the user wait through a DBus round-trip for a lazy one.
+    m_bookmarksMenu = m_menuBarWidget->addMenu(tr("&Bookmarks"));
+    updateBookmarksMenu();
 
     // ── Plugins ───────────────────────────────────────────────────────────
     auto *plugMenu = m_menuBarWidget->addMenu(tr("&Plugins"));
@@ -377,6 +344,7 @@ void MainWindow::applyMenuStyle()
         if (m_menuBarWidget) {
             setMenuBar(nullptr);  // deletes the old bar; actions survive (parented to this)
             m_menuBarWidget = nullptr;
+            m_bookmarksMenu = nullptr;  // owned by the bar, died with it
         }
     } else {
         buildMenuBar();
@@ -422,6 +390,7 @@ void MainWindow::openManageServers()
     m_config.servers = updated;
     saveConfig(true);
     syncSidebarOrderFromConfig();
+    updateBookmarksMenu();
 }
 
 void MainWindow::openFontConfig()
@@ -442,6 +411,50 @@ void MainWindow::openFontConfig()
 // are in-place + saveConfig() only; SessionModel::updateServer() would tear
 // down and reconnect the live session, so it is never used here.
 // ---------------------------------------------------------------------------
+
+// Rebuilds the Bookmarks menu from current state. Called whenever an input
+// changes (bookmark toggled, active channel switched, server connect state,
+// server list edited) so the KDE global menu always has the finished layout
+// — a lazy aboutToShow rebuild makes the user wait through a DBus round-trip.
+void MainWindow::updateBookmarksMenu()
+{
+    if (!m_bookmarksMenu) return;
+    m_bookmarksMenu->clear();
+    const QColor ic(m_theme.valid ? m_theme.text : "#ffffff");
+
+    const ServerId host    = m_model->activeHost();
+    const BufferId channel = m_model->activeChannel();
+    const QString  chan    = channel.str();
+    // Space/comma can't appear in valid channel names and would corrupt
+    // the compact channels = "#a, #b" config form.
+    const bool bookmarkable = isChannelName(chan)
+                              && !chan.contains(' ') && !chan.contains(',');
+    const bool saved = bookmarkable && isBookmarked(host, channel);
+    QAction *bm = m_bookmarksMenu->addAction(MenuIcons::bookmark(ic),
+        saved ? tr("Remove Bookmark") : tr("Bookmark This Channel"));
+    bm->setEnabled(bookmarkable);
+    connect(bm, &QAction::triggered, this, [this, host, channel, saved]{
+        toggleBookmark(host, channel, !saved);
+    });
+    m_bookmarksMenu->addSeparator();
+
+    bool any = false;
+    for (const auto &sc : std::as_const(m_config.servers)) {
+        if (sc.channels.isEmpty()) continue;
+        any = true;
+        auto *sub = m_bookmarksMenu->addMenu(sc.name);
+        auto *sess = m_model->session(ServerId{sc.name});
+        sub->setEnabled(sess && sess->connected);   // JOIN is a silent no-op offline
+        for (const auto &cc : sc.channels) {
+            connect(sub->addAction(cc.name), &QAction::triggered, this,
+                    [this, srv = sc.name, name = cc.name]{
+                joinBookmark(ServerId{srv}, name);
+            });
+        }
+    }
+    if (!any)
+        m_bookmarksMenu->addAction(tr("No bookmarked channels"))->setEnabled(false);
+}
 
 bool MainWindow::isBookmarked(ServerId host, BufferId channel) const
 {
@@ -472,6 +485,7 @@ void MainWindow::toggleBookmark(ServerId host, BufferId channel, bool on)
             on ? channel.str() + " added to auto-join for " + sc.name
                  + " — it will open automatically at startup"
                : channel.str() + " removed from auto-join for " + sc.name);
+        updateBookmarksMenu();
         return;
     }
 }
