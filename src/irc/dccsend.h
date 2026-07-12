@@ -22,7 +22,7 @@ public:
     quint16 port()     const;
     QString filename() const;
     qint64  filesize() const;
-    QString token()    const { return m_token; }
+    const QString &token() const { return m_token; }
 
 signals:
     void progress(qint64 sent, qint64 total);

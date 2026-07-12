@@ -71,6 +71,7 @@ QString DccSend::initPassive()
 
 void DccSend::connectOut(quint32 ip, quint16 port)
 {
+    if (m_socket) return; // one connection per transfer
     m_socket = new QTcpSocket(this);
     connect(m_socket, &QTcpSocket::connected,          this, [this]{
         armStallGuard();
