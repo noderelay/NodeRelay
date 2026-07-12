@@ -728,9 +728,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
         auto *re = static_cast<QResizeEvent *>(event);
-        const int topY = m_primaryHeader->height()
-                       + (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0)
-                       + 4;
+        // Same line the collapse button occupied — keep in sync with
+        // positionRevealBtn in setupNickPanel.
+        const int topY = m_primaryHeader->height();
         m_nickRevealBtn->move(re->size().width() - m_nickRevealBtn->width() - 4, topY);
     }
 
