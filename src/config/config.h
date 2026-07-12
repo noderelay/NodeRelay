@@ -119,6 +119,7 @@ struct UiConfig {
     QString   appIcon{"flat-black"};
     QString   nickBrackets{"<>"};
     bool      paneStackRows{false};   // false = columns (default), true = rows
+    bool      panelCards{true};       // side panels use own theme colors + rounded-top cards
 };
 
 inline const QString kKeychainSentinel = QStringLiteral("<keychain>");

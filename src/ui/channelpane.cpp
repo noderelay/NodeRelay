@@ -192,10 +192,12 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
         m_nickWrapper->hide();
         positionNickRevealBtn();
         m_nickRevealBtn->show();
+        setTopicRevealInset(true);
     });
     connect(m_nickRevealBtn, &QToolButton::clicked, this, [this]{
         m_nickRevealBtn->hide();
         m_nickWrapper->show();
+        setTopicRevealInset(false);
     });
 
     // Chat column: everything except the user list, so the list runs the
@@ -266,11 +268,11 @@ void ChannelPane::setNickVisible(bool visible)
 
 // ChromePanel fills — see MainWindow::applyPanelChrome for why these don't
 // rely on stylesheet background painting.
-void ChannelPane::setNickChrome(const QString &bg)
+void ChannelPane::setNickChrome(const QString &bg, bool rounded)
 {
     const QColor c(bg);
-    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c);
-    if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c);
+    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c, rounded);
+    if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c, rounded);
 }
 
 void ChannelPane::setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups)
@@ -299,12 +301,20 @@ void ChannelPane::clearNickFilter()
     if (m_nickFilter) m_nickFilter->clear();
 }
 
+// Right inset on the topic bar so its text wraps a little before the
+// floating show-user-list button instead of running underneath it.
+void ChannelPane::setTopicRevealInset(bool reserve)
+{
+    if (m_topicBar && m_topicBar->layout())
+        m_topicBar->layout()->setContentsMargins(8, 4, reserve ? 44 : 8, 4);
+}
+
 void ChannelPane::positionNickRevealBtn()
 {
     if (!m_nickRevealBtn) return;
-    const int topY = m_header->height()
-                   + (m_topicBar && m_topicBar->isVisible() ? m_topicBar->height() : 0)
-                   + 4;
+    // Same line the collapse button sat on (top of the nick panel) — see
+    // the main window's positionRevealBtn.
+    const int topY = m_header->height();
     m_nickRevealBtn->move(width() - m_nickRevealBtn->width() - 4, topY);
     m_nickRevealBtn->raise();
 }
