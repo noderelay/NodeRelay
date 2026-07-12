@@ -48,6 +48,7 @@ class QListWidget;
 class QListWidgetItem;
 class QToolButton;
 class QSplitter;
+class QVBoxLayout;
 class QAction;
 
 class MainWindow : public QMainWindow
@@ -119,6 +120,7 @@ private:
                             const ServerId &host, const BufferId &channel);
     QRegularExpression selfNickReFor(const ServerId &host) const;
     void applyFontSizes();
+    void applyPanelChrome();
     void updateTypingLabel();
     QString typingText(ServerId host, BufferId channel) const;
     void openChannelPane (ServerId host, BufferId channel);
@@ -228,6 +230,7 @@ private:
     QToolButton  *m_sidebarCloseBtn{nullptr};
     QWidget      *m_chatSection{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
+    QVBoxLayout  *m_chatLeftVbox{nullptr}; // chat column: topic/chat/search/reply/typing/input
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout (docked panes only)

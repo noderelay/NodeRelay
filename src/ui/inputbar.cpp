@@ -151,7 +151,9 @@ void MainWindow::setupInputBar()
     }
     m_replyBar->hide();
 
-    auto *layout = qobject_cast<QVBoxLayout *>(m_chatSection->layout());
+    // Into the chat column left of the user list — the list runs full height
+    // and the compose strip ends at its edge.
+    auto *layout = m_chatLeftVbox;
     layout->addWidget(m_searchBar);
     layout->addWidget(m_replyBar);
     layout->addWidget(m_typingLabel);

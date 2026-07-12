@@ -3053,6 +3053,8 @@ theme = "catppuccin-mocha"</pre>
     <div class="tip">
       <strong>Custom themes:</strong> drop a <code>.toml</code> file into <code>~/.config/uplink/themes/</code> and it appears in the list on next launch. The format matches the shipped themes in the <code>themes/</code> folder.
     </div>
+
+    <p>Each section of a theme colors its own region of the window: <code>[sidebar]&nbsp;background</code> fills the server/channel list, <code>[nicklist]&nbsp;background</code> the user list, <code>[buffer]&nbsp;background</code> the chat area, and <code>[general]&nbsp;background</code> the window backdrop that shows around the rounded panel cards. Both side panels run the full window height and are drawn as cards with rounded top corners; themes that define distinct backgrounds per section get a layered, multi-tone look, while themes that reuse one color stay flat.</p>
   </section>
 
   <!-- FONTS -->
