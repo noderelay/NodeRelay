@@ -347,7 +347,15 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Planned — Future
 
-- [ ] Menu bar rework — rethink the hamburger + Preferences + Add/Manage Servers icon row. Give the user a choice: hide the icons entirely, or switch to a classic menu bar (File / Edit / View / Bookmarks / Plugins / Settings / Help / Search) exported to the WM's global menu (DBus appmenu) so the desktop handles it — cleaner look either way. Requires relocating the connection signal-bars indicator and dropping the icon strip so the topic bar's top edge lines up flush with the tops of the server/channel list and user-list cards.
+- [ ] Menu bar rework — rethink the hamburger + Preferences + Add/Manage Servers icon row. Three-way choice in Preferences → Interface: **Icons** (today's look) / **Menu bar** / **Hidden** (shortcuts only). The menu bar is a plain `QMenuBar` wired to existing actions — on KDE, Qt exports it to the WM's global menu over DBus automatically. In menu-bar/hidden mode the icon strip disappears, the signal-bars indicator moves to the topic bar's right end (next to the modes label), and the right side shifts up so the topic bar's top edge lines up flush with the tops of the server/channel and user-list cards. Menu breakdown (all existing features unless noted):
+  - **File** — Add Server…, Manage Servers…, Connect/Disconnect, Open Config, Reload Config, Quit (Ctrl+Q)
+  - **Edit** — Cut/Copy/Paste, Insert Color… (Ctrl+Shift+K), Clear Buffer, Ignore List…
+  - **View** — Server/Channel List, User List, Topic Bar, Timestamps, Unread Count Badges, Panel Cards, Stack Panes in Rows, Open Channel in Pane, Pop Out Channel, Font Size +/−
+  - **Bookmarks** — NET NEW (defer to v2): "Bookmark This Channel" adds to the server's auto-join list (`[[server.channel]]`), saved channels listed per network for one-click join
+  - **Plugins** — Manage Scripts…, bundled commands (/music /weather /uptime /roll), Reload Scripts
+  - **Settings** — Preferences… (v1: plain launcher; v2: deep-link Themes/App Icon/Fonts/Profile pages)
+  - **Help** — Documentation, Keyboard Shortcuts, Check for Updates, About Uplink
+  - **Search** — Find in Buffer (Ctrl+F), Search All History (Ctrl+Shift+F), Quick Switcher (Ctrl+K), Channel List (/list)
 - [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat
 - [ ] Spellcheck — hunspell integration for the input box (on hold)
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets
