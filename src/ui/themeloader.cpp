@@ -136,9 +136,11 @@ static QString fill(QString tpl, const QHash<QString, QString> &vars)
     return tpl;
 }
 
-QString ThemeLoader::toStyleSheet(const Theme &t, bool panelCards)
-{
-    static const QString tpl = R"(
+// The complete application stylesheet template. Every {{key}} placeholder is
+// substituted by fill() from the active Theme (plus the panel-cards vars) in
+// toStyleSheet() below. This is data, not logic — kept at file scope so the
+// function itself stays small.
+static const QString kQssTemplate = R"(
 /* ── Base ── */
 QMainWindow, QDialog, QWidget {
     background-color: {{bg}};
@@ -622,7 +624,11 @@ QLabel#typingLabel {
 }
 )";
 
-    return fill(tpl, {
+// Resolve the template against a theme. panelCards toggles the two-tone
+// rounded-card side panels vs the classic flat look (see themeloader.h).
+QString ThemeLoader::toStyleSheet(const Theme &t, bool panelCards)
+{
+    return fill(kQssTemplate, {
         {"bg",           t.background},
         {"text",         t.text},
         {"border",       t.border},
