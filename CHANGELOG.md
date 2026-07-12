@@ -807,6 +807,18 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.2 — 2026-07-12
+
+- **Menu bar**: the sidebar icon strip (☰ hamburger, Preferences gear, Manage Servers) is replaced by a real menu bar — **File / Edit / View / Window / Bookmarks / Plugins / Settings / Help / Search**, all wired to existing actions. On KDE it joins the global menu over DBus automatically; everywhere else it renders in-window. Prefer no chrome at all? Set **Preferences → Interface → Menu Style** to *Hidden* — everything stays reachable by shortcut
+- **Bookmarks menu**: **Bookmark This Channel** saves the channel you're viewing to its server's auto-join list (with a confirmation line in the channel), and every saved channel is listed per network for one-click join — or switch, if you're already in it. Your live connection is never disturbed; server submenus grey out while that server is offline
+- **Settings deep-links**: **Themes…** opens Preferences on Appearance with the theme browser expanded; **App Icon…**, **Fonts…** (straight into the Font dialog), and **Profile…** jump to their pages directly
+- New shortcuts: **Ctrl+Q** quits, **Ctrl+,** opens Preferences from anywhere — including hidden-menu mode
+- The user list runs flush to the top of its card with its own header; the connection meter moved to the left end of the channel header, before the topic bubble
+- New **Edit → Ignore List…** dialog: view and edit all ignored nicks with per-type checkboxes (PMs / notices / invites) — previously right-click-only
+- Fix: link-preview thumbnails were sometimes not clickable until you left and re-entered the channel — the whole card (title, domain, image) is now one reliable link target
+- Fix: the user list on large channels showed an empty strip down its right side — the scrollbar now floats over the list edge and fades away completely instead of reserving a blank column
+- Fix: menus opened over the KDE global menu could take seconds to appear — the Bookmarks menu is now kept current continuously instead of being rebuilt at open time
+
 ## v2026.7.1 — 2026-07-11
 
 - Theming overhaul: a theme's `[sidebar]` and `[nicklist]` backgrounds are now honored — 285 of 297 themes gain a layered, two-tone look. The side panels run the full window height and are drawn as cards with rounded top corners
