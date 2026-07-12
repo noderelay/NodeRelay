@@ -347,6 +347,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Planned — Future
 
+- [ ] Menu bar rework — rethink the hamburger + Preferences + Add/Manage Servers icon row. Give the user a choice: hide the icons entirely, or switch to a classic menu bar (File / Edit / View / Bookmarks / Plugins / Settings / Help / Search) exported to the WM's global menu (DBus appmenu) so the desktop handles it — cleaner look either way. Requires relocating the connection signal-bars indicator and dropping the icon strip so the topic bar's top edge lines up flush with the tops of the server/channel list and user-list cards.
 - [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat
 - [ ] Spellcheck — hunspell integration for the input box (on hold)
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets
