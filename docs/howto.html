@@ -650,7 +650,7 @@
         <li>Click <strong>Open</strong> in the confirmation. Uplink launches and macOS remembers your approval.</li>
       </ol>
       <p>After the first launch, Uplink opens normally with no warnings.</p>
-      <p><strong>Updating:</strong> click <strong>☰ → Check for Updates</strong>. If a new version is available, Uplink downloads the DMG and opens it in Finder. Drag the new <strong>Uplink.app</strong> to Applications and click <strong>Replace</strong>. Then repeat steps 7–9 above — macOS requires re-approval once per update since the app is not certificate-signed.</p>
+      <p><strong>Updating:</strong> click <strong>Help → Check for Updates</strong>. If a new version is available, Uplink downloads the DMG and opens it in Finder. Drag the new <strong>Uplink.app</strong> to Applications and click <strong>Replace</strong>. Then repeat steps 7–9 above — macOS requires re-approval once per update since the app is not certificate-signed.</p>
     </div>
   </section>
 
@@ -669,7 +669,7 @@
     <p>Only the changed blocks are downloaded — much faster than a full re-download.</p>
 
     <h3>Auto-update from inside Uplink</h3>
-    <p>Click <strong>☰ → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches — no terminal, no package manager, no sudo required.</p>
+    <p>Click <strong>Help → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches — no terminal, no package manager, no sudo required.</p>
 
     <div class="tip">
       <strong>Optional:</strong> place the AppImage in <code>~/bin/</code> or <code>~/.local/bin/</code> and it will appear in your application launcher if your desktop environment supports AppImage integration (most do with <code>libappindicator</code> installed).
@@ -742,10 +742,10 @@ cmake --build build</pre>
       <figcaption>Uplink on first launch — connected to #uplink with the sidebar, chat area, and nick list.</figcaption>
     </figure>
 
-    <p>To open the hamburger menu (the <code>☰</code> button in the channel header), click it to reach Preferences, Documentation, and other settings.</p>
+    <p>The menu bar across the top (<strong>File, Edit, View, Window, Bookmarks, Plugins, Settings, Help, Search</strong>) carries every app action — on KDE it docks into the global menu automatically. Preferences lives under <strong>Settings</strong>, or press <kbd>Ctrl</kbd>+<kbd>,</kbd>.</p>
 
     <div class="tip">
-      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong> — Uplink will restart and connect.
+      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>File → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>File → Reload Config</strong> — Uplink will restart and connect.
     </div>
   </section>
 
@@ -763,7 +763,7 @@ cmake --build build</pre>
       <tr><td>Windows</td><td><code>%USERPROFILE%\.config\uplink\config.toml</code></td></tr>
     </table>
 
-    <p>Edit the file in any text editor. Uplink watches the file for changes — if you add or remove a <code>[[server]]</code> block while the app is running, the sidebar updates automatically. For other changes (theme, UI toggles, font sizes), click <strong>☰ → Reload Config</strong> to restart and apply everything. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
+    <p>Edit the file in any text editor. Uplink watches the file for changes — if you add or remove a <code>[[server]]</code> block while the app is running, the sidebar updates automatically. For other changes (theme, UI toggles, font sizes), click <strong>File → Reload Config</strong> to restart and apply everything. You can also click <strong>File → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
   </section>
 
   <!-- SET NICK -->
@@ -781,7 +781,7 @@ user = "uplink"
 realname = "Uplink User"
 channels = "#uplink"</pre>
 
-    <p>Save, then click <strong>☰ → Reload Config</strong> — Uplink restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
+    <p>Save, then click <strong>File → Reload Config</strong> — Uplink restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
   </section>
 
   <!-- CONNECT LINUXDOJO -->
@@ -859,7 +859,7 @@ user ="uplink"
 realname = "Uplink User"
 channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
-    <p>You can also set channels from the GUI: open <strong>☰ → Manage Servers</strong>, select the server, and fill in the Auto-join field on the right.</p>
+    <p>You can also set channels from the GUI: open <strong>File → Manage Servers</strong>, select the server, and fill in the Auto-join field on the right.</p>
     <p>To join a channel while connected without editing the config, type <code>/join #channelname</code> in the input box.</p>
   </section>
 
@@ -868,7 +868,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
   <!-- MANAGE SERVERS -->
   <section id="manage-servers">
     <h2>Manage Servers dialog</h2>
-    <p>Click <strong>☰ → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. The dialog uses an integrated two-panel layout: server list on the left, server settings form on the right. Selecting a server loads its settings inline. Changes take effect immediately.</p>
+    <p>Click <strong>File → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. The dialog uses an integrated two-panel layout: server list on the left, server settings form on the right. Selecting a server loads its settings inline. Changes take effect immediately.</p>
 
     <figure class="shot">
       <img src="shots/manage-servers.png" loading="lazy"
@@ -877,7 +877,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     </figure>
 
     <h3>Adding a server</h3>
-    <div class="step-row"><span class="step">1</span><div>Click <strong>☰ → Manage Servers...</strong></div></div>
+    <div class="step-row"><span class="step">1</span><div>Click <strong>File → Manage Servers...</strong></div></div>
     <div class="step-row"><span class="step">2</span><div>Click <strong>Add</strong> below the server list.</div></div>
     <div class="step-row"><span class="step">3</span><div>Fill in the fields in the right panel (see table below) and click <strong>OK</strong>.</div></div>
     <div class="step-row"><span class="step">4</span><div>The server is added to the sidebar and begins connecting immediately.</div></div>
@@ -925,7 +925,7 @@ channels = "#linux"</pre>
     <p>Uplink skips the server completely — no connection attempt, no sidebar entry — but preserves the block and writes it back on every config save. Re-enable it any time by removing the line or setting it to <code>false</code>.</p>
 
     <h3>Using the GUI</h3>
-    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers...</strong></div></div>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>File → Manage Servers...</strong></div></div>
     <div class="step-row"><span class="step">2</span><div>Select the server in the left panel.</div></div>
     <div class="step-row"><span class="step">3</span><div>Tick the <strong>Disabled</strong> checkbox in the Connection section on the right and click <strong>OK</strong>.</div></div>
     <div class="step-row"><span class="step">4</span><div>The server disconnects immediately and disappears from the sidebar. Its config is preserved.</div></div>
@@ -952,7 +952,7 @@ ssl = true
 nick = "yournick"
 quit_message = "Later!"</pre>
     <p>This is used when you disconnect normally or type <code>/quit</code> with no argument. To override for a single disconnect: <code>/quit See you tomorrow</code>. If unset, Uplink sends <code>"Uplink"</code>.</p>
-    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers</strong>, select the server, and fill in <strong>Quit Message</strong> in the Identity section on the right.</p>
+    <p><strong>GUI:</strong> Open <strong>File → Manage Servers</strong>, select the server, and fill in <strong>Quit Message</strong> in the Identity section on the right.</p>
 
     <h3>Away message</h3>
     <p>The away message is sent when you type <code>/away</code> with no argument. Users who message you while you are away receive it as an automatic server reply.</p>
@@ -971,7 +971,7 @@ away_message = "Away from keyboard — back soon"</pre>
         <tr><td><code>/back</code></td><td>Always clears away regardless of config</td></tr>
       </tbody>
     </table>
-    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers</strong>, select the server, and fill in <strong>Away Message</strong> in the Identity section on the right.</p>
+    <p><strong>GUI:</strong> Open <strong>File → Manage Servers</strong>, select the server, and fill in <strong>Away Message</strong> in the Identity section on the right.</p>
 
     <h3>Full example with both</h3>
     <pre>[[server]]
@@ -1017,10 +1017,10 @@ channels = "#uplink, #linux"</pre>
       <strong>Headless / no keychain daemon?</strong> If the OS keychain is unavailable (e.g. a server without a running secret service), the password field will read back as empty. Enter your password in the server dialog when a keychain becomes available and it will be stored then. Check your terminal output for <code>qWarning</code> messages from Uplink if authentication is failing unexpectedly.
     </div>
     <div class="callout callout-warning">
-      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>☰ → Manage Servers</strong>, select the server, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
+      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>File → Manage Servers</strong>, select the server, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
     </div>
     <div class="callout callout-warning">
-      <strong>Renamed a server in config.toml?</strong> Passwords are stored in the OS keychain under the server's <code>name</code> field. If you change the name (e.g. from <code>znc_libera</code> to <code>soju_libera</code>), the keychain entry stays under the old name and the renamed server will fail to authenticate. Fix: open <strong>☰ → Manage Servers</strong>, select the renamed server, re-enter the password, and save.
+      <strong>Renamed a server in config.toml?</strong> Passwords are stored in the OS keychain under the server's <code>name</code> field. If you change the name (e.g. from <code>znc_libera</code> to <code>soju_libera</code>), the keychain entry stays under the old name and the renamed server will fail to authenticate. Fix: open <strong>File → Manage Servers</strong>, select the renamed server, re-enter the password, and save.
     </div>
     <div class="callout callout-warning">
       <strong>KDE wallet keeps prompting when changing preferences (font, theme, toggles)?</strong> This was a bug fixed in v0.24.3. Every config save was attempting a keychain write even for unrelated changes. Update to v0.24.3 or later to resolve it. If you cannot update immediately, keeping the wallet unlocked for your session will suppress the prompts.
@@ -1108,7 +1108,7 @@ client_cert = "/home/alice/.irc/client.crt"
 client_key = "/home/alice/.irc/client.key"</pre>
 
     <p>Uplink loads the certificate before the TLS handshake, negotiates <code>AUTHENTICATE EXTERNAL</code>, and sends an empty response. Both RSA and EC (ECDSA) PEM keys are supported.</p>
-    <p>You can also set the cert and key paths from the GUI: open <strong>☰ → Manage Servers</strong>, select the server, then tick <strong>SASL EXTERNAL</strong> in the Authentication section and browse to your files.</p>
+    <p>You can also set the cert and key paths from the GUI: open <strong>File → Manage Servers</strong>, select the server, then tick <strong>SASL EXTERNAL</strong> in the Authentication section and browse to your files.</p>
 
     <div class="warn">
       <strong>Do not set <code>sasl_user</code> / <code>sasl_password</code> alongside <code>sasl_external</code></strong> — only one SASL mechanism is used per connection.
@@ -1201,7 +1201,7 @@ sasl_password = "mysecretpassword"</pre>
     </div>
 
     <h3>Setting up ZNC in Manage Servers</h3>
-    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers</strong> and click <strong>Add</strong>.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>File → Manage Servers</strong> and click <strong>Add</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div>Fill in <strong>Connection</strong>: set <strong>Host</strong> to your <strong>ZNC server's</strong> hostname or IP (not the IRC network address), and <strong>Port</strong> to the port ZNC listens on (commonly <code>6697</code> for SSL). Check <strong>Use SSL/TLS</strong> if your ZNC has SSL enabled (recommended).</div></div>
     <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent through ZNC to the IRC network.</div></div>
     <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication</strong>: set <strong>SASL User</strong> to your ZNC username and <strong>SASL Password</strong> to your ZNC password. Leave the Server Password field blank. Uplink uses these to assemble the <code>username/network:password</code> string ZNC expects.</div></div>
@@ -1293,7 +1293,7 @@ channels = "#debian"</pre>
     <pre>alice:hunter2</pre>
 
     <h3>Setting up soju in Manage Servers</h3>
-    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers</strong> and click <strong>Add</strong>.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>File → Manage Servers</strong> and click <strong>Add</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div><strong>Host</strong>: your soju server hostname. <strong>Port</strong>: typically <code>6697</code> SSL. Check <strong>Use SSL/TLS</strong>.</div></div>
     <div class="step-row"><span class="step">3</span><div><strong>Identity</strong>: fill in Nick, Username, and Real Name as usual.</div></div>
     <div class="step-row"><span class="step">4</span><div><strong>Server Password</strong>: enter <code>username:password</code>. Example: <code>alice:hunter2</code>. Leave SASL fields blank.</div></div>
@@ -1553,7 +1553,7 @@ channels = "#uplink"</pre>
       <strong>Everything works the same.</strong> SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect, and the ping watchdog all function identically over WebSocket.
     </div>
 
-    <p>You can also enable WebSocket from the GUI: open <strong>☰ → Manage Servers</strong>, select the server, and tick the <strong>Use WebSocket</strong> checkbox in the Connection section on the right.</p>
+    <p>You can also enable WebSocket from the GUI: open <strong>File → Manage Servers</strong>, select the server, and tick the <strong>Use WebSocket</strong> checkbox in the Connection section on the right.</p>
   </section>
 
   <hr />
@@ -1564,8 +1564,7 @@ channels = "#uplink"</pre>
     <p>The channel header row runs across the top of the chat area (right of the sidebar divider). From left to right:</p>
 
     <ul>
-      <li><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (downloads and installs the latest release automatically — see <a href="#appimage">Auto-update</a>), <strong>Manage Servers</strong>, Documentation, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</li>
-      <li><strong>⚙ Gear</strong> — opens <strong>Preferences</strong> with pages: Appearance (theme, app icon, font config), Chat Window (timestamps, nick brackets, link previews), Interface (input bar toggles, typing indicator), Notifications (tray notifications, highlight words), Logging, and Profile.</li>
+      <li><strong>📶 Signal bars</strong> — connection quality for the active server (see <a href="#signal-bars">Signal bars</a>).</li>
       <li><strong>▸ Topic button</strong> — shows or hides the topic text below the header. Icon is grey when topic is hidden, accent-colored when visible.</li>
       <li><strong>#channel (+modes)</strong> — the active channel name and its mode string.</li>
       <li><strong>🔍 Search</strong> — opens the search bar (same as Ctrl+F).</li>
@@ -1574,8 +1573,8 @@ channels = "#uplink"</pre>
 
     <figure class="shot">
       <img src="shots/channel-header.png" loading="lazy"
-           alt="The channel header showing the hamburger, gear, topic toggle, channel name and modes">
-      <figcaption>The channel header — hamburger and gear menus, topic toggle, channel name with modes, and search.</figcaption>
+           alt="The channel header showing the connection meter, topic toggle, channel name and modes">
+      <figcaption>The channel header — connection meter, topic toggle, channel name with modes, pop-out and search.</figcaption>
     </figure>
   </section>
 
@@ -2082,7 +2081,7 @@ typing_indicator = true   # set to false to disable completely</pre>
 
     <h4>Via Preferences</h4>
     <ol>
-      <li>Open <strong>Preferences</strong> (click the <strong>⚙ gear icon</strong> in the channel header) and select the <strong>Profile</strong> page from the left navigation.</li>
+      <li>Open <strong>Settings → Profile…</strong> from the menu bar (or <strong>Settings → Preferences</strong> and select the <strong>Profile</strong> page).</li>
       <li>Enter your <strong>Display Name</strong> — the friendly name other users see in the tooltip (e.g. <em>Alice Smith</em>). It does not replace your IRC nick.</li>
       <li>
         Enter your <strong>Avatar URL</strong> — a full <code>https://</code> link to an image file. Or click <strong>Browse...</strong> to pick a local image from your computer.
@@ -2141,7 +2140,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
   <!-- SIGNAL BARS -->
   <section id="signal-bars">
     <h2>Signal bars (lag / latency indicator)</h2>
-    <p>Four stair-step bars sit in the <strong>top-right corner of the server/channel list header</strong>, aligned with the ☰ and ⚙ buttons. They show your connection quality to whichever server is currently active. Switch to a channel on a different server and the bars update immediately to reflect that connection.</p>
+    <p>Four stair-step bars sit at the <strong>left end of the channel header</strong>, just before the topic toggle. They show your connection quality to whichever server is currently active. Switch to a channel on a different server and the bars update immediately to reflect that connection.</p>
 
     <p><strong>Hover over the bars</strong> to see your exact latency in milliseconds (e.g. <code>42 ms</code>), or the current connection state if not connected.</p>
 
@@ -2575,7 +2574,7 @@ show_emoji_button = true</pre>
     <p>The paper-plane button that floats inside the right edge of the input box sends the current message — identical to pressing <kbd>Enter</kbd>. It is enabled when the input is non-empty and disabled when blank.</p>
     <p>If you prefer a cleaner input bar without the button, toggle it off:</p>
     <ul>
-      <li><strong>GUI:</strong> Open <strong>Preferences</strong> (click <strong>⚙</strong>) and uncheck <strong>Show Send Button</strong>.</li>
+      <li><strong>GUI:</strong> Open <strong>Settings → Preferences</strong> and uncheck <strong>Show Send Button</strong>.</li>
       <li><strong>Config:</strong></li>
     </ul>
     <pre>[ui]
@@ -3021,7 +3020,7 @@ link_previews = true</pre>
     <h2>Picking a theme</h2>
     <p>Uplink ships with 297 built-in color themes. The fastest way is to try them live:</p>
 
-    <div class="step-row"><span class="step">1</span><div>Click the <strong>⚙ gear icon</strong> in the channel header to open <strong>Preferences</strong>, then select the <strong>Appearance</strong> page.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>Settings → Themes…</strong> from the menu bar — Preferences opens on the <strong>Appearance</strong> page with the theme list expanded.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click the <strong>theme button</strong> (shows your current theme name) to expand the list.</div></div>
     <div class="step-row"><span class="step">3</span><div>Use <kbd>↑</kbd> / <kbd>↓</kbd> to browse, then press <kbd>Enter</kbd> or click a theme to apply it. The list stays open so you can keep trying themes.</div></div>
     <div class="step-row"><span class="step">4</span><div>The choice is saved automatically to <code>config.toml</code>. Click the theme button again to collapse the list.</div></div>
@@ -3187,7 +3186,7 @@ show_nick_prefix = false   # hides "alice ▸" next to the input</pre>
     <h2>Hanging indent (word wrap alignment)</h2>
     <p>By default, when a long message wraps to the next line the wrapped text aligns under the message text rather than back at the left edge under the timestamp. This keeps the timestamp and nick visually separate from the message body.</p>
 
-    <p>Toggle from <strong>⚙ → Hanging Indent (wrap under message)</strong> in Preferences, or in config:</p>
+    <p>Toggle from <strong>Settings → Preferences → Hanging Indent (wrap under message)</strong>, or in config:</p>
     <pre>[ui]
 hanging_indent = true   # default on</pre>
 
@@ -3235,12 +3234,12 @@ app_icon = "flat-black"</pre>
       <figcaption>Mentions and PMs while unfocused surface a notification and a tray dot.</figcaption>
     </figure>
 
-    <p>Toggle from <strong>⚙ → Tray Notifications</strong> in Preferences, or in config:</p>
+    <p>Toggle from <strong>Settings → Preferences → Tray Notifications</strong>, or in config:</p>
     <pre>[ui]
 notifications = true</pre>
 
     <h3>Highlight words</h3>
-    <p>Besides your nick, you can make any word act like a mention. Go to <strong>⚙ → Notifications → Highlight Words</strong> and enter a comma-separated list, or set it in config:</p>
+    <p>Besides your nick, you can make any word act like a mention. Go to <strong>Settings → Preferences → Notifications → Highlight Words</strong> and enter a comma-separated list, or set it in config:</p>
     <pre>[ui]
 highlight_words = "myproject, deploy, lunch"</pre>
     <p>Messages containing one of these words show the word in <strong>red bold</strong> and count as mentions in the sidebar unread badge. Matching is case-insensitive and whole-word only — <code>deploy</code> matches "time to deploy" but not "deployment". Changes apply immediately.</p>
@@ -3300,7 +3299,7 @@ name = "LinuxDojo"
 name = "LinuxDojo"</pre>
 
     <h3>My config change isn't taking effect</h3>
-    <p>Click <strong>☰ → Reload Config</strong> — Uplink restarts and applies all changes, including server list, channels, theme, and font settings.</p>
+    <p>Click <strong>File → Reload Config</strong> — Uplink restarts and applies all changes, including server list, channels, theme, and font settings.</p>
   </section>
 
   <section id="ts-nick">
@@ -3326,7 +3325,7 @@ theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
 
     <h3>Preview didn't appear</h3>
     <ul>
-      <li><strong>Are link previews enabled?</strong> They are off by default. Click <strong>⚙</strong> to open <strong>Preferences</strong> and check <strong>Link Previews</strong>, or add <code>link_previews = true</code> under <code>[privacy]</code> in <code>config.toml</code>.</li>
+      <li><strong>Are link previews enabled?</strong> They are off by default. Open <strong>Settings → Preferences</strong> and check <strong>Link Previews</strong>, or add <code>link_previews = true</code> under <code>[privacy]</code> in <code>config.toml</code>.</li>
       <li>The site may block bots — Uplink uses a messaging-app user-agent, but some sites still block.</li>
       <li>The page may have no <code>og:title</code> or <code>&lt;title&gt;</code> — nothing to show.</li>
       <li>SSL certificate errors block the fetch silently (self-signed or expired certs).</li>

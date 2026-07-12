@@ -14,7 +14,7 @@ Tick each off as you shoot it.
 - [x] **main-window.png** — The whole window: sidebar + chat area + nick list in one shot. This is the anchor image.
 - [x] **manage-servers.png** — The Manage Servers dialog with two or three servers in the list, one selected so the settings form shows.
 - [ ] **sidebar.png** — Just the left sidebar: a connected server (globe), a few channels, at least one with an unread/mention indicator.
-- [x] **channel-header.png** — The header row across the top of chat: hamburger, gear, topic toggle, `#channel +modes`, search.
+- [ ] **channel-header.png** — RE-SHOOT (menu bar rework, v2026.7.2): the header row is now signal bars, topic toggle, `#channel +modes`, pop-out, search — hamburger/gear are gone, menus live in the menu bar.
 - [ ] **channel-panes.png** — Two to four channels tiled side by side in the chat area.
 - [x] **nick-list.png** — The right-hand nick list showing op/voice prefixes (an `@op`, a `+voice`, some regulars).
 - [x] **nick-context-menu.png** — Right-click menu open over a nick (Message, Whois, CTCP, DCC, Chan Ops…).

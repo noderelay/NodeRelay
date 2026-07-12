@@ -100,7 +100,7 @@ ls -l ~/.config/uplink/config.toml
 
 Uplink watches `config.toml` for external changes. If you edit the file in a text editor while Uplink is running, server additions and removals are picked up automatically — new servers appear in the sidebar within a second.
 
-For other changes (theme, UI toggles, font sizes), click **☰ → Reload Config** — Uplink restarts immediately and picks up everything.
+For other changes (theme, UI toggles, font sizes), click **File → Reload Config** — Uplink restarts immediately and picks up everything.
 
 ### TOML parse error on startup
 
@@ -132,7 +132,7 @@ realname = "Uplink User"
 channels = "#uplink, #linux"
 ```
 
-You can also set this from **☰ → Manage Servers → Edit** using the **Auto-join** field.
+You can also set this from **File → Manage Servers → Edit** using the **Auto-join** field — or, easiest of all, just visit the channel and click **Bookmarks → Bookmark This Channel**. Every saved channel is listed per network in the Bookmarks menu for one-click joining.
 
 ### How do I temporarily disable a server without removing it?
 
@@ -151,7 +151,7 @@ channels = "#linux"
 
 Uplink will skip the server entirely on startup — no connection, no sidebar entry — but keeps the block in the file and writes it back on every save.
 
-You can also tick **☰ → Manage Servers → Edit → Disabled** and uncheck it whenever you want to reconnect.
+You can also tick **File → Manage Servers → Edit → Disabled** and uncheck it whenever you want to reconnect.
 
 > **Why not just comment out the block?** Commented `[[server]]` entries are not parsed by Uplink. The next time the app writes `config.toml` (on any Preferences change, `/ignore`, theme switch, etc.) it does a full rewrite from memory and the commented block is permanently gone. `disabled = true` is the safe way to pause a server.
 
@@ -171,7 +171,7 @@ quit_message = "Later!"
 
 This message is sent when you disconnect or type `/quit` with no argument. It is shown to other users as `*** yournick has quit (Later!)`.
 
-You can also set it from **☰ → Manage Servers → Edit → Quit Message**. To override for a single disconnect: `/quit See you tomorrow`.
+You can also set it from **File → Manage Servers → Edit → Quit Message**. To override for a single disconnect: `/quit See you tomorrow`.
 
 If `quit_message` is unset or blank, Uplink sends `"Uplink"`.
 
@@ -195,7 +195,7 @@ When you type `/away` with no argument, this message is sent. Users who message 
 - `/away Back in 10` — overrides for this session only
 - `/back` — always clears away regardless of config
 
-Set from the GUI: **☰ → Manage Servers → Edit → Away Message**.
+Set from the GUI: **File → Manage Servers → Edit → Away Message**.
 
 ### When should I use `ssl = false`?
 
@@ -289,7 +289,7 @@ proxy_host = "127.0.0.1"
 proxy_port = 9050          # Tor's default SOCKS5 port
 ```
 
-For an authenticated proxy, also add `proxy_user` and `proxy_pass`. You can also configure this from the GUI: **☰ → Manage Servers → Edit → SOCKS5 Proxy** section at the bottom of the dialog.
+For an authenticated proxy, also add `proxy_user` and `proxy_pass`. You can also configure this from the GUI: **File → Manage Servers → Edit → SOCKS5 Proxy** section at the bottom of the dialog.
 
 The proxy applies to all connection attempts including reconnects. TLS still works — the TLS handshake happens inside the SOCKS5 tunnel. Leave `proxy_host` empty to connect directly.
 
@@ -418,13 +418,13 @@ By design. A channel that's visible in a pane or popped-out window never accumul
 
 ### Where is the Preferences button?
 
-The **⚙ gear icon** sits in the channel header row, to the left of the **☰** hamburger button. Click it to open the **Preferences** dialog — it stays open while you browse themes, toggle options, and try settings.
+Open **Settings → Preferences** from the menu bar, or press **Ctrl+,** from anywhere — the dialog stays open while you browse themes, toggle options, and try settings.
 
-The **☰** hamburger opens a menu with actions like Manage Servers, Check for Updates, Documentation, Open Config, Reload Config, and About. Preferences is the gear, not the hamburger.
+Everything the old ☰ hamburger held now lives in the menu bar: server management and config actions under **File**, updates and documentation under **Help**. If you run with `menu_style = "hidden"`, **Ctrl+,** still opens Preferences.
 
 ### How do I change the theme?
 
-Click the **⚙ gear icon** in the channel header to open **Preferences**. At the top, click the **theme button** (shows the current theme name) to expand the theme list. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes. Click the button again to collapse it.
+Open **Settings → Themes…** — it opens Preferences on the Appearance page with the theme list already expanded. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes.
 
 To set a theme in config directly:
 
@@ -577,15 +577,15 @@ client_cert = "/home/joe/.irc/client.crt"
 client_key = "/home/joe/.irc/client.key"
 ```
 
-You can also set cert and key paths from the GUI: **☰ → Manage Servers → Edit** → check **Use SASL EXTERNAL** → Browse for cert and key files.
+You can also set cert and key paths from the GUI: **File → Manage Servers → Edit** → check **Use SASL EXTERNAL** → Browse for cert and key files.
 
 ### How do I add, edit, or remove a server from the UI?
 
-Click **☰ → Manage Servers...** to open the server manager. You do not need to edit `config.toml` by hand for most server settings.
+Click **File → Manage Servers...** to open the server manager. You do not need to edit `config.toml` by hand for most server settings.
 
 **Adding a server:**
 
-1. Click **☰ → Manage Servers...**
+1. Click **File → Manage Servers...**
 2. Click **Add**
 3. Fill in the form:
 
@@ -603,14 +603,14 @@ Click **☰ → Manage Servers...** to open the server manager. You do not need 
 
 **Editing a server:**
 
-1. Click **☰ → Manage Servers...**
+1. Click **File → Manage Servers...**
 2. Select the server in the list
 3. Click **Edit**
 4. Make changes and click **OK** — the server reconnects with the new settings immediately.
 
 **Removing a server:**
 
-1. Click **☰ → Manage Servers...**
+1. Click **File → Manage Servers...**
 2. Select the server
 3. Click **Remove** — the server disconnects and is removed from the sidebar and config.
 
@@ -828,7 +828,7 @@ Uplink enforces two receive limits before accepting a transfer:
 
 ### How do I check for updates?
 
-Click **☰** (the hamburger button in the top-left) and choose **Check for Updates**. Uplink connects to the GitHub releases API, reads the latest version tag, and compares it to the version you have installed.
+Open **Help → Check for Updates** from the menu bar. Uplink connects to the GitHub releases API, reads the latest version tag, and compares it to the version you have installed.
 
 - If a newer version is available, a dialog offers to download and install it automatically. Linux AppImage users get an in-place replace and relaunch. Windows downloads the ZIP to your Downloads folder. macOS downloads and opens the DMG in Finder. Source builds see an informational message instead.
 - If you're already on the latest version, a dialog confirms that.
@@ -866,7 +866,7 @@ Click the server name in the sidebar to open the server window and read the mess
 
 ### How do I get alerted when someone mentions a specific word, not just my nick?
 
-Use **highlight words**. Open **☰ → Preferences → Notifications → Highlight Words** and type a comma-separated list of words:
+Use **highlight words**. Open **Settings → Preferences → Notifications → Highlight Words** and type a comma-separated list of words:
 
 ```
 myproject, deploy, lunch
@@ -994,7 +994,7 @@ Messages in the server window are color-coded by type:
 
 ### How do I search the in-app documentation?
 
-Click **☰ → Documentation** to open the help viewer. A search field sits at the top right of the tab bar, just to the right of the **Shortcuts** tab. Type any word or phrase — the active tab jumps to the first match immediately. Click **×** to clear. Switching tabs with a query active re-runs the search in the new tab.
+Click **Help → Documentation** to open the help viewer. A search field sits at the top right of the tab bar, just to the right of the **Shortcuts** tab. Type any word or phrase — the active tab jumps to the first match immediately. Click **×** to clear. Switching tabs with a query active re-runs the search in the new tab.
 
 ### How do link previews work?
 
@@ -1154,13 +1154,13 @@ This means the server's certificate changed. To re-pin:
 
 1. Open `~/.config/uplink/config.toml`
 2. Find the `ssl_fingerprint` line in the affected server block and delete it
-3. Click **☰ → Reload Config**
+3. Click **File → Reload Config**
 4. Reconnect — the pin dialog appears with the new fingerprint
 
 ### How do I add a custom theme?
 
 1. Create a `.toml` file in `~/.config/uplink/themes/` — the simplest starting point is to copy an existing theme from the `themes/` directory next to the binary and edit the color values.
-2. Restart Uplink (or click **☰ → Reload Config**).
+2. Restart Uplink (or click **File → Reload Config**).
 3. Your theme appears in the **Preferences** theme list.
 
 The theme format uses named `{{key}}` placeholders for colors. Look at any of the 297 built-in themes for the full list of keys.
@@ -1304,7 +1304,7 @@ nick = "alice"
 
 When `ssl = true`, Uplink uses `wss://` (encrypted). When `ssl = false`, it uses `ws://`. All other features — SASL, reconnect, IRCv3 CAP negotiation, SOCKS5 proxy — work identically over WebSocket.
 
-You can also enable it from the GUI: **☰ → Manage Servers → Edit** → tick **Use WebSocket**.
+You can also enable it from the GUI: **File → Manage Servers → Edit** → tick **Use WebSocket**.
 
 ### How do I watch for a nick coming online?
 
