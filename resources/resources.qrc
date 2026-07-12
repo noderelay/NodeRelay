@@ -50,6 +50,7 @@
         <file alias="mi-check.svg">icons/mi-check.svg</file>
         <file alias="mi-lightbulb-2.svg">icons/mi-lightbulb-2.svg</file>
         <file alias="mi-bolt.svg">icons/mi-bolt.svg</file>
+        <file alias="mi-bookmark.svg">icons/mi-bookmark.svg</file>
         <file alias="mi-do-not-disturb.svg">icons/mi-do-not-disturb.svg</file>
         <file alias="mi-forum.svg">icons/mi-forum.svg</file>
         <file alias="mi-send.svg">icons/mi-send.svg</file>

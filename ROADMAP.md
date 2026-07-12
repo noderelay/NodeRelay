@@ -357,7 +357,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
   - **Settings** — Preferences… (v1: plain launcher; v2: deep-link Themes/App Icon/Fonts/Profile pages)
   - **Help** — Documentation, Keyboard Shortcuts, Check for Updates, About Uplink
   - **Search** — Find in Buffer (Ctrl+F), Search All History (Ctrl+Shift+F), Quick Switcher (Ctrl+K), Channel List (/list)
-- [ ] Menu bar v2 — Bookmarks menu (bookmark channel → auto-join list, per-network one-click join); Settings deep-links into Themes/App Icon/Fonts/Profile pages
+- [x] Menu bar v2 (2026-07-12) — Bookmarks menu: "Bookmark This Channel" toggles the active channel in its server's auto-join list (in-place config edit — the live connection is never touched); saved channels listed per network, one-click join with stored key (or switch if already joined), submenus disabled while a server is offline. Settings deep-links: Themes… (Appearance page + theme list expanded), App Icon… (Appearance page), Fonts… (opens the Font dialog directly), Profile… (Profile page); `PreferencesDialog::showPage()` generalizes the Scripts deep-link. New mi-bookmark icon.
 - [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat
 - [ ] Spellcheck — hunspell integration for the input box (on hold)
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets

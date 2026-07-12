@@ -79,6 +79,7 @@ inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/mi-
 
 inline QIcon scripts        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",        c); }
 inline QIcon deleteIcon     (const QColor &c = {}) { return fromSvg(":/icons/mi-delete.svg",            c); }
+inline QIcon bookmark       (const QColor &c = {}) { return fromSvg(":/icons/mi-bookmark.svg",           c); }
 
 // Speech-bubble topic icon, drawn with painter primitives (no SVG asset).
 inline QIcon topicBubble(const QColor &color)

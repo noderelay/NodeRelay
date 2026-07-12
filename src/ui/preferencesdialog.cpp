@@ -143,6 +143,7 @@ QWidget *PreferencesDialog::createAppearancePage(const Config &cfg, const QColor
     vbox->addWidget(sectionLabel("Theme"));
 
     auto *themeBtn = new PillButton(cfg.ui.theme);
+    m_themeBtn = themeBtn;
     themeBtn->setCheckable(true);
     themeBtn->setAutoDefault(false);
     themeBtn->setAccentColor(accent);
@@ -637,11 +638,23 @@ void PreferencesDialog::syncFromConfig(const Config &cfg)
     setCheck(m_paneStackRowsCheck, cfg.ui.paneStackRows);
 }
 
-void PreferencesDialog::showScriptsPage()
+void PreferencesDialog::showPage(const QString &navLabel)
 {
     for (int i = 0; i < m_navList->count(); ++i)
-        if (m_navList->item(i)->text() == QLatin1String("Scripts")) {
+        if (m_navList->item(i)->text() == navLabel) {
             m_navList->setCurrentRow(i);
             return;
         }
+}
+
+void PreferencesDialog::showScriptsPage()
+{
+    showPage(QStringLiteral("Scripts"));
+}
+
+// Expands/collapses the theme browser on the Appearance page; the existing
+// toggled connection drives the list's visibility.
+void PreferencesDialog::setThemeListExpanded(bool on)
+{
+    if (m_themeBtn) m_themeBtn->setChecked(on);
 }

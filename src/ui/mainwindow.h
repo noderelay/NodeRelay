@@ -143,6 +143,12 @@ private:
     void openPreferences();
     void openManageServers();
     void openIgnoreList();
+    void openFontConfig();
+
+    // Bookmarks = the per-server auto-join list (config [[server.channel]])
+    bool isBookmarked(ServerId host, BufferId channel) const;
+    void toggleBookmark(ServerId host, BufferId channel, bool on);
+    void joinBookmark(ServerId host, const QString &channelName);
 
     // Shared setting appliers (Preferences signals + menu actions)
     void applyTopicBarSetting(bool on);

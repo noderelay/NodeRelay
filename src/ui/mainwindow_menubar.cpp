@@ -13,6 +13,7 @@
 #include "ui/serverdialog.h"
 #include "ui/manageserversdialog.h"
 #include "ui/ignorelistdialog.h"
+#include "ui/fontdialog.h"
 #include "ui/themeloader.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
@@ -26,6 +27,7 @@
 
 #include <QApplication>
 #include <QAction>
+#include <QFont>
 #include <QMenu>
 #include <QMenuBar>
 #include <QToolButton>
@@ -243,6 +245,47 @@ void MainWindow::buildMenuBar()
         m_actStackRows->setChecked(m_config.ui.paneStackRows);
     });
 
+    // ── Bookmarks ─────────────────────────────────────────────────────────
+    // Rebuilt on every open (same pattern as Plugins): "Bookmark This
+    // Channel" toggles the active channel's presence in its server's
+    // auto-join list; below it, saved channels are listed per network.
+    auto *bmMenu = m_menuBarWidget->addMenu(tr("&Bookmarks"));
+    connect(bmMenu, &QMenu::aboutToShow, this, [this, bmMenu, ic]{
+        bmMenu->clear();
+        const ServerId host    = m_model->activeHost();
+        const BufferId channel = m_model->activeChannel();
+        const QString  chan    = channel.str();
+        // Space/comma can't appear in valid channel names and would corrupt
+        // the compact channels = "#a, #b" config form.
+        const bool bookmarkable = isChannelName(chan)
+                                  && !chan.contains(' ') && !chan.contains(',');
+        QAction *bm = bmMenu->addAction(MenuIcons::bookmark(ic), tr("Bookmark This Channel"));
+        bm->setCheckable(true);
+        bm->setEnabled(bookmarkable);
+        bm->setChecked(bookmarkable && isBookmarked(host, channel));
+        connect(bm, &QAction::triggered, this, [this, host, channel](bool on){
+            toggleBookmark(host, channel, on);
+        });
+        bmMenu->addSeparator();
+
+        bool any = false;
+        for (const auto &sc : std::as_const(m_config.servers)) {
+            if (sc.channels.isEmpty()) continue;
+            any = true;
+            auto *sub = bmMenu->addMenu(sc.name);
+            auto *sess = m_model->session(ServerId{sc.name});
+            sub->setEnabled(sess && sess->connected);   // JOIN is a silent no-op offline
+            for (const auto &cc : sc.channels) {
+                connect(sub->addAction(cc.name), &QAction::triggered, this,
+                        [this, srv = sc.name, name = cc.name]{
+                    joinBookmark(ServerId{srv}, name);
+                });
+            }
+        }
+        if (!any)
+            bmMenu->addAction(tr("No bookmarked channels"))->setEnabled(false);
+    });
+
     // ── Plugins ───────────────────────────────────────────────────────────
     auto *plugMenu = m_menuBarWidget->addMenu(tr("&Plugins"));
     connect(plugMenu, &QMenu::aboutToShow, this, [this, plugMenu, ic]{
@@ -269,6 +312,22 @@ void MainWindow::buildMenuBar()
     auto *setMenu = m_menuBarWidget->addMenu(tr("&Settings"));
     m_actPreferences->setIcon(MenuIcons::preferences(ic));
     setMenu->addAction(m_actPreferences);
+    setMenu->addSeparator();
+    setMenu->addAction(MenuIcons::theme(ic), tr("Themes…"), this, [this]{
+        openPreferences();
+        m_prefsDialog->showPage(QStringLiteral("Appearance"));
+        m_prefsDialog->setThemeListExpanded(true);
+    });
+    setMenu->addAction(MenuIcons::appIcon(ic), tr("App Icon…"), this, [this]{
+        openPreferences();
+        m_prefsDialog->showPage(QStringLiteral("Appearance"));
+    });
+    setMenu->addAction(MenuIcons::fontConfig(ic), tr("Fonts…"),
+                       this, &MainWindow::openFontConfig);
+    setMenu->addAction(MenuIcons::gear(ic), tr("Profile…"), this, [this]{
+        openPreferences();
+        m_prefsDialog->showPage(QStringLiteral("Profile"));
+    });
 
     // ── Help ──────────────────────────────────────────────────────────────
     auto *helpMenu = m_menuBarWidget->addMenu(tr("&Help"));
@@ -363,6 +422,74 @@ void MainWindow::openManageServers()
     m_config.servers = updated;
     saveConfig(true);
     syncSidebarOrderFromConfig();
+}
+
+void MainWindow::openFontConfig()
+{
+    FontDialog dlg(m_config.ui.fontFamily, m_config.ui.fontSizes, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+    m_config.ui.fontFamily = dlg.selectedFamily();
+    m_config.ui.fontSizes  = dlg.selectedSizes();
+    saveConfig();
+    QFont appFont(m_config.ui.fontFamily);
+    appFont.setStyleHint(QFont::Monospace);
+    QApplication::setFont(appFont);
+    applyFontSizes();
+}
+
+// ---------------------------------------------------------------------------
+// Bookmarks — the per-server auto-join list surfaced as a menu. Config edits
+// are in-place + saveConfig() only; SessionModel::updateServer() would tear
+// down and reconnect the live session, so it is never used here.
+// ---------------------------------------------------------------------------
+
+bool MainWindow::isBookmarked(ServerId host, BufferId channel) const
+{
+    const QString name = channel.str().toLower();
+    for (const auto &sc : m_config.servers) {
+        if (sc.name != host.str()) continue;
+        for (const auto &cc : sc.channels)
+            if (cc.name.toLower() == name) return true;
+        return false;
+    }
+    return false;
+}
+
+void MainWindow::toggleBookmark(ServerId host, BufferId channel, bool on)
+{
+    for (auto &sc : m_config.servers) {
+        if (sc.name != host.str()) continue;
+        const QString lower = channel.str().toLower();
+        sc.channels.removeIf([&](const ChannelConfig &cc){
+            return cc.name.toLower() == lower;
+        });
+        if (on)
+            sc.channels.append(ChannelConfig{channel.str(), QString()});
+        saveConfig();
+        return;
+    }
+}
+
+void MainWindow::joinBookmark(ServerId host, const QString &channelName)
+{
+    // Already joined → just switch; otherwise JOIN with the stored key
+    // (the switch follows automatically via channelAdded when the server
+    // confirms the join).
+    const BufferId channel{channelName};
+    if (m_model->channel(host, channel)) {
+        switchToChannel(host, channel);
+        return;
+    }
+    auto *sess = m_model->session(host);
+    if (!sess || !sess->connected) return;
+    QString key;
+    for (const auto &sc : m_config.servers) {
+        if (sc.name != host.str()) continue;
+        for (const auto &cc : sc.channels)
+            if (cc.name.toLower() == channelName.toLower()) { key = cc.password; break; }
+        break;
+    }
+    m_model->sendJoin(host, channel, key);
 }
 
 void MainWindow::openIgnoreList()

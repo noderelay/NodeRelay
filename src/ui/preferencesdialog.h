@@ -6,6 +6,7 @@ class QButtonGroup;
 class QCheckBox;
 class QLineEdit;
 class QListWidget;
+class QPushButton;
 class QStackedWidget;
 
 class PreferencesDialog : public QDialog
@@ -14,7 +15,9 @@ class PreferencesDialog : public QDialog
 public:
     explicit PreferencesDialog(const Config &cfg, QWidget *parent = nullptr);
     void syncFromConfig(const Config &cfg);
+    void showPage(const QString &navLabel);
     void showScriptsPage();
+    void setThemeListExpanded(bool on);
 
 signals:
     void themeChanged(const QString &name);
@@ -54,6 +57,7 @@ private:
 
     QListWidget    *m_navList{nullptr};
     QStackedWidget *m_pages{nullptr};
+    QPushButton    *m_themeBtn{nullptr};   // Appearance page theme-list toggle
 
     QCheckBox *m_topicCheck{nullptr};
     QCheckBox *m_nickPrefixCheck{nullptr};

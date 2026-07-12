@@ -685,6 +685,8 @@ All features work identically over WebSocket — SASL, IRCv3 CAP negotiation, ST
 
 Channels to auto-join on connect. Two formats are supported.
 
+The easiest way to manage this list is the **Bookmarks** menu: **Bookmarks → Bookmark This Channel** adds the channel you're viewing to its server's auto-join list (uncheck it to remove), and every saved channel is listed per network in the same menu for one-click join — clicking one joins it (or just switches to it if you're already there).
+
 ### Simple format (string)
 
 Set `channels` to a comma-separated list of channel names directly in the `[[server]]` block. This format is good for public channels that require no key.
