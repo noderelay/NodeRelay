@@ -214,9 +214,7 @@ void SessionModel::logMessage(const QString &host, const QString &target, const 
 {
     if (msg.isHistory) return;
 
-    const QString logsDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                            + "/.config/uplink/logs/"
-                            + sanitizeFilename(host) + "/";
+    const QString logsDir = logsRootPath() + sanitizeFilename(host) + "/";
     const QString filePath = logsDir + sanitizeFilename(target) + ".log";
 
     QFile *f = m_logFiles.value(filePath, nullptr);
@@ -265,10 +263,34 @@ QString SessionModel::logFilePath(ServerId host, BufferId target) const
 {
     if (host.str().isEmpty() || target.str().isEmpty())
         return {};
-    return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-           + "/.config/uplink/logs/"
+    return logsRootPath()
            + sanitizeFilename(host.str()) + "/"
            + sanitizeFilename(target.str()) + ".log";
+}
+
+QString SessionModel::logsRootPath()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+           + "/.config/uplink/logs/";
+}
+
+// Maps a log path's sanitized "<server>/<buffer>" components back to a live
+// buffer. Sanitizing is lossy, so re-sanitize the current names and compare
+// instead of trying to parse the path.
+bool SessionModel::resolveLogBuffer(const QString &serverPart, const QString &bufferPart,
+                                    ServerId &host, BufferId &buffer) const
+{
+    for (const auto &s : m_sessions) {
+        if (sanitizeFilename(s.name) != serverPart) continue;
+        for (const auto &ch : s.channels) {
+            if (sanitizeFilename(ch.name) == bufferPart) {
+                host   = ServerId{s.name};
+                buffer = BufferId{ch.name};
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void SessionModel::addServer(const ServerConfig &sc)

@@ -137,7 +137,7 @@
 | **Watch list (Monitor)** | IRCv3 MONITOR. Use `/monitor add <nick>` to watch for someone coming online. Status changes post to the server buffer. List persists in config. |
 | **Per-channel logging** | All messages written to `~/.config/uplink/logs/<server>/<channel>.log`. Toggle in **Preferences → Log Messages to Disk**. |
 | **Reply to messages** | Right-click a timestamp → **Reply**. Outgoing message carries `+draft/reply` tag. Received replies show `↩ origNick` inline. |
-| **Message search** | **Ctrl+F** searches the current buffer (Enter = next, Shift+Enter = previous, Escape = close). **Ctrl+Shift+F** searches the channel's full logged history — substring or regex, newest-first (requires logging enabled). |
+| **Message search** | **Ctrl+F** searches the current buffer (Enter = next, Shift+Enter = previous, Escape = close). **Ctrl+Shift+F** searches the channel's full logged history — substring or regex, newest-first (requires logging enabled). Tick **All buffers** to search every server and channel at once, grouped by buffer; double-click a result to jump to that buffer. |
 | **mIRC colors** | Full IRC color codes rendered in chat. |
 | **Tab completion** | Tab-completes nick names and slash commands. Cycles through candidates. |
 | **Input history** | Up/Down arrows cycle through sent messages. |

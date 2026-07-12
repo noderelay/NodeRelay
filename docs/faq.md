@@ -1054,6 +1054,8 @@ The search is case-insensitive and works on the full visible buffer for the curr
 
 To search *beyond* the loaded buffer — the channel's entire logged history — press **Ctrl+Shift+F**. This opens a separate window that scans the channel's on-disk log file and lists matches newest-first, with an optional **Regex** mode. It only covers history that was actually logged, so it requires message logging to be enabled in Preferences.
 
+To search **everything at once**, tick **All buffers** in the same window. Every logged channel and PM across all your servers is scanned, and results are grouped per buffer with a match count. Double-click a result to jump straight to that buffer.
+
 ### How do I reply to a specific message?
 
 Right-click any message in the chat area and choose **Reply** from the context menu. A reply bar appears above the input box showing **↩ nick: preview** of the original message. Type your reply and press **Enter** to send it. Press **Escape** or click **✕** to cancel.

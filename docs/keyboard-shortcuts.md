@@ -125,6 +125,8 @@ Panes have their own search: with focus inside a docked pane, **Ctrl+F** opens t
 
 **Ctrl+Shift+F** opens a separate window that searches the current channel's entire **on-disk log**, not just the messages currently loaded in the buffer. Type to search (case-insensitive substring, or tick **Regex** for a regular expression); matches are listed newest-first. This requires message logging to be enabled in Preferences — without it, only the visible buffer exists to search.
 
+Tick **All buffers** to search every logged buffer across all servers at once. Results are grouped per buffer — a bold header names the channel and server with its match count, followed by that buffer's newest matches. Double-click any result (or press Enter on it) to jump to that buffer.
+
 For example, with **Regex** enabled, `error|timeout` finds lines mentioning either word, `<alice>` finds messages from *alice*, and `^\[2026-07-04` matches everything logged on that date.
 
 ---
