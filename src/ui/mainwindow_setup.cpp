@@ -30,6 +30,7 @@
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
 #include "ui/emojidata.h"
+#include "ui/chromepanel.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
 #include "ui/fadescrollbar.h"
@@ -164,8 +165,10 @@ void MainWindow::setupToolbar()
         });
 
         menu->addAction(MenuIcons::connStatus(ic), "Reload Config", this, []{
+            // arguments() includes argv[0]; passing it verbatim would add a
+            // duplicate program path to the child's argv on every reload.
             QProcess::startDetached(QCoreApplication::applicationFilePath(),
-                                    QCoreApplication::arguments());
+                                    QCoreApplication::arguments().mid(1));
             QCoreApplication::quit();
         });
 
@@ -216,6 +219,7 @@ void MainWindow::connectPreferences()
                 pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
                 pane->setPopOutIcon(MenuIcons::pipEnter(ic));
             }
+            applyPanelChrome();
         }
         if (m_sidebarCloseBtn)
             m_sidebarCloseBtn->setStyleSheet(UiStyle::headerButtonStyle());
@@ -523,11 +527,12 @@ void MainWindow::setupSidebar()
 
     m_sidebarPanel = new QWidget;
     m_sidebarPanel->setObjectName("sidebarPanel");
+    m_sidebarPanel->setAttribute(Qt::WA_StyledBackground, true);
     auto *vbox = new QVBoxLayout(m_sidebarPanel);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
-    m_sidebarHeader = new QWidget;
+    m_sidebarHeader = new ChromePanel;
     m_sidebarHeader->setObjectName("sidebarHeader");
     m_sidebarHeader->setFixedHeight(34); // synced to primaryHeader+topicDisplay after show
 
@@ -675,7 +680,7 @@ void MainWindow::setupNickPanel()
     m_userInfoLabel->setObjectName("userInfoLabel");
     m_userInfoLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-    m_nickPanelHeader = new QWidget;
+    m_nickPanelHeader = new ChromePanel;
     auto *header = m_nickPanelHeader;
     header->setObjectName("nickPanelHeader");
     auto *hbox = new QHBoxLayout(header);
@@ -689,7 +694,7 @@ void MainWindow::setupNickPanel()
 
     m_nickFilter = new NickFilterEdit(m_nickList);
 
-    m_nickPanel = new QWidget;
+    m_nickPanel = new ChromePanel;
     m_nickPanel->setObjectName("nickPanel");
     m_nickPanel->setMinimumWidth(24);
     auto *vbox = new QVBoxLayout(m_nickPanel);
@@ -697,8 +702,10 @@ void MainWindow::setupNickPanel()
     vbox->setSpacing(0);
     vbox->addWidget(m_nickPanelHeader);
     vbox->addWidget(m_nickFilter);
-    vbox->addWidget(m_nickList, 100);
-    vbox->addStretch(1);
+    // The list takes ALL remaining height — no trailing stretch. A stretch
+    // here leaves a strip below the list that shows through as a gap when
+    // the panel's styled background misses a repolish (Wayland/KDE).
+    vbox->addWidget(m_nickList, 1);
 }
 
 void MainWindow::setupChatArea()
@@ -707,7 +714,9 @@ void MainWindow::setupChatArea()
     m_rightContent = new QWidget;
     m_rightContent->setObjectName("rightContent");
     auto *vbox     = new QVBoxLayout(m_rightContent);
-    vbox->setContentsMargins(8, 8, 8, 8);
+    // No bottom inset: the user list runs flush to the window bottom like the
+    // sidebar; the input bar keeps its own bottom padding for the text box.
+    vbox->setContentsMargins(8, 8, 8, 0);
     vbox->setSpacing(0);
 
     // Primary panel — first column in the panes splitter
@@ -836,6 +845,7 @@ void MainWindow::setupChatArea()
     m_primaryHeader->installEventFilter(this);
 
     m_chatSection     = new QWidget;
+    m_chatSection->setObjectName("chatSection");
     auto *chatSection = m_chatSection;
     auto *chatVbox    = new QVBoxLayout(chatSection);
     chatVbox->setContentsMargins(0, 0, 0, 0);
@@ -984,13 +994,18 @@ void MainWindow::setupChatArea()
     chatVbox->addWidget(headerRow);
 
     auto *chatLeft = new QWidget;
+    chatLeft->setObjectName("chatColumn");
     auto *chatLeftVbox = new QVBoxLayout(chatLeft);
     chatLeftVbox->setContentsMargins(0, 0, 0, 0);
     chatLeftVbox->setSpacing(0);
     chatLeftVbox->addWidget(m_topicDisplay);
     chatLeftVbox->addWidget(m_chatView, 1);
+    m_chatLeftVbox = chatLeftVbox; // setupInputBar appends the compose strip here
 
     m_chatSplitter = new QSplitter(Qt::Horizontal);
+    m_chatSplitter->setObjectName("chatSplitter");
+    // Backdrop behind the nick panel's rounded top corners.
+    m_chatSplitter->setAttribute(Qt::WA_StyledBackground, true);
     m_chatSplitter->setHandleWidth(0);
     m_chatSplitter->addWidget(chatLeft);
     m_chatSplitter->addWidget(m_nickPanel);
@@ -1092,14 +1107,18 @@ void MainWindow::setupChatArea()
     // pane splitter builds, including a shared/stacked one.
     primaryVbox->addWidget(chatSection, 1);
 
-    // setupInputBar will append search/reply/typing/input into chatSection
+    // setupInputBar will append search/reply/typing/input into the chat
+    // column (left of the user list), so the user list runs full height
 
+    m_primaryPanel->setObjectName("primaryPanel");
     m_panesSplitter = new QSplitter(Qt::Horizontal);
+    m_panesSplitter->setObjectName("panesSplitter");
     m_panesSplitter->setHandleWidth(2);
     m_panesSplitter->addWidget(m_primaryPanel);
     m_panesSplitter->setStretchFactor(0, 1);
 
     auto *chatWrapper = new RoundedPane;
+    chatWrapper->setObjectName("chatWrapper");
     auto *cwLayout    = new QVBoxLayout(chatWrapper);
     cwLayout->setContentsMargins(0, 0, 0, 0);
     cwLayout->setSpacing(0);
@@ -1109,6 +1128,7 @@ void MainWindow::setupChatArea()
     // sibling of it, so it's always present no matter how panes (including
     // the primary pane) get rearranged.
     m_mainSplitter = new QSplitter(Qt::Horizontal);
+    m_mainSplitter->setObjectName("mainSplitter");
     m_mainSplitter->setHandleWidth(0);
     m_mainSplitter->addWidget(m_sidebarPanel);
     m_mainSplitter->addWidget(chatWrapper);

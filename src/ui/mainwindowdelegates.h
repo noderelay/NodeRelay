@@ -4,12 +4,10 @@
 // mainwindow.cpp and mainwindow_setup.cpp.
 
 #include <QApplication>
-#include <QBitmap>
 #include <QColor>
 #include <QFontMetrics>
 #include <QIcon>
 #include <QPainter>
-#include <QResizeEvent>
 #include <QStyle>
 #include <QStyledItemDelegate>
 #include <QWidget>
@@ -237,20 +235,14 @@ public:
     }
 };
 
-// Clips all child widgets to a rounded rect via a bitmap mask.
+// Container for the chat area. Historically clipped its children to a
+// rounded rect with a widget mask — do NOT reintroduce that: widget masks
+// mis-scale under fractional display scaling on Wayland (KDE 145% clips a
+// corner-radius-sized band off the bottom of the content; a 1x-DPR QBitmap
+// mask, a logical-coords QRegion mask, and a mask extended past the bottom
+// edge ALL exhibited it on a live session). If rounded corners come back,
+// paint them as overlay nibs, not as a mask.
 class RoundedPane : public QWidget {
 public:
     explicit RoundedPane(QWidget *parent = nullptr) : QWidget(parent) {}
-protected:
-    void resizeEvent(QResizeEvent *e) override {
-        QWidget::resizeEvent(e);
-        if (size().isEmpty()) return;
-        QBitmap bm(size());
-        bm.fill(Qt::color0);
-        QPainter p(&bm);
-        p.setBrush(Qt::color1);
-        p.setPen(Qt::NoPen);
-        p.drawRoundedRect(rect(), 10, 10);
-        setMask(bm);
-    }
 };

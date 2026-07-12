@@ -191,11 +191,15 @@ QToolButton#sidebarToggleBtn {
     padding: 0px 2px;
 }
 QToolButton#sidebarToggleBtn:hover { color: {{accent}}; }
+/* Sidebar card: the panel is the window-bg backdrop the rounded corners
+   are cut against; header carries the top rounding, the tree below stays
+   flush/square at the bottom. Radii are painted by QSS — never use widget
+   masks for rounding (they mis-clip at fractional display scale). */
 QWidget#sidebarPanel {
-    background-color: {{bufferBg}};
+    background-color: {{bg}};
 }
 QWidget#sidebarHeader {
-    background-color: {{bufferBg}};
+    background-color: {{bg}};
 }
 
 QSizeGrip {
@@ -239,10 +243,12 @@ QMenu::separator {
 
 /* ── Sidebar ── */
 QTreeWidget {
-    background-color: {{bufferBg}};
+    background-color: {{sidebarBg}};
     color: {{sidebarText}};
     border: none;
     outline: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 QTreeWidget::item {
     padding: 2px 6px;
@@ -256,7 +262,7 @@ QTreeWidget::item:hover {
     background: transparent;
 }
 QTreeWidget::branch {
-    background-color: {{bufferBg}};
+    background-color: {{sidebarBg}};
     border: none;
     image: none;
     width: 0px;
@@ -495,12 +501,21 @@ QSplitter::handle {
 }
 
 /* ── Embedded nick panel ── */
-QWidget#nickPanel,
+/* Mirrors the sidebar card's rounded top. Both the panel and its header
+   carry the radii — the header fills the panel's top, so both must curve
+   for the splitter's window-bg backdrop to show through the corners. */
+QWidget#nickPanel {
+    background-color: {{nicklistBg}};
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
 QWidget#nickPanelHeader {
-    background-color: {{bufferBg}};
+    background-color: {{nicklistBg}};
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 QWidget#nickPanel QListWidget {
-    background-color: {{bufferBg}};
+    background-color: {{nicklistBg}};
     color: {{text}};
 }
 QWidget#nickPanel QListWidget::item:selected {
@@ -519,7 +534,7 @@ QWidget#nickPanelHeader QLabel {
     color: {{text}};
 }
 QLineEdit#nickFilter {
-    background-color: {{bufferBg}};
+    background-color: {{nicklistBg}};
     color: {{text}};
     border: none;
     border-bottom: 1px solid {{border}};
@@ -563,9 +578,9 @@ QDialogButtonBox QPushButton {
     min-width: 88px;
 }
 
-/* ── Right content area — background shows in padding + rounded corners ── */
+/* ── Right content area — window-bg backdrop behind panel margins/corners ── */
 QWidget#rightContent {
-    background-color: {{sidebarBg}};
+    background-color: {{bg}};
 }
 
 QLabel#channelLabel {

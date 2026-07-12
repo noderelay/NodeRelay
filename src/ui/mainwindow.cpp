@@ -26,6 +26,7 @@
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
 #include "ui/emojidata.h"
+#include "ui/chromepanel.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
 #include "ui/fadescrollbar.h"
@@ -204,6 +205,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     setupInputBar();
     connectModel();
     applyFontSizes();
+    applyPanelChrome();
 
     m_configWatcher.addPath(Config::defaultPath());
     connect(&m_configWatcher, &QFileSystemWatcher::fileChanged,
@@ -424,6 +426,21 @@ void MainWindow::correctStartupGeometry()
         m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
 }
 
+
+// Panel chrome strips (icon rows above the channel tree and the user list)
+// paint their own fill via ChromePanel — stylesheet backgrounds (app-wide
+// AND local per-widget sheets) are silently dropped for plain QWidgets in
+// some Wayland/KDE sessions, but a QPainter paintEvent always renders.
+void MainWindow::applyPanelChrome()
+{
+    if (!m_theme.valid) return;
+    // Sidebar header (hamburger row) stays on the window bg — the sidebar
+    // card starts at the network tree below it.
+    static_cast<ChromePanel *>(m_nickPanel)->setFill(QColor(m_theme.nicklistBg));
+    static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(QColor(m_theme.nicklistBg));
+    for (auto *pane : std::as_const(m_panes))
+        pane->setNickChrome(m_theme.nicklistBg);
+}
 
 void MainWindow::applyFontSizes()
 {
@@ -1540,6 +1557,8 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
             MenuIcons::fromSvg(QStringLiteral(":/icons/mi-right-panel-close.svg"), ic, 20),
             MenuIcons::fromSvg(QStringLiteral(":/icons/mi-left-panel-close.svg"), ic, 20),
             MenuIcons::groups(ic, 20));
+        if (m_theme.valid)
+            pane->setNickChrome(m_theme.nicklistBg);
     }
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,

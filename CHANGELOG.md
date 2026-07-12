@@ -1,6 +1,47 @@
 # Changelog
 
 <!--
+Session 2026-07-11 (night) — theming overhaul: per-section backgrounds,
+full-height panels, rounded cards; the Wayland styled-background saga:
+- Theme sections finally mean something: [sidebar]/[nicklist] backgrounds
+  are honored (285/297 themes define distinct values that were previously
+  flattened to bufferBg by the QSS template). [general] background is now
+  the window backdrop around the panels ([sidebar] bg was painted there
+  before — nobody could tell, see below).
+- Layout: user list is a full-height column (compose strip — search/reply/
+  typing/input — moved into the chat column in main window AND panes);
+  rightContent bottom margin removed so both side panels run flush to the
+  window bottom. Both panels drawn as cards with rounded TOP corners:
+  sidebar card starts at the network tree (hamburger row stays on window
+  bg, per user); nick card includes its icon header row (per user).
+- THE BUG HUNT (half a quota window, lessons in
+  memory/reference_wayland_ui_debugging.md): a "tiny gap" under the user
+  list resisted FIVE fixes because three separate defects overlapped:
+  1) rightContent had an 8px bottom margin (fixed, real but minor);
+  2) RoundedPane's 1x-DPR QBitmap mask provably clips a radius-sized band
+     at fractional scale (fixed via QRegion, then mask REMOVED entirely —
+     never reintroduce widget masks, comment in mainwindowdelegates.h);
+  3) the REAL gap: addStretch(1) after the nick list left extra/101 px
+     below it, and joe's live KDE Wayland session silently drops styled-
+     background painting for plain QWidgets, exposing {{bg}} through the
+     hole. Headless repros (offscreen 1.25/1.45/1.5, nested kwin) all
+     painted the styled bg and hid the gap — pixel-verified on the live
+     session via scratch-HOME instance + spectacle + geometry dump.
+- The styled-background drop also affected the icon header rows (sidebar +
+  nick) and even LOCAL per-widget stylesheets (pixel-proven). Final
+  mechanism: new ChromePanel widget (src/ui/chromepanel.h) paints its own
+  fill + rounded top in paintEvent — QPainter can't be dropped by styling
+  machinery. Used for nickPanel, nickPanelHeader (main + panes);
+  applyPanelChrome() applies theme fills at startup/theme switch.
+- Sidebar tree rounding via QTreeWidget border-top radii (QSS — scrollarea
+  frames paint reliably, unlike plain QWidgets).
+- Fix: Reload Config appended a duplicate argv[0] to the child's argument
+  list on every reload (ps showed 12 copies) — arguments().mid(1).
+- Docs: theme section semantics in howto.html themes section. 6/6 tests.
+  No release tagged.
+-->
+
+<!--
 Session 2026-07-11 (evening) — full-history search v2: all buffers:
 - "All buffers" checkbox in the Ctrl+Shift+F window. When ticked, the
   worker thread scans every *.log under ~/.config/uplink/logs/<server>/

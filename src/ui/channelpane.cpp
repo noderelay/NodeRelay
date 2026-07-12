@@ -4,6 +4,7 @@
 #include "ui/uistyle.h"
 #include "ui/searchbar.h"
 #include "ui/nickfilteredit.h"
+#include "ui/chromepanel.h"
 #include "ui/dropframe.h"
 
 #include <QListWidget>
@@ -120,8 +121,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     });
     m_topicText->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     tbhbox->addWidget(m_topicText);
-    m_topicBar->hide();
-    vbox->addWidget(m_topicBar);
+    m_topicBar->hide(); // added to the chat column below, next to the body splitter
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
@@ -155,7 +155,8 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_nickCountLabel->setContentsMargins(0, 0, 4, 0);
     m_nickCountLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-    auto *nickHeader = new QWidget;
+    auto *nickHeader = new ChromePanel;
+    m_nickHeader = nickHeader;
     nickHeader->setObjectName("nickPanelHeader");
     auto *nhbox = new QHBoxLayout(nickHeader);
     nhbox->setContentsMargins(2, 0, 2, 0);
@@ -168,7 +169,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
 
     m_nickFilter = new NickFilterEdit(m_nickList);
 
-    m_nickWrapper = new QWidget;
+    m_nickWrapper = new ChromePanel;
     m_nickWrapper->setObjectName("nickPanel");
     m_nickWrapper->setMinimumWidth(24);
     auto *nwvbox = new QVBoxLayout(m_nickWrapper);
@@ -176,8 +177,8 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     nwvbox->setSpacing(0);
     nwvbox->addWidget(nickHeader);
     nwvbox->addWidget(m_nickFilter);
-    nwvbox->addWidget(m_nickList, 100);
-    nwvbox->addStretch(1);
+    // No trailing stretch — see the main window's nick panel for why.
+    nwvbox->addWidget(m_nickList, 1);
 
     // Floating reveal button — shown over the chat when the list is hidden
     m_nickRevealBtn = new QToolButton(this);
@@ -197,9 +198,20 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
         m_nickWrapper->show();
     });
 
+    // Chat column: everything except the user list, so the list runs the
+    // full pane height and the compose strip ends at its edge.
+    auto *chatCol  = new QWidget;
+    auto *ccVbox   = new QVBoxLayout(chatCol);
+    ccVbox->setContentsMargins(0, 0, 0, 0);
+    ccVbox->setSpacing(0);
+    ccVbox->addWidget(m_topicBar);
+    ccVbox->addWidget(m_chatView, 1);
+
     auto *bodySplitter = new QSplitter(Qt::Horizontal);
+    // Backdrop behind the nick panel's rounded top corners.
+    bodySplitter->setAttribute(Qt::WA_StyledBackground, true);
     bodySplitter->setHandleWidth(0);
-    bodySplitter->addWidget(m_chatView);
+    bodySplitter->addWidget(chatCol);
     bodySplitter->addWidget(m_nickWrapper);
     bodySplitter->setStretchFactor(0, 1);
     bodySplitter->setStretchFactor(1, 0);
@@ -208,14 +220,14 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
 
     // Search bar (hidden until the magnifier is clicked)
     m_searchBar = new SearchBar(m_chatView);
-    vbox->addWidget(m_searchBar);
+    ccVbox->addWidget(m_searchBar);
 
     // Typing indicator (hidden until someone is typing)
     m_typingLabel = new QLabel;
     m_typingLabel->setObjectName("typingLabel");
     m_typingLabel->setContentsMargins(8, 2, 8, 2);
     m_typingLabel->hide();
-    vbox->addWidget(m_typingLabel);
+    ccVbox->addWidget(m_typingLabel);
 
     // Input bar
     auto *inputBar = new QWidget;
@@ -234,7 +246,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_input->installEventFilter(this);
     ibox->addWidget(m_nickPrefix);
     ibox->addWidget(m_input, 1);
-    vbox->addWidget(inputBar);
+    ccVbox->addWidget(inputBar);
     updateInputHeight();
 
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
@@ -250,6 +262,15 @@ void ChannelPane::setNick(const QString &nick)
 void ChannelPane::setNickVisible(bool visible)
 {
     if (m_nickPrefix) m_nickPrefix->setVisible(visible);
+}
+
+// ChromePanel fills — see MainWindow::applyPanelChrome for why these don't
+// rely on stylesheet background painting.
+void ChannelPane::setNickChrome(const QString &bg)
+{
+    const QColor c(bg);
+    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c);
+    if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c);
 }
 
 void ChannelPane::setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups)
