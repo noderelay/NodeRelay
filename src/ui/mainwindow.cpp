@@ -419,18 +419,23 @@ void MainWindow::applyPanelChrome()
     // with square corners and no floating gaps.
     const bool cards = m_config.ui.panelCards;
     const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
-    // Cards float: backdrop shows under the side cards and along their inner
-    // edges (the splitter handles), matching the input strip's 8px bottom
-    // margin and the window-edge margins so the frame is uniform all around.
+    // Cards float: backdrop frames the side cards on all four sides — their
+    // own top/bottom margins, the splitter handles along their inner edges,
+    // and the rightContent window margins outside — all kPanelGap, matching
+    // the input strip's bottom margin. The chat column alone stays flush to
+    // the top, so rightContent drops its shared top margin in cards mode.
     const int gap = cards ? kPanelGap : 0;
     auto *nickPanel = static_cast<ChromePanel *>(m_nickPanel);
     nickPanel->setFill(fill, cards, /*roundedBottom=*/cards);
+    nickPanel->setTopInset(gap);
     nickPanel->setBottomInset(gap);
     if (m_nickPanel->layout())
-        m_nickPanel->layout()->setContentsMargins(0, 0, 0, gap);
+        m_nickPanel->layout()->setContentsMargins(0, gap, 0, gap);
     static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(fill, cards);
     if (m_sidebarPanel && m_sidebarPanel->layout())
-        m_sidebarPanel->layout()->setContentsMargins(0, 0, 0, gap);
+        m_sidebarPanel->layout()->setContentsMargins(0, gap, 0, gap);
+    if (m_rightContent && m_rightContent->layout())
+        m_rightContent->layout()->setContentsMargins(8, cards ? 0 : 8, 8, 0);
     if (m_mainSplitter) m_mainSplitter->setHandleWidth(gap);
     if (m_chatSplitter) m_chatSplitter->setHandleWidth(gap);
     for (auto *pane : std::as_const(m_panes))

@@ -511,9 +511,14 @@ void MainWindow::setupChatArea()
     // Right content — holds the panes splitter only
     m_rightContent = new QWidget;
     m_rightContent->setObjectName("rightContent");
+    // Without WA_StyledBackground the #rightContent QSS backdrop is silently
+    // dropped and the window-edge margins bleed through to the compositor.
+    m_rightContent->setAttribute(Qt::WA_StyledBackground, true);
     auto *vbox     = new QVBoxLayout(m_rightContent);
-    // No bottom inset: the user list runs flush to the window bottom like the
-    // sidebar; the input bar keeps its own bottom padding for the text box.
+    // No bottom inset: the side cards carry their own bottom gaps and the
+    // input bar keeps its own bottom padding for the text box. The top
+    // margin is managed by applyPanelChrome (0 in cards mode — the side
+    // cards carry their own top gaps and the chat column stays flush).
     vbox->setContentsMargins(8, 8, 8, 0);
     vbox->setSpacing(0);
 

@@ -279,9 +279,10 @@ void ChannelPane::setNickChrome(const QString &bg, bool rounded)
     if (m_nickWrapper) {
         auto *wrapper = static_cast<ChromePanel *>(m_nickWrapper);
         wrapper->setFill(c, rounded, /*roundedBottom=*/rounded);
+        wrapper->setTopInset(gap);
         wrapper->setBottomInset(gap);
         if (m_nickWrapper->layout())
-            m_nickWrapper->layout()->setContentsMargins(0, 0, 0, gap);
+            m_nickWrapper->layout()->setContentsMargins(0, gap, 0, gap);
     }
     if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c, rounded);
     if (m_bodySplitter) m_bodySplitter->setHandleWidth(gap);

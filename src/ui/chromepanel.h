@@ -28,9 +28,15 @@ public:
         update();
     }
 
-    // Stop the fill this many px above the widget's bottom edge, exposing the
-    // parent's backdrop. Pair with an equal bottom margin on the panel's
+    // Stop the fill this many px inside the widget's top/bottom edges,
+    // exposing the parent's backdrop. Pair with equal margins on the panel's
     // layout so children stop with the fill.
+    void setTopInset(int px)
+    {
+        m_topInset = px;
+        update();
+    }
+
     void setBottomInset(int px)
     {
         m_bottomInset = px;
@@ -44,7 +50,7 @@ protected:
         QPainter p(this);
         p.setPen(Qt::NoPen);
         p.setBrush(m_fill);
-        const QRectF r = QRectF(rect()).adjusted(0, 0, 0, -m_bottomInset);
+        const QRectF r = QRectF(rect()).adjusted(0, m_topInset, 0, -m_bottomInset);
         if (!m_rounded) {
             p.drawRect(r);
             return;
@@ -60,6 +66,7 @@ private:
     QColor m_fill;
     bool   m_rounded{true};
     bool   m_roundedBottom{false};
+    int    m_topInset{0};
     int    m_bottomInset{0};
     static constexpr int kRadius = 10;
 };
