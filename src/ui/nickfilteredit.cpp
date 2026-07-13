@@ -1,20 +1,15 @@
 #include "nickfilteredit.h"
-#include <QListWidget>
+#include "nicklistmodel.h"
 #include <QKeyEvent>
 
-NickFilterEdit::NickFilterEdit(QListWidget *nickList, QWidget *parent)
-    : QLineEdit(parent), m_nickList(nickList)
+NickFilterEdit::NickFilterEdit(NickListModel *model, QWidget *parent)
+    : QLineEdit(parent), m_model(model)
 {
     setObjectName("nickFilter");
     setPlaceholderText(QStringLiteral("filter users…"));
     setClearButtonEnabled(true);
     connect(this, &QLineEdit::textChanged, this, [this](const QString &text){
-        const QString lower = text.toLower();
-        for (int i = 0; i < m_nickList->count(); ++i) {
-            auto *item = m_nickList->item(i);
-            const QString nick = item->data(Qt::UserRole).toString().toLower();
-            item->setHidden(!lower.isEmpty() && !nick.startsWith(lower));
-        }
+        if (m_model) m_model->setFilter(text);
     });
 }
 

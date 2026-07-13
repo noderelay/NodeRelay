@@ -94,6 +94,8 @@ qt_add_executable(Uplink WIN32
     src/ui/searchbar.h
     src/ui/nickfilteredit.cpp
     src/ui/nickfilteredit.h
+    src/ui/nicklistmodel.cpp
+    src/ui/nicklistmodel.h
     src/ui/trayicon.cpp
     src/ui/trayicon.h
     src/ui/aboutdialog.cpp

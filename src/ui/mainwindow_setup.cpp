@@ -49,6 +49,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QTreeWidget>
+#include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QTextBrowser>
@@ -134,6 +135,8 @@ void MainWindow::connectPreferences()
             m_nickDelegate->setColors(QColor(m_theme.accent),
                                       QColor(m_theme.border),
                                       QColor(m_theme.text));
+        if (m_theme.valid)
+            m_nickStyle.accent = QColor(m_theme.accent);
         if (m_theme.valid) {
             if (m_primaryTopicBtn) {
                 const bool on = m_primaryTopicBtn->isChecked();
@@ -250,6 +253,7 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::coloredNicksToggled, this, [this](bool on){
         m_config.ui.coloredNicks = on;
+        m_nickStyle.coloredNicks = on;
         saveConfig();
         if (!m_model->activeHost().isEmpty() && !m_model->activeChannel().isEmpty())
             refreshNickList(m_model->activeHost(), m_model->activeChannel());
@@ -421,12 +425,21 @@ void MainWindow::setupSidebar()
 
 void MainWindow::setupNickPanel()
 {
-    m_nickList = new QListWidget;
+    m_nickStyle.botIconIdx  = &m_botIconIdx;
+    m_nickStyle.avatarCache = &m_avatarCache;
+    m_nickStyle.coloredNicks = m_config.ui.coloredNicks;
+    if (m_theme.valid)
+        m_nickStyle.accent = QColor(m_theme.accent);
+
+    m_nickList = new QListView;
+    m_nickModel = new NickListModel(m_model, &m_nickStyle, m_nickList);
+    m_nickList->setModel(m_nickModel);
     FadeScrollBar::attachOverlay(m_nickList);   // floats — no reserved gutter
     m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
     m_nickList->setIconSize(QSize(16, 16));
     m_nickList->setUniformItemSizes(true);
+    m_nickList->setEditTriggers(QAbstractItemView::NoEditTriggers);
     QScroller::grabGesture(m_nickList->viewport(), QScroller::LeftMouseButtonGesture);
     m_nickDelegate = new NickDelegate(m_nickList);
     if (m_theme.valid)
@@ -435,7 +448,7 @@ void MainWindow::setupNickPanel()
                                   QColor(m_theme.text));
     m_nickList->setItemDelegate(m_nickDelegate);
     m_nickList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_nickList, &QListWidget::customContextMenuRequested,
+    connect(m_nickList, &QListView::customContextMenuRequested,
             this, &MainWindow::onNickListContextMenu);
 
     m_nickGroupsIconLabel = new QLabel;
@@ -477,7 +490,7 @@ void MainWindow::setupNickPanel()
     hbox->addWidget(m_nickCountLabel);
     hbox->addWidget(m_userInfoLabel, 1);
 
-    m_nickFilter = new NickFilterEdit(m_nickList);
+    m_nickFilter = new NickFilterEdit(m_nickModel);
 
     m_nickPanel = new ChromePanel;
     m_nickPanel->setObjectName("nickPanel");
@@ -498,9 +511,14 @@ void MainWindow::setupChatArea()
     // Right content — holds the panes splitter only
     m_rightContent = new QWidget;
     m_rightContent->setObjectName("rightContent");
+    // Without WA_StyledBackground the #rightContent QSS backdrop is silently
+    // dropped and the window-edge margins bleed through to the compositor.
+    m_rightContent->setAttribute(Qt::WA_StyledBackground, true);
     auto *vbox     = new QVBoxLayout(m_rightContent);
-    // No bottom inset: the user list runs flush to the window bottom like the
-    // sidebar; the input bar keeps its own bottom padding for the text box.
+    // No bottom inset: the side cards carry their own bottom gaps and the
+    // input bar keeps its own bottom padding for the text box. The top
+    // margin is managed by applyPanelChrome (0 in cards mode — the side
+    // cards carry their own top gaps and the chat column stays flush).
     vbox->setContentsMargins(8, 8, 8, 0);
     vbox->setSpacing(0);
 

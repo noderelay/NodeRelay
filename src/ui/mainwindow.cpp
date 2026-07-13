@@ -46,6 +46,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QTreeWidget>
+#include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QTextBrowser>
@@ -415,11 +416,32 @@ void MainWindow::applyPanelChrome()
 {
     if (!m_theme.valid) return;
     // With panel cards off, the nick panel flattens onto the buffer color
-    // with square corners.
+    // with square corners and no floating gaps.
     const bool cards = m_config.ui.panelCards;
     const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
-    static_cast<ChromePanel *>(m_nickPanel)->setFill(fill, cards);
+    // Cards float with a uniform kPanelGap frame, matching the input strip's
+    // bottom margin. Each side card carries its OWN gaps (exposing the panel's
+    // backdrop) rather than relying on rightContent's outer margins, which
+    // don't paint reliably: the sidebar's window-facing edge is its left, the
+    // user list's is its right, the inner edges are the splitter handles, and
+    // top/bottom are the panels' own insets. rightContent drops its margins in
+    // cards mode so the gaps aren't doubled and the chat column stays flush.
+    const int gap = cards ? kPanelGap : 0;
+    auto *nickPanel = static_cast<ChromePanel *>(m_nickPanel);
+    nickPanel->setFill(fill, cards, /*roundedBottom=*/cards);
+    nickPanel->setTopInset(gap);
+    nickPanel->setBottomInset(gap);
+    nickPanel->setRightInset(gap);
+    if (m_nickPanel->layout())
+        m_nickPanel->layout()->setContentsMargins(0, gap, gap, gap);
     static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(fill, cards);
+    if (m_sidebarPanel && m_sidebarPanel->layout())
+        m_sidebarPanel->layout()->setContentsMargins(gap, gap, 0, gap);
+    if (m_rightContent && m_rightContent->layout())
+        m_rightContent->layout()->setContentsMargins(cards ? 0 : 8, cards ? 0 : 8,
+                                                      cards ? 0 : 8, 0);
+    if (m_mainSplitter) m_mainSplitter->setHandleWidth(gap);
+    if (m_chatSplitter) m_chatSplitter->setHandleWidth(gap);
     for (auto *pane : std::as_const(m_panes))
         pane->setNickChrome(fill.name(), cards);
 }
@@ -1531,6 +1553,7 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
     if (m_panes.contains(key)) return nullptr;
 
     auto *pane = new ChannelPane(host, channel, this);
+    pane->setNickModel(new NickListModel(m_model, &m_nickStyle));
     if (m_theme.valid)
         pane->chatView()->setColors(QColor(m_theme.text), QColor(m_theme.background),
                                     QColor(m_theme.accent), QColor(m_theme.background),
@@ -1934,15 +1957,9 @@ void MainWindow::rebuildPaneLayout()
 void MainWindow::refreshPaneNickList(ChannelPane *pane)
 {
     pane->clearNickFilter();
-    pane->nickList()->clear();
-    auto *ch   = m_model->channel(pane->host(), pane->channel());
-    if (!ch) return;
-    auto *sess = m_model->session(pane->host());
-
-    for (const auto &e : std::as_const(ch->nicks))
-        pane->nickList()->addItem(makeNickItem(e, ch, sess));
-
-    pane->setNickCount(static_cast<int>(ch->nicks.size()));
+    pane->nickModel()->setBuffer(pane->host(), pane->channel());
+    auto *ch = m_model->channel(pane->host(), pane->channel());
+    pane->setNickCount(ch ? static_cast<int>(ch->nicks.size()) : 0);
 }
 
 QString MainWindow::topicAgeStr(quint64 ts)

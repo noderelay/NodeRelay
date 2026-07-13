@@ -4,10 +4,11 @@
 #include "ui/uistyle.h"
 #include "ui/searchbar.h"
 #include "ui/nickfilteredit.h"
+#include "ui/nicklistmodel.h"
 #include "ui/chromepanel.h"
 #include "ui/dropframe.h"
 
-#include <QListWidget>
+#include <QListView>
 #include <QScroller>
 #include <QPlainTextEdit>
 #include <QKeyEvent>
@@ -132,10 +133,11 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     // Chat view
     m_chatView = new ChatView;
 
-    m_nickList = new QListWidget;
+    m_nickList = new QListView;
     FadeScrollBar::attachOverlay(m_nickList);   // floats — no reserved gutter
     m_nickList->setSpacing(0);
     m_nickList->setUniformItemSizes(true);
+    m_nickList->setEditTriggers(QAbstractItemView::NoEditTriggers);
     QScroller::grabGesture(m_nickList->viewport(), QScroller::LeftMouseButtonGesture);
 
     // Nick panel header — same widgets as the main window's user list
@@ -167,7 +169,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     nhbox->addWidget(m_nickCountLabel);
     nhbox->addStretch(1);
 
-    m_nickFilter = new NickFilterEdit(m_nickList);
+    m_nickFilter = new NickFilterEdit; // model attached via setNickModel()
 
     m_nickWrapper = new ChromePanel;
     m_nickWrapper->setObjectName("nickPanel");
@@ -210,6 +212,8 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     ccVbox->addWidget(m_chatView, 1);
 
     auto *bodySplitter = new QSplitter(Qt::Horizontal);
+    m_bodySplitter = bodySplitter;
+    bodySplitter->setObjectName("paneBodySplitter");
     // Backdrop behind the nick panel's rounded top corners.
     bodySplitter->setAttribute(Qt::WA_StyledBackground, true);
     bodySplitter->setHandleWidth(0);
@@ -271,8 +275,18 @@ void ChannelPane::setNickVisible(bool visible)
 void ChannelPane::setNickChrome(const QString &bg, bool rounded)
 {
     const QColor c(bg);
-    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c, rounded);
+    const int gap = rounded ? kPanelGap : 0;
+    if (m_nickWrapper) {
+        auto *wrapper = static_cast<ChromePanel *>(m_nickWrapper);
+        wrapper->setFill(c, rounded, /*roundedBottom=*/rounded);
+        wrapper->setTopInset(gap);
+        wrapper->setBottomInset(gap);
+        wrapper->setRightInset(gap); // window-facing edge of the user list
+        if (m_nickWrapper->layout())
+            m_nickWrapper->layout()->setContentsMargins(0, gap, gap, gap);
+    }
     if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c, rounded);
+    if (m_bodySplitter) m_bodySplitter->setHandleWidth(gap);
 }
 
 void ChannelPane::setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups)
@@ -294,6 +308,14 @@ void ChannelPane::setNickCount(int count)
     const QString countStr = QString::number(count);
     m_nickCountLabel->setText(countStr);
     m_nickCountLabel->setToolTip(countStr + " users");
+}
+
+void ChannelPane::setNickModel(NickListModel *model)
+{
+    m_nickModel = model;
+    model->setParent(this);
+    m_nickList->setModel(model);
+    m_nickFilter->setModel(model);
 }
 
 void ChannelPane::clearNickFilter()

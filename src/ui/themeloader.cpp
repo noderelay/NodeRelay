@@ -251,6 +251,8 @@ QTreeWidget {
     outline: none;
     border-top-left-radius: {{panelRadius}};
     border-top-right-radius: {{panelRadius}};
+    border-bottom-left-radius: {{panelRadius}};
+    border-bottom-right-radius: {{panelRadius}};
 }
 QTreeWidget::item {
     padding: 2px 6px;
@@ -279,21 +281,21 @@ QTextEdit {
 }
 
 /* ── Nick list ── */
-QListWidget {
+QListView {
     background-color: {{nicklistBg}};
     color: {{nicklistText}};
     border: none;
     outline: none;
 }
-QListWidget::item {
+QListView::item {
     padding: 2px 8px;
     height: 22px;
 }
-QListWidget::item:selected {
+QListView::item:selected {
     background-color: {{accent}};
     color: {{sidebarActive}};
 }
-QListWidget::item:hover:!selected {
+QListView::item:hover:!selected {
     background-color: {{border}};
 }
 
@@ -503,28 +505,29 @@ QSplitter::handle {
 }
 
 /* ── Embedded nick panel ── */
-/* Mirrors the sidebar card's rounded top. Both the panel and its header
-   carry the radii — the header fills the panel's top, so both must curve
+/* Mirrors the sidebar card's rounding. The header fills the panel's top and
+   the list its bottom, so each edge widget must curve along with the panel
    for the splitter's window-bg backdrop to show through the corners. */
 QWidget#nickPanel {
     background-color: {{panelNickBg}};
-    border-top-left-radius: {{panelRadius}};
-    border-top-right-radius: {{panelRadius}};
+    border-radius: {{panelRadius}};
 }
 QWidget#nickPanelHeader {
     background-color: {{panelNickBg}};
     border-top-left-radius: {{panelRadius}};
     border-top-right-radius: {{panelRadius}};
 }
-QWidget#nickPanel QListWidget {
+QWidget#nickPanel QListView {
     background-color: {{panelNickBg}};
     color: {{text}};
+    border-bottom-left-radius: {{panelRadius}};
+    border-bottom-right-radius: {{panelRadius}};
 }
-QWidget#nickPanel QListWidget::item:selected {
+QWidget#nickPanel QListView::item:selected {
     background: transparent;
     color: {{sidebarActive}};
 }
-QWidget#nickPanel QListWidget::item:hover {
+QWidget#nickPanel QListView::item:hover {
     background: transparent;
 }
 QWidget#nickPanelHeader QToolButton {
@@ -583,6 +586,14 @@ QDialogButtonBox QPushButton {
 /* ── Right content area — backdrop behind panel margins/corners ── */
 QWidget#rightContent {
     background-color: {{rcBackdrop}};
+}
+
+/* Splitter handles double as the inner frame around the floating cards —
+   they carry the backdrop color so the gap reads like the window margins. */
+QSplitter#mainSplitter::handle,
+QSplitter#chatSplitter::handle,
+QSplitter#paneBodySplitter::handle {
+    background-color: {{panelBackdrop}};
 }
 
 QLabel#channelLabel {

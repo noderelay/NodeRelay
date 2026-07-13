@@ -1106,9 +1106,8 @@ void SessionModel::onModesReceived(const QString &host, const QString &channel, 
                     const auto it = ch->nickIndex.constFind(target.toLower());
                     if (it != ch->nickIndex.constEnd()) {
                         auto &e = ch->nicks[it.value()];
-                        if (adding) e.prefixes.insert(pre);
-                        else        e.prefixes.remove(pre);
-                        e.recomputePrefix();
+                        if (adding) e.addPrefix(pre);
+                        else        e.removePrefix(pre);
                     }
                 }
                 if (argModes.contains(c)) ++argIdx;
