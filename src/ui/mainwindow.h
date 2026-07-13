@@ -124,6 +124,8 @@ private:
     QRegularExpression selfNickReFor(const ServerId &host) const;
     void applyFontSizes();
     void applyPanelChrome();
+    void applyThemeByName(const QString &name);  // visuals only; no config write
+    QString effectiveThemeName() const;          // auto pair when enabled, else ui.theme
     void setTopicRevealInset(bool reserve);
     void updateTypingLabel();
     QString typingText(ServerId host, BufferId channel) const;
@@ -337,6 +339,7 @@ private:
     DccController *m_dcc{nullptr};
     Config        m_config;
     Theme         m_theme;
+    QString       m_appliedThemeName;   // last theme actually applied to the UI
 
     // Config file watcher — hot-reloads servers added via text editor
     QFileSystemWatcher m_configWatcher;

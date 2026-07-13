@@ -27,6 +27,7 @@ public:
     void quit(const QString &reason = {});
     void abort();
     void reconnect();
+    void onNetworkOnline();   // reachability regained; respects intentional disconnects
     void setPinnedFingerprint(const QString &fp) { m_pinnedFingerprint = fp; }
 
     void join(const QString &channel, const QString &key = {});

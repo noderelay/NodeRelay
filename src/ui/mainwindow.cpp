@@ -37,6 +37,7 @@
 #include "config/config.h"
 
 #include <QApplication>
+#include <QStyleHints>
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QKeyEvent>
@@ -195,9 +196,22 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     }
     resize(kDefaultWindowW, kDefaultWindowH);
 
-    ThemeLoader::apply(m_config.ui.theme, m_config.ui.panelCards);
-    m_theme = ThemeLoader::load(m_config.ui.theme);
+    m_appliedThemeName = effectiveThemeName();
+    ThemeLoader::apply(m_appliedThemeName, m_config.ui.panelCards);
+    m_theme = ThemeLoader::load(m_appliedThemeName);
     setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    // Auto theme mode: recolor live when the OS flips between light and dark.
+    connect(qApp->styleHints(), &QStyleHints::colorSchemeChanged,
+            this, [this](Qt::ColorScheme){
+        if (!m_config.ui.themeAuto)
+            return;
+        const QString name = effectiveThemeName();
+        if (name != m_appliedThemeName)
+            applyThemeByName(name);
+    });
+#endif
 
     setupSidebar();
     setupNickPanel();

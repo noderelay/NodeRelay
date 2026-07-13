@@ -9,6 +9,7 @@
 #include "ui/mainwindowdelegates.h"
 #include "ui/commanddispatcher.h"
 #include "irc/ircclient.h"
+#include "net/networkmonitor.h"
 #include "ui/dcccontroller.h"
 #include "ui/trayicon.h"
 #include "ui/aboutdialog.h"
@@ -40,6 +41,7 @@
 #include "config/config.h"
 
 #include <QApplication>
+#include <QStyleHints>
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QKeyEvent>
@@ -115,60 +117,107 @@
 // ---------------------------------------------------------------------------
 
 
+void MainWindow::applyThemeByName(const QString &name)
+{
+    m_appliedThemeName = name;
+    ThemeLoader::apply(name, m_config.ui.panelCards);
+    m_theme = ThemeLoader::load(name);
+    if (m_chatView && m_theme.valid)
+        m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
+                              QColor(m_theme.accent),
+                              QColor(m_theme.background),
+                              QColor(m_theme.border));
+    if (m_sidebarDelegate && m_theme.valid)
+        m_sidebarDelegate->setColors(QColor(m_theme.accent),
+                                     QColor(m_theme.border),
+                                     QColor(m_theme.text),
+                                     QColor(m_theme.sidebarUnread));
+    if (m_nickDelegate && m_theme.valid)
+        m_nickDelegate->setColors(QColor(m_theme.accent),
+                                  QColor(m_theme.border),
+                                  QColor(m_theme.text));
+    if (m_theme.valid)
+        m_nickStyle.accent = QColor(m_theme.accent);
+    if (m_theme.valid) {
+        if (m_primaryTopicBtn) {
+            const bool on = m_primaryTopicBtn->isChecked();
+            m_primaryTopicBtn->setIcon(MenuIcons::topicBubble(
+                QColor(on ? m_theme.accent : m_theme.placeholder)));
+        }
+        for (auto *pane : std::as_const(m_panes)) {
+            auto *nd = new NickDelegate(pane->nickList());
+            nd->setColors(QColor(m_theme.accent),
+                          QColor(m_theme.border),
+                          QColor(m_theme.text));
+            pane->nickList()->setItemDelegate(nd);
+            pane->setTopicIcon(
+                MenuIcons::topicBubble(QColor(m_theme.placeholder)),
+                MenuIcons::topicBubble(QColor(m_theme.accent)));
+            const QColor ic(m_theme.text);
+            pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
+            pane->setPopOutIcon(MenuIcons::pipEnter(ic));
+        }
+        applyPanelChrome();
+    }
+    if (m_sidebarCloseBtn)
+        m_sidebarCloseBtn->setStyleSheet(UiStyle::headerButtonStyle());
+    if (m_sidebarRevealBtn)
+        m_sidebarRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
+    // Menu bar icons are tinted with the theme text color at build time;
+    // rebuild the bar so a live theme switch doesn't leave stale tints.
+    if (m_menuBarWidget) {
+        setMenuBar(nullptr);
+        m_menuBarWidget = nullptr;
+        buildMenuBar();
+    }
+}
+
+QString MainWindow::effectiveThemeName() const
+{
+    if (!m_config.ui.themeAuto)
+        return m_config.ui.theme;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    switch (qApp->styleHints()->colorScheme()) {
+    case Qt::ColorScheme::Dark:  return m_config.ui.themeDark;
+    case Qt::ColorScheme::Light: return m_config.ui.themeLight;
+    default:                     return m_config.ui.theme;  // Unknown: behave as manual
+    }
+#else
+    return m_config.ui.theme;
+#endif
+}
+
 void MainWindow::connectPreferences()
 {
     connect(m_prefsDialog, &PreferencesDialog::themeChanged, this, [this](const QString &name){
         m_config.ui.theme = name;
-        ThemeLoader::apply(name, m_config.ui.panelCards);
-        m_theme = ThemeLoader::load(name);
-        if (m_chatView && m_theme.valid)
-            m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
-                                  QColor(m_theme.accent),
-                                  QColor(m_theme.background),
-                                  QColor(m_theme.border));
-        if (m_sidebarDelegate && m_theme.valid)
-            m_sidebarDelegate->setColors(QColor(m_theme.accent),
-                                         QColor(m_theme.border),
-                                         QColor(m_theme.text),
-                                         QColor(m_theme.sidebarUnread));
-        if (m_nickDelegate && m_theme.valid)
-            m_nickDelegate->setColors(QColor(m_theme.accent),
-                                      QColor(m_theme.border),
-                                      QColor(m_theme.text));
-        if (m_theme.valid)
-            m_nickStyle.accent = QColor(m_theme.accent);
-        if (m_theme.valid) {
-            if (m_primaryTopicBtn) {
-                const bool on = m_primaryTopicBtn->isChecked();
-                m_primaryTopicBtn->setIcon(MenuIcons::topicBubble(
-                    QColor(on ? m_theme.accent : m_theme.placeholder)));
-            }
-            for (auto *pane : std::as_const(m_panes)) {
-                auto *nd = new NickDelegate(pane->nickList());
-                nd->setColors(QColor(m_theme.accent),
-                              QColor(m_theme.border),
-                              QColor(m_theme.text));
-                pane->nickList()->setItemDelegate(nd);
-                pane->setTopicIcon(
-                    MenuIcons::topicBubble(QColor(m_theme.placeholder)),
-                    MenuIcons::topicBubble(QColor(m_theme.accent)));
-                const QColor ic(m_theme.text);
-                pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
-                pane->setPopOutIcon(MenuIcons::pipEnter(ic));
-            }
-            applyPanelChrome();
+        if (m_config.ui.themeAuto) {   // a manual pick switches auto mode off
+            m_config.ui.themeAuto = false;
+            m_prefsDialog->syncFromConfig(m_config);
         }
-        if (m_sidebarCloseBtn)
-            m_sidebarCloseBtn->setStyleSheet(UiStyle::headerButtonStyle());
-        if (m_sidebarRevealBtn)
-            m_sidebarRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
-        // Menu bar icons are tinted with the theme text color at build time —
-        // rebuild the bar so a live theme switch doesn't leave stale tints.
-        if (m_menuBarWidget) {
-            setMenuBar(nullptr);
-            m_menuBarWidget = nullptr;
-            buildMenuBar();
-        }
+        applyThemeByName(name);
+        saveConfig();
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::themeAutoToggled, this, [this](bool on){
+        m_config.ui.themeAuto = on;
+        const QString name = effectiveThemeName();
+        if (name != m_appliedThemeName)
+            applyThemeByName(name);
+        saveConfig();
+    });
+    connect(m_prefsDialog, &PreferencesDialog::themeLightChanged, this, [this](const QString &name){
+        m_config.ui.themeLight = name;
+        const QString effective = effectiveThemeName();
+        if (m_config.ui.themeAuto && effective != m_appliedThemeName)
+            applyThemeByName(effective);
+        saveConfig();
+    });
+    connect(m_prefsDialog, &PreferencesDialog::themeDarkChanged, this, [this](const QString &name){
+        m_config.ui.themeDark = name;
+        const QString effective = effectiveThemeName();
+        if (m_config.ui.themeAuto && effective != m_appliedThemeName)
+            applyThemeByName(effective);
         saveConfig();
     });
 
@@ -722,7 +771,8 @@ void MainWindow::setupChatArea()
         statusBar()->showMessage(url.host());
         m_hoverGlobalPos = QCursor::pos();
         QToolTip::showText(m_hoverGlobalPos, url.host(), m_chatView->viewport());
-        if (m_config.ui.linkPreviews) m_previews->linkPreview()->fetchHover(url);
+        if (m_config.ui.linkPreviews && !m_model->networkMonitor()->isMetered())
+            m_previews->linkPreview()->fetchHover(url);
     });
     connect(m_chatView, &ChatView::loadOlderRequested, this, &MainWindow::loadOlderMessages);
     m_chatView->installEventFilter(this);

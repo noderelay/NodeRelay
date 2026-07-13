@@ -433,6 +433,19 @@ To set a theme in config directly:
 theme = "nord"
 ```
 
+### Can Uplink follow my system dark mode?
+
+Yes, on Qt 6.5 or newer. Open **Preferences → Appearance**, tick **Follow System Light/Dark (Auto)**, and pick a theme for each side in the **Light theme** and **Dark theme** dropdowns. When your desktop switches its color scheme (KDE Quick Settings, GNOME dark mode, a sunset schedule), Uplink recolors itself live, mid-session, with no restart.
+
+Picking a theme from the main list turns Auto off, so a manual choice always wins. In config:
+
+```toml
+[ui]
+theme_auto = true
+theme_light = "light"
+theme_dark = "dark"
+```
+
 ### How do I change the font size?
 
 Use **Ctrl+Plus** / **Ctrl+Minus** to zoom the font for the UI region that currently has focus (chat, nick list, sidebar, channel header, or input box). You can also use **Ctrl+Scroll wheel** to zoom the region under the cursor. Each region has its own independent font size. For fine-grained control, open **Preferences → Appearance → Font Config** to set exact point sizes for each region. Font sizes are saved to your config automatically.
@@ -1252,6 +1265,12 @@ Uplink fetches the page title and thumbnail for URLs posted in chat. If a previe
 - **YouTube and heavy sites**: as of v0.12.0, Uplink uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
 - **SSL certificate errors**: self-signed or expired certs block the fetch. There is no per-site cert override.
 - **The page has no `<title>` or `og:title`**: no preview will appear; there is nothing to display.
+
+### Why did link previews stop on my phone hotspot?
+
+When the OS reports the connection as metered (most phone hotspots), Uplink automatically pauses background fetches to spare your data: link preview cards, hover title lookups, and remote avatar downloads. Everything resumes on the next unmetered connection. Local-file avatars and the manual update check are unaffected.
+
+Related: when the network comes back after a drop (laptop resume, Wi-Fi roam), Uplink reconnects immediately instead of waiting out the retry backoff timer. Servers you disconnected yourself stay down.
 
 ### Previews disappear when I switch channels
 

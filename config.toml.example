@@ -8,6 +8,9 @@
 
 [ui]
 theme = "catppuccin-mocha"  # theme name from themes/ folder
+# theme_auto = false        # follow the OS light/dark scheme (Qt 6.5+)
+# theme_light = "light"     # theme used while the desktop is in light mode
+# theme_dark = "dark"       # theme used while the desktop is in dark mode
 show_nick_prefix = true     # show your nick next to the input box
 show_topic = true           # show the topic bar at the top
 show_emoji_button = false   # show emoji picker button next to input box

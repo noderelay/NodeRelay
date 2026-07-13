@@ -108,6 +108,9 @@ Controls the look and feel of the interface. All keys are optional; missing keys
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `theme` | string | `"default"` | Theme name; must match a `.toml` file in `themes/` without the extension. On Windows, `"default"` uses the native Windows style with no custom colors. |
+| `theme_auto` | bool | `false` | Follow the OS light/dark scheme (needs Qt 6.5+). When on, Uplink applies `theme_light` or `theme_dark` and switches live when the desktop flips. Picking a theme from the list in Preferences turns this off. If the OS does not report a scheme, `theme` is used as before. |
+| `theme_light` | string | `"light"` | Theme applied while the OS scheme is light (only with `theme_auto`) |
+| `theme_dark` | string | `"dark"` | Theme applied while the OS scheme is dark (only with `theme_auto`). On Windows, `"default"` gives the native look. |
 | `show_nick_prefix` | bool | `true` | Show your nickname label next to the message input box |
 | `show_topic` | bool | `true` | Show the channel topic bar below the channel header row |
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
@@ -197,7 +200,7 @@ Controls features that make outgoing network requests triggered by incoming data
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites; the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Chat Window → Link Previews** or set here. |
+| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites; the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Chat Window → Link Previews** or set here. While the OS reports the connection as metered (phone hotspot), previews, hover titles, and avatar fetches pause automatically. |
 
 ```toml
 [privacy]
