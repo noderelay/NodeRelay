@@ -23,6 +23,7 @@
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sans: 'IBM Plex Mono', ui-monospace, monospace;
   --maxw: 1080px;
+  --nav-bg: rgba(249,245,215,0.92);
 }
 
 [data-theme="dark"] {
@@ -43,11 +44,51 @@
   --gb-purple:    #d3869b;
   --gb-aqua:      #8ec07c;
   --gb-orange:    #fe8019;
+  --nav-bg:       rgba(29,32,33,0.92);
 }
 
-[data-theme="dark"] nav {
-  background: rgba(29,32,33,0.92);
-  border-bottom-color: var(--gb-bg1);
+/* Palettes below come from the shipped client themes
+   (themes/Nord.toml, themes/Catppuccin-Mocha.toml). */
+[data-theme="nord"] {
+  --gb-bg0h:      #2e3440;
+  --gb-bg0:       #3b4252;
+  --gb-bg1:       #434c5e;
+  --gb-bg2:       #4c566a;
+  --gb-bg3:       #4c566a;
+  --gb-bg4:       #616e88;
+  --gb-fg:        #d8dee9;
+  --gb-fg2:       #b6c0d4;
+  --gb-fg4:       #616e88;
+  --gb-red:       #bf616a;
+  --gb-green:     #a3be8c;
+  --gb-yellow:    #ebcb8b;
+  --gb-yellow-br: #ebcb8b;
+  --gb-blue:      #81a1c1;
+  --gb-purple:    #b48ead;
+  --gb-aqua:      #88c0d0;
+  --gb-orange:    #d08770;
+  --nav-bg:       rgba(46,52,64,0.92);
+}
+
+[data-theme="catppuccin"] {
+  --gb-bg0h:      #11111b;
+  --gb-bg0:       #181825;
+  --gb-bg1:       #313244;
+  --gb-bg2:       #45475a;
+  --gb-bg3:       #585b70;
+  --gb-bg4:       #6c7086;
+  --gb-fg:        #cdd6f4;
+  --gb-fg2:       #a6adc8;
+  --gb-fg4:       #7f849c;
+  --gb-red:       #f38ba8;
+  --gb-green:     #a6e3a1;
+  --gb-yellow:    #f9e2af;
+  --gb-yellow-br: #f9e2af;
+  --gb-blue:      #89b4fa;
+  --gb-purple:    #cba6f7;
+  --gb-aqua:      #94e2d5;
+  --gb-orange:    #fab387;
+  --nav-bg:       rgba(24,24,37,0.92);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,7 +109,7 @@ html { scroll-behavior: smooth; }
 /* ── NAV ── */
 nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(249,245,215,0.92);
+  background: var(--nav-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--gb-bg1);
 }
@@ -114,11 +155,6 @@ nav {
 .theme-toggle:focus-visible { outline: 2px solid var(--gb-aqua); outline-offset: 2px; }
 .theme-toggle svg { display: block; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); }
 .theme-toggle:hover svg { transform: rotate(20deg); }
-.icon-sun, .icon-moon { position: absolute; transition: opacity 0.2s, transform 0.2s; }
-[data-theme="light"] .icon-moon { opacity: 0; transform: scale(0.7); }
-[data-theme="dark"]  .icon-sun  { opacity: 0; transform: scale(0.7); }
-[data-theme="light"] .icon-sun  { opacity: 1; transform: scale(1); }
-[data-theme="dark"]  .icon-moon { opacity: 1; transform: scale(1); }
 
 /* ── FOOTER ── */
 footer { border-top: 1px solid var(--gb-bg1); padding: 2.5rem 0 3rem; text-align: center; }
