@@ -142,6 +142,15 @@
       padding-bottom: 0.4rem;
       border-bottom: 1px solid var(--subtle);
     }
+    h2 .hlink {
+      margin-left: 0.45rem;
+      color: var(--muted);
+      font-weight: 400;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    h2:hover .hlink, h2 .hlink:focus-visible { opacity: 1; }
+    h2 .hlink:hover { color: var(--blue); text-decoration: none; }
 
     h3 {
       font-size: 1rem;
@@ -236,6 +245,23 @@
       border: 1px solid var(--subtle);
       box-shadow: 0 8px 28px rgba(0,0,0,0.28);
       background: var(--surface);
+      cursor: zoom-in;
+    }
+
+    /* ── LIGHTBOX ──────────────────────────────────── */
+    #lightbox {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.82);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+      cursor: zoom-out;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 100%; max-height: 100%;
+      border-radius: 8px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
     }
     figure.shot figcaption {
       margin-top: 0.55rem;
@@ -444,7 +470,7 @@
   </div>
 
   <div class="nav-search">
-    <input type="search" id="page-search" placeholder="Search guide…" autocomplete="off" spellcheck="false">
+    <input type="search" id="page-search" placeholder="Search guide…  ( / )" autocomplete="off" spellcheck="false">
     <div class="nav-search-meta">
       <span id="search-count"></span>
       <div class="search-nav-btns" id="search-nav-btns" style="display:none">
@@ -3486,6 +3512,54 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
   }, { rootMargin: '-10% 0px -80% 0px' });
 
   document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+  // ── Heading anchor links (hover a section title to reveal #)
+  document.querySelectorAll('main section[id]').forEach(sec => {
+    const h = sec.querySelector('h2');
+    if (!h) return;
+    const a = document.createElement('a');
+    a.className = 'hlink';
+    a.href = '#' + sec.id;
+    a.textContent = '#';
+    a.setAttribute('aria-label', 'Link to this section');
+    h.appendChild(a);
+  });
+
+  // ── Screenshot lightbox
+  const lightbox = document.createElement('div');
+  lightbox.id = 'lightbox';
+  const lightboxImg = document.createElement('img');
+  lightbox.appendChild(lightboxImg);
+  document.body.appendChild(lightbox);
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('figure.shot img').forEach(img => {
+    img.addEventListener('click', () => {
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt;
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  lightbox.addEventListener('click', closeLightbox);
+
+  // ── Keyboard: "/" focuses the guide search, Esc closes the lightbox
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) {
+      closeLightbox();
+      return;
+    }
+    if (e.key !== '/' || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (lightbox.classList.contains('open')) return;
+    const el = document.activeElement;
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  });
 </script>
 <script src="assets/site.js"></script>
 </body>
