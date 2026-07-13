@@ -29,6 +29,8 @@ private slots:
     void onSocketError();
 
 private:
+    void armStallGuard();
+
     QString     m_savePath;
     QTcpServer *m_server{nullptr};
     QTcpSocket *m_socket{nullptr};
@@ -37,5 +39,6 @@ private:
     quint16     m_port;
     qint64      m_total;
     qint64      m_received{0};
+    qint64      m_lastReceivedSeen{0};
     bool        m_done{false};
 };

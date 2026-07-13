@@ -72,6 +72,7 @@ void DccReceive::start()
     m_socket = new QTcpSocket(this);
     connect(m_socket, &QTcpSocket::readyRead,          this, &DccReceive::onReadyRead);
     connect(m_socket, &QAbstractSocket::errorOccurred, this, &DccReceive::onSocketError);
+    connect(m_socket, &QTcpSocket::connected,          this, &DccReceive::armStallGuard);
 
     QTimer::singleShot(30000, this, [this]{
         if (m_socket && m_socket->state() != QAbstractSocket::ConnectedState) {
@@ -107,6 +108,13 @@ bool DccReceive::listenPassive(quint32 expectedIp)
 
     connect(m_server, &QTcpServer::newConnection, this, [this, expected, validatePeer] {
         QTcpSocket *incoming = m_server->nextPendingConnection();
+        if (m_socket) {
+            // Already have our peer — a second queued connection must not
+            // replace the socket mid-transfer.
+            incoming->abort();
+            incoming->deleteLater();
+            return;
+        }
         if (validatePeer) {
             // Reject connections from unexpected peers (race/injection protection).
             if (incoming->peerAddress().toIPv4Address() != expected.toIPv4Address()) {
@@ -128,6 +136,7 @@ bool DccReceive::listenPassive(quint32 expectedIp)
                 emit error("Transfer stalled: no data received after connect");
             }
         });
+        armStallGuard();
     });
     QTimer::singleShot(60000, this, [this]{
         if (!m_socket) {
@@ -141,6 +150,31 @@ bool DccReceive::listenPassive(quint32 expectedIp)
 quint16 DccReceive::listenPort() const
 {
     return m_server ? m_server->serverPort() : 0;
+}
+
+// Stall guard: abort only when the received byte count has not advanced
+// between two 60s checks — a one-shot deadline would kill any healthy
+// transfer that simply takes longer than 60s. Mirrors DccSend's ACK guard.
+void DccReceive::armStallGuard()
+{
+    auto *stall = new QTimer(this);
+    connect(stall, &QTimer::timeout, this, [this, stall]{
+        if (m_done || !m_socket || m_received >= m_total) {
+            stall->stop();
+            stall->deleteLater();
+            return;
+        }
+        if (m_received == m_lastReceivedSeen) {
+            stall->stop();
+            stall->deleteLater();
+            m_socket->disconnect(this);
+            cancel();
+            emit error("Transfer stalled: peer stopped sending");
+            return;
+        }
+        m_lastReceivedSeen = m_received;
+    });
+    stall->start(60000);
 }
 
 void DccReceive::cancel()

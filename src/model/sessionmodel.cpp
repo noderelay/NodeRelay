@@ -307,6 +307,9 @@ void SessionModel::removeServer(ServerId host)
     for (int i = 0; i < m_clients.size(); ++i) {
         if (m_clients[i]->serverName() == host.str()) {
             m_clients[i]->quit("Removed");
+            // Late socket signals from the dying client must not reach a
+            // re-added session with the same name.
+            m_clients[i]->disconnect(this);
             m_clients[i]->deleteLater();
             m_clients.removeAt(i);
             break;
@@ -333,6 +336,9 @@ void SessionModel::closeServer(ServerId host)
     for (int i = 0; i < m_clients.size(); ++i) {
         if (m_clients[i]->serverName() == host.str()) {
             m_clients[i]->quit("Closing");
+            // Late socket signals from the dying client must not reach a
+            // re-added session with the same name.
+            m_clients[i]->disconnect(this);
             m_clients[i]->deleteLater();
             m_clients.removeAt(i);
             break;
@@ -715,9 +721,13 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
             ++ch.mentions;
     }
 
+    // Read before the emit: a directly-connected slot that inserts into the
+    // session's channel hash would invalidate the ch reference (Qt 6 QHash
+    // rehash). No current handler does, but don't rely on that.
+    const int unread = ch.unread;
     emit messageAdded(ServerId{host}, BufferId{target}, msg);
     if (!isActive && !msg.isHistory && countsAsUnread)
-        emit unreadChanged(ServerId{host}, BufferId{target}, ch.unread);
+        emit unreadChanged(ServerId{host}, BufferId{target}, unread);
 }
 
 void SessionModel::requestOlderHistory(ServerId host, BufferId channel)

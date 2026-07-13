@@ -64,6 +64,7 @@ void DccController::onSendReceived(ServerId, const QString &fromNick,
     });
     connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
         prog->setValue(prog->maximum());
+        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::information(m_window, "DCC", "File received:\n" + path);
     });
@@ -76,8 +77,10 @@ void DccController::onSendReceived(ServerId, const QString &fromNick,
         if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
     });
 
-    dcc->start();
+    // Show before start(): start() can emit error() synchronously, and its
+    // handler close()s the dialog — show() afterwards would resurrect it.
     prog->show();
+    dcc->start();
 }
 
 void DccController::onPassiveOfferReceived(ServerId server, const QString &fromNick,
@@ -132,6 +135,7 @@ void DccController::onPassiveOfferReceived(ServerId server, const QString &fromN
     });
     connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
         prog->setValue(prog->maximum());
+        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::information(m_window, "DCC", "File received:\n" + path);
     });
@@ -196,6 +200,7 @@ void DccController::sendFile(ServerId host, const QString &nick)
     });
     connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
         prog->setValue(prog->maximum());
+        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
         if (dccGuard) dccGuard->deleteLater();
     });
     connect(dcc, &DccSend::error, this, [this, prog, dccGuard](const QString &msg){
@@ -248,6 +253,7 @@ void DccController::sendFilePassive(ServerId host, const QString &nick)
     });
     connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
         prog->setValue(prog->maximum());
+        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
         if (dccGuard) dccGuard->deleteLater();
     });
     connect(dcc, &DccSend::error, this, [this, prog, dccGuard, token](const QString &msg){
