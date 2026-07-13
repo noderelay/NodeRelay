@@ -419,23 +419,27 @@ void MainWindow::applyPanelChrome()
     // with square corners and no floating gaps.
     const bool cards = m_config.ui.panelCards;
     const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
-    // Cards float: backdrop frames the side cards on all four sides — their
-    // own top/bottom margins, the splitter handles along their inner edges,
-    // and the rightContent window margins outside — all kPanelGap, matching
-    // the input strip's bottom margin. The chat column alone stays flush to
-    // the top, so rightContent drops its shared top margin in cards mode.
+    // Cards float with a uniform kPanelGap frame, matching the input strip's
+    // bottom margin. Each side card carries its OWN gaps (exposing the panel's
+    // backdrop) rather than relying on rightContent's outer margins, which
+    // don't paint reliably: the sidebar's window-facing edge is its left, the
+    // user list's is its right, the inner edges are the splitter handles, and
+    // top/bottom are the panels' own insets. rightContent drops its margins in
+    // cards mode so the gaps aren't doubled and the chat column stays flush.
     const int gap = cards ? kPanelGap : 0;
     auto *nickPanel = static_cast<ChromePanel *>(m_nickPanel);
     nickPanel->setFill(fill, cards, /*roundedBottom=*/cards);
     nickPanel->setTopInset(gap);
     nickPanel->setBottomInset(gap);
+    nickPanel->setRightInset(gap);
     if (m_nickPanel->layout())
-        m_nickPanel->layout()->setContentsMargins(0, gap, 0, gap);
+        m_nickPanel->layout()->setContentsMargins(0, gap, gap, gap);
     static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(fill, cards);
     if (m_sidebarPanel && m_sidebarPanel->layout())
-        m_sidebarPanel->layout()->setContentsMargins(0, gap, 0, gap);
+        m_sidebarPanel->layout()->setContentsMargins(gap, gap, 0, gap);
     if (m_rightContent && m_rightContent->layout())
-        m_rightContent->layout()->setContentsMargins(8, cards ? 0 : 8, 8, 0);
+        m_rightContent->layout()->setContentsMargins(cards ? 0 : 8, cards ? 0 : 8,
+                                                      cards ? 0 : 8, 0);
     if (m_mainSplitter) m_mainSplitter->setHandleWidth(gap);
     if (m_chatSplitter) m_chatSplitter->setHandleWidth(gap);
     for (auto *pane : std::as_const(m_panes))

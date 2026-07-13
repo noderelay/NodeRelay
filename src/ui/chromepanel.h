@@ -43,6 +43,12 @@ public:
         update();
     }
 
+    void setRightInset(int px)
+    {
+        m_rightInset = px;
+        update();
+    }
+
 protected:
     void paintEvent(QPaintEvent *) override
     {
@@ -50,7 +56,7 @@ protected:
         QPainter p(this);
         p.setPen(Qt::NoPen);
         p.setBrush(m_fill);
-        const QRectF r = QRectF(rect()).adjusted(0, m_topInset, 0, -m_bottomInset);
+        const QRectF r = QRectF(rect()).adjusted(0, m_topInset, -m_rightInset, -m_bottomInset);
         if (!m_rounded) {
             p.drawRect(r);
             return;
@@ -68,5 +74,6 @@ private:
     bool   m_roundedBottom{false};
     int    m_topInset{0};
     int    m_bottomInset{0};
+    int    m_rightInset{0};
     static constexpr int kRadius = 10;
 };

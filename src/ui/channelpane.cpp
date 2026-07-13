@@ -281,8 +281,9 @@ void ChannelPane::setNickChrome(const QString &bg, bool rounded)
         wrapper->setFill(c, rounded, /*roundedBottom=*/rounded);
         wrapper->setTopInset(gap);
         wrapper->setBottomInset(gap);
+        wrapper->setRightInset(gap); // window-facing edge of the user list
         if (m_nickWrapper->layout())
-            m_nickWrapper->layout()->setContentsMargins(0, gap, 0, gap);
+            m_nickWrapper->layout()->setContentsMargins(0, gap, gap, gap);
     }
     if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c, rounded);
     if (m_bodySplitter) m_bodySplitter->setHandleWidth(gap);
