@@ -435,6 +435,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] `prependMessages`: copy only the messages that survive the cap into a pre-reserved list instead of concatenating the whole buffer on CHATHISTORY backfill (`channel.h`, v0.25.56)
 
 ### Medium term
+- [x] Virtualized nick list — `QListWidget` → `QListView` + `NickListModel` (`QAbstractListModel`); only painted rows materialize, tooltips build lazily on hover, filter lives in the model; `NickEntry` slimmed (dropped `lowerNick`, `QSet<QChar>` → `quint8` bitmask), single JOIN/PART reindexes from the mutation point. ~5-10 MB + O(n)/event saved on 10k-nick channels (v2026.7.3, PR #53)
 - [x] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
 - [x] Per-channel nick index — `QHash<QString, int> nickIndex` (lower nick → index) to replace O(n) scans in `onMessage`, `onNotice`, `onAction`, `onAccountChanged`
 - [x] Batch chat/nick refreshes — debounce `refreshChatView()` and `refreshNickList()` with a short single-shot timer for burst updates
