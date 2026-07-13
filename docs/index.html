@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uplink — a fast, secure, IRCv3-featured IRC client</title>
+<title>Uplink: a fast, secure, IRCv3-featured IRC client</title>
 <meta name="description" content="Uplink is a fast, secure IRC client with full IRCv3 support, built with Qt6 and C++. Native binaries for Linux, Windows, macOS, and FreeBSD.">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/uplink-icon-192.png">
@@ -16,69 +16,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
 <style>
-  :root {
-    --gb-bg0h:   #f9f5d7;
-    --gb-bg0:    #fbf1c7;
-    --gb-bg1:    #ebdbb2;
-    --gb-bg2:    #d5c4a1;
-    --gb-bg3:    #bdae93;
-    --gb-bg4:    #a89984;
-    --gb-fg:     #3c3836;
-    --gb-fg2:    #504945;
-    --gb-fg4:    #7c6f64;
-    --gb-red:    #9d0006;
-    --gb-green:  #79740e;
-    --gb-yellow: #b57614;
-    --gb-yellow-br: #d79921;
-    --gb-blue:   #076678;
-    --gb-purple: #8f3f71;
-    --gb-aqua:   #427b58;
-    --gb-orange: #af3a03;
-    --mono: 'IBM Plex Mono', ui-monospace, monospace;
-    --sans: 'IBM Plex Mono', ui-monospace, monospace;
-    --maxw: 1080px;
-  }
-
-  [data-theme="dark"] {
-    --gb-bg0h:      #1d2021;
-    --gb-bg0:       #282828;
-    --gb-bg1:       #3c3836;
-    --gb-bg2:       #504945;
-    --gb-bg3:       #665c54;
-    --gb-bg4:       #7c6f64;
-    --gb-fg:        #ebdbb2;
-    --gb-fg2:       #d5c4a1;
-    --gb-fg4:       #bdae93;
-    --gb-red:       #fb4934;
-    --gb-green:     #b8bb26;
-    --gb-yellow:    #d79921;
-    --gb-yellow-br: #fabd2f;
-    --gb-blue:      #83a598;
-    --gb-purple:    #d3869b;
-    --gb-aqua:      #8ec07c;
-    --gb-orange:    #fe8019;
-  }
-
-  [data-theme="dark"] nav {
-    background: rgba(29,32,33,0.92);
-    border-bottom-color: var(--gb-bg1);
-  }
-
   [data-theme="dark"] body::before { opacity: 0.18; }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    /* Kill transitions/smooth-scroll under reduced-motion, but NOT animations:
-       the only keyframe animation on the page is the hero opacity crossfade,
-       which is motion-free (just a fade) and must keep running or the four
-       stacked screenshots all show at opacity:1 at once. Firefox refuses to let
-       a more-specific !important rule re-enable an animation the universal
-       reset killed, so we simply never kill it. */
-    *, *::before, *::after { transition: none !important; }
-  }
 
   body {
     background: var(--gb-bg0);
@@ -107,63 +47,6 @@
 
   a { color: var(--gb-blue); }
   ::selection { background: var(--gb-yellow-br); color: #282828; }
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 1.5rem; }
-
-  /* ── NAV ── */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(249,245,215,0.92);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--gb-bg1);
-  }
-  .nav-inner {
-    max-width: var(--maxw); margin: 0 auto;
-    padding: 0.85rem 1.5rem;
-    display: flex; align-items: center; gap: 2rem;
-  }
-  .nav-logo {
-    font-family: var(--mono); font-weight: 700; font-size: 1.05rem;
-    color: var(--gb-yellow); text-decoration: none;
-    letter-spacing: 0.02em;
-    display: inline-flex; align-items: center; gap: 0.55rem;
-  }
-  .nav-logo img { display: block; }
-  .nav-links { display: flex; gap: 1.4rem; margin-left: auto; align-items: center; }
-  .nav-links a {
-    font-family: var(--mono); font-size: 0.85rem; font-weight: 500;
-    color: var(--gb-fg2); text-decoration: none; transition: color 0.15s;
-  }
-  .nav-links a:hover { color: var(--gb-yellow); }
-  .nav-gh {
-    border: 1px solid var(--gb-bg3);
-    padding: 0.35rem 0.85rem; border-radius: 4px; color: var(--gb-fg) !important;
-  }
-  .nav-gh:hover { border-color: var(--gb-yellow); }
-  @media (max-width: 760px) { .nav-links a:not(.nav-gh) { display: none; } }
-
-  /* ── THEME TOGGLE ── */
-  .theme-toggle {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 50%;
-    border: none; cursor: pointer;
-    background: transparent;
-    color: var(--gb-fg4);
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
-  .theme-toggle:hover {
-    background: var(--gb-bg1);
-    color: var(--gb-yellow);
-  }
-  .theme-toggle:focus-visible { outline: 2px solid var(--gb-aqua); outline-offset: 2px; }
-  .theme-toggle svg { display: block; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); }
-  .theme-toggle:hover svg { transform: rotate(20deg); }
-  .icon-sun, .icon-moon { position: absolute; transition: opacity 0.2s, transform 0.2s; }
-  .theme-toggle { position: relative; }
-  [data-theme="light"] .icon-moon { opacity: 0; transform: scale(0.7); }
-  [data-theme="dark"]  .icon-sun  { opacity: 0; transform: scale(0.7); }
-  [data-theme="light"] .icon-sun  { opacity: 1; transform: scale(1); }
-  [data-theme="dark"]  .icon-moon { opacity: 1; transform: scale(1); }
 
   /* ── HERO ── */
   header {
@@ -217,8 +100,8 @@
 
   .hero-shot { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
   /* Fixed-ratio frame so every screenshot occupies the same box regardless of
-     its own aspect ratio (some themes are shorter) — prevents a shorter image
-     from letting the one behind it peek out. */
+     its own aspect ratio (some themes are shorter); otherwise a shorter image
+     would let the one behind it peek out. */
   .hero-frame {
     position: relative; padding-top: calc(824 / 1016 * 100%);
     border-radius: 8px; border: 1px solid var(--gb-bg2);
@@ -461,17 +344,6 @@
 
   /* ── POWER USERS ── */
   .pw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; }
-
-  /* ── FOOTER ── */
-  footer { border-top: 1px solid var(--gb-bg1); padding: 2.5rem 0 3rem; text-align: center; }
-  .footer-logo { font-family: var(--mono); font-weight: 700; color: var(--gb-yellow); margin-bottom: 1rem; }
-  .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
-  .footer-links a {
-    font-family: var(--mono); font-size: 0.85rem; font-weight: 500;
-    color: var(--gb-fg2); text-decoration: none;
-  }
-  .footer-links a:hover { color: var(--gb-yellow); }
-  .footer-meta { margin-top: 1.25rem; font-family: var(--mono); font-size: 0.75rem; color: var(--gb-fg4); }
 </style>
 </head>
 <body>
@@ -509,9 +381,9 @@
     <div class="eyebrow"><b>v2026.7.3</b> <i>·</i> <span>Qt6 / C++</span> <i>·</i> <span>GPLv3</span> <i>·</i> <span>37 <a href="https://ircv3.net/" style="color: inherit; text-decoration: underline;">IRCv3</a> caps</span></div>
     <h1>IRC, with everything<br>the protocol can do <span class="hl">today</span>.</h1>
     <p class="hero-sub">
-      Uplink is a fast, secure, native IRC client with full IRCv3 support —
-      chat history, reactions, typing indicators, message deletion — wrapped
-      in a clean Qt6 interface. No Electron. No web view. Just C++.
+      Uplink is a fast, secure, native IRC client with full IRCv3 support:
+      chat history, reactions, typing indicators, message deletion, all in
+      a clean Qt6 interface. No Electron, no web view, just C++.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/noderelay/UplinkIRC/releases/latest">Download latest ↗</a>
@@ -542,32 +414,32 @@
     <div class="dl-grid">
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-2026.7.3-x86_64.AppImage">
         <div class="dl-os">Linux</div>
-        <div class="dl-pkg">AppImage — run anywhere</div>
+        <div class="dl-pkg">AppImage - run anywhere</div>
         <div class="note">chmod +x and run. Works on any distro with glibc 2.35+ (Ubuntu 22.04 era or newer).</div>
         <div class="dl-arch">x86_64 · .AppImage ↗</div>
       </a>
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-linux-x86_64.tar.gz">
         <div class="dl-os">Linux</div>
-        <div class="dl-pkg">Tarball — for packagers</div>
-        <div class="note">Bare binary + themes. Needs system Qt 6 libraries — for packagers and manual installs.</div>
+        <div class="dl-pkg">Tarball - for packagers</div>
+        <div class="note">Bare binary + themes. Needs system Qt 6 libraries. For packagers and manual installs.</div>
         <div class="dl-arch">x86_64 · .tar.gz ↗</div>
       </a>
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-windows-x64.zip">
         <div class="dl-os">Windows</div>
-        <div class="dl-pkg">Portable zip — native</div>
-        <div class="note">Windows 10/11. Unzip anywhere and run Uplink.exe — no installer, no registry.</div>
+        <div class="dl-pkg">Portable zip - native</div>
+        <div class="note">Windows 10/11. Unzip anywhere and run Uplink.exe. No installer, no registry.</div>
         <div class="dl-arch">x64 · .zip ↗</div>
       </a>
       <a class="dl-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-macos-arm64.dmg">
         <div class="dl-os">macOS</div>
-        <div class="dl-pkg">Disk image — Apple Silicon</div>
-        <div class="note">Unsigned — right-click → Open if Gatekeeper blocks it. Intel: runs via Rosetta 2.</div>
+        <div class="dl-pkg">Disk image - Apple Silicon</div>
+        <div class="note">Unsigned; right-click → Open if Gatekeeper blocks it. Intel: runs via Rosetta 2.</div>
         <div class="dl-arch">arm64 · .dmg ↗</div>
       </a>
       <a class="dl-card" href="#build">
         <div class="dl-os">FreeBSD</div>
         <div class="dl-pkg">Build from source</div>
-        <div class="note">Port files ship in packaging/freebsd — or build directly with cmake and qt6 from ports.</div>
+        <div class="note">Port files ship in packaging/freebsd, or build directly with cmake and qt6 from ports.</div>
         <div class="dl-arch">cmake + qt6 ↓</div>
       </a>
     </div>
@@ -583,7 +455,7 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-orange);">ircv3</span>
       <h2>The modern protocol, fully wired in</h2>
-      <p><a href="https://ircv3.net/" style="color: var(--gb-orange); text-decoration: underline;">IRCv3</a> isn't a checkbox here — it's the point. Uplink implements 37 capabilities and extensions and turns them into features you can actually see.</p>
+      <p><a href="https://ircv3.net/" style="color: var(--gb-orange); text-decoration: underline;">IRCv3</a> is the whole point of this client. Uplink implements 37 capabilities and extensions and turns them into features you can actually see.</p>
     </div>
     <div class="feat-grid">
       <div class="feat-card b-yellow">
@@ -592,7 +464,7 @@
       </div>
       <div class="feat-card b-green">
         <h3>Typing indicators</h3>
-        <p><code>draft/typing</code> shows who's mid-thought as a quiet overlay on the chat. Your own state is sent debounced — no spam.</p>
+        <p><code>draft/typing</code> shows who's mid-thought as a quiet overlay on the chat. Your own state is sent debounced to avoid spam.</p>
       </div>
       <div class="feat-card b-purple">
         <h3>Reactions &amp; replies</h3>
@@ -600,11 +472,11 @@
       </div>
       <div class="feat-card b-red">
         <h3>Message deletion</h3>
-        <p><code>draft/message-redaction</code> lets you delete your own messages — properly, across every client that supports it.</p>
+        <p><code>draft/message-redaction</code> lets you delete your own messages properly, across every client that supports it.</p>
       </div>
       <div class="feat-card b-blue">
         <h3>Account tracking</h3>
-        <p><code>account-notify</code>, <code>account-tag</code>, <code>extended-join</code>, and WHOX keep NickServ identities visible in real time — hover any nick to see who's actually there.</p>
+        <p><code>account-notify</code>, <code>account-tag</code>, <code>extended-join</code>, and WHOX keep NickServ identities visible in real time. Hover any nick to see who's actually there.</p>
       </div>
       <div class="feat-card b-aqua">
         <h3>Netsplit collapse</h3>
@@ -643,7 +515,7 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-purple);">themes</span>
       <h2>297 built-in themes. Stop looking.</h2>
-      <p>57 hand-picked originals plus the entire base16 catalog — Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Rose Piné, Solarized, One Dark, and 289 others. At this point, your favorite is already in here. Browse with arrow keys, apply with Enter.</p>
+      <p>57 hand-picked originals plus the entire base16 catalog: Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Rose Piné, Solarized, One Dark, and 289 others. At this point, your favorite is already in here. Browse with arrow keys, apply with Enter.</p>
     </div>
     <div class="theme-tabs" role="tablist" aria-label="Theme previews">
       <button class="theme-tab active" data-shot="shot-gruvbox-dark" role="tab" aria-selected="true">Gruvbox Dark</button>
@@ -668,7 +540,7 @@
       <img id="shot-humanoid-light" src="assets/humanoid-light.png" alt="Uplink in Humanoid Light" width="1016" height="666" loading="lazy">
     </div>
     <p class="theme-count"><b>297 more</b> in Preferences → Theme. Per-widget font sizes, hanging indent toggle, and a collapsible sidebar round out the fit-and-finish.</p>
-    <p class="theme-count">Want your own? Drop a <code>.toml</code> file into <code>~/.config/uplink/themes/</code> and it shows up in the list on next launch. Copy any shipped theme as a starting point — <a href="howto.html#themes">full guide →</a></p>
+    <p class="theme-count">Want your own? Drop a <code>.toml</code> file into <code>~/.config/uplink/themes/</code> and it shows up in the list on next launch. Copy any shipped theme as a starting point. <a href="howto.html#themes">Full guide →</a></p>
   </div>
 </section>
 
@@ -680,16 +552,16 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-aqua);">security</span>
       <h2>Paranoid by default</h2>
-      <p>Security isn't a feature-page afterthought — it's in the connection layer, the config file, and the rendering pipeline.</p>
+      <p>Security is built into the connection layer, the config file, and the rendering pipeline.</p>
     </div>
     <div class="sec-list">
       <div class="sec-item">
         <h3>TLS by default, verified</h3>
-        <p>Every connection runs through <code>QSslSocket</code>. Invalid or self-signed certs disconnect immediately — no silent bypass, ever.</p>
+        <p>Every connection runs through <code>QSslSocket</code>. Invalid or self-signed certs disconnect immediately. There is no silent bypass.</p>
       </div>
       <div class="sec-item">
         <h3>OS keychain storage</h3>
-        <p>Passwords live in Secret Service, macOS Keychain, or Windows Credential Manager. The config holds a sentinel — no plaintext secrets on disk.</p>
+        <p>Passwords live in Secret Service, macOS Keychain, or Windows Credential Manager. The config file only holds a sentinel, so no plaintext secrets end up on disk.</p>
       </div>
       <div class="sec-item">
         <h3>SASL PLAIN + EXTERNAL</h3>
@@ -719,7 +591,7 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-yellow);">scripting</span>
       <h2>Your scripts, your commands</h2>
-      <p>Link any executable to a custom slash command. Write scripts in bash, python, ruby — whatever you want. Four scripts ship out of the box, ready to use on first launch.</p>
+      <p>Link any executable to a custom slash command. Write scripts in bash, python, ruby, whatever you want. Four scripts ship out of the box, ready to use on first launch.</p>
     </div>
     <div class="pw-grid">
       <div class="feat-card b-yellow">
@@ -734,7 +606,7 @@
       </div>
       <div class="feat-card b-blue">
         <h3>/uptime</h3>
-        <p>System uptime. Cross-platform — works on Linux, macOS, and Windows with no dependencies.</p>
+        <p>System uptime. Works on Linux, macOS, and Windows with no dependencies.</p>
         <p><code>⏱ up 4 hours, 58 minutes</code></p>
       </div>
       <div class="feat-card b-purple">
@@ -743,7 +615,7 @@
         <p><code>🎲 2d6: 3 + 5 = 8</code></p>
       </div>
     </div>
-    <p class="theme-count">Add your own in <b>Preferences → Scripts</b> — set a command name, browse to any executable, done. Scripts receive <code>UPLINK_NICK</code>, <code>UPLINK_SERVER</code>, <code>UPLINK_CHANNEL</code>, and <code>UPLINK_ARGS</code> as environment variables. Deleted a bundled script? Click <b>Restore Defaults</b> to bring it back.</p>
+    <p class="theme-count">Add your own in <b>Preferences → Scripts</b>: set a command name, browse to any executable, done. Scripts receive <code>UPLINK_NICK</code>, <code>UPLINK_SERVER</code>, <code>UPLINK_CHANNEL</code>, and <code>UPLINK_ARGS</code> as environment variables. Deleted a bundled script? Click <b>Restore Defaults</b> to bring it back.</p>
   </div>
 </section>
 
@@ -764,7 +636,7 @@
       </div>
       <div class="feat-card b-yellow">
         <h3>Channel panes &amp; pop-out windows</h3>
-        <p>Open up to four channels at once — each pane gets its own history, nick list, topic bar, search, and input. Auto-layout from side-by-side to a 2×2 grid, or pop any channel out into its own window.</p>
+        <p>Open up to four channels at once. Each pane gets its own history, nick list, topic bar, search, and input. Auto-layout from side-by-side to a 2×2 grid, or pop any channel out into its own window.</p>
       </div>
       <div class="feat-card b-green">
         <h3>Watch list &amp; logging</h3>
@@ -776,7 +648,7 @@
       </div>
       <div class="feat-card b-purple">
         <h3>Plain-text config</h3>
-        <p>Everything lives in a single <code>config.toml</code> — mode 0600, atomic saves, openable straight from the File menu. Your setup is greppable and versionable.</p>
+        <p>Everything lives in a single <code>config.toml</code>: mode 0600, atomic saves, openable straight from the File menu. Your setup is greppable and versionable.</p>
       </div>
       <div class="feat-card b-aqua">
         <h3>mIRC formatting &amp; CTCP</h3>
@@ -784,7 +656,7 @@
       </div>
       <div class="feat-card b-yellow">
         <h3>Touch-friendly</h3>
-        <p>Kinetic flick-to-scroll on touchscreens and tablets — chat, sidebar, and nick list all respond to touch with natural momentum.</p>
+        <p>Kinetic flick-to-scroll on touchscreens and tablets. Chat, sidebar, and nick list all respond to touch with natural momentum.</p>
       </div>
     </div>
   </div>
@@ -810,13 +682,13 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-aqua);">quick start</span>
       <h2>Up and running in under a minute</h2>
-      <p>Three steps. Everything else is optional — the full guide covers SASL, bouncers, DCC, and more.</p>
+      <p>Three steps. Everything else is optional; the full guide covers SASL, bouncers, DCC, and more.</p>
     </div>
 
     <div class="qs-steps">
       <div class="feat-card b-aqua">
         <h3>① Download &amp; run</h3>
-        <p>Grab the binary for your platform from the <a href="#download">download section above</a>. The Linux AppImage runs anywhere — <code>chmod +x Uplink-*.AppImage</code> then run it. No install, no package manager.</p>
+        <p>Grab the binary for your platform from the <a href="#download">download section above</a>. The Linux AppImage runs anywhere: <code>chmod +x Uplink-*.AppImage</code> then run it. No install, no package manager.</p>
       </div>
       <div class="feat-card b-yellow">
         <h3>② Set your nick</h3>
@@ -858,7 +730,7 @@
       <tr><td><code>/nick newnick</code></td><td>Change your nickname</td></tr>
       <tr><td><code>/msg nick text</code></td><td>Send a private message</td></tr>
       <tr><td><code>/me action</code></td><td>CTCP action (<em>/me waves</em>)</td></tr>
-      <tr><td><code>/whois nick</code></td><td>Full user info — lands in active channel</td></tr>
+      <tr><td><code>/whois nick</code></td><td>Full user info, lands in active channel</td></tr>
       <tr><td><code>/away message</code></td><td>Set away · <code>/back</code> to return</td></tr>
       <tr><td><code>/ignore nick</code></td><td>Suppress a nick · <code>/unignore nick</code> to lift</td></tr>
       <tr><td><code>/server host[:port]</code></td><td>Connect to any server on the fly</td></tr>
@@ -940,35 +812,8 @@
       document.getElementById(tab.dataset.shot).classList.add('show');
     });
   });
-
-  /* ── dark / light toggle ── */
-  const root = document.documentElement;
-  const btn = document.getElementById('themeToggle');
-  const STORAGE_KEY = 'uplink-theme';
-
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) root.setAttribute('data-theme', saved);
-
-  btn.addEventListener('click', () => {
-    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    localStorage.setItem(STORAGE_KEY, next);
-  });
-
-  /* ── random app icon rotation ── */
-  (function() {
-    const icons = [
-      'black-old-orange','black-orange','colorful-blueish','colorful-greenblue',
-      'colorful-hotbluepink','colorful-orange','colorful-purple','flat-black',
-      'gruvbox-blue','gruvbox-colorful','gruvbox-orange','gruvbox-purple',
-      'gruvbox-yellow','original-black','original-flat-shine'
-    ];
-    const pick = icons[Math.floor(Math.random() * icons.length)];
-    document.querySelectorAll('[data-uplink-icon]').forEach(function(img) {
-      img.src = 'assets/icons/' + pick + '.png';
-    });
-  })();
 </script>
+<script src="assets/site.js"></script>
 
 </body>
 </html>

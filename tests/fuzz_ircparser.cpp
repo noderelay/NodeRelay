@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
             parsed += replayFile(info.filePath());
         }
     }
-    QTextStream(stdout) << "fuzz_ircparser: replayed " << parsed << " input(s) — no crashes\n";
+    QTextStream(stdout) << "fuzz_ircparser: replayed " << parsed << " input(s) - no crashes\n";
     if (parsed == 0) {
         QTextStream(stderr) << "fuzz_ircparser: no inputs replayed\n";
         return 1;

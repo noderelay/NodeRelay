@@ -1,0 +1,132 @@
+/* Shared styles for the docs pages (index.html, quality.html):
+   gruvbox palette tokens, top nav, theme toggle, footer.
+   howto.html has its own sidebar layout and does not use this file. */
+
+:root {
+  --gb-bg0h:   #f9f5d7;
+  --gb-bg0:    #fbf1c7;
+  --gb-bg1:    #ebdbb2;
+  --gb-bg2:    #d5c4a1;
+  --gb-bg3:    #bdae93;
+  --gb-bg4:    #a89984;
+  --gb-fg:     #3c3836;
+  --gb-fg2:    #504945;
+  --gb-fg4:    #7c6f64;
+  --gb-red:    #9d0006;
+  --gb-green:  #79740e;
+  --gb-yellow: #b57614;
+  --gb-yellow-br: #d79921;
+  --gb-blue:   #076678;
+  --gb-purple: #8f3f71;
+  --gb-aqua:   #427b58;
+  --gb-orange: #af3a03;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Mono', ui-monospace, monospace;
+  --maxw: 1080px;
+}
+
+[data-theme="dark"] {
+  --gb-bg0h:      #1d2021;
+  --gb-bg0:       #282828;
+  --gb-bg1:       #3c3836;
+  --gb-bg2:       #504945;
+  --gb-bg3:       #665c54;
+  --gb-bg4:      #7c6f64;
+  --gb-fg:        #ebdbb2;
+  --gb-fg2:       #d5c4a1;
+  --gb-fg4:       #bdae93;
+  --gb-red:       #fb4934;
+  --gb-green:     #b8bb26;
+  --gb-yellow:    #d79921;
+  --gb-yellow-br: #fabd2f;
+  --gb-blue:      #83a598;
+  --gb-purple:    #d3869b;
+  --gb-aqua:      #8ec07c;
+  --gb-orange:    #fe8019;
+}
+
+[data-theme="dark"] nav {
+  background: rgba(29,32,33,0.92);
+  border-bottom-color: var(--gb-bg1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  /* Kill transitions/smooth-scroll under reduced-motion, but NOT animations:
+     the only keyframe animation on any page is the hero opacity crossfade,
+     which is motion-free (just a fade) and must keep running or the four
+     stacked screenshots all show at opacity:1 at once. Firefox refuses to let
+     a more-specific !important rule re-enable an animation the universal
+     reset killed, so we simply never kill it. */
+  *, *::before, *::after { transition: none !important; }
+}
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(249,245,215,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--gb-bg1);
+}
+.nav-inner {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: 0.85rem 1.5rem;
+  display: flex; align-items: center; gap: 2rem;
+}
+.nav-logo {
+  font-family: var(--mono); font-weight: 700; font-size: 1.05rem;
+  color: var(--gb-yellow); text-decoration: none;
+  letter-spacing: 0.02em;
+  display: inline-flex; align-items: center; gap: 0.55rem;
+}
+.nav-logo img { display: block; }
+.nav-links { display: flex; gap: 1.4rem; margin-left: auto; align-items: center; }
+.nav-links a {
+  font-family: var(--mono); font-size: 0.85rem; font-weight: 500;
+  color: var(--gb-fg2); text-decoration: none; transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--gb-yellow); text-decoration: none; }
+.nav-gh {
+  border: 1px solid var(--gb-bg3);
+  padding: 0.35rem 0.85rem; border-radius: 4px; color: var(--gb-fg) !important;
+}
+.nav-gh:hover { border-color: var(--gb-yellow); }
+@media (max-width: 760px) { .nav-links a:not(.nav-gh) { display: none; } }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; cursor: pointer;
+  background: transparent;
+  color: var(--gb-fg4);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0; position: relative;
+}
+.theme-toggle:hover {
+  background: var(--gb-bg1);
+  color: var(--gb-yellow);
+}
+.theme-toggle:focus-visible { outline: 2px solid var(--gb-aqua); outline-offset: 2px; }
+.theme-toggle svg { display: block; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); }
+.theme-toggle:hover svg { transform: rotate(20deg); }
+.icon-sun, .icon-moon { position: absolute; transition: opacity 0.2s, transform 0.2s; }
+[data-theme="light"] .icon-moon { opacity: 0; transform: scale(0.7); }
+[data-theme="dark"]  .icon-sun  { opacity: 0; transform: scale(0.7); }
+[data-theme="light"] .icon-sun  { opacity: 1; transform: scale(1); }
+[data-theme="dark"]  .icon-moon { opacity: 1; transform: scale(1); }
+
+/* ── FOOTER ── */
+footer { border-top: 1px solid var(--gb-bg1); padding: 2.5rem 0 3rem; text-align: center; }
+.footer-logo { font-family: var(--mono); font-weight: 700; color: var(--gb-yellow); margin-bottom: 1rem; }
+.footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+.footer-links a {
+  font-family: var(--mono); font-size: 0.85rem; font-weight: 500;
+  color: var(--gb-fg2); text-decoration: none;
+}
+.footer-links a:hover { color: var(--gb-yellow); }
+.footer-meta { margin-top: 1.25rem; font-family: var(--mono); font-size: 0.75rem; color: var(--gb-fg4); }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Uplink — How-To Guide</title>
+  <title>Uplink How-To Guide</title>
   <script>
     (function(){
       var t = localStorage.getItem('uplink-theme');
@@ -593,7 +593,7 @@
     </figure>
 
     <div class="note">
-      <strong>New to IRC?</strong> IRC is a real-time chat protocol that has been running since 1988. You connect to a <em>server</em>, join <em>channels</em> (chat rooms that start with <code>#</code>), and chat with other people. Uplink handles all the protocol details — you just type.
+      <strong>New to IRC?</strong> IRC is a real-time chat protocol that has been running since 1988. You connect to a <em>server</em>, join <em>channels</em> (chat rooms that start with <code>#</code>), and chat with other people. Uplink handles all the protocol details; you just type.
     </div>
   </section>
 
@@ -632,15 +632,15 @@
     </table>
 
     <div class="tip">
-      <strong>Linux users:</strong> the AppImage is the recommended download — it is self-contained and runs on any modern x86_64 Linux without installing Qt. See the <a href="#appimage">AppImage section</a> for update instructions.
+      <strong>Linux users:</strong> the AppImage is the recommended download. It is self-contained and runs on any modern x86_64 Linux without installing Qt. See the <a href="#appimage">AppImage section</a> for update instructions.
     </div>
 
     <div class="tip">
-      <strong>macOS — install steps (Apple Silicon and Intel via Rosetta 2)</strong>
+      <strong>macOS install steps (Apple Silicon and Intel via Rosetta 2)</strong>
       <p>Because Uplink is not signed with an Apple Developer certificate, Gatekeeper will warn you on first launch. Follow these steps exactly:</p>
       <ol>
         <li>Download the <code>.dmg</code> from the releases page.</li>
-        <li>Double-click the DMG. When macOS says it cannot verify the file, click <strong>Done</strong> (not Eject — the volume stays mounted).</li>
+        <li>Double-click the DMG. When macOS says it cannot verify the file, click <strong>Done</strong> (not Eject; the volume stays mounted).</li>
         <li>Double-click the DMG icon on your desktop to open it and see <strong>Uplink.app</strong> inside.</li>
         <li>Open a new Finder window (<strong>Cmd+N</strong>) and click <strong>Applications</strong> in the sidebar.</li>
         <li>Drag <strong>Uplink.app</strong> from the DMG window into Applications.</li>
@@ -650,14 +650,14 @@
         <li>Click <strong>Open</strong> in the confirmation. Uplink launches and macOS remembers your approval.</li>
       </ol>
       <p>After the first launch, Uplink opens normally with no warnings.</p>
-      <p><strong>Updating:</strong> click <strong>Help → Check for Updates</strong>. If a new version is available, Uplink downloads the DMG and opens it in Finder. Drag the new <strong>Uplink.app</strong> to Applications and click <strong>Replace</strong>. Then repeat steps 7–9 above — macOS requires re-approval once per update since the app is not certificate-signed.</p>
+      <p><strong>Updating:</strong> click <strong>Help → Check for Updates</strong>. If a new version is available, Uplink downloads the DMG and opens it in Finder. Drag the new <strong>Uplink.app</strong> to Applications and click <strong>Replace</strong>. Then repeat steps 7–9 above; macOS requires re-approval once per update since the app is not certificate-signed.</p>
     </div>
   </section>
 
   <!-- APPIMAGE -->
   <section id="appimage">
-    <h2>AppImage — run anywhere, update in-place</h2>
-    <p>The AppImage bundles Uplink and its Qt libraries into a single executable file. It runs on any modern x86_64 Linux with glibc 2.35+ — no package manager, no Qt install needed.</p>
+    <h2>AppImage: run anywhere, update in-place</h2>
+    <p>The AppImage bundles Uplink and its Qt libraries into a single executable file. It runs on any modern x86_64 Linux with glibc 2.35+. No package manager, no Qt install needed.</p>
 
     <h3>Run it</h3>
     <pre>chmod +x Uplink-*.AppImage
@@ -666,10 +666,10 @@
     <h3>Update in-place (zsync)</h3>
     <p>The AppImage embeds zsync metadata pointing to the latest release. Install <a href="https://github.com/AppImageCommunity/AppImageUpdate" target="_blank">appimageupdatetool</a>, then:</p>
     <pre>appimageupdatetool ./Uplink-*.AppImage</pre>
-    <p>Only the changed blocks are downloaded — much faster than a full re-download.</p>
+    <p>Only the changed blocks are downloaded, which is much faster than a full re-download.</p>
 
     <h3>Auto-update from inside Uplink</h3>
-    <p>Click <strong>Help → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches — no terminal, no package manager, no sudo required.</p>
+    <p>Click <strong>Help → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches. No terminal, no package manager, no sudo required.</p>
 
     <div class="tip">
       <strong>Optional:</strong> place the AppImage in <code>~/bin/</code> or <code>~/.local/bin/</code> and it will appear in your application launcher if your desktop environment supports AppImage integration (most do with <code>libappindicator</code> installed).
@@ -722,7 +722,7 @@ cd Uplink
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build</pre>
 
-    <p>The binary is at <code>build/Uplink</code> (or <code>build\Uplink.exe</code> on Windows). Run it directly — on first launch Uplink creates <code>~/.config/uplink/themes/</code> and seeds it with all bundled themes automatically.</p>
+    <p>The binary is at <code>build/Uplink</code> (or <code>build\Uplink.exe</code> on Windows). Run it directly; on first launch Uplink creates <code>~/.config/uplink/themes/</code> and seeds it with all bundled themes automatically.</p>
 
     <div class="note">
       <strong>macOS:</strong> after building, run <code>cmake --install build</code> to produce a proper <code>.app</code> bundle, or launch <code>build/Uplink.app/Contents/MacOS/Uplink</code> directly.
@@ -739,13 +739,13 @@ cmake --build build</pre>
     <figure class="shot">
       <img src="shots/first-launch.png" loading="lazy"
            alt="Uplink immediately after first launch, connected to #uplink">
-      <figcaption>Uplink on first launch — connected to #uplink with the sidebar, chat area, and nick list.</figcaption>
+      <figcaption>Uplink on first launch, connected to #uplink with the sidebar, chat area, and nick list.</figcaption>
     </figure>
 
-    <p>The menu bar across the top (<strong>File, Edit, View, Window, Bookmarks, Plugins, Settings, Help, Search</strong>) carries every app action — on KDE it docks into the global menu automatically. Preferences lives under <strong>Settings</strong>, or press <kbd>Ctrl</kbd>+<kbd>,</kbd>.</p>
+    <p>The menu bar across the top (<strong>File, Edit, View, Window, Bookmarks, Plugins, Settings, Help, Search</strong>) carries every app action; on KDE it docks into the global menu automatically. Preferences lives under <strong>Settings</strong>, or press <kbd>Ctrl</kbd>+<kbd>,</kbd>.</p>
 
     <div class="tip">
-      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>File → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>File → Reload Config</strong> — Uplink will restart and connect.
+      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>File → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>File → Reload Config</strong>. Uplink will restart and connect.
     </div>
   </section>
 
@@ -763,7 +763,7 @@ cmake --build build</pre>
       <tr><td>Windows</td><td><code>%USERPROFILE%\.config\uplink\config.toml</code></td></tr>
     </table>
 
-    <p>Edit the file in any text editor. Uplink watches the file for changes — if you add or remove a <code>[[server]]</code> block while the app is running, the sidebar updates automatically. For other changes (theme, UI toggles, font sizes), click <strong>File → Reload Config</strong> to restart and apply everything. You can also click <strong>File → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
+    <p>Edit the file in any text editor. Uplink watches the file for changes: if you add or remove a <code>[[server]]</code> block while the app is running, the sidebar updates automatically. For other changes (theme, UI toggles, font sizes), click <strong>File → Reload Config</strong> to restart and apply everything. You can also click <strong>File → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
   </section>
 
   <!-- SET NICK -->
@@ -781,13 +781,13 @@ user = "uplink"
 realname = "Uplink User"
 channels = "#uplink"</pre>
 
-    <p>Save, then click <strong>File → Reload Config</strong> — Uplink restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
+    <p>Save, then click <strong>File → Reload Config</strong>. Uplink restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
   </section>
 
   <!-- CONNECT LINUXDOJO -->
   <section id="connect-linuxdojo">
     <h2>Connect to LinuxDojo</h2>
-    <p>LinuxDojo is the default server. You only need to set your nickname — everything else is already configured.</p>
+    <p>LinuxDojo is the default server. You only need to set your nickname; everything else is already configured.</p>
 
     <pre>[[server]]
 name = "LinuxDojo"
@@ -799,13 +799,13 @@ user = "uplink"
 realname = "Uplink User"
 channels = "#uplink"</pre>
 
-    <p>Save the file — Uplink detects the change and the server appears in the sidebar and connects automatically.</p>
+    <p>Save the file. Uplink detects the change and the server appears in the sidebar and connects automatically.</p>
   </section>
 
   <!-- CONNECT ANY -->
   <section id="connect-any">
     <h2>Connect to any IRC server</h2>
-    <p>Add a <code>[[server]]</code> block for every server you want to connect to. The double brackets (<code>[[]]</code>) mean "add another entry to the list" — this is standard TOML array-of-tables syntax.</p>
+    <p>Add a <code>[[server]]</code> block for every server you want to connect to. The double brackets (<code>[[]]</code>) mean "add another entry to the list"; this is standard TOML array-of-tables syntax.</p>
 
     <pre>[[server]]
 name = "Libera.Chat"
@@ -818,20 +818,20 @@ realname = "Uplink User"
 channels = "#linux, #archlinux"</pre>
 
     <div class="note">
-      <strong>Always set <code>ssl = true</code> for public servers.</strong> Uplink also supports <a href="#sts">STS (Strict Transport Security)</a> — if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
+      <strong>Always set <code>ssl = true</code> for public servers.</strong> Uplink also supports <a href="#sts">STS (Strict Transport Security)</a>: if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
       <br/><br/>
       Set <code>ssl = false</code> with port <code>6667</code> only when TLS is genuinely unavailable: a local test IRCd on <code>127.0.0.1</code>, a private LAN server with no certificate, a bouncer listening on loopback, or a <code>.onion</code> address where Tor provides its own encryption.
     </div>
 
-    <p>You can also connect to any server on the fly without editing config — just type a command in the input box:</p>
+    <p>You can also connect to any server on the fly without editing config. Just type a command in the input box:</p>
 
     <pre>/server irc.libera.chat             # connects over SSL on port 6697 (default)
 /server irc.example.org:6667        # connects plain-text on port 6667
 /connect irc.oftc.net               # /connect is an alias for /server</pre>
 
-    <p>The server appears in the sidebar immediately. Your nick is inherited from your first configured server. The sidebar label is derived from the hostname — <code>irc.chatjunkies.org</code> shows as <strong>CHATJUNKIES</strong>.</p>
+    <p>The server appears in the sidebar immediately. Your nick is inherited from your first configured server. The sidebar label is derived from the hostname: <code>irc.chatjunkies.org</code> shows as <strong>CHATJUNKIES</strong>.</p>
 
-    <p>To close a server you connected to ad-hoc, right-click it in the sidebar and choose <strong>Close Server</strong>, or type <code>/disconnect</code>. The server is removed from the sidebar but not saved to config — it won't reappear on next launch unless you add it to config.</p>
+    <p>To close a server you connected to ad-hoc, right-click it in the sidebar and choose <strong>Close Server</strong>, or type <code>/disconnect</code>. The server is removed from the sidebar but not saved to config, so it won't reappear on next launch unless you add it to config.</p>
 
     <p>Common IRC networks and their TLS hostnames:</p>
     <table>
@@ -868,12 +868,12 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
   <!-- MANAGE SERVERS -->
   <section id="manage-servers">
     <h2>Manage Servers dialog</h2>
-    <p>Click <strong>File → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. The dialog uses an integrated two-panel layout: server list on the left, server settings form on the right. Selecting a server loads its settings inline. Changes take effect immediately.</p>
+    <p>Click <strong>File → Manage Servers...</strong> to add, edit, or remove servers from the UI, with no need to edit <code>config.toml</code> by hand for most settings. The dialog uses an integrated two-panel layout: server list on the left, server settings form on the right. Selecting a server loads its settings inline. Changes take effect immediately.</p>
 
     <figure class="shot">
       <img src="shots/manage-servers.png" loading="lazy"
            alt="The Manage Servers dialog with the server list and settings form">
-      <figcaption>Manage Servers — the server list on the left, settings for the selected server on the right.</figcaption>
+      <figcaption>Manage Servers: the server list on the left, settings for the selected server on the right.</figcaption>
     </figure>
 
     <h3>Adding a server</h3>
@@ -885,21 +885,21 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <table>
       <thead><tr><th>Section</th><th>Fields</th></tr></thead>
       <tbody>
-        <tr><td><strong>Connection</strong></td><td>Disabled checkbox (keep in config, skip on startup), Name (display name in sidebar — must be unique across all servers), Host, Port, SSL checkbox</td></tr>
+        <tr><td><strong>Connection</strong></td><td>Disabled checkbox (keep in config, skip on startup), Name (display name in sidebar, must be unique across all servers), Host, Port, SSL checkbox</td></tr>
         <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name, Quit Message, Away Message</td></tr>
-        <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key — each has a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
-        <tr><td><strong>Channels</strong></td><td>Auto-join — comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
+        <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key, each with a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
+        <tr><td><strong>Channels</strong></td><td>Auto-join, comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
         <tr><td><strong>Bouncer</strong></td><td>Type: None / ZNC / Soju. Network field (appears for both ZNC and Soju).</td></tr>
         <tr><td><strong>SOCKS5 Proxy</strong></td><td>Host, Port, Username (optional), Password (optional). Leave host blank for direct connection.</td></tr>
       </tbody>
     </table>
 
     <div class="note">
-      <strong>Password-protected channels:</strong> the Auto-join field does not support channel keys. To join a keyed channel, edit <code>config.toml</code> directly using the <code>[[server.channel]]</code> format — the dialog shows a reminder with the exact format to use.
+      <strong>Password-protected channels:</strong> the Auto-join field does not support channel keys. To join a keyed channel, edit <code>config.toml</code> directly using the <code>[[server.channel]]</code> format; the dialog shows a reminder with the exact format to use.
     </div>
 
     <h3>Editing a server</h3>
-    <p>Select the server in the left panel — its settings load in the right panel. Edit the fields you want to change and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
+    <p>Select the server in the left panel and its settings load in the right panel. Edit the fields you want to change and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
 
     <h3>Reordering servers</h3>
     <p>Select a server in the list and click <strong>▲</strong> or <strong>▼</strong> to move it up or down. The new order is saved to <code>config.toml</code> when you click <strong>OK</strong>. You can also right-click a server header in the sidebar and choose <strong>Move Up</strong> or <strong>Move Down</strong>.</p>
@@ -922,17 +922,17 @@ port =6697
 ssl =true
 nick ="yournick"
 channels = "#linux"</pre>
-    <p>Uplink skips the server completely — no connection attempt, no sidebar entry — but preserves the block and writes it back on every config save. Re-enable it any time by removing the line or setting it to <code>false</code>.</p>
+    <p>Uplink skips the server completely (no connection attempt, no sidebar entry) but preserves the block and writes it back on every config save. Re-enable it any time by removing the line or setting it to <code>false</code>.</p>
 
     <h3>Using the GUI</h3>
     <div class="step-row"><span class="step">1</span><div>Open <strong>File → Manage Servers...</strong></div></div>
     <div class="step-row"><span class="step">2</span><div>Select the server in the left panel.</div></div>
     <div class="step-row"><span class="step">3</span><div>Tick the <strong>Disabled</strong> checkbox in the Connection section on the right and click <strong>OK</strong>.</div></div>
     <div class="step-row"><span class="step">4</span><div>The server disconnects immediately and disappears from the sidebar. Its config is preserved.</div></div>
-    <p>To re-enable, select the server again and uncheck <strong>Disabled</strong> — the server reconnects immediately.</p>
+    <p>To re-enable, select the server again and uncheck <strong>Disabled</strong>; the server reconnects immediately.</p>
 
     <div class="callout callout-warning">
-      <strong>Don't comment out <code>[[server]]</code> blocks.</strong> Commented entries are not parsed by Uplink. The next time the app writes <code>config.toml</code> — which happens on any Preferences change, theme switch, or <code>/ignore</code> command — it does a full rewrite from memory and the commented block is permanently removed. Use <code>disabled = true</code> instead.
+      <strong>Don't comment out <code>[[server]]</code> blocks.</strong> Commented entries are not parsed by Uplink. The next time the app writes <code>config.toml</code> (which happens on any Preferences change, theme switch, or <code>/ignore</code> command) it does a full rewrite from memory and the commented block is permanently removed. Use <code>disabled = true</code> instead.
     </div>
   </section>
 
@@ -962,7 +962,7 @@ host = "irc.linuxdojo.org"
 port = 6697
 ssl = true
 nick = "yournick"
-away_message = "Away from keyboard — back soon"</pre>
+away_message = "Away from keyboard, back soon"</pre>
     <table>
       <thead><tr><th>Command</th><th>Behaviour</th></tr></thead>
       <tbody>
@@ -983,7 +983,7 @@ nick = "yournick"
 user = "uplink"
 realname ="Uplink User"
 quit_message = "Later!"
-away_message = "Away from keyboard — back soon"
+away_message = "Away from keyboard, back soon"
 channels = "#uplink, #linux"</pre>
   </section>
 
@@ -991,13 +991,13 @@ channels = "#uplink, #linux"</pre>
 
   <!-- KEYCHAIN -->
   <section id="keychain">
-    <h2>Password storage — OS keychain</h2>
+    <h2>Password storage: OS keychain</h2>
     <p>Uplink stores all passwords in your <strong>OS keychain</strong>, not as plaintext in <code>config.toml</code>.</p>
 
     <figure class="shot">
       <img src="shots/keychain-prompt.png" loading="lazy"
            alt="The OS keychain prompt shown when Uplink stores a password">
-      <figcaption>Passwords are handed to the OS keychain — never written to config.toml in plaintext.</figcaption>
+      <figcaption>Passwords are handed to the OS keychain and never written to config.toml in plaintext.</figcaption>
     </figure>
 
     <table>
@@ -1008,8 +1008,8 @@ channels = "#uplink, #linux"</pre>
     </table>
     <p>After saving, your config file will show <code>"&lt;keychain&gt;"</code> as a sentinel in place of the actual secret:</p>
     <pre>nickserv_password = "&lt;keychain&gt;"   # actual value is in the OS keychain</pre>
-    <p>When you select a server in <strong>Manage Servers</strong> that has a keychain-stored password, the password field shows a placeholder — <em>Stored in keychain — type to change, clear to remove</em> — rather than the sentinel as masked dots. This makes it clear a password exists. Leaving the field unchanged and saving preserves the keychain entry. Typing a new password overwrites it. Explicitly clearing the field removes the entry.</p>
-    <p>All password fields have a <strong>👁 show/hide toggle</strong> — click the eye icon on the right edge of any password field to reveal the value, and click again to re-mask it.</p>
+    <p>When you select a server in <strong>Manage Servers</strong> that has a keychain-stored password, the password field shows a placeholder, <em>Stored in keychain - type to change, clear to remove</em>, rather than the sentinel as masked dots. This makes it clear a password exists. Leaving the field unchanged and saving preserves the keychain entry. Typing a new password overwrites it. Explicitly clearing the field removes the entry.</p>
+    <p>All password fields have a <strong>👁 show/hide toggle</strong>: click the eye icon on the right edge of any password field to reveal the value, and click again to re-mask it.</p>
     <div class="callout callout-tip">
       <strong>Upgrading from an older version?</strong> Any plaintext password already in your config is migrated to the keychain automatically the next time you save your server settings. No manual steps needed.
     </div>
@@ -1017,7 +1017,7 @@ channels = "#uplink, #linux"</pre>
       <strong>Headless / no keychain daemon?</strong> If the OS keychain is unavailable (e.g. a server without a running secret service), the password field will read back as empty. Enter your password in the server dialog when a keychain becomes available and it will be stored then. Check your terminal output for <code>qWarning</code> messages from Uplink if authentication is failing unexpectedly.
     </div>
     <div class="callout callout-warning">
-      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>File → Manage Servers</strong>, select the server, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
+      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain; the password was never written there (or the entry was cleared). Fix: open <strong>File → Manage Servers</strong>, select the server, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
     </div>
     <div class="callout callout-warning">
       <strong>Renamed a server in config.toml?</strong> Passwords are stored in the OS keychain under the server's <code>name</code> field. If you change the name (e.g. from <code>znc_libera</code> to <code>soju_libera</code>), the keychain entry stays under the old name and the renamed server will fail to authenticate. Fix: open <strong>File → Manage Servers</strong>, select the renamed server, re-enter the password, and save.
@@ -1045,7 +1045,7 @@ realname = "Uplink User"
 channels = "#uplink"
 nickserv_password = "mysecretpassword"   # ← add this</pre>
 
-    <p>The server buffer shows <code>Sent NickServ IDENTIFY</code> when it fires. For networks that support SASL, use that instead (below) — SASL identifies you before you even appear on the network.</p>
+    <p>The server buffer shows <code>Sent NickServ IDENTIFY</code> when it fires. For networks that support SASL, use that instead (below); SASL identifies you before you even appear on the network.</p>
   </section>
 
   <!-- SASL -->
@@ -1065,7 +1065,7 @@ channels = "#linux"
 sasl_user ="alice"            # ← your registered nick
 sasl_password = "mysecretpassword" # ← your NickServ password</pre>
 
-    <p>The server buffer shows <code>SASL authentication successful</code> on connect. If it fails, the connection continues — you'll just appear without services authentication.</p>
+    <p>The server buffer shows <code>SASL authentication successful</code> on connect. If it fails, the connection continues; you'll just appear without services authentication.</p>
 
     <div class="tip">
       <strong>SASL or NickServ?</strong> Use SASL if the server supports it (Libera, OFTC). Use <code>nickserv_password</code> for servers that don't (LinuxDojo, older networks).
@@ -1075,7 +1075,7 @@ sasl_password = "mysecretpassword" # ← your NickServ password</pre>
   <!-- SASL EXTERNAL -->
   <section id="sasl-external">
     <h2>SASL EXTERNAL (certificate authentication)</h2>
-    <p>SASL EXTERNAL authenticates you by your TLS client certificate instead of a password. The server derives your identity from the certificate's fingerprint — nothing is ever typed or transmitted. Supported on Libera.Chat, OFTC, and most modern IRC servers.</p>
+    <p>SASL EXTERNAL authenticates you by your TLS client certificate instead of a password. The server derives your identity from the certificate's fingerprint; nothing is ever typed or transmitted. Supported on Libera.Chat, OFTC, and most modern IRC servers.</p>
 
     <h3>1. Generate a client certificate</h3>
     <pre># RSA (most compatible)
@@ -1111,22 +1111,22 @@ client_key = "/home/alice/.irc/client.key"</pre>
     <p>You can also set the cert and key paths from the GUI: open <strong>File → Manage Servers</strong>, select the server, then tick <strong>SASL EXTERNAL</strong> in the Authentication section and browse to your files.</p>
 
     <div class="warn">
-      <strong>Do not set <code>sasl_user</code> / <code>sasl_password</code> alongside <code>sasl_external</code></strong> — only one SASL mechanism is used per connection.
+      <strong>Do not set <code>sasl_user</code> / <code>sasl_password</code> alongside <code>sasl_external</code></strong>; only one SASL mechanism is used per connection.
     </div>
   </section>
 
   <!-- STS -->
   <section id="sts">
-    <h2>STS — Strict Transport Security</h2>
-    <p>STS is an IRCv3 security feature that prevents your IRC client from ever being silently downgraded to a plain-text connection. It works exactly like HSTS in web browsers — once a server tells Uplink "always connect over TLS," that instruction is remembered and enforced automatically on every future connection.</p>
+    <h2>STS: Strict Transport Security</h2>
+    <p>STS is an IRCv3 security feature that prevents your IRC client from ever being silently downgraded to a plain-text connection. It works exactly like HSTS in web browsers: once a server tells Uplink "always connect over TLS," that instruction is remembered and enforced automatically on every future connection.</p>
 
     <h3>How it works</h3>
     <p>During the initial CAP handshake, a server that supports STS sends a policy containing a TLS port and a duration (how long to enforce it). Uplink handles everything automatically from there:</p>
 
     <table>
       <tr><th>Scenario</th><th>What Uplink does</th></tr>
-      <tr><td>Plain connection — server advertises STS</td><td>Immediately disconnects and reconnects over TLS on the server-specified port. Stores the policy.</td></tr>
-      <tr><td>TLS connection — server advertises STS</td><td>Refreshes the stored policy expiry. No reconnect needed — already encrypted.</td></tr>
+      <tr><td>Plain connection, server advertises STS</td><td>Immediately disconnects and reconnects over TLS on the server-specified port. Stores the policy.</td></tr>
+      <tr><td>TLS connection, server advertises STS</td><td>Refreshes the stored policy expiry. No reconnect needed, already encrypted.</td></tr>
       <tr><td>Server sends <code>duration=0</code></td><td>Deletes the cached policy. Plain connections permitted again.</td></tr>
       <tr><td>Cached policy is expired</td><td>Removed automatically on the next connection attempt.</td></tr>
     </table>
@@ -1134,14 +1134,14 @@ client_key = "/home/alice/.irc/client.key"</pre>
     <h3>What you'll see</h3>
     <p>The first time STS triggers an upgrade from plain to TLS, a line appears in the server buffer:</p>
     <pre>STS: upgrading to TLS on port 6697</pre>
-    <p>After that the connection continues normally — you're now on TLS. On all future connections the stored policy is applied silently before the socket is even opened, so you won't see the message again.</p>
+    <p>After that the connection continues normally; you're now on TLS. On all future connections the stored policy is applied silently before the socket is even opened, so you won't see the message again.</p>
 
     <h3>Where the policy is stored</h3>
     <pre>~/.config/uplink/sts.ini</pre>
     <p>Each entry records the host, TLS port, and an expiry timestamp. Uplink checks this file before dialing any server. If a valid policy exists for the host, TLS is used regardless of what <code>ssl</code> is set to in <code>config.toml</code>.</p>
 
     <div class="note">
-      <strong>Nothing to configure.</strong> STS is fully automatic. Set <code>ssl = true</code> in your config as usual — STS provides an additional layer that protects you even if that setting is ever wrong or missing. Most modern networks already support it: Libera.Chat, OFTC, and LinuxDojo all advertise STS policies.
+      <strong>Nothing to configure.</strong> STS is fully automatic. Set <code>ssl = true</code> in your config as usual; STS provides an additional layer that protects you even if that setting is ever wrong or missing. Most modern networks already support it: Libera.Chat, OFTC, and LinuxDojo all advertise STS policies.
     </div>
   </section>
 
@@ -1184,20 +1184,20 @@ sasl_password = "mysecretpassword"</pre>
   <section id="znc">
     <h2>ZNC bouncer</h2>
 
-    <p>A bouncer is a program that sits between you and IRC. It stays connected 24/7 so you never miss messages — when you open Uplink it replays everything that arrived while you were away. <strong>ZNC</strong> is the most widely used bouncer.</p>
+    <p>A bouncer is a program that sits between you and IRC. It stays connected 24/7 so you never miss messages; when you open Uplink it replays everything that arrived while you were away. <strong>ZNC</strong> is the most widely used bouncer.</p>
 
     <h3>How ZNC authentication works</h3>
     <p>ZNC identifies clients through the IRC <strong>Server Password</strong> using this format:</p>
     <pre>username/network:password</pre>
     <ul>
-      <li><strong>username</strong> — your ZNC login name (set when ZNC was installed)</li>
-      <li><strong>network</strong> — the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or run <code>/znc ListNetworks</code> in Uplink's server buffer to see the exact names.</li>
-      <li><strong>password</strong> — your ZNC account password</li>
+      <li><strong>username</strong>: your ZNC login name (set when ZNC was installed)</li>
+      <li><strong>network</strong>: the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or run <code>/znc ListNetworks</code> in Uplink's server buffer to see the exact names.</li>
+      <li><strong>password</strong>: your ZNC account password</li>
     </ul>
     <p>Uplink assembles this string for you automatically. You just supply the three pieces separately and Uplink constructs <code>username/network:password</code> at connect time.</p>
 
     <div class="note">
-      <strong>You are connecting to ZNC, not directly to IRC.</strong> The <strong>Host</strong> and <strong>Port</strong> fields must point at your ZNC server (e.g. <code>znc.example.com:6697</code>), not at the IRC network. ZNC is the middleman — it stays connected to IRC on your behalf and Uplink connects to ZNC.
+      <strong>You are connecting to ZNC, not directly to IRC.</strong> The <strong>Host</strong> and <strong>Port</strong> fields must point at your ZNC server (e.g. <code>znc.example.com:6697</code>), not at the IRC network. ZNC is the middleman: it stays connected to IRC on your behalf and Uplink connects to ZNC.
     </div>
 
     <h3>Setting up ZNC in Manage Servers</h3>
@@ -1206,14 +1206,14 @@ sasl_password = "mysecretpassword"</pre>
     <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent through ZNC to the IRC network.</div></div>
     <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication</strong>: set <strong>SASL User</strong> to your ZNC username and <strong>SASL Password</strong> to your ZNC password. Leave the Server Password field blank. Uplink uses these to assemble the <code>username/network:password</code> string ZNC expects.</div></div>
     <div class="step-row"><span class="step">5</span><div>Under <strong>Channels → Auto-join</strong>, list the channels you want to join: <code>#linux, #archlinux</code></div></div>
-    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears — enter the ZNC network name here (e.g. <code>libera</code>). Click <strong>OK</strong>.</div></div>
+    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears; enter the ZNC network name here (e.g. <code>libera</code>). Click <strong>OK</strong>.</div></div>
 
     <div class="note">
       <strong>Old-style password format still works.</strong> If you prefer, put the full <code>username/network:password</code> string directly in the Server Password field and leave SASL User, SASL Password, and Network blank. Uplink sends it as-is.
     </div>
 
     <h3>Config file equivalent</h3>
-    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly. The recommended form uses separate fields — Uplink assembles the ZNC PASS string automatically:</p>
+    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly. The recommended form uses separate fields, and Uplink assembles the ZNC PASS string automatically:</p>
     <pre>[[server]]
 # Uplink connects to ZNC, which connects to Libera on your behalf.
 # host/port point at your ZNC server, not at irc.libera.chat.
@@ -1234,12 +1234,12 @@ channels = "#linux, #archlinux"</pre>
     <p>Setting <code>bouncer = "znc"</code> (or selecting ZNC in the dialog) tells Uplink to negotiate two ZNC-specific IRCv3 capabilities:</p>
     <table>
       <tr><th>Capability</th><th>What it does</th></tr>
-      <tr><td><code>znc.in/playback</code></td><td>Requests all messages that arrived since your last disconnect. Uplink asks for them automatically on connect — you see your missed messages instantly at reduced opacity.</td></tr>
+      <tr><td><code>znc.in/playback</code></td><td>Requests all messages that arrived since your last disconnect. Uplink asks for them automatically on connect, so you see your missed messages instantly at reduced opacity.</td></tr>
       <tr><td><code>znc.in/self-message</code></td><td>Echoes messages you sent from other IRC clients (phone, another PC) back into Uplink so your conversation history stays complete.</td></tr>
     </table>
 
     <h3>Multiple networks on one ZNC</h3>
-    <p>ZNC can carry several IRC networks simultaneously. Add a separate Uplink server entry for each one — same host, port, and credentials, only <code>bouncer_network</code> changes:</p>
+    <p>ZNC can carry several IRC networks simultaneously. Add a separate Uplink server entry for each one: same host, port, and credentials, only <code>bouncer_network</code> changes:</p>
     <pre>[[server]]
 name = "ZNC → Libera"
 host = "znc.example.com"
@@ -1275,10 +1275,10 @@ channels = "#debian"</pre>
     <h3>Troubleshooting</h3>
     <table>
       <tr><th>Symptom</th><th>Likely cause</th></tr>
-      <tr><td>Password incorrect / access denied</td><td>Wrong format — double-check <code>username/network:password</code>. The network name must match exactly what ZNC has (case-sensitive on some ZNC versions).</td></tr>
+      <tr><td>Password incorrect / access denied</td><td>Wrong format; double-check <code>username/network:password</code>. The network name must match exactly what ZNC has (case-sensitive on some ZNC versions).</td></tr>
       <tr><td>Connected but no channels join</td><td>The channels in Auto-join don't exist on that ZNC network, or ZNC is set to manage joins itself. Check ZNC's channel settings in its web panel.</td></tr>
       <tr><td>No message history on connect</td><td><code>znc.in/playback</code> not loaded in ZNC. Enable the <em>playback</em> module in ZNC's web panel under your network's modules.</td></tr>
-      <tr><td>TLS errors</td><td>Port mismatch — ZNC's SSL port is usually different from the plain port. Check the ZNC web panel under <em>Global Settings → Listeners</em>.</td></tr>
+      <tr><td>TLS errors</td><td>Port mismatch; ZNC's SSL port is usually different from the plain port. Check the ZNC web panel under <em>Global Settings → Listeners</em>.</td></tr>
     </table>
   </section>
 
@@ -1289,7 +1289,7 @@ channels = "#debian"</pre>
     <p><strong>soju</strong> is a modern IRC bouncer with deep IRCv3 support. It is simpler to configure than ZNC and handles multiple networks cleanly. If you are running your own bouncer, soju is worth considering.</p>
 
     <h3>How soju authentication works</h3>
-    <p>soju uses SASL PLAIN for authentication — but Uplink handles this transparently when you select the soju bouncer type. You just put your credentials in the <strong>Server Password</strong> field in the simpler <code>username:password</code> format (no network name needed here):</p>
+    <p>soju uses SASL PLAIN for authentication, but Uplink handles this transparently when you select the soju bouncer type. You just put your credentials in the <strong>Server Password</strong> field in the simpler <code>username:password</code> format (no network name needed here):</p>
     <pre>alice:hunter2</pre>
 
     <h3>Setting up soju in Manage Servers</h3>
@@ -1317,13 +1317,13 @@ channels = "#linux"</pre>
     <h3>What soju mode enables</h3>
     <table>
       <tr><th>Capability</th><th>What it does</th></tr>
-      <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect as a formatted summary — network name and connection state for each.</td></tr>
+      <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect as a formatted summary: network name and connection state for each.</td></tr>
       <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, Uplink on your desktop already knows.</td></tr>
-      <tr><td><code>chathistory</code> / <code>draft/chathistory</code></td><td>Requests missed messages on each channel join — supported by soju, ZNC, and Ergo IRCd. History arrives with original timestamps.</td></tr>
+      <tr><td><code>chathistory</code> / <code>draft/chathistory</code></td><td>Requests missed messages on each channel join. Supported by soju, ZNC, and Ergo IRCd. History arrives with original timestamps.</td></tr>
     </table>
 
     <h3>Multiple networks on one soju</h3>
-    <p>Add one Uplink server entry per IRC network. The password is the same — only <code>bouncer_network</code> changes:</p>
+    <p>Add one Uplink server entry per IRC network. The password is the same; only <code>bouncer_network</code> changes:</p>
     <pre>[[server]]
 name = "soju → Libera"
 host = "soju.example.com"
@@ -1363,7 +1363,7 @@ channels = "#debian"</pre>
   <section id="soju-admin">
     <h2>soju server administration</h2>
 
-    <p>This section covers setting up and managing soju on the server side. The examples use FreeBSD, but the commands are the same on Linux — only the paths differ.</p>
+    <p>This section covers setting up and managing soju on the server side. The examples use FreeBSD, but the commands are the same on Linux; only the paths differ.</p>
 
     <h3>Install soju</h3>
     <pre># FreeBSD
@@ -1386,7 +1386,7 @@ listen unix+admin://</pre>
     <p>The <code>listen unix+admin://</code> line creates the admin socket that <code>sojuctl</code> uses. Without it, <code>sojuctl</code> commands will fail with a "no such file or directory" error.</p>
 
     <div class="tip">
-      <strong>Custom port:</strong> if you run an IRC server on the same host, use a different port for soju — e.g. <code>listen ircs://:7778</code>. Clients connect to the soju port, not the IRC server port.
+      <strong>Custom port:</strong> if you run an IRC server on the same host, use a different port for soju, e.g. <code>listen ircs://:7778</code>. Clients connect to the soju port, not the IRC server port.
     </div>
 
     <h3>Start soju</h3>
@@ -1451,7 +1451,7 @@ sudo service soju restart</pre>
     <pre>sudo sqlite3 /var/db/soju/main.db "DELETE FROM Channel WHERE id = 7;"</pre>
 
     <div class="tip">
-      <strong>Easier way:</strong> just <code>/part #badchannel</code> from your client — soju removes it from its database automatically.
+      <strong>Easier way:</strong> just <code>/part #badchannel</code> from your client; soju removes it from its database automatically.
     </div>
 
     <h3>Common gotchas</h3>
@@ -1459,8 +1459,8 @@ sudo service soju restart</pre>
       <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
       <tr><td><code>sojuctl</code> says "no such file or directory"</td><td>soju is not running, or <code>listen unix+admin://</code> is missing from config</td><td>Start soju and check the config</td></tr>
       <tr><td><code>sojuctl</code> says "permission denied"</td><td>The admin socket is owned by the soju user</td><td>Run with <code>sudo</code></td></tr>
-      <tr><td>Nick shows as <code>alice_</code> or <code>alice__</code></td><td>Another connection is already using that nick — often a duplicate network or a ghost from a crashed session</td><td>Delete the duplicate network; <code>/raw KILL alice_</code> if you have IRC oper access</td></tr>
-      <tr><td>Duplicate channels in your client</td><td>Channels listed in both the client config and soju's database — or two networks connecting to the same server</td><td>Remove <code>channels</code> from the client config and let soju manage them; delete duplicate networks</td></tr>
+      <tr><td>Nick shows as <code>alice_</code> or <code>alice__</code></td><td>Another connection is already using that nick, often a duplicate network or a ghost from a crashed session</td><td>Delete the duplicate network; <code>/raw KILL alice_</code> if you have IRC oper access</td></tr>
+      <tr><td>Duplicate channels in your client</td><td>Channels listed in both the client config and soju's database, or two networks connecting to the same server</td><td>Remove <code>channels</code> from the client config and let soju manage them; delete duplicate networks</td></tr>
       <tr><td>"Cannot interact with channels … Did you mean to use a specific network?"</td><td>You are typing in soju's control connection, not the upstream network</td><td>Set <code>bouncer_network</code> in your client config, or put <code>username/networkname</code> in the Username field</td></tr>
       <tr><td>NickServ authentication fails</td><td>The <code>-connect-command</code> was on a network you deleted; the new auto-created network doesn't have it</td><td>Re-add the connect command: <code>/msg BouncerServ network update networkname -connect-command "PRIVMSG NickServ :IDENTIFY password"</code></td></tr>
     </table>
@@ -1475,7 +1475,7 @@ sudo service soju restart</pre>
     </table>
 
     <div class="warning">
-      <strong>Always restart soju after editing the database directly.</strong> soju caches state in memory — changes to the SQLite file are not picked up until restart.
+      <strong>Always restart soju after editing the database directly.</strong> soju caches state in memory; changes to the SQLite file are not picked up until restart.
     </div>
   </section>
 
@@ -1485,18 +1485,18 @@ sudo service soju restart</pre>
 
     <p>When you join a channel, Uplink automatically requests the last 100 messages from the server using the IRCv3 <code>chathistory</code> capability. The messages appear at the top of the chat window, dimmed slightly and stamped with their original timestamps, so you can catch up on what you missed without doing anything extra.</p>
 
-    <p>This works on any server or bouncer that supports the <code>chathistory</code> or <code>draft/chathistory</code> IRCv3 capability — no config change needed. Uplink requests both cap names automatically.</p>
+    <p>This works on any server or bouncer that supports the <code>chathistory</code> or <code>draft/chathistory</code> IRCv3 capability, with no config change needed. Uplink requests both cap names automatically.</p>
 
     <h3>Servers that support chat history</h3>
     <table>
       <tr><th>Server / Bouncer</th><th>Cap name advertised</th><th>Notes</th></tr>
       <tr><td><strong>Ergo IRCd</strong></td><td><code>draft/chathistory</code></td><td>Requires <code>history:</code> block in <code>ircd.yaml</code> and a server restart (not just rehash) to initialise the history DB.</td></tr>
-      <tr><td><strong>soju</strong></td><td><code>chathistory</code></td><td>Works out of the box — soju stores and replays history natively.</td></tr>
+      <tr><td><strong>soju</strong></td><td><code>chathistory</code></td><td>Works out of the box; soju stores and replays history natively.</td></tr>
       <tr><td><strong>ZNC</strong></td><td><code>chathistory</code></td><td>Requires the <code>playback</code> module. Uplink enables it automatically when <code>bouncer = "znc"</code>.</td></tr>
     </table>
 
     <div class="note">
-      <strong>Libera, EFnet, IRCnet, and most large networks do not support chat history.</strong> Their IRC daemons (Solanum, Charybdis, etc.) do not implement the <code>chathistory</code> cap. The feature simply does not activate — you will not see an error.
+      <strong>Libera, EFnet, IRCnet, and most large networks do not support chat history.</strong> Their IRC daemons (Solanum, Charybdis, etc.) do not implement the <code>chathistory</code> cap. The feature simply does not activate; you will not see an error.
     </div>
 
     <h3>What history messages look like</h3>
@@ -1504,7 +1504,7 @@ sudo service soju restart</pre>
     <ul>
       <li>Displayed at reduced opacity (dimmed).</li>
       <li>Timestamped with their <em>original</em> send time. Messages from a previous day include the date: <code>06/08 14:32</code>.</li>
-      <li>Not counted as unread — they do not badge the channel in the sidebar.</li>
+      <li>Not counted as unread; they do not badge the channel in the sidebar.</li>
     </ul>
 
     <h3>Connecting to an Ergo server with history</h3>
@@ -1534,7 +1534,7 @@ channels = "#uplink, #linux"</pre>
   <!-- WEBSOCKET TRANSPORT -->
   <section id="websocket">
     <h2>WebSocket transport</h2>
-    <p>Most IRC servers accept plain TCP connections (port 6667) or TLS connections (port 6697). Some modern servers and bouncers — particularly web-based ones like <strong>The Lounge</strong> — are only reachable over WebSocket (<code>ws://</code> / <code>wss://</code>). Uplink supports both transports.</p>
+    <p>Most IRC servers accept plain TCP connections (port 6667) or TLS connections (port 6697). Some modern servers and bouncers, particularly web-based ones like <strong>The Lounge</strong>, are only reachable over WebSocket (<code>ws://</code> / <code>wss://</code>). Uplink supports both transports.</p>
 
     <p>To use WebSocket, add <code>websocket = true</code> to the server block. When <code>ssl = true</code> is also set, Uplink connects with <code>wss://</code> (encrypted). When <code>ssl = false</code>, it uses <code>ws://</code> (plain).</p>
 
@@ -1564,39 +1564,39 @@ channels = "#uplink"</pre>
     <p>The channel header row runs across the top of the chat area (right of the sidebar divider). From left to right:</p>
 
     <ul>
-      <li><strong>📶 Signal bars</strong> — connection quality for the active server (see <a href="#signal-bars">Signal bars</a>).</li>
-      <li><strong>▸ Topic button</strong> — shows or hides the topic text below the header. Icon is grey when topic is hidden, accent-colored when visible.</li>
-      <li><strong>#channel (+modes)</strong> — the active channel name and its mode string.</li>
-      <li><strong>🔍 Search</strong> — opens the search bar (same as Ctrl+F).</li>
-      <li><strong>✕ Close</strong> — closes the primary channel pane.</li>
+      <li><strong>📶 Signal bars</strong>: connection quality for the active server (see <a href="#signal-bars">Signal bars</a>).</li>
+      <li><strong>▸ Topic button</strong>: shows or hides the topic text below the header. Icon is grey when topic is hidden, accent-colored when visible.</li>
+      <li><strong>#channel (+modes)</strong>: the active channel name and its mode string.</li>
+      <li><strong>🔍 Search</strong>: opens the search bar (same as Ctrl+F).</li>
+      <li><strong>✕ Close</strong>: closes the primary channel pane.</li>
     </ul>
 
     <figure class="shot">
       <img src="shots/channel-header.png" loading="lazy"
            alt="The channel header showing the connection meter, topic toggle, channel name and modes">
-      <figcaption>The channel header — connection meter, topic toggle, channel name with modes, pop-out and search.</figcaption>
+      <figcaption>The channel header: connection meter, topic toggle, channel name with modes, pop-out and search.</figcaption>
     </figure>
   </section>
 
   <!-- SIDEBAR -->
   <section id="sidebar">
-    <h2>Sidebar — server &amp; channel list</h2>
-    <p>The sidebar on the left shows all your servers and channels. It is drawn as <strong>its own rounded floating card</strong>, framed by an even backdrop gap on every side — the user list on the right gets the same treatment, so the two side cards and the message box share one uniform gutter. Each server is a heading; its channels are listed beneath it.</p>
+    <h2>Sidebar: server &amp; channel list</h2>
+    <p>The sidebar on the left shows all your servers and channels. It is drawn as <strong>its own rounded floating card</strong>, framed by an even backdrop gap on every side; the user list on the right gets the same treatment, so the two side cards and the message box share one uniform gutter. Each server is a heading; its channels are listed beneath it.</p>
 
     <figure class="shot">
       <img src="shots/sidebar.png" loading="lazy"
            alt="The sidebar showing servers and channels with unread and mention indicators">
-      <figcaption>The sidebar — servers with a connected globe, channels with activity and mention indicators.</figcaption>
+      <figcaption>The sidebar: servers with a connected globe, channels with activity and mention indicators.</figcaption>
     </figure>
 
     <ul>
       <li>Click a channel to open it in the chat area.</li>
       <li>Channels with new activity show a small <strong>forum icon</strong> after the channel name. Channels where your nick was mentioned show a yellow <strong>lightbulb icon</strong> instead.</li>
-      <li>The server heading shows a <strong>globe icon</strong> when connected. The globe turns <strong>red</strong> when the server status pane has unread messages — click the server name to open it and clear the indicator.</li>
+      <li>The server heading shows a <strong>globe icon</strong> when connected. The globe turns <strong>red</strong> when the server status pane has unread messages; click the server name to open it and clear the indicator.</li>
       <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), <strong>Open in Window</strong> (float it into its own window), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
-      <li>Right-click a server for: Disconnect, Reconnect, <strong>Close Server</strong> (removes from sidebar without deleting from config), <strong>Move Up</strong>, <strong>Move Down</strong> (reorder servers — saved to config).</li>
-      <li>Drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.</li>
-      <li>Click the <strong>close button</strong> in the top-left corner of the sidebar panel to collapse the sidebar so the chat fills the card. A <strong>reveal button</strong> appears at the bottom-left of the chat area — click it to bring the sidebar back.</li>
+      <li>Right-click a server for: Disconnect, Reconnect, <strong>Close Server</strong> (removes from sidebar without deleting from config), <strong>Move Up</strong>, <strong>Move Down</strong> (reorder servers, saved to config).</li>
+      <li>Drag the divider between the sidebar and the chat area to resize it; the width is saved and restored on the next launch.</li>
+      <li>Click the <strong>close button</strong> in the top-left corner of the sidebar panel to collapse the sidebar so the chat fills the card. A <strong>reveal button</strong> appears at the bottom-left of the chat area; click it to bring the sidebar back.</li>
     </ul>
 
     <div class="note"><strong>Layout:</strong> The floating card has an 8 px gap on all four sides. Inside the card, from left to right: sidebar → chat messages → nick list. The channel header, topic bar, and input bar are anchored to the chat area (right of the sidebar divider). The sidebar tree items align vertically with the nick panel header.</div>
@@ -1604,18 +1604,18 @@ channels = "#uplink"</pre>
 
   <!-- CHANNEL PANES -->
   <section id="channel-panes">
-    <h2>Channel panes — view multiple channels at once</h2>
-    <p>Uplink can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained — it has its own chat history, nick list, topic bar, and input bar. The pane's user list carries the same controls as the main view: the hide/reveal toggle, the user count, and the <em>filter users</em> box.</p>
+    <h2>Channel panes: view multiple channels at once</h2>
+    <p>Uplink can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained: it has its own chat history, nick list, topic bar, and input bar. The pane's user list carries the same controls as the main view: the hide/reveal toggle, the user count, and the <em>filter users</em> box.</p>
 
     <figure class="shot">
       <img src="shots/channel-panes.png" loading="lazy"
            alt="Multiple channels open side by side in the chat area">
-      <figcaption>Up to four channels side by side — each with its own history, nick list, topic, and input.</figcaption>
+      <figcaption>Up to four channels side by side, each with its own history, nick list, topic, and input.</figcaption>
     </figure>
 
     <h3>Opening a pane</h3>
     <p><strong>Right-click</strong> any <code>#channel</code> in the sidebar and choose <strong>Open in Pane</strong>. The channel opens as a new column next to the current view. You can continue typing in either pane independently. Each pane header carries its own <strong>pop-out</strong> and <strong>search</strong> buttons alongside the topic toggle and close button, mirroring the main channel header.</p>
-    <div class="note"><strong>Note:</strong> Right-clicking does not navigate away from the channel you are currently viewing — only a left-click does that.</div>
+    <div class="note"><strong>Note:</strong> Right-clicking does not navigate away from the channel you are currently viewing; only a left-click does that.</div>
 
     <h3>Layout</h3>
     <p>The chat area restructures automatically as panes are added:</p>
@@ -1623,58 +1623,58 @@ channels = "#uplink"</pre>
       <thead><tr><th>Panes open</th><th>Layout</th></tr></thead>
       <tbody>
         <tr><td>1</td><td>Full width (normal single-channel view)</td></tr>
-        <tr><td>2</td><td>Side by side — equal halves</td></tr>
+        <tr><td>2</td><td>Side by side, equal halves</td></tr>
         <tr><td>3</td><td>Primary channel full-height on the left; two panes stacked on the right</td></tr>
-        <tr><td>4</td><td>2×2 grid — two columns, each with two rows</td></tr>
+        <tr><td>4</td><td>2×2 grid: two columns, each with two rows</td></tr>
       </tbody>
     </table>
     <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen.</p>
-    <p>By default panes stack in <strong>columns</strong> (as in the table above). If you'd rather stack them in <strong>horizontal rows</strong> instead — handy on a portrait or vertically-oriented monitor — turn on <strong>Preferences → Interface → Stack Panes in Rows</strong>. The layout re-flows immediately and the choice is remembered across restarts (<code>pane_stack_rows</code> in <code>config.toml</code>). Every shape in the table above is simply rotated 90°: 2 panes stack top/bottom, 3 panes become a full-width row plus two side by side beneath it, and 4 panes stay a 2×2 grid with rows and columns swapped.</p>
+    <p>By default panes stack in <strong>columns</strong> (as in the table above). If you'd rather stack them in <strong>horizontal rows</strong> instead (handy on a portrait or vertically-oriented monitor), turn on <strong>Preferences → Interface → Stack Panes in Rows</strong>. The layout re-flows immediately and the choice is remembered across restarts (<code>pane_stack_rows</code> in <code>config.toml</code>). Every shape in the table above is simply rotated 90°: 2 panes stack top/bottom, 3 panes become a full-width row plus two side by side beneath it, and 4 panes stay a 2×2 grid with rows and columns swapped.</p>
 
     <h3>Rearranging panes</h3>
-    <p>Click and drag any pane's header bar to rearrange it. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop it on the primary channel area instead, and the dragged pane stays exactly where it is — the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content.</p>
+    <p>Click and drag any pane's header bar to rearrange it. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop it on the primary channel area instead, and the dragged pane stays exactly where it is; the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content.</p>
     <p>You can also cycle keyboard focus between the open panes without touching the mouse: <strong>Alt+Left / Alt+Right</strong> moves focus through the pane input bars (the primary input included), in layout order.</p>
 
     <h3>Popping a channel out into its own window</h3>
-    <p>Any channel can float free of the main window as a standalone window — handy for a second monitor or keeping one conversation visible while you work elsewhere. There are three ways to do it:</p>
+    <p>Any channel can float free of the main window as a standalone window, handy for a second monitor or keeping one conversation visible while you work elsewhere. There are three ways to do it:</p>
     <ul>
       <li><strong>From the channel header:</strong> click the <strong>pop-out icon</strong> (picture-in-picture) just to the left of the search magnifier to pop out the channel you are currently viewing.</li>
-      <li><strong>From a pane:</strong> every pane header has the same pop-out icon — click it to float that pane into its own window.</li>
+      <li><strong>From a pane:</strong> every pane header has the same pop-out icon; click it to float that pane into its own window.</li>
       <li><strong>From the sidebar:</strong> right-click a <code>#channel</code> and choose <strong>Open in Window</strong>.</li>
     </ul>
-    <p>While a channel is popped out it is <strong>checked out</strong> of the main window: its sidebar row is dimmed and italic, and clicking it simply raises its window instead of loading it into the main view. Everything stays live in the window — incoming messages, link previews, the nick list, the typing indicator, tab completion, and search all work exactly as they do in the main window.</p>
-    <p>To bring it back, <strong>close the window</strong> (its close button uses an <em>exit picture-in-picture</em> icon) or press the pane's <code>✕</code> — the channel returns to the main view and its sidebar row un-dims. You never leave the channel. Popped-out windows are remembered across restarts, just like docked panes — and each window's <strong>size and position</strong> are remembered per channel, so popping the same channel out again puts its window right back where you last had it.</p>
+    <p>While a channel is popped out it is <strong>checked out</strong> of the main window: its sidebar row is dimmed and italic, and clicking it simply raises its window instead of loading it into the main view. Everything stays live in the window: incoming messages, link previews, the nick list, the typing indicator, tab completion, and search all work exactly as they do in the main window.</p>
+    <p>To bring it back, <strong>close the window</strong> (its close button uses an <em>exit picture-in-picture</em> icon) or press the pane's <code>✕</code>; the channel returns to the main view and its sidebar row un-dims. You never leave the channel. Popped-out windows are remembered across restarts, just like docked panes, and each window's <strong>size and position</strong> are remembered per channel, so popping the same channel out again puts its window right back where you last had it.</p>
 
     <h3>Per-pane search and typing indicator</h3>
-    <p>Every pane and popped-out window carries the same <strong>search magnifier</strong> in its header — click it to search that pane's own scrollback, and press <kbd>Esc</kbd> to close. <kbd>Ctrl+F</kbd> does the same: with focus inside a docked pane it opens that pane's search bar, and popped-out windows respond to <kbd>Ctrl+F</kbd> on their own. The <strong>typing indicator</strong> also appears in each pane and window, showing who is typing in that specific channel. The compose area (typing line plus input bar) sits on the same chat background as the main window for a consistent look.</p>
+    <p>Every pane and popped-out window carries the same <strong>search magnifier</strong> in its header; click it to search that pane's own scrollback, and press <kbd>Esc</kbd> to close. <kbd>Ctrl+F</kbd> does the same: with focus inside a docked pane it opens that pane's search bar, and popped-out windows respond to <kbd>Ctrl+F</kbd> on their own. The <strong>typing indicator</strong> also appears in each pane and window, showing who is typing in that specific channel. The compose area (typing line plus input bar) sits on the same chat background as the main window for a consistent look.</p>
 
     <h3>Per-pane topic bar</h3>
-    <p>Each pane has a header bar showing the channel name. Click the small <strong>speech bubble icon</strong> on the left of the header to show or hide the channel topic below it. The topic updates live whenever it changes on the server. The icon is muted (grey) when the topic is hidden and turns <strong>accent-colored</strong> when the topic is visible — so you can read the state at a glance without clicking.</p>
+    <p>Each pane has a header bar showing the channel name. Click the small <strong>speech bubble icon</strong> on the left of the header to show or hide the channel topic below it. The topic updates live whenever it changes on the server. The icon is muted (grey) when the topic is hidden and turns <strong>accent-colored</strong> when the topic is visible, so you can read the state at a glance without clicking.</p>
 
     <h3>Closing a pane</h3>
-    <p>Click the <code>✕</code> button on the right of any pane header to close that pane. The remaining panes expand to fill the freed space and the layout restructures automatically. Closing a pane does <em>not</em> leave the channel — it just removes the split view for it.</p>
+    <p>Click the <code>✕</code> button on the right of any pane header to close that pane. The remaining panes expand to fill the freed space and the layout restructures automatically. Closing a pane does <em>not</em> leave the channel; it just removes the split view for it.</p>
     <p>You can also right-click the channel in the sidebar and choose <strong>Close Pane</strong>.</p>
 
     <h3>Primary column header</h3>
     <p>The primary channel always has a header bar at the top containing:</p>
     <ul>
-      <li>A <strong>speech bubble icon</strong> — click to show or hide the primary channel's topic text independently of the global Preferences setting. The icon is muted when the topic is hidden and accent-colored when visible. It is always present, even in single-window mode with no extra panes open.</li>
+      <li>A <strong>speech bubble icon</strong>; click to show or hide the primary channel's topic text independently of the global Preferences setting. The icon is muted when the topic is hidden and accent-colored when visible. It is always present, even in single-window mode with no extra panes open.</li>
       <li>The current channel name in bold.</li>
-      <li>A <code>✕</code> button — only visible when extra panes are open. Collapses the primary column so the panes fill the screen. Click any channel in the sidebar to bring it back.</li>
+      <li>A <code>✕</code> button, only visible when extra panes are open. Collapses the primary column so the panes fill the screen. Click any channel in the sidebar to bring it back.</li>
     </ul>
 
     <h3>Pane layout persistence</h3>
-    <p>Uplink saves the pane layout automatically when you quit — which channels are open in which pane slots, and the position of the primary column. On the next launch everything is restored exactly as you left it. No configuration required.</p>
+    <p>Uplink saves the pane layout automatically when you quit: which channels are open in which pane slots, and the position of the primary column. On the next launch everything is restored exactly as you left it. No configuration required.</p>
 
     <h3>Limits and notes</h3>
     <ul>
       <li>Maximum 4 panes total (1 primary + 3 extras), plus up to 4 popped-out windows at a time.</li>
-      <li><strong>No unread counters for visible channels.</strong> A channel open in a pane or popped-out window never accumulates an unread badge in the sidebar — you're already looking at it. Once the pane or window closes, unread counting resumes as normal.</li>
-      <li>The same channel never appears in both the primary view and a pane at the same time. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically. Left-clicking a channel that is already open in a pane just keeps the primary view where it was — it does not also load it there.</li>
-      <li>All slash commands work in pane input bars — <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
-      <li><strong>Tab completion works in pane input bars.</strong> Pressing <kbd>Tab</kbd> completes nicks from that pane's own channel, not the primary channel — so you always get the right suggestions regardless of which input is focused.</li>
-      <li>Font sizes set in <strong>Preferences → Font Config</strong> apply consistently to all panes — chat text, nick list, topic bar, and input label all inherit the same configured sizes whether the pane is opened at launch or mid-session.</li>
-      <li>Right-clicking anywhere on a message in a pane gives the same context menu as the primary view — Reply, React, Delete (your own messages), and Copy (when text is selected).</li>
+      <li><strong>No unread counters for visible channels.</strong> A channel open in a pane or popped-out window never accumulates an unread badge in the sidebar; you're already looking at it. Once the pane or window closes, unread counting resumes as normal.</li>
+      <li>The same channel never appears in both the primary view and a pane at the same time. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically. Left-clicking a channel that is already open in a pane just keeps the primary view where it was; it does not also load it there.</li>
+      <li>All slash commands work in pane input bars: <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
+      <li><strong>Tab completion works in pane input bars.</strong> Pressing <kbd>Tab</kbd> completes nicks from that pane's own channel, not the primary channel, so you always get the right suggestions regardless of which input is focused.</li>
+      <li>Font sizes set in <strong>Preferences → Font Config</strong> apply consistently to all panes: chat text, nick list, topic bar, and input label all inherit the same configured sizes whether the pane is opened at launch or mid-session.</li>
+      <li>Right-clicking anywhere on a message in a pane gives the same context menu as the primary view: Reply, React, Delete (your own messages), and Copy (when text is selected).</li>
     </ul>
   </section>
 
@@ -1696,7 +1696,7 @@ channels = "#uplink"</pre>
       <tbody>
         <tr><td><span style="color:#a6e3a1">→</span></td><td>Nick joined the channel</td></tr>
         <tr><td><span style="color:#f38ba8">←</span></td><td>Nick parted or quit</td></tr>
-        <tr><td><span style="color:#89b4fa">~</span></td><td>Nick rename — shown as <code>oldNick→newNick</code></td></tr>
+        <tr><td><span style="color:#89b4fa">~</span></td><td>Nick rename, shown as <code>oldNick→newNick</code></td></tr>
         <tr><td><span style="color:#f38ba8">✕</span></td><td>Nick was kicked</td></tr>
       </tbody>
     </table>
@@ -1712,7 +1712,7 @@ channels = "#uplink"</pre>
     <figure class="shot">
       <img src="shots/event-condensation-expanded.png" loading="lazy"
            alt="An expanded event group showing every join and quit as a full line">
-      <figcaption>Expanded — every event as a full line with hostmasks and quit/part reasons.</figcaption>
+      <figcaption>Expanded: every event as a full line with hostmasks and quit/part reasons.</figcaption>
     </figure>
 
     <p>Click <strong>▾</strong> to collapse the group back to the compact view. Expanded state persists when you switch channels and come back.</p>
@@ -1724,7 +1724,7 @@ channels = "#uplink"</pre>
     </ul>
 
     <h3>How grouping works</h3>
-    <p>Events are grouped purely by position in the message stream — no timer is involved. Any run of consecutive condensable events with <strong>no chat message between them</strong> is rendered as a single line. As soon as a regular message appears, the group seals and the next event starts a new group. Switching to a different channel and back always shows the correctly grouped history.</p>
+    <p>Events are grouped purely by position in the message stream; no timer is involved. Any run of consecutive condensable events with <strong>no chat message between them</strong> is rendered as a single line. As soon as a regular message appears, the group seals and the next event starts a new group. Switching to a different channel and back always shows the correctly grouped history.</p>
 
     <h3>Net-change filter</h3>
     <p>If the same nick joins <em>and</em> parts within the same group (e.g., a brief reconnect), both events cancel out and neither is shown in the compact view. The expanded view shows every individual event, including the ones that cancel out, so you can see the full sequence of what actually happened.</p>
@@ -1733,7 +1733,7 @@ channels = "#uplink"</pre>
     <p>Up to 10 nicks are shown on one condensed line. If more events arrived before a chat message broke the group, the line ends with <code>… X more</code>. Expanding the group always shows all events regardless of the 10-nick limit.</p>
 
     <h3>Self-join / self-part</h3>
-    <p>Your own <em>"You joined #channel"</em> and part messages always appear as full lines — they are never condensed, since they mark a meaningful context boundary for you.</p>
+    <p>Your own <em>"You joined #channel"</em> and part messages always appear as full lines; they are never condensed, since they mark a meaningful context boundary for you.</p>
   </section>
 
   <!-- CHAT AREA -->
@@ -1743,17 +1743,17 @@ channels = "#uplink"</pre>
 
     <figure class="shot">
       <img src="shots/main-window.png" loading="lazy"
-           alt="The full Uplink main window — sidebar, chat area, and nick list">
-      <figcaption>The main window — sidebar, chat area, and nick list sharing one floating card.</figcaption>
+           alt="The full Uplink main window: sidebar, chat area, and nick list">
+      <figcaption>The main window: sidebar, chat area, and nick list sharing one floating card.</figcaption>
     </figure>
 
     <ul>
       <li>Click any URL to open it in your browser.</li>
       <li>When a URL is posted, Uplink fetches a preview card (title + thumbnail) automatically.</li>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
-      <li>A <em>"nick is typing…"</em> line appears above the input bar when another user is composing a message and their client supports IRCv3 <code>typing</code> (or the earlier <code>draft/typing</code>). You never see your own typing indicator — it is only shown to others.</li>
+      <li>A <em>"nick is typing…"</em> line appears above the input bar when another user is composing a message and their client supports IRCv3 <code>typing</code> (or the earlier <code>draft/typing</code>). You never see your own typing indicator; it is only shown to others.</li>
       <li><strong>Right-click anywhere on a message</strong> (body, nick, timestamp, or blank space) for a context menu: <strong>Reply</strong>, <strong>React</strong>, and <strong>Delete</strong> (own messages only, when the server supports it). If you have text selected when you right-click, a <strong>Copy</strong> option is also included. See <a href="#reply">Reply</a>, <a href="#reactions">Reactions</a>, and <a href="#deletion">Message deletion</a>.</li>
-      <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Whois, Copy Nick, and submenus: <strong>CTCP ▶</strong> (Ping, Version), <strong>DCC ▶</strong> (Send File), <strong>Chan Ops ▶</strong> (Op, Voice, Invite, Kick, Ban…). See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
+      <li><strong>Right-click any nick</strong> in a message to open the nick context menu: Message, Whois, Copy Nick, and submenus: <strong>CTCP ▶</strong> (Ping, Version), <strong>DCC ▶</strong> (Send File), <strong>Chan Ops ▶</strong> (Op, Voice, Invite, Kick, Ban…). See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
       <li><strong>Hover over a nick</strong> in a message to see their NickServ account name as a tooltip (when the server reports it via <code>account-tag</code> or <code>account-notify</code>).</li>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
       <li>When you switch to a channel with unread messages, a <strong>── N new messages ──</strong> divider appears at the point where new messages start, and the view scrolls there automatically. See <a href="#unread-separator">Unread separator &amp; scroll memory</a>.</li>
@@ -1779,18 +1779,18 @@ channels = "#uplink"</pre>
   <!-- QUICK CHANNEL SWITCHER -->
   <section id="quick-switcher">
     <h2>Quick channel switcher (Ctrl+K)</h2>
-    <p>Press <strong>Ctrl+K</strong> (Cmd+K on macOS) to open a floating search popup listing all joined channels. Start typing to filter by channel name or server name — the list narrows as you type.</p>
+    <p>Press <strong>Ctrl+K</strong> (Cmd+K on macOS) to open a floating search popup listing all joined channels. Start typing to filter by channel name or server name; the list narrows as you type.</p>
 
     <figure class="shot">
       <img src="shots/quick-switcher.png" loading="lazy"
            alt="The Ctrl+K quick channel switcher popup filtering channels">
-      <figcaption>Ctrl+K opens the quick switcher — type to filter across every joined channel.</figcaption>
+      <figcaption>Ctrl+K opens the quick switcher; type to filter across every joined channel.</figcaption>
     </figure>
 
     <ul>
-      <li><strong>Up/Down</strong> — select a channel from the list</li>
-      <li><strong>Enter</strong> — switch to the selected channel</li>
-      <li><strong>Escape</strong> — dismiss without switching</li>
+      <li><strong>Up/Down</strong>: select a channel from the list</li>
+      <li><strong>Enter</strong>: switch to the selected channel</li>
+      <li><strong>Escape</strong>: dismiss without switching</li>
     </ul>
   </section>
 
@@ -1800,7 +1800,7 @@ channels = "#uplink"</pre>
     <p>When you scroll to the top of a channel buffer, Uplink automatically fetches older messages from the server using <code>CHATHISTORY BEFORE</code>. Messages are prepended above the existing buffer without jumping the scroll position.</p>
     <p>This continues as long as the server has more history available. When the server returns an empty batch, Uplink stops requesting.</p>
     <h3>Jump to bottom</h3>
-    <p>On busy channels, scrolling up locks the viewport so incoming messages don't snap you back to the bottom. A floating <strong>⬇⬇</strong> button appears in the bottom-right corner of the chat area — click it to return to live chat. The button fades in when you scroll up and fades out when you return to the bottom.</p>
+    <p>On busy channels, scrolling up locks the viewport so incoming messages don't snap you back to the bottom. A floating <strong>⬇⬇</strong> button appears in the bottom-right corner of the chat area; click it to return to live chat. The button fades in when you scroll up and fades out when you return to the bottom.</p>
     <p><strong>Requirement:</strong> The server must support the <code>chathistory</code> or <code>draft/chathistory</code> IRCv3 capability. Ergo, soju, and modern ZNC all support this.</p>
   </section>
 
@@ -1823,15 +1823,15 @@ channels = "#uplink"</pre>
       <figcaption>A "new messages" divider marks exactly where you left off in a busy channel.</figcaption>
     </figure>
 
-    <p>The view scrolls automatically to show the separator at the top of the viewport, so you immediately see exactly where you left off — no hunting for your place in a busy channel. The separator clears as soon as you open the channel (unread count resets).</p>
+    <p>The view scrolls automatically to show the separator at the top of the viewport, so you immediately see exactly where you left off, no hunting for your place in a busy channel. The separator clears as soon as you open the channel (unread count resets).</p>
 
     <h3>Scroll position memory</h3>
     <p>If you were reading back through history (scrolled up, not at the bottom) when you switched away from a channel, Uplink remembers exactly where you were. When you switch back, the scroll position is restored to the same spot.</p>
 
-    <p>If you were at the bottom when you switched away, the channel opens at the latest message as normal — no saved position is applied.</p>
+    <p>If you were at the bottom when you switched away, the channel opens at the latest message as normal; no saved position is applied.</p>
 
     <div class="tip">
-      <strong>How the two features work together:</strong> scroll memory applies when you navigate away mid-history. The unread separator applies when new messages arrived while you were away. If both conditions are true (you were mid-history <em>and</em> new messages arrived), the separator wins — Uplink scrolls to the separator so you always land at the boundary between what you read and what you missed.
+      <strong>How the two features work together:</strong> scroll memory applies when you navigate away mid-history. The unread separator applies when new messages arrived while you were away. If both conditions are true (you were mid-history <em>and</em> new messages arrived), the separator wins: Uplink scrolls to the separator so you always land at the boundary between what you read and what you missed.
     </div>
   </section>
 
@@ -1850,15 +1850,15 @@ channels = "#uplink"</pre>
     <p>When they stop typing (or send their message), the line disappears automatically.</p>
 
     <h3>Requirements</h3>
-    <p>Both sides need to support IRCv3 <code>typing</code> (finalized) or <code>draft/typing</code> (earlier variant — Ergo, soju, and most modern clients support one or both). Uplink negotiates both caps automatically and handles either form — no configuration needed. If the server advertises neither cap, the feature is silently inactive.</p>
+    <p>Both sides need to support IRCv3 <code>typing</code> (finalized) or <code>draft/typing</code> (earlier variant; Ergo, soju, and most modern clients support one or both). Uplink negotiates both caps automatically and handles either form, no configuration needed. If the server advertises neither cap, the feature is silently inactive.</p>
 
     <h3>What you see vs. what others see</h3>
-    <p>You <strong>never see your own typing indicator</strong>. The indicator is only shown to other users in the channel — you see theirs, they see yours. This is by design: seeing your own "is typing…" would be distracting and confusing.</p>
+    <p>You <strong>never see your own typing indicator</strong>. The indicator is only shown to other users in the channel: you see theirs, they see yours. This is by design: seeing your own "is typing…" would be distracting and confusing.</p>
 
     <table>
       <thead><tr><th>Scenario</th><th>What happens</th></tr></thead>
       <tbody>
-        <tr><td>You start typing in <code>#linux</code></td><td>Other users in <code>#linux</code> see <em>"yournick is typing…"</em> — you do not</td></tr>
+        <tr><td>You start typing in <code>#linux</code></td><td>Other users in <code>#linux</code> see <em>"yournick is typing…"</em>; you do not</td></tr>
         <tr><td>Alice starts typing in <code>#linux</code></td><td>You see <em>"alice is typing…"</em> above your input bar</td></tr>
         <tr><td>Alice stops typing without sending</td><td>The indicator disappears after a few seconds</td></tr>
         <tr><td>Alice sends her message</td><td>The indicator disappears as soon as the message arrives</td></tr>
@@ -1875,7 +1875,7 @@ typing_indicator = true   # set to false to disable completely</pre>
       <strong>Privacy note:</strong> when enabled, Uplink sends a <code>TAGMSG</code> with the <code>+typing=active</code> tag to the channel as you type. If you prefer not to broadcast this, disable the feature in Preferences.
     </div>
     <div class="tip">
-      <strong>Compatibility:</strong> Uplink only sends typing <code>TAGMSG</code> when the server has negotiated the <code>draft/typing</code> capability. On older networks (Undernet, EFnet, IRCnet) that do not support this extension, the typing indicator is automatically silenced — no errors, no spam.
+      <strong>Compatibility:</strong> Uplink only sends typing <code>TAGMSG</code> when the server has negotiated the <code>draft/typing</code> capability. On older networks (Undernet, EFnet, IRCnet) that do not support this extension, the typing indicator is automatically silenced. No errors, no spam.
     </div>
   </section>
 
@@ -1887,18 +1887,18 @@ typing_indicator = true   # set to false to disable completely</pre>
     <figure class="shot">
       <img src="shots/nick-list.png" loading="lazy"
            alt="The nick list panel showing users sorted by op, voice, and regular status">
-      <figcaption>The nick list — sorted by rank, with op/voice prefixes and bot icons.</figcaption>
+      <figcaption>The nick list, sorted by rank, with op/voice prefixes and bot icons.</figcaption>
     </figure>
 
     <ul>
-      <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears at the top-right of the chat area — click it to expand the panel again.</li>
-      <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
+      <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears at the top-right of the chat area; click it to expand the panel again.</li>
+      <li>Drag the divider between the chat and the nick panel to resize it; width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
-      <li>Nicks with <code>+B</code> (bot mode) show a small icon drawn inline to the right of their name — either a robot or an alien, randomly assigned per nick for the session. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
+      <li>Nicks with <code>+B</code> (bot mode) show a small icon drawn inline to the right of their name: either a robot or an alien, randomly assigned per nick for the session. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
       <li><strong>Hover</strong> over any nick to see their NickServ account name as a tooltip (shown as <code>account: name</code> when the server has reported it).</li>
-      <li>Selected and hovered nicks are highlighted with a pill-shaped background in your theme's accent colour — the same style used in the server/channel sidebar.</li>
-      <li>Right-click any nick for a full action menu — see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
-      <li>A <strong>filter box</strong> sits between the header and the list. Type to narrow the list by name — see <a href="#nick-filter">Nick list filter</a> below.</li>
+      <li>Selected and hovered nicks are highlighted with a pill-shaped background in your theme's accent colour, the same style used in the server/channel sidebar.</li>
+      <li>Right-click any nick for a full action menu; see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
+      <li>A <strong>filter box</strong> sits between the header and the list. Type to narrow the list by name; see <a href="#nick-filter">Nick list filter</a> below.</li>
     </ul>
   </section>
 
@@ -1914,7 +1914,7 @@ typing_indicator = true   # set to false to disable completely</pre>
     </figure>
 
     <h3>How it works</h3>
-    <p>The filter is always visible and always active. As you type, any nick that doesn't begin with your input disappears immediately — only matching nicks remain.</p>
+    <p>The filter is always visible and always active. As you type, any nick that doesn't begin with your input disappears immediately; only matching nicks remain.</p>
 
     <pre>Filter: si
 
@@ -1927,20 +1927,20 @@ typing_indicator = true   # set to false to disable completely</pre>
   sion
   zorba</pre>
 
-    <p>The match is case-insensitive — typing <code>Al</code> matches <code>alice</code>, <code>Albert</code>, and <code>ALAN</code> equally.</p>
+    <p>The match is case-insensitive: typing <code>Al</code> matches <code>alice</code>, <code>Albert</code>, and <code>ALAN</code> equally.</p>
 
     <h3>Clearing the filter</h3>
     <ul>
-      <li>Click the <strong>✕</strong> button on the right of the filter box to clear it — the full nick list is instantly restored.</li>
+      <li>Click the <strong>✕</strong> button on the right of the filter box to clear it; the full nick list is instantly restored.</li>
       <li>Press <kbd>Escape</kbd> while the filter box has focus to clear the text.</li>
       <li>The filter clears automatically when you switch to a different channel.</li>
     </ul>
 
     <h3>Example use cases</h3>
     <ul>
-      <li><strong>Busy channels</strong> — in a channel with hundreds of nicks, type the first two letters of someone's nick to find them instantly without scrolling.</li>
-      <li><strong>Checking who's around</strong> — type a common prefix to see all nicks from a particular group at a glance.</li>
-      <li><strong>Before tab-completing</strong> — if you can't remember exactly how to spell someone's nick, filter the list first to narrow your options, then type in the input box and Tab-complete.</li>
+      <li><strong>Busy channels</strong>: in a channel with hundreds of nicks, type the first two letters of someone's nick to find them instantly without scrolling.</li>
+      <li><strong>Checking who's around</strong>: type a common prefix to see all nicks from a particular group at a glance.</li>
+      <li><strong>Before tab-completing</strong>: if you can't remember exactly how to spell someone's nick, filter the list first to narrow your options, then type in the input box and Tab-complete.</li>
     </ul>
 
     <div class="tip">
@@ -1951,7 +1951,7 @@ typing_indicator = true   # set to false to disable completely</pre>
   <!-- NICK CONTEXT MENU -->
   <section id="nick-context-menu">
     <h2>Nick right-click menu</h2>
-    <p>Right-clicking any nick — whether in the user list on the right or directly in the chat view — opens the same context menu. The menu title shows the nick in bold.</p>
+    <p>Right-clicking any nick, whether in the user list on the right or directly in the chat view, opens the same context menu. The menu title shows the nick in bold.</p>
 
     <figure class="shot">
       <img src="shots/nick-context-menu.png" loading="lazy"
@@ -1963,9 +1963,9 @@ typing_indicator = true   # set to false to disable completely</pre>
       <thead><tr><th>Action</th><th>What it does</th></tr></thead>
       <tbody>
         <tr><td><strong>Message</strong></td><td>Opens a private message buffer for that nick in the sidebar. Equivalent to <code>/msg nick</code>.</td></tr>
-        <tr><td><strong>Send File</strong></td><td>Opens a file picker and sends the file via active DCC — Uplink opens a port and the recipient connects in. Works when you have a reachable IP.</td></tr>
-        <tr><td><strong>Send File (Passive)</strong></td><td>Sends via passive DCC — the recipient opens the port and Uplink connects out to them. Use this when you are behind a home router or VPN.</td></tr>
-        <tr><td><strong>Whois</strong></td><td>Sends a <code>WHOIS</code> request. The full response (hostname, channels, idle time, account, TLS status) appears in the <strong>active channel</strong> — right where you are chatting. See <a href="#user-lookup">Looking up users</a>.</td></tr>
+        <tr><td><strong>Send File</strong></td><td>Opens a file picker and sends the file via active DCC: Uplink opens a port and the recipient connects in. Works when you have a reachable IP.</td></tr>
+        <tr><td><strong>Send File (Passive)</strong></td><td>Sends via passive DCC: the recipient opens the port and Uplink connects out to them. Use this when you are behind a home router or VPN.</td></tr>
+        <tr><td><strong>Whois</strong></td><td>Sends a <code>WHOIS</code> request. The full response (hostname, channels, idle time, account, TLS status) appears in the <strong>active channel</strong>, right where you are chatting. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Invite</strong></td><td>Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send <code>INVITE nick #channel</code>.</td></tr>
         <tr><td><strong>Give Op</strong></td><td>Sets <code>+o</code> on the nick in the current channel. Requires op.</td></tr>
         <tr><td><strong>Take Op</strong></td><td>Removes <code>-o</code> from the nick in the current channel. Requires op.</td></tr>
@@ -1973,10 +1973,10 @@ typing_indicator = true   # set to false to disable completely</pre>
         <tr><td><strong>Take Voice</strong></td><td>Removes <code>-v</code> from the nick in the current channel. Requires op or half-op.</td></tr>
         <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply (client name and version) appears in the <strong>active channel</strong>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. The round-trip time appears in the <strong>active channel</strong> as <em>Ping reply from nick: Xms</em>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
-        <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard — paste it into the input bar or anywhere else.</td></tr>
+        <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard; paste it into the input bar or anywhere else.</td></tr>
         <tr><td><strong>Ignore ▶</strong></td><td>Opens a submenu with three checkboxes: <strong>Private Messages</strong>, <strong>Notices</strong>, and <strong>Invites</strong>. Tick or untick each independently. <strong>Channel messages are always visible</strong> regardless of what is checked. If any type is active, an <strong>Unignore All</strong> option appears at the bottom of the submenu to clear everything at once. Changes take effect immediately and persist in config.</td></tr>
         <tr><td><strong>Kick</strong></td><td>Prompts for an optional reason, then sends <code>KICK #channel nick :reason</code>. Requires op.</td></tr>
-        <tr><td><strong>Ban</strong></td><td>Sets <code>MODE #channel +b nick!*@*</code> — bans the nick by name. Requires op.</td></tr>
+        <tr><td><strong>Ban</strong></td><td>Sets <code>MODE #channel +b nick!*@*</code>; bans the nick by name. Requires op.</td></tr>
         <tr><td><strong>Kick &amp; Ban</strong></td><td>Bans first, then kicks. Prompts for an optional reason. Requires op. Both actions are sent in the correct order.</td></tr>
       </tbody>
     </table>
@@ -1987,30 +1987,30 @@ typing_indicator = true   # set to false to disable completely</pre>
   <!-- ACCOUNT TRACKING -->
   <section id="account-tracking">
     <h2>Account tracking</h2>
-    <p>Uplink tracks each user's NickServ account name in real time. This lets you see who is actually behind a nickname — even if someone changes their nick — as long as they're authenticated with services.</p>
+    <p>Uplink tracks each user's NickServ account name in real time. This lets you see who is actually behind a nickname, even if someone changes their nick, as long as they're authenticated with services.</p>
 
     <h3>Where to see it</h3>
     <p>Hover over any nick to see their full profile. Both locations show identical information:</p>
 
     <ul>
-      <li><strong>Chat view</strong> — hover over any coloured nick link in a message. Works in the primary chat view and all split panes.</li>
-      <li><strong>Nick list panel</strong> — hover over any nick in the right-side user list.</li>
+      <li><strong>Chat view</strong>: hover over any coloured nick link in a message. Works in the primary chat view and all split panes.</li>
+      <li><strong>Nick list panel</strong>: hover over any nick in the right-side user list.</li>
     </ul>
 
     <figure class="shot">
       <img src="shots/account-badge.png" loading="lazy"
            alt="A hover tooltip showing a user's NickServ account name">
-      <figcaption>Hovering a nick reveals the NickServ account behind it — even after a nick change.</figcaption>
+      <figcaption>Hovering a nick reveals the NickServ account behind it, even after a nick change.</figcaption>
     </figure>
 
     <p>The tooltip shows whatever the server has reported for that user:</p>
     <ul>
-      <li><strong>Display name</strong> — their friendly name set via <code>draft/metadata-2</code> (e.g. <em>Alice Smith</em>).</li>
-      <li><strong>Account</strong> — their NickServ account name (e.g. <code>alice_libera</code>), reported via <code>account-tag</code>, <code>account-notify</code>, or <code>extended-join</code>.</li>
-      <li><strong>Avatar</strong> — a 32×32 thumbnail if they have set an avatar URL via <code>draft/metadata-2</code> and Uplink has fetched it.</li>
+      <li><strong>Display name</strong>: their friendly name set via <code>draft/metadata-2</code> (e.g. <em>Alice Smith</em>).</li>
+      <li><strong>Account</strong>: their NickServ account name (e.g. <code>alice_libera</code>), reported via <code>account-tag</code>, <code>account-notify</code>, or <code>extended-join</code>.</li>
+      <li><strong>Avatar</strong>: a 32×32 thumbnail if they have set an avatar URL via <code>draft/metadata-2</code> and Uplink has fetched it.</li>
     </ul>
 
-    <p>If the tooltip is absent, the server has not reported any of those values for that nick — either they are not authenticated or the server does not support the relevant capabilities.</p>
+    <p>If the tooltip is absent, the server has not reported any of those values for that nick: either they are not authenticated or the server does not support the relevant capabilities.</p>
 
     <h3>How it stays current</h3>
     <p>Uplink pulls account data from four sources so the information is always up to date without any manual queries:</p>
@@ -2020,7 +2020,7 @@ typing_indicator = true   # set to false to disable completely</pre>
       <tr>
         <td><code>account-tag</code></td>
         <td>On every message the user sends</td>
-        <td>Account name attached directly to the message — no separate event needed. Updates on every single message in real time.</td>
+        <td>Account name attached directly to the message; no separate event needed. Updates on every single message in real time.</td>
       </tr>
       <tr>
         <td><code>account-notify</code></td>
@@ -2030,7 +2030,7 @@ typing_indicator = true   # set to false to disable completely</pre>
       <tr>
         <td><code>extended-join</code></td>
         <td>When a user joins a channel</td>
-        <td>The account name is included directly in the <code>JOIN</code> message — no extra query needed on join.</td>
+        <td>The account name is included directly in the <code>JOIN</code> message; no extra query needed on join.</td>
       </tr>
       <tr>
         <td>WHOX scan</td>
@@ -2039,27 +2039,27 @@ typing_indicator = true   # set to false to disable completely</pre>
       </tr>
     </table>
 
-    <p>All four are negotiated and handled automatically — no configuration needed.</p>
+    <p>All four are negotiated and handled automatically; no configuration needed.</p>
 
     <div class="note">
-      <strong>Tip:</strong> account names survive nick changes. If <strong>alice</strong> changes her nick to <strong>alice_away</strong> and you hover over the new nick, the tooltip still shows <code>account: alice_libera</code> — because it's tied to the account, not the display name.
+      <strong>Tip:</strong> account names survive nick changes. If <strong>alice</strong> changes her nick to <strong>alice_away</strong> and you hover over the new nick, the tooltip still shows <code>account: alice_libera</code>, because it's tied to the account, not the display name.
     </div>
   </section>
 
   <!-- USER METADATA -->
   <section id="user-metadata">
-    <h2>User metadata — display names &amp; avatars</h2>
+    <h2>User metadata: display names &amp; avatars</h2>
     <p>
       On servers that support the IRCv3 <code>draft/metadata-2</code> capability, every user can publish a <strong>display name</strong> and an <strong>avatar image</strong> that other clients automatically receive and display. Think of it as a lightweight profile attached to your IRC nick, stored on the server and synced in real time.
     </p>
 
     <div class="note">
-      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> and <a href="https://soju.im/" target="_blank" rel="noopener">soju</a> support it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability — no errors, it just does nothing.
+      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> and <a href="https://soju.im/" target="_blank" rel="noopener">soju</a> support it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability: no errors, it just does nothing.
     </div>
 
     <h3>Where it displays</h3>
     <p>
-      Hover over any nick — in the <strong>right-side nick list panel</strong> or directly over a <strong>coloured nick link in any message</strong>. A tooltip appears showing that user's profile:
+      Hover over any nick, in the <strong>right-side nick list panel</strong> or directly over a <strong>coloured nick link in any message</strong>. A tooltip appears showing that user's profile:
     </p>
     <pre>[avatar image]  Alice Smith
                 alice</pre>
@@ -2070,29 +2070,29 @@ typing_indicator = true   # set to false to disable completely</pre>
       <figcaption>With draft/metadata-2, a nick tooltip shows the user's display name and avatar.</figcaption>
     </figure>
     <p>
-      Both locations show identical information. Uplink fetches the avatar image in the background as soon as the metadata arrives and caches it for the session; subsequent hovers are instant. Avatars are displayed at 32×32 — no upscaling, so small icons like favicons stay crisp.
+      Both locations show identical information. Uplink fetches the avatar image in the background as soon as the metadata arrives and caches it for the session; subsequent hovers are instant. Avatars are displayed at 32×32 with no upscaling, so small icons like favicons stay crisp.
     </p>
     <p>
       Metadata follows a nick across all channels on the same server. If Alice sets her display name, you will see it in <code>#general</code>, <code>#linux</code>, and every other channel you share with her.
     </p>
 
     <h3>Setting your own display name and avatar</h3>
-    <p>There are two ways to set your profile — via the Preferences dialog or via slash commands. Both save the values to your config so they are re-published automatically every time you connect to a supporting server.</p>
+    <p>There are two ways to set your profile: via the Preferences dialog or via slash commands. Both save the values to your config so they are re-published automatically every time you connect to a supporting server.</p>
 
     <h4>Via Preferences</h4>
     <ol>
       <li>Open <strong>Settings → Profile…</strong> from the menu bar (or <strong>Settings → Preferences</strong> and select the <strong>Profile</strong> page).</li>
-      <li>Enter your <strong>Display Name</strong> — the friendly name other users see in the tooltip (e.g. <em>Alice Smith</em>). It does not replace your IRC nick.</li>
+      <li>Enter your <strong>Display Name</strong>, the friendly name other users see in the tooltip (e.g. <em>Alice Smith</em>). It does not replace your IRC nick.</li>
       <li>
-        Enter your <strong>Avatar URL</strong> — a full <code>https://</code> link to an image file. Or click <strong>Browse...</strong> to pick a local image from your computer.
+        Enter your <strong>Avatar URL</strong>, a full <code>https://</code> link to an image file. Or click <strong>Browse...</strong> to pick a local image from your computer.
         <ul>
-          <li><strong>Web URL</strong> (e.g. <code>https://example.com/avatar.png</code>) — broadcast to the server; other users see it when they hover your nick.</li>
-          <li><strong>Local file path</strong> (e.g. <code>/home/alice/avatar.png</code>) — displayed only in your own client; never sent to the server, so other users will not see it.</li>
+          <li><strong>Web URL</strong> (e.g. <code>https://example.com/avatar.png</code>): broadcast to the server; other users see it when they hover your nick.</li>
+          <li><strong>Local file path</strong> (e.g. <code>/home/alice/avatar.png</code>): displayed only in your own client; never sent to the server, so other users will not see it.</li>
         </ul>
       </li>
-      <li>Click <strong>Apply to connected servers</strong>. Uplink saves the values, sends them to every currently-connected server that supports <code>draft/metadata-2</code>, and updates your own nick tooltip immediately — no reconnect needed.</li>
+      <li>Click <strong>Apply to connected servers</strong>. Uplink saves the values, sends them to every currently-connected server that supports <code>draft/metadata-2</code>, and updates your own nick tooltip immediately; no reconnect needed.</li>
     </ol>
-    <p>From then on, Uplink automatically publishes your profile each time you connect — no need to re-enter anything.</p>
+    <p>From then on, Uplink automatically publishes your profile each time you connect; no need to re-enter anything.</p>
 
     <h4>Via commands</h4>
     <p>You can set your display name and avatar directly from the input box:</p>
@@ -2122,7 +2122,7 @@ avatar_url = "https://example.com/avatar.png"</pre>
 
     <h3>How it works under the hood</h3>
     <p>
-      When Uplink connects to a server that advertises <code>draft/metadata-2</code>, the capability is negotiated during the normal CAP handshake. The server then pushes <code>METADATA</code> notifications whenever a user's <code>display-name</code> or <code>avatar</code> key changes — no polling needed.
+      When Uplink connects to a server that advertises <code>draft/metadata-2</code>, the capability is negotiated during the normal CAP handshake. The server then pushes <code>METADATA</code> notifications whenever a user's <code>display-name</code> or <code>avatar</code> key changes; no polling needed.
     </p>
     <p>
       Setting your profile sends a <code>METADATA * SET</code> command to the server:
@@ -2133,7 +2133,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       The server stores those values and immediately broadcasts them to other connected clients. When Uplink receives an avatar URL for a nick, it fires a background HTTP request to fetch the image, caches it in memory, and updates the tooltip. The first hover before the fetch completes shows the name and account only; subsequent hovers show the image.
     </p>
     <p>
-      Local file paths (starting with <code>/</code> or <code>file://</code>) are loaded from disk directly — no network request. They are never sent to the server, so other users see no avatar for you unless you also have a web URL configured.
+      Local file paths (starting with <code>/</code> or <code>file://</code>) are loaded from disk directly, with no network request. They are never sent to the server, so other users see no avatar for you unless you also have a web URL configured.
     </p>
   </section>
 
@@ -2166,12 +2166,12 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
   <!-- TRAY -->
   <section id="tray">
     <h2>System tray</h2>
-    <p>Closing the window minimizes Uplink to the system tray — it keeps running in the background.</p>
+    <p>Closing the window minimizes Uplink to the system tray; it keeps running in the background.</p>
 
     <figure class="shot">
       <img src="shots/system-tray.png" loading="lazy"
            alt="The Uplink tray icon with its right-click menu open">
-      <figcaption>Uplink minimizes to the tray — a dot signals unread mentions or messages.</figcaption>
+      <figcaption>Uplink minimizes to the tray; a dot signals unread mentions or messages.</figcaption>
     </figure>
 
     <ul>
@@ -2199,20 +2199,20 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
   <!-- COMMANDS -->
   <section id="commands">
     <h2>Slash commands</h2>
-    <p>Type a <code>/</code> to start a command. Tab-completion works on command names too — type <code>/p</code> and press <kbd>Tab</kbd> to cycle through <code>/part</code>, <code>/ping</code>, etc.</p>
+    <p>Type a <code>/</code> to start a command. Tab-completion works on command names too: type <code>/p</code> and press <kbd>Tab</kbd> to cycle through <code>/part</code>, <code>/ping</code>, etc.</p>
 
     <figure class="shot">
       <img src="shots/command-autocomplete.png" loading="lazy"
            alt="Slash-command autocomplete suggestions in the input bar">
-      <figcaption>Typing <code>/</code> offers command autocomplete — Tab cycles through the matches.</figcaption>
+      <figcaption>Typing <code>/</code> offers command autocomplete; Tab cycles through the matches.</figcaption>
     </figure>
 
     <table>
       <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
       <tr><td><code>/join #channel</code></td><td>Join a channel</td><td><code>/join #linux</code></td></tr>
       <tr><td><code>/part [reason]</code></td><td>Leave the current channel</td><td><code>/part goodbye</code></td></tr>
-        <tr><td><code>/leave</code></td><td>Leave the channel — or close a PM/query window</td><td><code>/leave</code></td></tr>
-        <tr><td><code>/close</code></td><td>Same as <code>/leave</code> — closes a PM window or parts a channel</td><td><code>/close</code></td></tr>
+        <tr><td><code>/leave</code></td><td>Leave the channel, or close a PM/query window</td><td><code>/leave</code></td></tr>
+        <tr><td><code>/close</code></td><td>Same as <code>/leave</code>: closes a PM window or parts a channel</td><td><code>/close</code></td></tr>
       <tr><td><code>/nick newnick</code></td><td>Change your nickname</td><td><code>/nick alice_</code></td></tr>
       <tr><td><code>/me action</code></td><td>CTCP action</td><td><code>/me waves</code></td></tr>
       <tr><td><code>/msg nick text</code></td><td>Send a private message</td><td><code>/msg bob hey there</code></td></tr>
@@ -2221,20 +2221,20 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/op nick</code></td><td>Give someone channel op</td><td><code>/op bob</code></td></tr>
       <tr><td><code>/voice nick</code></td><td>Give someone voice</td><td><code>/voice carol</code></td></tr>
       <tr><td><code>/ban mask</code></td><td>Ban a hostmask</td><td><code>/ban *!*@badhost.net</code></td></tr>
-      <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick — reply appears in the active channel</td><td><code>/ping bob</code></td></tr>
-      <tr><td><code>/whois nick</code></td><td>Full user info (hostname, channels, idle time, account) — reply appears in the active channel</td><td><code>/whois bob</code></td></tr>
-      <tr><td><code>/whowas nick</code></td><td>History for a departed nick — last known user@host and realname — reply appears in the active channel</td><td><code>/whowas bob</code></td></tr>
+      <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick; reply appears in the active channel</td><td><code>/ping bob</code></td></tr>
+      <tr><td><code>/whois nick</code></td><td>Full user info (hostname, channels, idle time, account); reply appears in the active channel</td><td><code>/whois bob</code></td></tr>
+      <tr><td><code>/whowas nick</code></td><td>History for a departed nick (last known user@host and realname); reply appears in the active channel</td><td><code>/whowas bob</code></td></tr>
       <tr><td><code>/setname realname</code></td><td>Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname)</td><td><code>/setname Alice Smith</code></td></tr>
-      <tr><td><code>/list [filter]</code></td><td>List all channels on the server — results appear in the server buffer</td><td><code>/list</code>, <code>/list #linux</code></td></tr>
-      <tr><td><code>/stats query</code></td><td>Request server statistics — results appear in the active channel</td><td><code>/stats u</code></td></tr>
+      <tr><td><code>/list [filter]</code></td><td>List all channels on the server; results appear in the server buffer</td><td><code>/list</code>, <code>/list #linux</code></td></tr>
+      <tr><td><code>/stats query</code></td><td>Request server statistics; results appear in the active channel</td><td><code>/stats u</code></td></tr>
       <tr><td><code>/time</code></td><td>Query the server's local time</td><td><code>/time</code></td></tr>
-      <tr><td><code>/version nick</code></td><td>Ask what IRC client a nick is running — reply appears in the active channel</td><td><code>/version bob</code></td></tr>
+      <tr><td><code>/version nick</code></td><td>Ask what IRC client a nick is running; reply appears in the active channel</td><td><code>/version bob</code></td></tr>
       <tr><td><code>/monitor add &lt;nick&gt;</code></td><td>Watch for a nick coming online</td><td><code>/monitor add alice</code></td></tr>
       <tr><td><code>/monitor del &lt;nick&gt;</code></td><td>Stop watching a nick</td><td><code>/monitor del alice</code></td></tr>
       <tr><td><code>/monitor list</code></td><td>Show your current watch list</td><td></td></tr>
       <tr><td><code>/monitor clear</code></td><td>Clear all watched nicks</td><td></td></tr>
       <tr><td><code>/monitor status</code></td><td>Request current online/offline status</td><td></td></tr>
-      <tr><td><code>/ignore nick [pm] [notice] [invite]</code></td><td>Suppress private messages, notices, and/or invites from a nick — channel messages always visible. Omit flags to suppress all three.</td><td><code>/ignore spammer</code> / <code>/ignore recruiter invite</code></td></tr>
+      <tr><td><code>/ignore nick [pm] [notice] [invite]</code></td><td>Suppress private messages, notices, and/or invites from a nick; channel messages always visible. Omit flags to suppress all three.</td><td><code>/ignore spammer</code> / <code>/ignore recruiter invite</code></td></tr>
       <tr><td><code>/unignore nick</code></td><td>Remove a nick from the ignore list entirely</td><td><code>/unignore spammer</code></td></tr>
       <tr><td><code>/ignored</code></td><td>List ignored nicks and their active flags</td><td></td></tr>
       <tr><td><code>/ns text</code></td><td>Shortcut for <code>PRIVMSG NickServ</code></td><td><code>/ns identify pass</code></td></tr>
@@ -2244,21 +2244,21 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/clear</code></td><td>Clear the chat buffer</td><td><code>/clear</code></td></tr>
       <tr><td><code>/raw line</code></td><td>Send a raw IRC protocol line to the server</td><td><code>/raw MODE #uplink +m</code></td></tr>
       <tr><td><code>/quote line</code></td><td>Alias for <code>/raw</code></td><td><code>/quote INVITE alice #uplink</code></td></tr>
-      <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is — no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplink +o alice</code></td></tr>
+      <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is, no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplink +o alice</code></td></tr>
       <tr><td><code>/quit [message]</code></td><td>Disconnect</td><td><code>/quit see ya</code></td></tr>
-      <tr><td><code>/sysinfo</code></td><td>Collect OS/CPU/RAM/GPU/uptime info and post to channel — collection runs async with 12s timeout</td><td><code>/sysinfo</code></td></tr>
+      <tr><td><code>/sysinfo</code></td><td>Collect OS/CPU/RAM/GPU/uptime info and post to channel; collection runs async with 12s timeout</td><td><code>/sysinfo</code></td></tr>
       <tr><td><code>/help</code></td><td>List all commands</td><td><code>/help</code></td></tr>
     </table>
 
     <div class="callout">
       <strong>Tip: oper and server-specific commands work directly.</strong>
-      If a command is not in the list above, just type it — Uplink passes it straight to the server.
+      If a command is not in the list above, just type it; Uplink passes it straight to the server.
       This means IRC operator commands like <code>/REHASH</code>, <code>/SAMODE</code>, <code>/GLOBOPS</code>, <code>/OPER</code>, and any other server-specific command work without needing a <code>/raw</code> prefix.
       Uplink does not need to know about every command your server supports.
     </div>
 
     <div class="tip">
-      <strong>/whois, /version, and /ping replies appear in your active channel — not the server buffer.</strong>
+      <strong>/whois, /version, and /ping replies appear in your active channel, not the server buffer.</strong>
       If you run <code>/whois alice</code> while in <code>#linux</code>, the full WHOIS response lands in <code>#linux</code>.
       Run it from alice's PM window and it lands there instead. See <a href="#user-lookup">Looking up users</a> for full examples.
     </div>
@@ -2266,15 +2266,15 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
 
   <!-- LOOKING UP USERS -->
   <section id="user-lookup">
-    <h2>Looking up users — /whois, /version, /ping</h2>
-    <p>Three commands let you inspect another user in detail. All three post their results in the <strong>active channel or PM window</strong> — wherever you have focus when the reply arrives. You do not need to switch to the server buffer to see them.</p>
+    <h2>Looking up users: /whois, /version, /ping</h2>
+    <p>Three commands let you inspect another user in detail. All three post their results in the <strong>active channel or PM window</strong>, wherever you have focus when the reply arrives. You do not need to switch to the server buffer to see them.</p>
 
-    <h3>/whois — full user profile</h3>
+    <h3>/whois: full user profile</h3>
     <p>Returns everything the server knows about a nick: hostname, real name, which channels they are in, which server they are connected to, idle time, NickServ account, and whether they are on a secure (TLS) connection.</p>
 
     <pre>/whois alice</pre>
 
-    <p>Example — running <code>/whois alice</code> while in <code>#linux</code>. The entire block appears in <code>#linux</code>:</p>
+    <p>Example: running <code>/whois alice</code> while in <code>#linux</code>. The entire block appears in <code>#linux</code>:</p>
     <pre>alice is alice@host.example (Alice Smith)
 alice is in channels: #linux #uplink #general
 alice is on irc.linuxdojo.org (LinuxDojo IRC)
@@ -2285,16 +2285,16 @@ alice is using a secure TLS connection</pre>
     <figure class="shot">
       <img src="shots/whois.png" loading="lazy"
            alt="A /whois response rendered in the active channel">
-      <figcaption>/whois output lands right in the channel you ran it from — no switching to the server buffer.</figcaption>
+      <figcaption>/whois output lands right in the channel you ran it from, no switching to the server buffer.</figcaption>
     </figure>
 
-    <p>You can also trigger it from the <strong>user list</strong> or <strong>chat view</strong> — right-click any nick → <strong>Whois</strong>. No need to type the command if you can see the nick.</p>
+    <p>You can also trigger it from the <strong>user list</strong> or <strong>chat view</strong>: right-click any nick → <strong>Whois</strong>. No need to type the command if you can see the nick.</p>
 
     <div class="tip">
-      <strong>Want to whois yourself?</strong> <code>/whois yournick yournick</code> (nick twice) forces the server to return your own idle time and away status — useful for debugging whether your away message is set.
+      <strong>Want to whois yourself?</strong> <code>/whois yournick yournick</code> (nick twice) forces the server to return your own idle time and away status, useful for debugging whether your away message is set.
     </div>
 
-    <h3>/version nick — what client are they running?</h3>
+    <h3>/version nick: what client are they running?</h3>
     <p>Sends a CTCP VERSION request to the nick. Their client automatically replies with its name and version string. The reply appears in your active channel.</p>
 
     <pre>/version alice</pre>
@@ -2306,13 +2306,13 @@ alice is using a secure TLS connection</pre>
     <pre>VERSION reply from bob:   HexChat 2.16.2 Linux [x86_64]
 VERSION reply from carol: Irssi v1.4.5 - https://irssi.org
 VERSION reply from dave:  WeeChat 4.3.1 (compiled Apr 2 2024)
-VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
+VERSION reply from bot:   (no reply, most bots block CTCP)</pre>
 
     <div class="note">
-      <strong>No reply?</strong> The nick may have CTCP replies disabled, be using a client that does not respond, or be a bot. That is normal — just means no version info is available.
+      <strong>No reply?</strong> The nick may have CTCP replies disabled, be using a client that does not respond, or be a bot. That is normal; it just means no version info is available.
     </div>
 
-    <h3>/ping nick — measure round-trip latency</h3>
+    <h3>/ping nick: measure round-trip latency</h3>
     <p>Sends a CTCP PING with a high-resolution timestamp. When the reply arrives, Uplink calculates the round-trip time and posts it to the active channel.</p>
 
     <pre>/ping alice</pre>
@@ -2324,16 +2324,16 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <table>
       <thead><tr><th>Result</th><th>What it indicates</th></tr></thead>
       <tbody>
-        <tr><td><strong>1–50 ms</strong></td><td>Same region or same server — very low latency</td></tr>
-        <tr><td><strong>50–150 ms</strong></td><td>Different country or continent — normal for international chat</td></tr>
-        <tr><td><strong>150–400 ms</strong></td><td>High latency — possibly a satellite connection or slow network path</td></tr>
+        <tr><td><strong>1–50 ms</strong></td><td>Same region or same server, very low latency</td></tr>
+        <tr><td><strong>50–150 ms</strong></td><td>Different country or continent, normal for international chat</td></tr>
+        <tr><td><strong>150–400 ms</strong></td><td>High latency, possibly a satellite connection or slow network path</td></tr>
         <tr><td><strong>No reply</strong></td><td>The nick has CTCP PING blocked, or their client does not support it</td></tr>
       </tbody>
     </table>
 
     <div class="callout">
       <strong>All three commands route to your active window.</strong>
-      The rule is simple: whatever channel or PM you are looking at when the reply arrives — that is where it appears. This means you can look up multiple people in sequence from the same channel and all responses stack up there, together.
+      The rule is simple: whatever channel or PM you are looking at when the reply arrives, that is where it appears. This means you can look up multiple people in sequence from the same channel and all responses stack up there, together.
 
       <pre># You are in #linux, talking to alice and bob:
 /whois alice     →  full WHOIS block appears in #linux
@@ -2343,32 +2343,32 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     </div>
 
     <h3>Using right-click instead of commands</h3>
-    <p>All three are also in the nick right-click menu — right-click any nick in the user list <em>or</em> directly in the chat view, then choose:</p>
+    <p>All three are also in the nick right-click menu: right-click any nick in the user list <em>or</em> directly in the chat view, then choose:</p>
     <ul>
-      <li><strong>Whois</strong> — same as <code>/whois nick</code></li>
-      <li><strong>Version</strong> — same as <code>/version nick</code></li>
-      <li><strong>Ping</strong> — same as <code>/ping nick</code></li>
+      <li><strong>Whois</strong>: same as <code>/whois nick</code></li>
+      <li><strong>Version</strong>: same as <code>/version nick</code></li>
+      <li><strong>Ping</strong>: same as <code>/ping nick</code></li>
     </ul>
     <p>The reply appears in the active channel regardless of whether you used the command or the menu.</p>
   </section>
 
   <!-- CHANNEL LIST -->
   <section id="channel-list">
-    <h2>Listing channels — /list</h2>
+    <h2>Listing channels: /list</h2>
     <p>To browse all channels on the current server, type:</p>
     <pre>/list</pre>
-    <p>A <strong>Channel Browser</strong> dialog opens. Results stream in as the server sends them — you don't have to wait for the full list before you can start filtering.</p>
+    <p>A <strong>Channel Browser</strong> dialog opens. Results stream in as the server sends them, so you don't have to wait for the full list before you can start filtering.</p>
 
     <figure class="shot">
       <img src="shots/channel-list.png" loading="lazy"
            alt="The Channel Browser dialog listing channels with user counts and topics">
-      <figcaption>/list opens the Channel Browser — sort by column, filter by name or topic, double-click to join.</figcaption>
+      <figcaption>/list opens the Channel Browser: sort by column, filter by name or topic, double-click to join.</figcaption>
     </figure>
 
     <h3>Sorting and filtering</h3>
     <ul>
       <li>Click any column header (<strong>Channel</strong>, <strong>Users</strong>, <strong>Topic</strong>) to sort by that column. Click again to reverse. User count sorts numerically by default (highest first).</li>
-      <li>Type in the filter box at the top to narrow results — it matches against channel name and topic simultaneously.</li>
+      <li>Type in the filter box at the top to narrow results; it matches against channel name and topic simultaneously.</li>
     </ul>
 
     <h3>Joining a channel</h3>
@@ -2381,15 +2381,15 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <p>Click <strong>Refresh</strong> to re-request the channel list from the server. Useful if the server's list has changed since you opened the dialog.</p>
 
     <div class="note">
-      <strong>Large networks:</strong> On networks like Libera.Chat with thousands of channels, the dialog populates progressively — rows appear as the server sends them. Use the filter box to narrow down immediately without waiting for the full list.
+      <strong>Large networks:</strong> On networks like Libera.Chat with thousands of channels, the dialog populates progressively; rows appear as the server sends them. Use the filter box to narrow down immediately without waiting for the full list.
     </div>
   </section>
 
   <!-- SERVER QUERIES -->
   <section id="server-queries">
-    <h2>Server queries — /stats, /time, /whowas</h2>
+    <h2>Server queries: /stats, /time, /whowas</h2>
 
-    <h3>/stats — server statistics</h3>
+    <h3>/stats: server statistics</h3>
     <p>The <code>/stats</code> command asks the server for operational information. The result appears in the active channel buffer.</p>
     <table>
       <tr><th>Command</th><th>What it returns</th></tr>
@@ -2399,12 +2399,12 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     </table>
     <p>Other letters may be supported depending on your IRC server. On Ergo, <code>/stats u</code> is the most useful.</p>
 
-    <h3>/time — server local time</h3>
+    <h3>/time: server local time</h3>
     <p>Run <code>/time</code> with no arguments to query the server's local time:</p>
     <pre>/time</pre>
     <p>The result appears in the active channel buffer. To query another user's local time via CTCP, use <code>/time nick</code> instead.</p>
 
-    <h3>/whowas — history for departed nicks</h3>
+    <h3>/whowas: history for departed nicks</h3>
     <p>If a nick has left the network, <code>/whowas</code> shows their last known connection details:</p>
     <pre>/whowas alice</pre>
     <p>The reply shows the user's last <code>user@host</code> and realname, and appears in the active channel buffer alongside WHOIS output.</p>
@@ -2415,7 +2415,7 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
 
   <!-- SETNAME -->
   <section id="setname">
-    <h2>Changing your realname — /setname</h2>
+    <h2>Changing your realname: /setname</h2>
     <p>Your <em>realname</em> (also called GECOS) is the longer description shown in WHOIS output. Normally it is set in your config and only applied when you connect. With the IRCv3 <code>setname</code> extension, you can change it on the fly without reconnecting:</p>
     <pre>/setname Alice Smith</pre>
     <p>The change takes effect immediately on servers that support <code>setname</code> (Ergo does). Other users in channels you share will see a status line: <em>alice changed their realname to "Alice Smith"</em>.</p>
@@ -2434,7 +2434,7 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <figure class="shot">
       <img src="shots/private-message.png" loading="lazy"
            alt="A private message buffer open in the sidebar">
-      <figcaption>Each conversation gets its own buffer in the sidebar — incoming PMs open one automatically.</figcaption>
+      <figcaption>Each conversation gets its own buffer in the sidebar; incoming PMs open one automatically.</figcaption>
     </figure>
 
     <h3>Messaging IRC services (NickServ, ChanServ…)</h3>
@@ -2450,24 +2450,24 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     </table>
     <p>Or use the full form: <code>/msg NickServ help</code>, <code>/msg ChanServ op #uplink</code>, etc.</p>
 
-    <p><strong>Where do the replies appear?</strong> When you send a message to a service, Uplink opens a PM tab for that service in the sidebar (e.g. a <strong>NickServ</strong> tab or <strong>ChanServ</strong> tab). Replies from that service — including help output, error messages, and confirmations — arrive in that same tab. If you have not messaged the service yet, their replies go to the server buffer instead.</p>
+    <p><strong>Where do the replies appear?</strong> When you send a message to a service, Uplink opens a PM tab for that service in the sidebar (e.g. a <strong>NickServ</strong> tab or <strong>ChanServ</strong> tab). Replies from that service, including help output, error messages, and confirmations, arrive in that same tab. If you have not messaged the service yet, their replies go to the server buffer instead.</p>
 
     <div class="tip">
-      <strong>Password commands are safe to type.</strong> When you use <code>/ns identify mypassword</code> or <code>/msg NickServ identify mypassword</code>, Uplink shows <code>IDENTIFY &lt;redacted&gt;</code> in the NickServ tab — your actual password is never displayed in the chat view. The command still goes to the server correctly. This redaction covers <code>IDENTIFY</code>, <code>REGISTER</code>, <code>GHOST</code>, <code>RECOVER</code>, and other password-taking commands.
+      <strong>Password commands are safe to type.</strong> When you use <code>/ns identify mypassword</code> or <code>/msg NickServ identify mypassword</code>, Uplink shows <code>IDENTIFY &lt;redacted&gt;</code> in the NickServ tab; your actual password is never displayed in the chat view. The command still goes to the server correctly. This redaction covers <code>IDENTIFY</code>, <code>REGISTER</code>, <code>GHOST</code>, <code>RECOVER</code>, and other password-taking commands.
     </div>
 
     <div class="note">
-      <strong>Example:</strong> Typing <code>/msg ChanServ help</code> opens a ChanServ tab and sends the request. ChanServ's help reply arrives in that same ChanServ tab — not in the server buffer or the channel you were looking at.
+      <strong>Example:</strong> Typing <code>/msg ChanServ help</code> opens a ChanServ tab and sends the request. ChanServ's help reply arrives in that same ChanServ tab, not in the server buffer or the channel you were looking at.
     </div>
   </section>
 
   <!-- FORMATTING -->
   <section id="formatting">
-    <h2>IRC text formatting — send &amp; receive</h2>
+    <h2>IRC text formatting: send &amp; receive</h2>
     <p>Uplink both <strong>renders</strong> incoming mIRC formatting codes and lets you <strong>apply</strong> them in your own messages using keyboard shortcuts in the input box.</p>
 
-    <h3>Keyboard shortcuts — applying formatting</h3>
-    <p>Formatting is applied <strong>visually as you type</strong> — bold text looks bold, italic looks italic, right in the input box. The IRC control codes are generated automatically when you send the message. A small <strong>B I U S</strong> indicator appears at the bottom-left of the input box showing which formats are currently active; a colored <strong>A</strong> joins it when a text or background color is set.</p>
+    <h3>Keyboard shortcuts: applying formatting</h3>
+    <p>Formatting is applied <strong>visually as you type</strong>: bold text looks bold, italic looks italic, right in the input box. The IRC control codes are generated automatically when you send the message. A small <strong>B I U S</strong> indicator appears at the bottom-left of the input box showing which formats are currently active; a colored <strong>A</strong> joins it when a text or background color is set.</p>
 
     <table>
       <thead><tr><th>Shortcut</th><th>Format</th><th>What others see</th></tr></thead>
@@ -2476,26 +2476,26 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
         <tr><td><kbd>Ctrl+I</kbd></td><td>Italic</td><td><em>italic text</em></td></tr>
         <tr><td><kbd>Ctrl+U</kbd></td><td>Underline</td><td><u>underline text</u></td></tr>
         <tr><td><kbd>Ctrl+S</kbd></td><td>Strikethrough</td><td><s>strikethrough text</s></td></tr>
-        <tr><td><kbd>Ctrl+Shift+K</kbd></td><td>Color</td><td>Opens a color menu — pick a text and (optional) background color. See below.</td></tr>
+        <tr><td><kbd>Ctrl+Shift+K</kbd></td><td>Color</td><td>Opens a color menu: pick a text and (optional) background color. See below.</td></tr>
         <tr><td><kbd>Ctrl+O</kbd></td><td>Reset all</td><td>Clears all active formatting at once. Back to plain text.</td></tr>
       </tbody>
     </table>
 
-    <p>Shortcuts <strong>stack</strong> — press <kbd>Ctrl+B</kbd> then <kbd>Ctrl+U</kbd> to type bold+underlined text. Press the same shortcut again to turn that format off while keeping others active.</p>
+    <p>Shortcuts <strong>stack</strong>: press <kbd>Ctrl+B</kbd> then <kbd>Ctrl+U</kbd> to type bold+underlined text. Press the same shortcut again to turn that format off while keeping others active.</p>
 
-    <h3>Example — bold part of a message</h3>
-    <p>To send: <em>This is <strong>very important</strong> — please read</em></p>
-    <pre>This is [Ctrl+B]very important[Ctrl+B] — please read</pre>
+    <h3>Example: bold part of a message</h3>
+    <p>To send: <em>This is <strong>very important</strong> - please read</em></p>
+    <pre>This is [Ctrl+B]very important[Ctrl+B] - please read</pre>
 
-    <h3>Example — italic inside a sentence</h3>
+    <h3>Example: italic inside a sentence</h3>
     <pre>I was [Ctrl+I]absolutely[Ctrl+I] blown away by that</pre>
 
-    <h3>Example — stacking bold and underline</h3>
-    <pre>[Ctrl+B][Ctrl+U]really important[Ctrl+O] — back to normal</pre>
+    <h3>Example: stacking bold and underline</h3>
+    <pre>[Ctrl+B][Ctrl+U]really important[Ctrl+O] - back to normal</pre>
     <p>Use <kbd>Ctrl+O</kbd> to reset all formatting at once instead of toggling each one off individually.</p>
 
     <h3>Applying color</h3>
-    <p>Color works like the other formats — set it, type, and it is encoded when you send. There are two ways to open the color menu:</p>
+    <p>Color works like the other formats: set it, type, and it is encoded when you send. There are two ways to open the color menu:</p>
     <ul>
       <li>Press <kbd>Ctrl+Shift+K</kbd> in the input box.</li>
       <li><strong>Right-click</strong> the input box and open the <strong>Color</strong> submenu on the standard edit menu.</li>
@@ -2505,16 +2505,16 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <figure class="shot">
       <img src="shots/mirc-color.png" loading="lazy"
            alt="Chat messages sent with mIRC text and background colors">
-      <figcaption>Messages sent with mIRC colors — set a color with <kbd>Ctrl+Shift+K</kbd> or right-click &rarr; Color, then type.</figcaption>
+      <figcaption>Messages sent with mIRC colors: set a color with <kbd>Ctrl+Shift+K</kbd> or right-click &rarr; Color, then type.</figcaption>
     </figure>
 
-    <h3>Received formatting — what Uplink renders</h3>
+    <h3>Received formatting: what Uplink renders</h3>
     <p>All standard mIRC formatting codes in incoming messages are rendered automatically:</p>
 
     <figure class="shot">
       <img src="shots/text-formatting.png" loading="lazy"
            alt="Bold, italic, underline, and colored text rendered in the chat view">
-      <figcaption>Uplink renders mIRC formatting — bold, italic, underline, strikethrough, and colors.</figcaption>
+      <figcaption>Uplink renders mIRC formatting: bold, italic, underline, strikethrough, and colors.</figcaption>
     </figure>
 
     <table>
@@ -2535,7 +2535,7 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
     <h2>Emoji and shortcodes</h2>
     <p>There are three ways to use emoji in Uplink:</p>
 
-    <h3>1. Type a shortcode — inline autocomplete</h3>
+    <h3>1. Type a shortcode: inline autocomplete</h3>
     <p>Start typing <code>:</code> followed by the emoji name. A completion list pops up:</p>
     <pre>:fire    →  shows completion list: 🔥 fire, ...
 :thumbs  →  shows: 👍 thumbsup, 👎 thumbsdown, ...</pre>
@@ -2548,14 +2548,14 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
 
     <p>Navigate with <kbd>↑</kbd> / <kbd>↓</kbd>, select with <kbd>Enter</kbd> or <kbd>Tab</kbd>, dismiss with <kbd>Escape</kbd>.</p>
 
-    <h3>2. Type a full shortcode — instant substitution</h3>
+    <h3>2. Type a full shortcode: instant substitution</h3>
     <p>Type the opening colon, the name, and the closing colon. The emoji replaces it instantly:</p>
     <pre>:trident:   →  🔱  (substituted as you type the closing colon)
 :joy:       →  😂
 :100:       →  💯</pre>
 
     <h3>3. Emoji picker button</h3>
-    <p>Enable the button in config or Preferences, then click 😊 to open a searchable grid of 1,900+ emoji (Unicode 16.0, with GitHub-compatible shortcodes). The search box accepts plain words or shortcode style — <code>poop</code> and <code>:poop</code> both work. Press <kbd>Enter</kbd> to commit the first match without clicking.</p>
+    <p>Enable the button in config or Preferences, then click 😊 to open a searchable grid of 1,900+ emoji (Unicode 16.0, with GitHub-compatible shortcodes). The search box accepts plain words or shortcode style: <code>poop</code> and <code>:poop</code> both work. Press <kbd>Enter</kbd> to commit the first match without clicking.</p>
 
     <figure class="shot">
       <img src="shots/emoji-picker.png" loading="lazy"
@@ -2571,7 +2571,7 @@ show_emoji_button = true</pre>
     <pre>font_emoji = 16   # pt, independent of font_chat</pre>
 
     <h3>4. Send button</h3>
-    <p>The paper-plane button that floats inside the right edge of the input box sends the current message — identical to pressing <kbd>Enter</kbd>. It is enabled when the input is non-empty and disabled when blank.</p>
+    <p>The paper-plane button that floats inside the right edge of the input box sends the current message, identical to pressing <kbd>Enter</kbd>. It is enabled when the input is non-empty and disabled when blank.</p>
     <p>If you prefer a cleaner input bar without the button, toggle it off:</p>
     <ul>
       <li><strong>GUI:</strong> Open <strong>Settings → Preferences</strong> and uncheck <strong>Show Send Button</strong>.</li>
@@ -2585,7 +2585,7 @@ show_send_button = false   # hide the paper-plane button; press Enter to send</p
   <!-- MULTI-LINE MESSAGES -->
   <section id="multiline">
     <h2>Multi-line messages</h2>
-    <p>The message input box supports multiple lines — useful for pastes, code snippets, or structured replies.</p>
+    <p>The message input box supports multiple lines, useful for pastes, code snippets, or structured replies.</p>
 
     <h3>Composing</h3>
     <p>Press <kbd>Shift+Enter</kbd> to insert a line break. The box grows automatically from 1 to 4 lines as you type. Press <kbd>Enter</kbd> (without Shift) to send the whole message.</p>
@@ -2593,36 +2593,36 @@ show_send_button = false   # hide the paper-plane button; press Enter to send</p
     <figure class="shot">
       <img src="shots/multiline-compose.png" loading="lazy"
            alt="The input box expanded to several lines while composing a message">
-      <figcaption>Shift+Enter adds line breaks — the input grows to fit up to four lines.</figcaption>
+      <figcaption>Shift+Enter adds line breaks; the input grows to fit up to four lines.</figcaption>
     </figure>
 
     <h3>How it reaches the server</h3>
-    <p>When the server supports IRCv3 <code>draft/multiline</code>, Uplink sends the message as a proper multi-line batch — all lines arrive as a single logical message. On servers without the capability, each line is sent as a separate <code>PRIVMSG</code> in sequence — no content is lost, though recipients without multi-line support see individual lines.</p>
+    <p>When the server supports IRCv3 <code>draft/multiline</code>, Uplink sends the message as a proper multi-line batch: all lines arrive as a single logical message. On servers without the capability, each line is sent as a separate <code>PRIVMSG</code> in sequence; no content is lost, though recipients without multi-line support see individual lines.</p>
 
     <h3>Receiving multi-line messages</h3>
     <p>Incoming <code>draft/multiline</code> batches are assembled and displayed as a single message with line breaks in the chat view.</p>
 
     <div class="note">
-      <strong>Tip:</strong> to paste multi-line content, paste directly into the input box — line breaks are preserved and the box resizes to show all lines before you send.
+      <strong>Tip:</strong> to paste multi-line content, paste directly into the input box; line breaks are preserved and the box resizes to show all lines before you send.
     </div>
   </section>
 
   <!-- TAB COMPLETION -->
   <section id="tab">
     <h2>Tab completion</h2>
-    <p>Press <kbd>Tab</kbd> to complete nicknames and slash commands. Completion works in <strong>every input bar</strong> — the primary channel input and any open channel pane inputs.</p>
+    <p>Press <kbd>Tab</kbd> to complete nicknames and slash commands. Completion works in <strong>every input bar</strong>: the primary channel input and any open channel pane inputs.</p>
 
     <ul>
       <li>Type the first few letters of a nick and press <kbd>Tab</kbd>. If there is one match, it fills in immediately. If there are several, pressing <kbd>Tab</kbd> again cycles through them in alphabetical order.</li>
-      <li>Works for commands too — type <code>/jo</code> and press <kbd>Tab</kbd> to get <code>/join</code>. Cycles through all matching commands on repeated presses.</li>
-      <li>At the start of a line, the completed nick gets a colon appended: <code>alice:</code> — the standard IRC convention for addressing someone directly.</li>
+      <li>Works for commands too: type <code>/jo</code> and press <kbd>Tab</kbd> to get <code>/join</code>. Cycles through all matching commands on repeated presses.</li>
+      <li>At the start of a line, the completed nick gets a colon appended: <code>alice:</code>, the standard IRC convention for addressing someone directly.</li>
       <li>Tab completion in a channel pane uses the nick list for <em>that pane's channel</em>, not the primary channel. You always get the right nicks regardless of which input is focused.</li>
       <li>Press <kbd>Shift+Tab</kbd> to cycle backwards through completions.</li>
       <li>Pressing any other key after a completion resets the cycle, so you can start a new completion at any point.</li>
     </ul>
 
-    <pre>al[Tab]           →  alice:           (start of line — colon appended)
-thanks al[Tab]    →  thanks alice     (mid-line — no colon)
+    <pre>al[Tab]           →  alice:           (start of line, colon appended)
+thanks al[Tab]    →  thanks alice     (mid-line, no colon)
 al[Tab][Tab]      →  alex:            (next match)
 al[Shift+Tab]     →  alice:           (cycle back)
 /p[Tab]           →  /part
@@ -2632,11 +2632,11 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <figure class="shot">
       <img src="shots/tab-completion.png" loading="lazy"
            alt="Tab completing a nickname in the input bar">
-      <figcaption>Tab completes nicks and commands — at the start of a line the nick gets a colon.</figcaption>
+      <figcaption>Tab completes nicks and commands; at the start of a line the nick gets a colon.</figcaption>
     </figure>
 
     <div class="tip">
-      <strong>Tip:</strong> if you're in a large channel and can't remember how a nick starts, use the <a href="#nick-filter">nick list filter</a> on the right to narrow the list first — then Tab-complete from the input. Both work off the same full nick list.
+      <strong>Tip:</strong> if you're in a large channel and can't remember how a nick starts, use the <a href="#nick-filter">nick list filter</a> on the right to narrow the list first, then Tab-complete from the input. Both work off the same full nick list.
     </div>
   </section>
 
@@ -2654,7 +2654,7 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <figure class="shot">
       <img src="shots/message-search.png" loading="lazy"
            alt="The Ctrl+F search bar with matches highlighted in the chat view">
-      <figcaption>Ctrl+F searches the current buffer — matches highlight and Enter jumps between them.</figcaption>
+      <figcaption>Ctrl+F searches the current buffer; matches highlight and Enter jumps between them.</figcaption>
     </figure>
 
     <table>
@@ -2668,18 +2668,18 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <p><kbd>Ctrl+F</kbd> works whether you are focused on the chat view or the message input box.</p>
 
     <div class="tip">
-      <strong>Case-insensitive by default.</strong> The search uses Qt's built-in text search, so it is case-insensitive and matches partial words. Type a nick name, a phrase, or any keyword — it finds all occurrences in the current buffer.
+      <strong>Case-insensitive by default.</strong> The search uses Qt's built-in text search, so it is case-insensitive and matches partial words. Type a nick name, a phrase, or any keyword; it finds all occurrences in the current buffer.
     </div>
 
     <h3 id="history-search">Full history search (Ctrl+Shift+F)</h3>
     <p><kbd>Ctrl+F</kbd> only covers the messages currently loaded in the buffer. To search the current channel's <em>entire logged history</em>, press <kbd>Ctrl+Shift+F</kbd>. This opens a separate window that scans the channel's on-disk log file and lists matching lines newest-first. Tick <strong>Regex</strong> to match with a regular expression instead of a plain substring.</p>
-    <p>Because it reads the log on disk, full history search only covers messages that were actually logged — enable <strong>message logging</strong> in Preferences to record history. Without it, there is nothing on disk to search beyond the visible buffer.</p>
-    <p>Tick <strong>All buffers</strong> to search every logged channel and PM across all your servers in one pass. Results are grouped per buffer — a bold header shows the channel, server, and match count, followed by that buffer's newest matches. Double-click any result to jump straight to that buffer.</p>
+    <p>Because it reads the log on disk, full history search only covers messages that were actually logged: enable <strong>message logging</strong> in Preferences to record history. Without it, there is nothing on disk to search beyond the visible buffer.</p>
+    <p>Tick <strong>All buffers</strong> to search every logged channel and PM across all your servers in one pass. Results are grouped per buffer: a bold header shows the channel, server, and match count, followed by that buffer's newest matches. Double-click any result to jump straight to that buffer.</p>
 
     <figure class="shot">
       <img src="shots/history-search.png" loading="lazy"
            alt="The full history search window listing matching log lines">
-      <figcaption>Ctrl+Shift+F scans the channel's on-disk log — plain substring or regex, newest first.</figcaption>
+      <figcaption>Ctrl+Shift+F scans the channel's on-disk log: plain substring or regex, newest first.</figcaption>
     </figure>
 
     <p><strong>Examples.</strong> With <strong>Regex</strong> ticked:</p>
@@ -2695,16 +2695,16 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <!-- REPLY -->
   <section id="reply">
     <h2>Reply to a message</h2>
-    <p>Uplink supports IRCv3 <code>draft/reply</code> — replies that reference a specific message by its unique ID. The server must have negotiated <code>message-tags</code> (all modern IRC servers do).</p>
+    <p>Uplink supports IRCv3 <code>draft/reply</code>: replies that reference a specific message by its unique ID. The server must have negotiated <code>message-tags</code> (all modern IRC servers do).</p>
 
     <h3>Sending a reply</h3>
-    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on the message</strong> — body, nick, timestamp, or blank space. If you have text selected, the menu also includes <strong>Copy</strong>.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on the message</strong>: body, nick, timestamp, or blank space. If you have text selected, the menu also includes <strong>Copy</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click <strong>Reply</strong> from the menu.</div></div>
     <div class="step-row"><span class="step">3</span><div>A reply bar appears above the input box showing <em>↩ nick</em>. Press <kbd>Escape</kbd> or click <strong>✕</strong> to cancel without sending.</div></div>
     <div class="step-row"><span class="step">4</span><div>Type your reply and press <kbd>Enter</kbd>. The message is sent referencing the original.</div></div>
 
     <h3>Viewing replies you receive</h3>
-    <p>When someone replies to a message using a client that supports <code>draft/reply</code>, a small <strong>↩ origNick</strong> indicator appears before their nick in the chat — showing whose message they are replying to.</p>
+    <p>When someone replies to a message using a client that supports <code>draft/reply</code>, a small <strong>↩ origNick</strong> indicator appears before their nick in the chat, showing whose message they are replying to.</p>
 
     <pre>14:30 <span class="n">alice:</span> what's everyone using for backups these days?
 14:31 <span class="n">↩ alice  bob:</span> rsync + rclone to Backblaze, works great</pre>
@@ -2716,7 +2716,7 @@ al[Shift+Tab]     →  alice:           (cycle back)
     </figure>
 
     <div class="note">
-      <strong>Compatibility:</strong> clients that do not understand <code>draft/reply</code> simply see your message as normal — the reply tag is invisible to them. No special server setup is needed beyond standard IRCv3 <code>message-tags</code>.
+      <strong>Compatibility:</strong> clients that do not understand <code>draft/reply</code> simply see your message as normal; the reply tag is invisible to them. No special server setup is needed beyond standard IRCv3 <code>message-tags</code>.
     </div>
 
     <div class="tip">
@@ -2727,10 +2727,10 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <!-- REACTIONS -->
   <section id="reactions">
     <h2>Reactions</h2>
-    <p>Uplink supports IRCv3 <code>draft/react</code> — emoji reactions attached to specific messages. Both sending and receiving are supported.</p>
+    <p>Uplink supports IRCv3 <code>draft/react</code>: emoji reactions attached to specific messages. Both sending and receiving are supported.</p>
 
     <h3>Sending a reaction</h3>
-    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on the message</strong> — body, nick, timestamp, or blank space.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on the message</strong>: body, nick, timestamp, or blank space.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>React</strong> from the context menu.</div></div>
     <div class="step-row"><span class="step">3</span><div>The emoji picker opens. Search by name (you can type <code>:thumbs</code> or just <code>thumbs</code>), then click the emoji you want.</div></div>
 
@@ -2756,7 +2756,7 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <!-- MESSAGE DELETION -->
   <section id="deletion">
     <h2>Message deletion</h2>
-    <p>Uplink supports IRCv3 <code>draft/message-redaction</code> — you can delete your own sent messages from the chat history.</p>
+    <p>Uplink supports IRCv3 <code>draft/message-redaction</code>: you can delete your own sent messages from the chat history.</p>
 
     <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on</strong> one of your own messages.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Delete</strong> from the context menu.</div></div>
@@ -2774,9 +2774,9 @@ al[Shift+Tab]     →  alice:           (cycle back)
       <br><br>
       For <strong>Ergo</strong> server operators, three things must be configured in <code>ircd.yaml</code>:
       <ol>
-        <li>A persistent history database — SQLite, MySQL, or PostgreSQL — under <code>datastore:</code>. The default Ergo package binary may not include SQLite support; if so, rebuild from source with <code>make build_full</code>.</li>
+        <li>A persistent history database (SQLite, MySQL, or PostgreSQL) under <code>datastore:</code>. The default Ergo package binary may not include SQLite support; if so, rebuild from source with <code>make build_full</code>.</li>
         <li>Persistent history enabled under <code>history.persistent.enabled: true</code>.</li>
-        <li><code>allow-individual-delete: true</code> under <code>history.retention:</code> — <em>not</em> directly under <code>history:</code>.</li>
+        <li><code>allow-individual-delete: true</code> under <code>history.retention:</code>, <em>not</em> directly under <code>history:</code>.</li>
       </ol>
       After applying these changes, reload or restart Ergo. <code>draft/message-redaction</code> will then appear in the server's CAP LS and the Delete option will be available.
     </div>
@@ -2785,9 +2785,9 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <!-- IGNORE LIST -->
   <section id="ignore">
     <h2>Ignore list</h2>
-    <p>The ignore list suppresses specific types of private communication from a nick — client-side. The ignored user does not know they are being ignored. <strong>Channel messages are never blocked</strong> — you can ignore someone's PMs and invites while still seeing them talk in a channel.</p>
+    <p>The ignore list suppresses specific types of private communication from a nick, client-side. The ignored user does not know they are being ignored. <strong>Channel messages are never blocked</strong>; you can ignore someone's PMs and invites while still seeing them talk in a channel.</p>
 
-    <h3>Ignoring a nick — right-click menu</h3>
+    <h3>Ignoring a nick: right-click menu</h3>
     <p>Right-click any nick in the user list or chat view and hover over <strong>Ignore ▶</strong>. A submenu opens with three independent checkboxes:</p>
     <table>
       <tr><th>Checkbox</th><th>What it blocks</th></tr>
@@ -2797,10 +2797,10 @@ al[Shift+Tab]     →  alice:           (cycle back)
     </table>
     <p>Tick or untick each type independently. Changes take effect immediately. If any type is active, <strong>Unignore All</strong> appears at the bottom of the submenu to clear everything at once.</p>
 
-    <h3>Ignoring a nick — slash command</h3>
+    <h3>Ignoring a nick: slash command</h3>
     <p>You can also use <code>/ignore</code> with optional type flags for the same control from the keyboard:</p>
     <pre>/ignore spammer              # suppress PMs, notices, and invites (default: all three)
-/ignore recruiter invite     # invites only — still see their messages in chat
+/ignore recruiter invite     # invites only, still see their messages in chat
 /ignore spammer pm notice    # PMs and notices, but allow invites</pre>
 
     <h3>Unignoring a nick</h3>
@@ -2818,12 +2818,12 @@ flags = ["pm", "notice", "invite"]
 
 [[ignore.entry]]
 nick = "recruiter"
-flags = ["invite"]    # invites only — messages still visible</pre>
+flags = ["invite"]    # invites only, messages still visible</pre>
   </section>
 
   <!-- MONITOR -->
   <section id="monitor">
-    <h2>Monitor — online/offline watching</h2>
+    <h2>Monitor: online/offline watching</h2>
     <p>The IRCv3 MONITOR system lets you watch for specific nicks coming online or going offline. When a watched nick connects or disconnects, a status line appears in the server buffer: <em>Now online: alice</em> / <em>Now offline: alice</em>.</p>
 
     <table>
@@ -2835,7 +2835,7 @@ flags = ["invite"]    # invites only — messages still visible</pre>
       <tr><td><code>/monitor status</code></td><td>Ask the server for current online/offline status of all watched nicks</td></tr>
     </table>
 
-    <p>Example — watch for a friend:</p>
+    <p>To watch for a friend:</p>
     <pre>/monitor add alice</pre>
 
     <figure class="shot">
@@ -2852,7 +2852,7 @@ nicks = ["alice", "bob"]</pre>
   <!-- LOGGING -->
   <section id="logging">
     <h2>Message logging</h2>
-    <p>Uplink writes all messages to plain-text log files on disk — one file per channel and per PM conversation.</p>
+    <p>Uplink writes all messages to plain-text log files on disk, one file per channel and per PM conversation.</p>
 
     <h3>Log file location</h3>
     <pre>~/.config/uplink/logs/&lt;server&gt;/&lt;channel&gt;.log</pre>
@@ -2863,12 +2863,12 @@ nicks = ["alice", "bob"]</pre>
 [2026-05-31 15:04:22] * nick action text
 [2026-05-31 15:04:22] -- system message (join, part, etc.)</pre>
 
-    <p>History replay messages (from bouncers or <code>chathistory</code>) are <strong>not</strong> logged — only live messages.</p>
+    <p>History replay messages (from bouncers or <code>chathistory</code>) are <strong>not</strong> logged, only live messages.</p>
 
     <h3>Turning logging on or off</h3>
     <p>Open <strong>Preferences → Logging</strong> and check or uncheck <strong>Log Messages to Disk</strong>. Or set it in config:</p>
     <pre>[ui]
-log_messages = true    # off by default — opt-in</pre>
+log_messages = true    # off by default, opt-in</pre>
     <p>Logging is <strong>off by default</strong>. Enable it in Preferences or by setting <code>log_messages = true</code> in config.</p>
   </section>
 
@@ -2888,11 +2888,11 @@ link_previews = true</pre>
     </figure>
 
     <ul>
-      <li><strong>Web pages</strong> — shows the page title (from <code>og:title</code> or <code>&lt;title&gt;</code>) and a thumbnail if an Open Graph image is set.</li>
-      <li><strong>Direct image links</strong> — <code>.png .jpg .jpeg .gif .webp</code> URLs are detected and shown as a thumbnail without any HTML parsing.</li>
+      <li><strong>Web pages</strong>: shows the page title (from <code>og:title</code> or <code>&lt;title&gt;</code>) and a thumbnail if an Open Graph image is set.</li>
+      <li><strong>Direct image links</strong>: <code>.png .jpg .jpeg .gif .webp</code> URLs are detected and shown as a thumbnail without any HTML parsing.</li>
     </ul>
 
-    <p>Previews are lightweight — HTML is capped at 32 KB, images at 2 MB, results are cached for the session (up to 50 cards; oldest evicted automatically). Private/LAN addresses are never fetched. When multiple URLs arrive at once, preview cards are fetched sequentially (up to 10 queued) so they do not compete with each other.</p>
+    <p>Previews are lightweight: HTML is capped at 32 KB, images at 2 MB, results are cached for the session (up to 50 cards; oldest evicted automatically). Private/LAN addresses are never fetched. When multiple URLs arrive at once, preview cards are fetched sequentially (up to 10 queued) so they do not compete with each other.</p>
 
     <h3>Interacting with preview cards</h3>
     <ul>
@@ -2910,12 +2910,12 @@ link_previews = true</pre>
   <!-- DCC -->
   <section id="dcc">
     <h2>DCC file transfer</h2>
-    <p>DCC (Direct Client-to-Client) lets you send files directly to another user without going through the IRC server. Uplink supports two modes — choose based on your network situation.</p>
+    <p>DCC (Direct Client-to-Client) lets you send files directly to another user without going through the IRC server. Uplink supports two modes; choose based on your network situation.</p>
 
     <h3>Which mode should I use?</h3>
     <table>
       <tr><th>Mode</th><th>When to use</th></tr>
-      <tr><td><strong>Send File</strong> (active)</td><td>You have a reachable IP — direct broadband, a VPS, or port forwarding configured on your router. Uplink opens a port and the recipient connects in.</td></tr>
+      <tr><td><strong>Send File</strong> (active)</td><td>You have a reachable IP: direct broadband, a VPS, or port forwarding configured on your router. Uplink opens a port and the recipient connects in.</td></tr>
       <tr><td><strong>Send File (Passive)</strong></td><td>You are behind a home router or VPN and cannot accept incoming connections. The recipient opens the port; Uplink connects out to them. Use this if active DCC never starts.</td></tr>
     </table>
     <p><strong>Quick guide:</strong> try <strong>Send File</strong> first. If the progress dialog sits at zero with no activity, cancel and try <strong>Send File (Passive)</strong> instead.</p>
@@ -2926,10 +2926,10 @@ link_previews = true</pre>
     <div class="step-row"><span class="step">3</span><div>Pick a file in the file picker. Uplink opens a TCP port and sends the DCC SEND offer.</div></div>
     <div class="step-row"><span class="step">4</span><div>A progress dialog appears. Transfer begins once the recipient accepts.</div></div>
 
-    <h3>Sending a file (passive — use behind NAT)</h3>
+    <h3>Sending a file (passive, for use behind NAT)</h3>
     <div class="step-row"><span class="step">1</span><div>Right-click the recipient's nick in the user list.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Send File (Passive)</strong>.</div></div>
-    <div class="step-row"><span class="step">3</span><div>Pick a file. Uplink sends the offer with <code>port=0</code> — a signal that the recipient should open the port.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Pick a file. Uplink sends the offer with <code>port=0</code>, a signal that the recipient should open the port.</div></div>
     <div class="step-row"><span class="step">4</span><div>The recipient's client opens a port and replies with its address. Uplink connects out automatically and the transfer begins.</div></div>
 
     <h3>Receiving a file</h3>
@@ -2940,7 +2940,7 @@ link_previews = true</pre>
            alt="A DCC file transfer progress dialog">
       <figcaption>A live progress dialog tracks each DCC transfer; either side can cancel.</figcaption>
     </figure>
-    <p>The file is saved to a <code>.part</code> file during the transfer and renamed to the final filename only when the download completes successfully. If the transfer fails or is cancelled, the partial file is deleted automatically. Stalled transfers — where the other side stops responding for over a minute — are aborted with an error rather than left hanging.</p>
+    <p>The file is saved to a <code>.part</code> file during the transfer and renamed to the final filename only when the download completes successfully. If the transfer fails or is cancelled, the partial file is deleted automatically. Stalled transfers, where the other side stops responding for over a minute, are aborted with an error rather than left hanging.</p>
     <p><strong>Receive limits</strong> are enforced before any data is written:</p>
     <ul>
       <li><strong>Maximum file size: 2 GiB.</strong> Offers larger than this are rejected before the dialog appears.</li>
@@ -2955,7 +2955,7 @@ link_previews = true</pre>
     </ul>
 
     <div class="tip">
-      <strong>If both sides are behind NAT,</strong> neither mode will work — there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.
+      <strong>If both sides are behind NAT,</strong> neither mode will work; there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.
     </div>
   </section>
 
@@ -2964,7 +2964,7 @@ link_previews = true</pre>
   <!-- SCRIPTING -->
   <section id="scripting">
     <h2>User scripts</h2>
-    <p>Uplink lets you link external scripts to custom slash commands. Scripts can be written in any language — bash, python, ruby, whatever. Four scripts ship bundled and are auto-installed on first launch:</p>
+    <p>Uplink lets you link external scripts to custom slash commands. Scripts can be written in any language: bash, python, ruby, whatever. Four scripts ship bundled and are auto-installed on first launch:</p>
 
     <table>
       <tr><th>Command</th><th>What it does</th><th>Dependencies</th></tr>
@@ -2975,18 +2975,18 @@ link_previews = true</pre>
       </tr>
       <tr>
         <td><code>/weather [city]</code></td>
-        <td>Current weather — leave blank for IP-detected location, or pass a city name</td>
+        <td>Current weather; leave blank for IP-detected location, or pass a city name</td>
         <td><code>curl</code> (pre-installed on most systems)</td>
       </tr>
       <tr>
         <td><code>/uptime</code></td>
         <td>Show system uptime</td>
-        <td>None — uses built-in OS commands</td>
+        <td>None, uses built-in OS commands</td>
       </tr>
       <tr>
         <td><code>/roll [NdS]</code></td>
-        <td>Tabletop dice roller — <code>/roll 2d6</code>, <code>/roll 1d20</code>, or just <code>/roll</code> for a d6</td>
-        <td>None — pure bash</td>
+        <td>Tabletop dice roller: <code>/roll 2d6</code>, <code>/roll 1d20</code>, or just <code>/roll</code> for a d6</td>
+        <td>None, pure bash</td>
       </tr>
     </table>
 
@@ -3009,7 +3009,7 @@ link_previews = true</pre>
     <p>Arguments are also passed as positional parameters (<code>$1</code>, <code>$2</code>, etc.). Scripts have a 10-second timeout and cannot shadow built-in commands.</p>
 
     <div class="tip">
-      <strong>Deleted a bundled script?</strong> Click <strong>Restore Defaults</strong> in Preferences → Scripts to bring back only the missing ones — your custom scripts are never touched.
+      <strong>Deleted a bundled script?</strong> Click <strong>Restore Defaults</strong> in Preferences → Scripts to bring back only the missing ones; your custom scripts are never touched.
     </div>
   </section>
 
@@ -3020,7 +3020,7 @@ link_previews = true</pre>
     <h2>Picking a theme</h2>
     <p>Uplink ships with 297 built-in color themes. The fastest way is to try them live:</p>
 
-    <div class="step-row"><span class="step">1</span><div>Open <strong>Settings → Themes…</strong> from the menu bar — Preferences opens on the <strong>Appearance</strong> page with the theme list expanded.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>Settings → Themes…</strong> from the menu bar; Preferences opens on the <strong>Appearance</strong> page with the theme list expanded.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click the <strong>theme button</strong> (shows your current theme name) to expand the list.</div></div>
     <div class="step-row"><span class="step">3</span><div>Use <kbd>↑</kbd> / <kbd>↓</kbd> to browse, then press <kbd>Enter</kbd> or click a theme to apply it. The list stays open so you can keep trying themes.</div></div>
     <div class="step-row"><span class="step">4</span><div>The choice is saved automatically to <code>config.toml</code>. Click the theme button again to collapse the list.</div></div>
@@ -3038,7 +3038,7 @@ theme = "catppuccin-mocha"</pre>
     <p>Popular choices:</p>
     <table>
       <tr><th>Name</th><th>Style</th></tr>
-      <tr><td><code>catppuccin-mocha</code></td><td>Dark, muted purple — the fan favourite</td></tr>
+      <tr><td><code>catppuccin-mocha</code></td><td>Dark, muted purple, the fan favourite</td></tr>
       <tr><td><code>catppuccin-latte</code></td><td>Light, warm pastels</td></tr>
       <tr><td><code>nord</code></td><td>Cool blue Arctic palette</td></tr>
       <tr><td><code>dracula</code></td><td>Dark purple and pink</td></tr>
@@ -3054,7 +3054,7 @@ theme = "catppuccin-mocha"</pre>
     </div>
 
     <p>Each section of a theme colors its own region of the window: <code>[sidebar]&nbsp;background</code> fills the server/channel list, <code>[nicklist]&nbsp;background</code> the user list, <code>[buffer]&nbsp;background</code> the chat area, and <code>[general]&nbsp;background</code> the window backdrop that shows around the rounded panel cards. Both side panels float as fully rounded cards with an even backdrop gap on all sides; themes that define distinct backgrounds per section get a layered, multi-tone look, while themes that reuse one color stay flat.</p>
-    <p>Prefer the old uniform look? Untick <strong>Preferences → Interface → Panel Cards</strong> (config key <code>panel_cards</code>) and every theme renders flat on the buffer color, exactly as before — no rounded corners, no per-panel tones.</p>
+    <p>Prefer the old uniform look? Untick <strong>Preferences → Interface → Panel Cards</strong> (config key <code>panel_cards</code>) and every theme renders flat on the buffer color, exactly as before: no rounded corners, no per-panel tones.</p>
   </section>
 
   <!-- FONTS -->
@@ -3065,7 +3065,7 @@ theme = "catppuccin-mocha"</pre>
     <figure class="shot">
       <img src="shots/font-config.png" loading="lazy"
            alt="The Font Config dialog with per-zone size sliders">
-      <figcaption>Font Config sizes each zone independently — chat, sidebar, nick list, input, and more.</figcaption>
+      <figcaption>Font Config sizes each zone independently: chat, sidebar, nick list, input, and more.</figcaption>
     </figure>
 
     <pre>[ui]
@@ -3079,18 +3079,18 @@ font_input = 11   # message input box
 font_topic_bar= 10   # topic bar at the top
 font_typing = 9    # "nick is typing..." indicator</pre>
 
-    <p>Changes from the Font Config dialog are applied and saved immediately — no restart needed. Font sizes support half-point values (e.g. <code>10.5</code>) for fine-grained control.</p>
+    <p>Changes from the Font Config dialog are applied and saved immediately; no restart needed. Font sizes support half-point values (e.g. <code>10.5</code>) for fine-grained control.</p>
 
     <h3>Quick zoom with Ctrl+scroll</h3>
     <p>Hold <strong>Ctrl</strong> and scroll the mouse wheel over any UI region to zoom its font up or down by 0.5 pt per tick. You can also use <strong>Ctrl+Plus</strong> and <strong>Ctrl+Minus</strong>. Each region zooms independently:</p>
     <ul>
-      <li><strong>Chat area</strong> — message text</li>
-      <li><strong>Nick list</strong> — user names</li>
-      <li><strong>Sidebar</strong> — server names and channel names zoom independently (hover over one or the other)</li>
-      <li><strong>Input box</strong> — your typing area</li>
-      <li><strong>Channel header</strong> — the #channel (+modes) and "Topic set by" bar</li>
-      <li><strong>Topic text</strong> — the topic display below the header</li>
-      <li><strong>Nick panel header</strong> — the user count area</li>
+      <li><strong>Chat area</strong>: message text</li>
+      <li><strong>Nick list</strong>: user names</li>
+      <li><strong>Sidebar</strong>: server names and channel names zoom independently (hover over one or the other)</li>
+      <li><strong>Input box</strong>: your typing area</li>
+      <li><strong>Channel header</strong>: the #channel (+modes) and "Topic set by" bar</li>
+      <li><strong>Topic text</strong>: the topic display below the header</li>
+      <li><strong>Nick panel header</strong>: the user count area</li>
     </ul>
     <p>Changes are saved to <code>config.toml</code> immediately and persist across restarts.</p>
   </section>
@@ -3121,22 +3121,22 @@ nick_brackets = "[]"   # square brackets</pre>
     <h2>Show and hide panels</h2>
 
     <h3>Sidebar (server/channel list)</h3>
-    <p>Click the <strong>close button</strong> in the top-left corner of the sidebar panel. The sidebar collapses and the chat area expands to fill the window. A <strong>reveal button</strong> appears at the bottom-left of the chat area — click it to restore the sidebar.</p>
+    <p>Click the <strong>close button</strong> in the top-left corner of the sidebar panel. The sidebar collapses and the chat area expands to fill the window. A <strong>reveal button</strong> appears at the bottom-left of the chat area; click it to restore the sidebar.</p>
     <p>Drag the divider between the sidebar and the chat to resize it. Width is saved on quit.</p>
 
     <h3>Nick list (user list)</h3>
-    <p>Click the <strong>▦ close button</strong> in the <strong>nick panel header</strong> (top-right corner). The panel collapses. A floating reveal button appears at the top-right of the chat area — click it to expand again.</p>
+    <p>Click the <strong>▦ close button</strong> in the <strong>nick panel header</strong> (top-right corner). The panel collapses. A floating reveal button appears at the top-right of the chat area; click it to expand again.</p>
     <p>Drag the divider between the chat and the nick panel to resize it. Width is saved on quit.</p>
 
     <h3>Topic display</h3>
     <p>A text bar showing the full channel topic drops below the channel header row. Toggle it three ways:</p>
     <ul>
-      <li><strong>Globally</strong> — <strong>Preferences → Chat Window → Show Topic Bar</strong>, or set <code>show_topic = true</code> in config. Applies to the main channel view.</li>
-      <li><strong>Per pane</strong> — each channel pane has a <strong>▸ topic / ▾ topic</strong> oval button in its header. Click to show or hide that pane's topic independently. The topic bar appears automatically when a pane first opens if the channel has a topic set.</li>
-      <li><strong>Primary column header</strong> — when panes are open, the same oval topic button appears in the primary channel's header. It is independent of the global Preferences toggle.</li>
+      <li><strong>Globally</strong>: <strong>Preferences → Chat Window → Show Topic Bar</strong>, or set <code>show_topic = true</code> in config. Applies to the main channel view.</li>
+      <li><strong>Per pane</strong>: each channel pane has a <strong>▸ topic / ▾ topic</strong> oval button in its header. Click to show or hide that pane's topic independently. The topic bar appears automatically when a pane first opens if the channel has a topic set.</li>
+      <li><strong>Primary column header</strong>: when panes are open, the same oval topic button appears in the primary channel's header. It is independent of the global Preferences toggle.</li>
     </ul>
     <pre>[ui]
-show_topic = true   # global default — applies to primary channel view on launch</pre>
+show_topic = true   # global default, applies to primary channel view on launch</pre>
 
     <h3>Nick label in input box</h3>
     <pre>[ui]
@@ -3157,14 +3157,14 @@ show_nick_prefix = false   # hides "alice ▸" next to the input</pre>
       <strong>Can't find the scrollbar?</strong> Move your mouse to the right edge of the chat area or nick list. The scrollbar will appear immediately on hover.
     </div>
     <div class="note">
-      <strong>Busy channels always show a scrollbar.</strong> Uplink renders only the most recent 150 messages when you join or switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even if you haven't sent or received anything — this is expected. Scroll to the top to load earlier messages 50 at a time. Quiet channels with fewer than 150 messages show no scrollbar until content fills the view.
+      <strong>Busy channels always show a scrollbar.</strong> Uplink renders only the most recent 150 messages when you join or switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even if you haven't sent or received anything; this is expected. Scroll to the top to load earlier messages 50 at a time. Quiet channels with fewer than 150 messages show no scrollbar until content fills the view.
     </div>
   </section>
 
   <!-- TOUCH SCROLLING -->
   <section id="touch-scrolling">
     <h2>Touch scrolling</h2>
-    <p>On touchscreen and tablet devices, all scrollable areas support <strong>kinetic flick-to-scroll</strong> — swipe your finger and the content keeps moving with natural momentum, then gradually slows to a stop.</p>
+    <p>On touchscreen and tablet devices, all scrollable areas support <strong>kinetic flick-to-scroll</strong>: swipe your finger and the content keeps moving with natural momentum, then gradually slows to a stop.</p>
     <p>This applies to:</p>
     <ul>
       <li>The main chat view</li>
@@ -3174,11 +3174,11 @@ show_nick_prefix = false   # hides "alice ▸" next to the input</pre>
     </ul>
     <p>Touch gestures are automatically distinguished from taps and text selection:</p>
     <ul>
-      <li><strong>Quick swipe</strong> — scrolls with momentum</li>
-      <li><strong>Tap</strong> — clicks links and nicks as normal</li>
-      <li><strong>Long press then drag</strong> — selects text</li>
+      <li><strong>Quick swipe</strong>: scrolls with momentum</li>
+      <li><strong>Tap</strong>: clicks links and nicks as normal</li>
+      <li><strong>Long press then drag</strong>: selects text</li>
     </ul>
-    <p>Mouse behavior is completely unchanged — this feature only activates with touch input.</p>
+    <p>Mouse behavior is completely unchanged; this feature only activates with touch input.</p>
   </section>
 
   <!-- HANGING INDENT -->
@@ -3196,12 +3196,12 @@ hanging_indent = true   # default on</pre>
   <!-- APP ICON -->
   <section id="app-icon">
     <h2>App icon variant</h2>
-    <p>Uplink ships with 15 icon variants across flat, colorful, gruvbox, and original styles. Pick one from the visual grid in <strong>Preferences → Appearance</strong> — the icon updates the window, system tray, and KDE Plasma taskbar live.</p>
+    <p>Uplink ships with 15 icon variants across flat, colorful, gruvbox, and original styles. Pick one from the visual grid in <strong>Preferences → Appearance</strong>; the icon updates the window, system tray, and KDE Plasma taskbar live.</p>
 
     <figure class="shot">
       <img src="shots/app-icon-variants.png" loading="lazy"
            alt="The app icon variant picker grid in Preferences">
-      <figcaption>Pick from 15 icon variants — the window, tray, and taskbar icon update live.</figcaption>
+      <figcaption>Pick from 15 icon variants; the window, tray, and taskbar icon update live.</figcaption>
     </figure>
 
     <p>Or set it directly in config:</p>
@@ -3242,14 +3242,14 @@ notifications = true</pre>
     <p>Besides your nick, you can make any word act like a mention. Go to <strong>Settings → Preferences → Notifications → Highlight Words</strong> and enter a comma-separated list, or set it in config:</p>
     <pre>[ui]
 highlight_words = "myproject, deploy, lunch"</pre>
-    <p>Messages containing one of these words show the word in <strong>red bold</strong> and count as mentions in the sidebar unread badge. Matching is case-insensitive and whole-word only — <code>deploy</code> matches "time to deploy" but not "deployment". Changes apply immediately.</p>
+    <p>Messages containing one of these words show the word in <strong>red bold</strong> and count as mentions in the sidebar unread badge. Matching is case-insensitive and whole-word only: <code>deploy</code> matches "time to deploy" but not "deployment". Changes apply immediately.</p>
   </section>
 
   <hr />
 
   <!-- TROUBLESHOOTING -->
   <section id="ts-build">
-    <h2>Troubleshooting — Build errors</h2>
+    <h2>Troubleshooting: Build errors</h2>
 
     <h3>CMake can't find Qt6</h3>
     <p>If Qt is installed but CMake can't find it, pass its location explicitly:</p>
@@ -3279,31 +3279,31 @@ brew install tomlplusplus</pre>
   </section>
 
   <section id="ts-config">
-    <h2>Troubleshooting — Config problems</h2>
+    <h2>Troubleshooting: Config problems</h2>
 
     <h3>TOML parse error on startup</h3>
     <p>All string values in TOML must be in double quotes. The <code>#</code> character starts a comment if it appears outside a string.</p>
-    <pre># Wrong — causes a parse error
+    <pre># Wrong, causes a parse error
 name = LinuxDojo
 
 # Correct
 name = "LinuxDojo"</pre>
 
     <h3>Using single brackets for servers</h3>
-    <pre># Wrong — defines a single table, not an array
+    <pre># Wrong, defines a single table, not an array
 [server]
 name = "LinuxDojo"
 
-# Correct — double brackets = array entry
+# Correct, double brackets = array entry
 [[server]]
 name = "LinuxDojo"</pre>
 
     <h3>My config change isn't taking effect</h3>
-    <p>Click <strong>File → Reload Config</strong> — Uplink restarts and applies all changes, including server list, channels, theme, and font settings.</p>
+    <p>Click <strong>File → Reload Config</strong>. Uplink restarts and applies all changes, including server list, channels, theme, and font settings.</p>
   </section>
 
   <section id="ts-nick">
-    <h2>Troubleshooting — Nick in use</h2>
+    <h2>Troubleshooting: Nick in use</h2>
     <p>If your nick is taken, Uplink appends <code>_</code> and tries again (e.g. <code>alice_</code>). The new nick is shown next to the input box. Once the original becomes available, type:</p>
     <pre>/nick alice</pre>
     <p>If you have NickServ authentication set up, services may ghost the old connection:</p>
@@ -3311,35 +3311,35 @@ name = "LinuxDojo"</pre>
   </section>
 
   <section id="ts-themes">
-    <h2>Troubleshooting — Theme not loading</h2>
-    <p>Uplink stores themes in <code>~/.config/uplink/themes/</code> and seeds that folder with all bundled themes on first launch. If themes are missing, delete the folder and restart — it will be recreated and repopulated automatically.</p>
+    <h2>Troubleshooting: Theme not loading</h2>
+    <p>Uplink stores themes in <code>~/.config/uplink/themes/</code> and seeds that folder with all bundled themes on first launch. If themes are missing, delete the folder and restart; it will be recreated and repopulated automatically.</p>
     <p>Theme names are case-sensitive and must match the <code>.toml</code> filename exactly (without the extension):</p>
     <pre>[ui]
 theme = "catppuccin-mocha"   # ✓ matches catppuccin-mocha.toml
-theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
+theme = "Catppuccin-Mocha"   # ✗ won't load, wrong case</pre>
     <p>To restore a theme you deleted, copy it back from the release tarball's <code>themes/</code> directory, or from a fresh install.</p>
   </section>
 
   <section id="ts-previews">
-    <h2>Troubleshooting — Link previews</h2>
+    <h2>Troubleshooting: Link previews</h2>
 
     <h3>Preview didn't appear</h3>
     <ul>
       <li><strong>Are link previews enabled?</strong> They are off by default. Open <strong>Settings → Preferences</strong> and check <strong>Link Previews</strong>, or add <code>link_previews = true</code> under <code>[privacy]</code> in <code>config.toml</code>.</li>
-      <li>The site may block bots — Uplink uses a messaging-app user-agent, but some sites still block.</li>
-      <li>The page may have no <code>og:title</code> or <code>&lt;title&gt;</code> — nothing to show.</li>
+      <li>The site may block bots; Uplink uses a messaging-app user-agent, but some sites still block.</li>
+      <li>The page may have no <code>og:title</code> or <code>&lt;title&gt;</code>; nothing to show.</li>
       <li>SSL certificate errors block the fetch silently (self-signed or expired certs).</li>
     </ul>
 
     <h3>Previews disappeared when I switched channels</h3>
-    <p>Preview cards are stored per-channel and reinjected when you switch back. If a card is missing after switching back, the fetch may still be in progress — wait a moment and it will appear.</p>
+    <p>Preview cards are stored per-channel and reinjected when you switch back. If a card is missing after switching back, the fetch may still be in progress; wait a moment and it will appear.</p>
   </section>
 
   <section id="ts-window-size">
-    <h2>Troubleshooting — Window too wide to resize</h2>
+    <h2>Troubleshooting: Window too wide to resize</h2>
 
     <h3>The window opens wider than my screen and I can't make it smaller</h3>
-    <p>This happens when the saved window geometry is wider than the available screen area — common on FreeBSD or after moving to a smaller display. Uplink v0.25.1 fixes this by clamping the window to the screen after it is shown.</p>
+    <p>This happens when the saved window geometry is wider than the available screen area, common on FreeBSD or after moving to a smaller display. Uplink v0.25.1 fixes this by clamping the window to the screen after it is shown.</p>
 
     <p>If you are already on v0.25.1 and still see the issue, delete the saved layout file so geometry starts fresh:</p>
     <div class="tabs">
@@ -3358,7 +3358,7 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
 <pre><code>del "%APPDATA%\uplink\uplink\uplink.conf"</code></pre>
       </div>
     </div>
-    <p>Relaunch — the window will fit the screen. Your server config and preferences in <code>config.toml</code> are unaffected.</p>
+    <p>Relaunch and the window will fit the screen. Your server config and preferences in <code>config.toml</code> are unaffected.</p>
 
     <div class="note">
       <strong>Note:</strong> Window geometry, sidebar width, and pane layout are stored separately from <code>config.toml</code> in <code>~/.config/uplink/uplink.conf</code> (Linux/FreeBSD/macOS) or <code>%APPDATA%\uplink\uplink\uplink.conf</code> (Windows). Deleting it only resets the window layout.
@@ -3486,34 +3486,7 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
   }, { rootMargin: '-10% 0px -80% 0px' });
 
   document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
-
-  /* ── dark / light toggle ── */
-  (function() {
-    const root = document.documentElement;
-    const btn = document.getElementById('themeToggle');
-    const KEY = 'uplink-theme';
-    const saved = localStorage.getItem(KEY);
-    if (saved) root.setAttribute('data-theme', saved);
-    btn.addEventListener('click', () => {
-      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      root.setAttribute('data-theme', next);
-      localStorage.setItem(KEY, next);
-    });
-  })();
-
-  /* ── random app icon rotation ── */
-  (function() {
-    const icons = [
-      'black-old-orange','black-orange','colorful-blueish','colorful-greenblue',
-      'colorful-hotbluepink','colorful-orange','colorful-purple','flat-black',
-      'gruvbox-blue','gruvbox-colorful','gruvbox-orange','gruvbox-purple',
-      'gruvbox-yellow','original-black','original-flat-shine'
-    ];
-    const pick = icons[Math.floor(Math.random() * icons.length)];
-    document.querySelectorAll('[data-uplink-icon]').forEach(function(img) {
-      img.src = 'assets/icons/' + pick + '.png';
-    });
-  })();
 </script>
+<script src="assets/site.js"></script>
 </body>
 </html>
