@@ -116,6 +116,13 @@ qint64 DccSend::filesize() const
 void DccSend::onNewConnection()
 {
     QTcpSocket *incoming = m_server->nextPendingConnection();
+    if (m_socket) {
+        // Already have our peer — a second queued connection must not
+        // replace the socket mid-transfer.
+        incoming->abort();
+        incoming->deleteLater();
+        return;
+    }
     if (m_expectedPeer && incoming->peerAddress() != *m_expectedPeer) {
         incoming->abort();
         incoming->deleteLater();

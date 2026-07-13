@@ -7,6 +7,7 @@
 #include <QPixmap>
 #include <QUrl>
 
+class QHostAddress;
 class QNetworkAccessManager;
 class QNetworkReply;
 
@@ -29,9 +30,10 @@ private:
     };
 
     void resolveAndFetch(const QUrl &url);
-    void doPageFetch(const QUrl &url);
+    void doPageFetch(const QUrl &url, const QHostAddress &addr);
     void fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
-    void doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
+    void doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl,
+                      const QHostAddress &addr);
     void resolveAndFetchHover(const QUrl &url);
     void insertCache(const QString &key, CachedCard &&card);
 

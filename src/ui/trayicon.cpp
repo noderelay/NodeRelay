@@ -42,7 +42,8 @@ TrayIcon::TrayIcon(SessionModel *model, MainWindow *window)
 
 void TrayIcon::buildMenu()
 {
-    m_menu = new QMenu;
+    // Parented to the window: setContextMenu() does not take ownership.
+    m_menu = new QMenu(m_window);
 
     m_showAction = m_menu->addAction("Show", this, [this]{
         m_window->show();

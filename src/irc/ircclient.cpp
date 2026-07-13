@@ -2,7 +2,7 @@
 #include "ircparser.h"
 #include "stsstore.h"
 #include "config/config.h"
-#include "model/ids.h"
+#include "model/ids.h" // for isChannelName()
 #include "version.h"
 
 #include <QCryptographicHash>
@@ -1234,9 +1234,12 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
     const QString subCmd = params[1].toUpper();
 
     if (subCmd == "LS") {
-        // Buffer multi-line responses (params[2] == "*" means more lines coming)
+        // Buffer multi-line responses (params[2] == "*" means more lines coming).
+        // Cap the total: a hostile server could stream "LS *" continuations forever.
+        constexpr qsizetype kMaxCapTokens = 512;
         const bool more = (params.size() >= 3 && params[2] == "*");
-        m_capLsBuffer += trailing.split(' ', Qt::SkipEmptyParts);
+        if (m_capLsBuffer.size() < kMaxCapTokens)
+            m_capLsBuffer += trailing.split(' ', Qt::SkipEmptyParts);
         if (more) return;
 
         const QStringList available = m_capLsBuffer;
@@ -1260,7 +1263,10 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                 if (kv.startsWith("port="))
                     stsPort = kv.mid(5).toUShort();
                 else if (kv.startsWith("duration="))
-                    stsDuration = kv.mid(9).toLongLong();
+                    // Clamp to a year: an absurd duration would overflow the
+                    // epoch addition in StsStore and corrupt the pin's expiry.
+                    stsDuration = qMin(kv.mid(9).toLongLong(),
+                                       qint64(365) * 24 * 3600);
             }
             if (stsDuration == 0) {
                 StsStore::remove(m_host);
@@ -1268,8 +1274,10 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                 if (m_ssl) {
                     // Already on TLS — refresh the stored policy
                     StsStore::store(m_host, m_port, stsDuration);
-                } else if (stsPort > 0) {
-                    // Plain connection — store policy and reconnect over TLS
+                } else if (stsPort > 0 && !m_useWs) {
+                    // Plain connection — store policy and reconnect over TLS.
+                    // Skipped on WebSocket: the upgrade path drives m_socket,
+                    // which would leave a zombie TCP connection beside the ws.
                     StsStore::store(m_host, stsPort, stsDuration);
                     m_ssl  = true;
                     m_port = stsPort;
@@ -1488,9 +1496,16 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 353: { // RPL_NAMREPLY
         if (params.size() >= 3) {
-            const QString &channel = params[2];
-            const QStringList nicks = trailing.split(' ', Qt::SkipEmptyParts);
-            m_namesBuffer[channel.toLower()] += nicks;
+            // Bound server-driven growth: a hostile server could stream 353s
+            // for unlimited distinct channels, or endless nicks for one.
+            constexpr qsizetype kMaxNamesChannels = 64;
+            constexpr qsizetype kMaxNamesNicks    = 50000;
+            const QString key = params[2].toLower();
+            if (m_namesBuffer.contains(key) || m_namesBuffer.size() < kMaxNamesChannels) {
+                QStringList &buf = m_namesBuffer[key];
+                if (buf.size() < kMaxNamesNicks)
+                    buf += trailing.split(' ', Qt::SkipEmptyParts);
+            }
         }
         break;
     }

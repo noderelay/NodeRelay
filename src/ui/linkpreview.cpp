@@ -36,6 +36,25 @@ static bool isBlockedBySchemeOrLiteral(const QUrl &url)
     return false;
 }
 
+// Builds a request pinned to a DNS-validated address: connect by IP while
+// keeping the original hostname for the Host header and TLS validation/SNI.
+// QNAM would otherwise re-resolve the hostname itself, letting a rebinding DNS
+// server swap in a private address between our check and the actual connect.
+static QNetworkRequest pinnedRequest(const QUrl &url, const QHostAddress &addr)
+{
+    QUrl pinned = url;
+    pinned.setHost(addr.toString());
+    QNetworkRequest req(pinned);
+    QByteArray hostHeader = url.host(QUrl::FullyEncoded).toUtf8();
+    if (url.port() != -1)
+        hostHeader += ':' + QByteArray::number(url.port());
+    req.setRawHeader("Host", hostHeader);
+    req.setPeerVerifyName(url.host());
+    // A raw Host header doesn't survive HTTP/2 (:authority comes from the URL)
+    req.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+    return req;
+}
+
 // ── misc helpers ──────────────────────────────────────────────────────────────
 
 static bool isImageUrl(const QUrl &url)
@@ -122,7 +141,7 @@ void LinkPreview::resolveAndFetchHover(const QUrl &url)
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) return;
 
-            QNetworkRequest req(url);
+            QNetworkRequest req = pinnedRequest(url, info.addresses().first());
             req.setRawHeader("User-Agent", "WhatsApp/2");
             req.setRawHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
             req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
@@ -182,11 +201,11 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) return;
-            doPageFetch(url);
+            doPageFetch(url, info.addresses().first());
         });
 }
 
-void LinkPreview::doPageFetch(const QUrl &url)
+void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
 {
     if (isImageUrl(url)) {
         const QString filename = url.fileName();
@@ -195,7 +214,7 @@ void LinkPreview::doPageFetch(const QUrl &url)
     }
 
     m_buf.clear();
-    QNetworkRequest req(url);
+    QNetworkRequest req = pinnedRequest(url, addr);
     req.setRawHeader("User-Agent", "WhatsApp/2");
     req.setRawHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
     req.setRawHeader("Accept-Language", "en-US,en;q=0.5");
@@ -214,15 +233,16 @@ void LinkPreview::doPageFetch(const QUrl &url)
         if (m_buf.size() >= kMaxBytes) reply->abort();
     });
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply] {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, url] {
         if (m_reply != reply) return;
         m_reply = nullptr;
 
         // Re-run DNS check on every redirect destination before following it.
+        // Resolve against the logical URL — reply->url() carries the pinned IP.
         const QVariant redir =
             reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
         if (redir.isValid()) {
-            const QUrl next = reply->url().resolved(redir.toUrl());
+            const QUrl next = url.resolved(redir.toUrl());
             reply->deleteLater();
             m_buf.clear();
             if (m_redirectCount < kMaxRedirects) {
@@ -276,13 +296,14 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) return;
-            doImageFetch(pageUrl, title, imageUrl);
+            doImageFetch(pageUrl, title, imageUrl, info.addresses().first());
         });
 }
 
-void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl)
+void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl,
+                               const QHostAddress &addr)
 {
-    QNetworkRequest req(imageUrl);
+    QNetworkRequest req = pinnedRequest(imageUrl, addr);
     req.setRawHeader("User-Agent",
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/124.0 Safari/537.36");
