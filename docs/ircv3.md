@@ -6,7 +6,7 @@ Uplink aims to be a first-class IRCv3 client. Below is the full status of every 
 
 ## How capability negotiation works
 
-Uplink uses **CAP LS 302** — it requests the server's full capability list before deciding what to ask for, and only requests capabilities the server actually advertises. This avoids failures from batching unsupported caps together. Multi-line CAP LS responses (marked with `*`) are fully buffered before any `CAP REQ` is sent, and capabilities advertised in `name=value` form (e.g. `sasl=PLAIN,EXTERNAL`) are matched correctly. After the server acknowledges the requested caps (CAP ACK), Uplink completes registration or starts SASL if needed.
+Uplink uses **CAP LS 302**: it requests the server's full capability list before deciding what to ask for, and only requests capabilities the server actually advertises. This avoids failures from batching unsupported caps together. Multi-line CAP LS responses (marked with `*`) are fully buffered before any `CAP REQ` is sent, and capabilities advertised in `name=value` form (e.g. `sasl=PLAIN,EXTERNAL`) are matched correctly. After the server acknowledges the requested caps (CAP ACK), Uplink completes registration or starts SASL if needed.
 
 ---
 
@@ -16,7 +16,7 @@ These capabilities are fully negotiated and actively used.
 
 ### `multi-prefix`
 
-Returns all mode prefixes for a nick in NAMES replies — for example, `@+alice` instead of just `@alice`. The nick list correctly displays users who hold more than one status simultaneously (e.g. both op and voice).
+Returns all mode prefixes for a nick in NAMES replies: for example, `@+alice` instead of just `@alice`. The nick list correctly displays users who hold more than one status simultaneously (e.g. both op and voice).
 
 ### `away-notify`
 
@@ -24,7 +24,7 @@ When a user in a shared channel sets or clears away status, the server sends a r
 
 ### `server-time`
 
-When the server attaches a `time` tag to a message, Uplink uses that timestamp instead of the local clock. This is essential for bouncer history replay — messages show the time they were originally sent, not the time the client received them. Works across all message types (PRIVMSG, NOTICE, JOIN, etc.).
+When the server attaches a `time` tag to a message, Uplink uses that timestamp instead of the local clock. This is essential for bouncer history replay: messages show the time they were originally sent, not the time the client received them. Works across all message types (PRIVMSG, NOTICE, JOIN, etc.).
 
 ### `message-tags`
 
@@ -34,10 +34,10 @@ The full IRCv3 message tag extension is negotiated. Tags are parsed as a key-val
 
 `BATCH` commands are fully handled. When a batch starts (`BATCH +ref type param`), Uplink buffers all messages tagged with `batch=ref` instead of processing them immediately. When the batch ends (`BATCH -ref`), the buffered messages are delivered as a unit with appropriate handling based on the batch type:
 
-- `chathistory` / `draft/chathistory` — messages are delivered as history (dimmed, original timestamps, no unread count)
-- `znc.in/batch/playback` — same treatment as chathistory
-- `netsplit` — all QUITs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
-- `netjoin` — all JOINs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
+- `chathistory` / `draft/chathistory`: messages are delivered as history (dimmed, original timestamps, no unread count)
+- `znc.in/batch/playback`: same treatment as chathistory
+- `netsplit`: all QUITs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
+- `netjoin`: all JOINs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
 
 Safety limits apply: at most **8 batches** may be open simultaneously, and each batch may contain at most **1 000 messages**. A misbehaving or malicious server that opens a batch and never closes it cannot grow client RAM without bound.
 
@@ -49,7 +49,7 @@ Uplink requests both the ratified `chathistory` cap name and the draft name `dra
 
 History messages are visually distinct from live messages:
 - Displayed at reduced opacity
-- Timestamped with their original send time — previous-day messages show `MM/dd hh:mm` so you always know when they were sent
+- Timestamped with their original send time; previous-day messages show `MM/dd hh:mm` so you always know when they were sent
 - Not counted as unread, so they do not badge the channel in the sidebar
 
 When the user scrolls to the top of a channel buffer and all loaded messages have been displayed, Uplink sends `CHATHISTORY BEFORE <channel> msgid=<oldest> 100` to fetch the next batch of older messages. These are prepended to the buffer without jumping the scroll position. Uplink stops requesting when the server returns an empty batch.
@@ -58,11 +58,11 @@ This works on any server or bouncer that supports either cap name, including Erg
 
 ### `sasl` (PLAIN and EXTERNAL)
 
-Authenticates your account during the CAP handshake — before you appear on the network. Uplink holds `CAP END` until the server confirms success (`903`) or failure (`904`/`906`). On failure the connection continues without authentication.
+Authenticates your account during the CAP handshake, before you appear on the network. Uplink holds `CAP END` until the server confirms success (`903`) or failure (`904`/`906`). On failure the connection continues without authentication.
 
-**PLAIN** — Add `sasl_user` and `sasl_password` to a server block. Uplink sends `AUTHENTICATE PLAIN` followed by the base64-encoded `\0user\0password` payload.
+**PLAIN**: Add `sasl_user` and `sasl_password` to a server block. Uplink sends `AUTHENTICATE PLAIN` followed by the base64-encoded `\0user\0password` payload.
 
-**EXTERNAL** — Add `sasl_external = true`, `client_cert`, and `client_key` to a server block. Uplink loads the PEM certificate and key, presents the certificate during the TLS handshake, then sends `AUTHENTICATE EXTERNAL` followed by an empty `+` response. The server derives your identity from the certificate's fingerprint — no password is transmitted. RSA and EC (ECDSA) PEM keys are both supported.
+**EXTERNAL**: Add `sasl_external = true`, `client_cert`, and `client_key` to a server block. Uplink loads the PEM certificate and key, presents the certificate during the TLS handshake, then sends `AUTHENTICATE EXTERNAL` followed by an empty `+` response. The server derives your identity from the certificate's fingerprint; no password is transmitted. RSA and EC (ECDSA) PEM keys are both supported.
 
 ```
 Client → AUTHENTICATE EXTERNAL
@@ -73,7 +73,7 @@ Server → 903 :SASL authentication successful
 
 ### `draft/typing`
 
-When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress — if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input, it sends `+typing=done`.
+When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input, it sends `+typing=done`.
 
 Incoming typing notifications from other users appear as "nick is typing…" above the input bar and time out automatically. The feature can be toggled from the **Preferences** dialog (**Settings → Preferences**, or **Ctrl+,**).
 
@@ -92,11 +92,11 @@ A client-only tag (`+draft/reply=<msgid>`) that marks a message as a reply to a 
 - **Sending:** right-click any message timestamp in the chat, choose **Reply**, then type and press Enter. The outgoing `PRIVMSG` carries `@+draft/reply=<original-msgid>`.
 - **Receiving:** incoming messages with a `+draft/reply` tag display a small **↩ origNick** indicator before the sender nick, showing whose message was being replied to.
 
-Requires `message-tags` (already negotiated). Compatible with any modern IRC server or bouncer — clients that do not support the tag see the message as normal.
+Requires `message-tags` (already negotiated). Compatible with any modern IRC server or bouncer; clients that do not support the tag see the message as normal.
 
 ### `chghost`
 
-When a user's vhost or ident changes, the server sends a `CHGHOST newuser newhost` command rather than a fake QUIT+JOIN pair. Uplink negotiates this capability and shows a single quiet status line — `nick changed host (newuser@newhost)` — in each channel the user shares, instead of the noisy disconnect/reconnect flood.
+When a user's vhost or ident changes, the server sends a `CHGHOST newuser newhost` command rather than a fake QUIT+JOIN pair. Uplink negotiates this capability and shows a single quiet status line, `nick changed host (newuser@newhost)`, in each channel the user shares, instead of the noisy disconnect/reconnect flood.
 
 ### `draft/react`
 
@@ -151,7 +151,7 @@ When you are a member of a channel, the server notifies you any time someone is 
 
 Allows users to update their real name (GECOS) field after connecting. When another user in a shared channel changes their real name, Uplink posts a status line in every channel you share with them: `nick changed their realname to "…"`.
 
-You can change your own realname with `/setname <new realname>` — no reconnect needed.
+You can change your own realname with `/setname <new realname>`; no reconnect needed.
 
 ### `userhost-in-names`
 
@@ -175,23 +175,23 @@ The list is stored in `config.toml` under `[monitor] nicks = [...]`.
 
 ### `WHOX`
 
-An extended version of the `WHO` command. Uplink checks the server's `ISUPPORT` tokens on connect — if `WHOX` is advertised, it sends `WHO <channel> %cnfa,42` after joining each channel, fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips. On servers that do not advertise `WHOX` (e.g. Rizon), Uplink falls back to a plain `WHO <channel>` so no "Unknown command" error is produced.
+An extended version of the `WHO` command. Uplink checks the server's `ISUPPORT` tokens on connect: if `WHOX` is advertised, it sends `WHO <channel> %cnfa,42` after joining each channel, fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips. On servers that do not advertise `WHOX` (e.g. Rizon), Uplink falls back to a plain `WHO <channel>` so no "Unknown command" error is produced.
 
 ### `sts` (Strict Transport Security)
 
-When a server advertises an STS policy in its `CAP LS` response, Uplink upgrades the connection automatically and caches the policy to disk (`~/.config/uplink/sts.ini`). On future connections to that host, TLS is enforced even if `ssl = false` is set in the config — the stored policy takes precedence and the TLS port from the policy is used.
+When a server advertises an STS policy in its `CAP LS` response, Uplink upgrades the connection automatically and caches the policy to disk (`~/.config/uplink/sts.ini`). On future connections to that host, TLS is enforced even if `ssl = false` is set in the config; the stored policy takes precedence and the TLS port from the policy is used.
 
 - **Plain connection:** Uplink receives `sts=port=6697,duration=2678400`, immediately disconnects, and reconnects over TLS on the specified port. The policy is saved with an expiry timestamp based on the `duration` value (in seconds).
-- **TLS connection:** Uplink receives `sts=duration=2678400` (no port — already on TLS), refreshes the stored policy expiry.
+- **TLS connection:** Uplink receives `sts=duration=2678400` (no port, already on TLS), refreshes the stored policy expiry.
 - **Policy removal:** If the server sends `sts=duration=0` on a TLS connection, the cached policy is deleted.
 
-Policies survive restarts and are applied before each connection attempt. This prevents downgrade attacks where an attacker could intercept a plaintext connection before TLS is established — equivalent to HSTS in web browsers.
+Policies survive restarts and are applied before each connection attempt. This prevents downgrade attacks where an attacker could intercept a plaintext connection before TLS is established, equivalent to HSTS in web browsers.
 
 ### `account-tag`
 
-When negotiated, the server attaches an `account` tag to every message sent by an authenticated user. Uplink uses this to keep per-nick account information current on a per-message basis — complementing `account-notify` (login/logout notifications) and `extended-join` (account on join).
+When negotiated, the server attaches an `account` tag to every message sent by an authenticated user. Uplink uses this to keep per-nick account information current on a per-message basis, complementing `account-notify` (login/logout notifications) and `extended-join` (account on join).
 
-- The account name is stored with each message and shown as a **tooltip when you hover over the sender's nick in the chat view** — the same tooltip as in the nick list.
+- The account name is stored with each message and shown as a **tooltip when you hover over the sender's nick in the chat view**; the same tooltip as in the nick list.
 - The nick list account data is also kept current, so both tooltips always show the same value.
 - If a user is not authenticated with services, no `account` tag is sent and no tooltip appears.
 
@@ -199,7 +199,7 @@ When negotiated, the server attaches an `account` tag to every message sent by a
 
 When a netsplit occurs, the server wraps the resulting flood of QUITs in a `BATCH` of type `netsplit`. When the servers reconnect, the resulting flood of JOINs arrives in a `BATCH` of type `netjoin`.
 
-Uplink collapses both into a single status line per affected channel instead of flooding the buffer. Nick lists remain accurate — nicks are removed and re-added correctly.
+Uplink collapses both into a single status line per affected channel instead of flooding the buffer. Nick lists remain accurate: nicks are removed and re-added correctly.
 
 **Example output:**
 
@@ -208,7 +208,7 @@ Uplink collapses both into a single status line per affected channel instead of 
 -- Netjoin: 47 users returned (irc1.example.com irc2.example.com)
 ```
 
-Without this, a busy network split would print one quit line per user — often hundreds — making the channel unreadable.
+Without this, a busy network split would print one quit line per user, often hundreds, making the channel unreadable.
 
 ### `standard-replies`
 
@@ -250,7 +250,7 @@ Allows composing and sending messages that span multiple lines as a single logic
 
 **Receiving:** Incoming `draft/multiline` batches are assembled into a single message with embedded newlines and rendered with `<br>` breaks in the chat view.
 
-**Fallback:** On servers that do not advertise `draft/multiline`, each line is sent as a separate `PRIVMSG`. Recipients see the same lines in sequence — no content is lost.
+**Fallback:** On servers that do not advertise `draft/multiline`, each line is sent as a separate `PRIVMSG`. Recipients see the same lines in sequence; no content is lost.
 
 ---
 
@@ -258,37 +258,37 @@ Allows composing and sending messages that span multiple lines as a single logic
 
 These capabilities are negotiated only when `bouncer = "znc"` or `bouncer = "soju"` is set in the server block. They are not requested against regular IRC servers.
 
-### `znc.in/playback` — ZNC only
+### `znc.in/playback` (ZNC only)
 
 When available, Uplink sends `PRIVMSG *playback :PLAY * 0` immediately after the welcome message. This tells ZNC's playback module to replay all buffered messages since last seen. Replayed messages arrive with `server-time` tags and are rendered with their original timestamps.
 
-### `znc.in/self-message` — ZNC only
+### `znc.in/self-message` (ZNC only)
 
 When you send a message from another client connected to the same ZNC, this capability causes ZNC to echo that message to Uplink. Echoed messages are displayed correctly as your own outgoing messages rather than appearing as incoming messages from yourself.
 
-### `znc.in/batch` — ZNC only
+### `znc.in/batch` (ZNC only)
 
 Enables ZNC's batch extension for grouping related messages. Used in conjunction with `znc.in/playback` to deliver replayed history as a batch.
 
-### `soju.im/bouncer-networks` — soju only
+### `soju.im/bouncer-networks` (soju only)
 
 After CAP negotiation, Uplink sends `BOUNCER LISTNETWORKS`. soju responds with a `BOUNCER NETWORK` line for each attached network, showing the network ID, name, and connection state. Each network entry is listed in the server buffer so you can see which networks your soju instance is managing.
 
-### `soju.im/bouncer-networks-notify` — soju only
+### `soju.im/bouncer-networks-notify` (soju only)
 
 Negotiated to receive real-time notifications when a network's connection state changes (e.g. a network goes offline or reconnects). Used to keep the network list current without polling.
 
-### `soju.im/read` — soju only
+### `soju.im/read` (soju only)
 
 Synchronizes your read position across all clients connected to the same soju instance. When you read messages in Uplink, it sends `MARKREAD <target> timestamp=<iso8601>` to record your position. When another client advances the read marker, soju forwards the updated marker to Uplink.
 
-### `soju.im/no-implicit-names` — soju only
+### `soju.im/no-implicit-names` (soju only)
 
 Tells soju not to send a NAMES list automatically on JOIN. This prevents duplicate nick list entries when soju is already managing channel state.
 
 ### `draft/metadata-2`
 
-Associates key-value metadata with users — display names and avatar URLs stored server-side and synced to clients in real time.
+Associates key-value metadata with users: display names and avatar URLs stored server-side and synced to clients in real time.
 
 When a user sets or changes a `display-name` or `avatar` key, the server pushes a `METADATA` notification. Uplink receives and stores the data per-nick, fetches the avatar image in the background, and shows it in the **nick list tooltip**:
 
@@ -297,7 +297,7 @@ When a user sets or changes a `display-name` or `avatar` key, the server pushes 
                 Account: alice
 ```
 
-Avatar images are fetched asynchronously when metadata arrives and cached for the session. Images are displayed at native size, capped at 32×32 — no upscaling, so small icons like favicons remain crisp.
+Avatar images are fetched asynchronously when metadata arrives and cached for the session. Images are displayed at native size, capped at 32×32 with no upscaling, so small icons like favicons remain crisp.
 
 #### Setting your own profile
 
@@ -322,7 +322,7 @@ Both commands print a confirmation line in the current buffer and tell you if th
 
 #### Local file avatars
 
-The `avatar_url` config key and the Preferences Avatar URL field accept local file paths (e.g. `/home/alice/avatar.png`). Local images are loaded from disk and displayed in your own tooltips. They are **not** sent to the server — only `http://`/`https://` URLs are broadcast via `METADATA SET`, so other users will only see your avatar if you use a web-accessible URL.
+The `avatar_url` config key and the Preferences Avatar URL field accept local file paths (e.g. `/home/alice/avatar.png`). Local images are loaded from disk and displayed in your own tooltips. They are **not** sent to the server; only `http://`/`https://` URLs are broadcast via `METADATA SET`, so other users will only see your avatar if you use a web-accessible URL.
 
 #### Config
 
@@ -332,13 +332,13 @@ display_name = "Alice Smith"
 avatar_url = "https://example.com/avatar.png"
 ```
 
-No additional configuration is required — metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2`.
+No additional configuration is required; metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2`.
 
 ### WebSocket transport
 
 IRC lines carried over a WebSocket connection (`ws://` or `wss://`) instead of a raw TCP socket. Useful for connecting to servers hosted behind web infrastructure, or in environments where raw TCP is blocked.
 
-Enable per server with `websocket = true` in the server block (see [configuration](configuration.md)). The `ssl` key controls whether the connection uses `wss://` (TLS, recommended) or `ws://` (plain). All standard features — SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog — work identically over WebSocket.
+Enable per server with `websocket = true` in the server block (see [configuration](configuration.md)). The `ssl` key controls whether the connection uses `wss://` (TLS, recommended) or `ws://` (plain). All standard features (SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog) work identically over WebSocket.
 
 ```toml
 [[server]]
@@ -357,8 +357,8 @@ realname = "Uplink User"
 Keeps Uplink in sync if the server's capability set changes while you're already connected. Without this, Uplink only knows what the server can do at login time and never learns about changes.
 
 When `cap-notify` is active, the server sends:
-- `CAP NEW <caps>` — a capability was added (e.g. a server module was loaded). Uplink checks whether any of the new caps are on its wanted list and sends a `CAP REQ` for them.
-- `CAP DEL <caps>` — a capability was removed. Uplink drops it from its active set so it stops trying to use it.
+- `CAP NEW <caps>`: a capability was added (e.g. a server module was loaded). Uplink checks whether any of the new caps are on its wanted list and sends a `CAP REQ` for them.
+- `CAP DEL <caps>`: a capability was removed. Uplink drops it from its active set so it stops trying to use it.
 
 No configuration required. Negotiated automatically when the server supports it.
 

@@ -13,8 +13,8 @@ Type any of these commands in the message input box and press Enter.
 | `/j #channel` | Short alias for `/join` |
 | `/part [#channel]` | Leave a channel. Defaults to the current channel if omitted |
 | `/part #channel reason` | Leave with a part message |
-| `/leave` | Alias for `/part` — leaves the current channel |
-| `/close` | Alias for `/part` — leaves the current channel (or closes a PM buffer) |
+| `/leave` | Alias for `/part`; leaves the current channel |
+| `/close` | Alias for `/part`; leaves the current channel (or closes a PM buffer) |
 | `/topic` | Show the current channel topic |
 | `/topic <text>` | Set the current channel topic |
 | `/topic #channel <text>` | Set the topic on a specific channel |
@@ -28,9 +28,9 @@ Type any of these commands in the message input box and press Enter.
 | `/devoice <nick>` | Remove voice (`-v`) in the current channel |
 | `/ban <mask>` | Ban a mask (`+b`) in the current channel |
 | `/unban <mask>` | Remove a ban (`-b`) in the current channel |
-| `/ignore <nick>` | Suppress private messages, notices, and invites from a nick — channel messages are never blocked |
+| `/ignore <nick>` | Suppress private messages, notices, and invites from a nick; channel messages are never blocked |
 | `/ignore <nick> pm` | Suppress only private messages from that nick |
-| `/ignore <nick> pm notice invite` | Suppress specific types — any combination of `pm`, `notice`, `invite` |
+| `/ignore <nick> pm notice invite` | Suppress specific types: any combination of `pm`, `notice`, `invite` |
 | `/unignore <nick>` | Stop ignoring a nick |
 | `/ignored` | List all currently ignored nicks and which types are suppressed |
 | `/monitor add <nick>` | Add a nick to the online/offline watch list (IRCv3 MONITOR) |
@@ -78,7 +78,7 @@ Type any of these commands in the message input box and press Enter.
 | Command | Description |
 |---|---|
 | `/me <text>` | Send an action message. Shown as `* yournick text` in chat |
-| `/msg <nick> <text>` | Send a private message — opens a PM buffer in the sidebar for the conversation |
+| `/msg <nick> <text>` | Send a private message; opens a PM buffer in the sidebar for the conversation |
 | `/query <nick>` | Open a PM buffer without sending a message |
 | `/notice <target> <text>` | Send a NOTICE to a user or channel |
 
@@ -123,10 +123,10 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/nick <name>` | Change your nickname |
 | `/away [message]` | Set yourself as away. If no message is given, uses the server's configured `away_message`; if that is also unset, sends `"Away"` as the fallback message |
 | `/back` | Clear your away status |
-| `/whois <nick>` | Look up info about a user — reply appears in the active channel |
-| `/whowas <nick>` | Query history for a departed nick — shows last known user@host and realname |
+| `/whois <nick>` | Look up info about a user; reply appears in the active channel |
+| `/whowas <nick>` | Query history for a departed nick; shows last known user@host and realname |
 | `/setname <realname>` | Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname) |
-| `/displayname <text>` | Set your display name via IRCv3 `draft/metadata-2` — shown in nick list tooltips. Leave blank to clear. Requires server support. |
+| `/displayname <text>` | Set your display name via IRCv3 `draft/metadata-2`; shown in nick list tooltips. Leave blank to clear. Requires server support. |
 | `/avatar <url>` | Set your avatar via IRCv3 `draft/metadata-2`. Accepts an `https://` URL or a local file path. Leave blank to clear. Requires server support. |
 | `/caps` | List all IRCv3 capabilities currently negotiated with the server |
 
@@ -159,10 +159,10 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/disconnect` | Close the current server and all its channels from the sidebar. The server remains in your config and will reconnect on next launch. |
 | `/quit [message]` | Disconnect from the current server. If no message is given, uses the server's configured `quit_message` (default: `"Uplink"`) |
 | `/motd [server]` | Request the message of the day |
-| `/list` | Open the channel browser — a sortable dialog showing all channels with user count and topic; type to filter, double-click or press Join to join |
-| `/stats <query>` | Request server statistics — `u`=uptime, `o`=opers, `m`=commands |
+| `/list` | Open the channel browser: a sortable dialog showing all channels with user count and topic; type to filter, double-click or press Join to join |
+| `/stats <query>` | Request server statistics: `u`=uptime, `o`=opers, `m`=commands |
 | `/time` | Query the server's local time |
-| `/oper <user> <pass>` | IRC operator login — sends `OPER user :pass` to the server |
+| `/oper <user> <pass>` | IRC operator login; sends `OPER user :pass` to the server |
 
 ### Examples
 
@@ -187,15 +187,15 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 
 | Command | Description |
 |---|---|
-| `/ping <nick>` | Send a CTCP PING to a user — reply shows round-trip time in the active channel |
-| `/time <nick>` | Ask a user for their local time via CTCP — reply appears in the active channel |
+| `/ping <nick>` | Send a CTCP PING to a user; reply shows round-trip time in the active channel |
+| `/time <nick>` | Ask a user for their local time via CTCP; reply appears in the active channel |
 | `/version [nick]` | Request server version, or CTCP VERSION from a nick |
 | `/ctcp <nick> <command> [args]` | Send a raw CTCP request to a user |
 | `/sysinfo` | Collect OS, CPU, RAM, GPU, and uptime info and post it to the current channel |
 
 Incoming CTCP VERSION and PING requests are answered automatically.
 
-> **Note:** `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result when ready. A 12-second timeout applies — if collection hangs, an error is posted instead.
+> **Note:** `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result when ready. A 12-second timeout applies; if collection hangs, an error is posted instead.
 
 > **Note:** `/time` and `/ping` only work if the target client supports those CTCP commands. Most IRC clients do, but bots often do not respond. If you see no reply, the other side simply does not support it.
 
@@ -220,7 +220,7 @@ Uplink supports two DCC modes. Choose based on your network situation:
 
 | Mode | When to use |
 |---|---|
-| **Send File** (active) | You have a reachable port — direct internet connection, or your router has port forwarding set up. The sender listens; the recipient connects in. |
+| **Send File** (active) | You have a reachable port: direct internet connection, or your router has port forwarding set up. The sender listens; the recipient connects in. |
 | **Send File (Passive)** | You are behind NAT (home router, VPN) and cannot accept incoming connections. The recipient opens the port instead and you connect out to them. |
 
 **Sending a file (active mode):**
@@ -230,11 +230,11 @@ Uplink supports two DCC modes. Choose based on your network situation:
 3. Pick a file in the file dialog.
 4. A progress dialog appears. Transfer begins as soon as the recipient accepts.
 
-**Sending a file (passive mode — use if you're behind NAT):**
+**Sending a file (passive mode, for use behind NAT):**
 
 1. Right-click the recipient's nick.
 2. Choose **Send File (Passive)**.
-3. Pick a file. Uplink sends the offer with `port=0` — signalling that the recipient should open the port.
+3. Pick a file. Uplink sends the offer with `port=0`, signalling that the recipient should open the port.
 4. The recipient's client opens a port and sends you its address. Uplink then connects out to them automatically.
 5. A progress dialog tracks the transfer.
 
@@ -258,11 +258,11 @@ The file is written to a `.part` file while downloading and renamed to the final
 | Limit | Value |
 |---|---|
 | Maximum file size | 2 GiB |
-| Disk space | Checked against available space before starting — transfer is rejected if there is not enough room |
+| Disk space | Checked against available space before starting; transfer is rejected if there is not enough room |
 
-**Stall detection:** if the other side stops responding mid-transfer — no data acknowledged for over a minute — Uplink aborts the transfer with an error instead of hanging forever. Slow transfers are fine; only a genuinely stalled connection is aborted.
+**Stall detection:** if the other side stops responding mid-transfer (no data acknowledged for over a minute), Uplink aborts the transfer with an error instead of hanging forever. Slow transfers are fine; only a genuinely stalled connection is aborted.
 
-> **NAT and firewalls:** Active DCC requires the sender's port to be reachable from the internet. If the sender is behind a home router, use **Send File (Passive)** — this flips who opens the port. If *both* sides are behind NAT, neither mode will work without a relay.
+> **NAT and firewalls:** Active DCC requires the sender's port to be reachable from the internet. If the sender is behind a home router, use **Send File (Passive)**; this flips who opens the port. If *both* sides are behind NAT, neither mode will work without a relay.
 
 ---
 
@@ -292,7 +292,7 @@ Right-clicking a **server header** shows:
 
 ## Nick list right-click menu
 
-Right-clicking any nick — in the user list or directly on a nick link in the chat view — opens the same context menu. The title shows the nick in bold.
+Right-clicking any nick, in the user list or directly on a nick link in the chat view, opens the same context menu. The title shows the nick in bold.
 
 | Action | What it does |
 |---|---|
@@ -357,7 +357,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 
 ## Reactions
 
-Uplink supports IRCv3 `draft/react` — emoji reactions attached to specific messages.
+Uplink supports IRCv3 `draft/react`: emoji reactions attached to specific messages.
 
 **Sending a reaction:**
 - Right-click any message **timestamp** in the chat view → **React** → the emoji picker opens; search by name (e.g. `thumbs`, `:fire`) and click the emoji, or type a shortcode like `:poop:` and press Enter
@@ -393,25 +393,25 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 
 ## User Scripts
 
-Uplink lets you link external scripts to custom slash commands. Any executable — bash, python, ruby, whatever — can become a command. Configure them in **Preferences → Scripts**.
+Uplink lets you link external scripts to custom slash commands. Any executable (bash, python, ruby, whatever) can become a command. Configure them in **Preferences → Scripts**.
 
 Uplink ships with four bundled scripts (`/music`, `/weather`, `/uptime`, `/roll`) that are auto-installed on first launch to `~/.config/uplink/scripts/`. They show up in Preferences → Scripts ready to use.
 
 You can also add your own. Each script row has:
 - **Enabled** checkbox
-- **Command** name (e.g. `music` — becomes `/music`)
-- **Script path** — full path to the executable
+- **Command** name (e.g. `music`, which becomes `/music`)
+- **Script path**: full path to the executable
 - **Browse** button to pick the file
 - **Delete** button to remove the binding
 
-If you delete a bundled script and want it back, click **Restore Defaults** — it only re-adds the missing ones without touching your custom scripts.
+If you delete a bundled script and want it back, click **Restore Defaults**; it only re-adds the missing ones without touching your custom scripts.
 
 When you run a user script command, Uplink:
 1. Runs the script in a background thread (UI stays responsive)
 2. Passes context as environment variables: `UPLINK_NICK`, `UPLINK_SERVER`, `UPLINK_CHANNEL`, `UPLINK_ARGS`
 3. Also passes any arguments after the command as positional arguments
 4. Sends each line of stdout to the current channel (max 5 lines, 450 chars each)
-5. Shows errors (non-zero exit, stderr, timeout) locally — never sent to the channel
+5. Shows errors (non-zero exit, stderr, timeout) locally, never sent to the channel
 
 Scripts have a 10-second timeout. User scripts cannot shadow built-in commands. On Windows, `.sh` scripts are automatically launched via `bash.exe` (Git Bash or WSL).
 
@@ -422,12 +422,12 @@ The `scripts/music.sh` script shows the currently playing track. It auto-detects
 | Platform | How it works | Dependency |
 |---|---|---|
 | **macOS** | Queries macOS Now Playing center | `brew install nowplaying-cli` |
-| **Linux** | Queries MPRIS2 via D-Bus — works with any MPRIS-compatible player (Spotify, VLC, mpd, Firefox, Chrome/YouTube Music, etc.) | `playerctl` recommended (`pacman -S playerctl` or `apt install playerctl`), falls back to `dbus-send` if not installed |
-| **Windows** | Queries Windows Global System Media Transport Controls (GSMTC) via PowerShell — works with any media player that integrates with Windows media controls (Spotify, Chrome, Edge, VLC, etc.) | Git Bash, Windows 10 1809+, PowerShell 5.1+ (all standard) |
+| **Linux** | Queries MPRIS2 via D-Bus; works with any MPRIS-compatible player (Spotify, VLC, mpd, Firefox, Chrome/YouTube Music, etc.) | `playerctl` recommended (`pacman -S playerctl` or `apt install playerctl`), falls back to `dbus-send` if not installed |
+| **Windows** | Queries Windows Global System Media Transport Controls (GSMTC) via PowerShell; works with any media player that integrates with Windows media controls (Spotify, Chrome, Edge, VLC, etc.) | Git Bash, Windows 10 1809+, PowerShell 5.1+ (all standard) |
 
 On macOS, if `nowplaying-cli` is not in PATH (common when launching from a GUI app), the script falls back to `/opt/homebrew/bin/nowplaying-cli`. If you installed Homebrew to a non-default location, edit the path in the script.
 
-The `/music` command is auto-installed on first launch. On macOS, install the dependency first: `brew install nowplaying-cli`. On Linux, install `playerctl` — or the script falls back to raw D-Bus queries automatically. On Windows, no extra dependencies are needed beyond Git Bash.
+The `/music` command is auto-installed on first launch. On macOS, install the dependency first: `brew install nowplaying-cli`. On Linux, install `playerctl`, or the script falls back to raw D-Bus queries automatically. On Windows, no extra dependencies are needed beyond Git Bash.
 
 **Usage:**
 ```
@@ -440,14 +440,14 @@ The `/music` command is auto-installed on first launch. On macOS, install the de
 Shows current weather from [wttr.in](https://wttr.in). No dependencies beyond `curl`.
 
 ```
-/weather              — weather for your IP-detected location
-/weather Portland     — weather for Portland
+/weather              - weather for your IP-detected location
+/weather Portland     - weather for Portland
 🌤 Portland: Sunny +88°F 25% humidity ↘13mph wind
 ```
 
 ### Included: `/uptime`
 
-Shows system uptime. No dependencies — uses built-in commands on macOS, Linux, and Windows.
+Shows system uptime. No dependencies; uses built-in commands on macOS, Linux, and Windows.
 
 ```
 /uptime
@@ -456,18 +456,18 @@ Shows system uptime. No dependencies — uses built-in commands on macOS, Linux,
 
 ### Included: `/roll`
 
-Dice roller using tabletop notation (NdS = N dice with S sides). No dependencies — pure bash.
+Dice roller using tabletop notation (NdS = N dice with S sides). No dependencies; pure bash.
 
 ```
-/roll           — rolls 1d6 (default)
-/roll 2d6       — roll 2 six-sided dice
-/roll 1d20      — classic D&D d20
+/roll           - rolls 1d6 (default)
+/roll 2d6       - roll 2 six-sided dice
+/roll 1d20      - classic D&D d20
 🎲 2d6: 3 + 5 = 8
 ```
 
 ### Writing your own scripts
 
-A script is any executable file that prints to stdout. Example — a simple greeting script:
+A script is any executable file that prints to stdout. Example: a simple greeting script:
 
 ```bash
 #!/bin/bash
@@ -496,7 +496,7 @@ Arguments are also passed as positional parameters (`$1`, `$2`, etc.).
 | `/quote <line>` | Alias for `/raw` |
 | `/<ANY>` | Any unrecognized slash command is sent as a raw IRC line automatically |
 
-Use these when you need to send a command that Uplink does not have a built-in shortcut for yet. You can also just type the command directly — unrecognized `/CMD` inputs are passed through to the server as-is.
+Use these when you need to send a command that Uplink does not have a built-in shortcut for yet. You can also just type the command directly; unrecognized `/CMD` inputs are passed through to the server as-is.
 
 ### Examples
 

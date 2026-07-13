@@ -16,11 +16,11 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 | **Linux x86_64** | tar.gz | Extract, then `./Uplink` |
 | **Windows x64** | zip | Extract and run `Uplink.exe` |
 | **macOS (Apple Silicon)** | DMG | Open and drag to Applications |
-| **FreeBSD** | — | Build from source (see below) |
+| **FreeBSD** | - | Build from source (see below) |
 
 > **macOS note:** The DMG is built for Apple Silicon (arm64). Intel Mac users can run it under Rosetta 2, which macOS enables automatically. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.
 
-The AppImage is the recommended Linux download — it is self-contained, runs on any modern x86_64 Linux with glibc 2.35+, and supports in-place updates (see [How do I update the AppImage?](#how-do-i-update-the-appimage) below).
+The AppImage is the recommended Linux download. It is self-contained, runs on any modern x86_64 Linux with glibc 2.35+, and supports in-place updates (see [How do I update the AppImage?](#how-do-i-update-the-appimage) below).
 
 ### How do I update the AppImage?
 
@@ -30,7 +30,7 @@ The AppImage embeds zsync metadata pointing to the latest release. Install [`app
 appimageupdatetool ./Uplink-*.AppImage
 ```
 
-This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
+This downloads only the changed blocks from the new release, much faster than a full re-download. The tool prints progress and replaces the file in place when done.
 
 To install `appimageupdatetool` on Arch Linux:
 
@@ -40,13 +40,13 @@ yay -S appimageupdatetool-bin
 
 Or download the AppImage directly from the project's releases page.
 
-### A nick dialog appeared on first launch — what do I do?
+### A nick dialog appeared on first launch: what do I do?
 
 Uplink detected that your config still has the placeholder nick `yournick`. Type your desired nickname in the dialog and click OK. It will be saved to your config and used for all servers on the next connect.
 
-### themes/ folder missing — no themes load
+### themes/ folder missing: no themes load
 
-Uplink creates `~/.config/uplink/themes/` and seeds it with all bundled themes on first launch. If the folder is empty or missing, delete it and restart — it will be recreated and repopulated automatically.
+Uplink creates `~/.config/uplink/themes/` and seeds it with all bundled themes on first launch. If the folder is empty or missing, delete it and restart; it will be recreated and repopulated automatically.
 
 Themes you have deleted will not be restored on restart. To get a specific theme back, copy it from a fresh download or from the `themes/` directory inside the release tarball.
 
@@ -68,7 +68,7 @@ Open it in any text editor and restart Uplink to apply changes.
 
 **Passwords are stored in your OS keychain, not in the file.** Uplink uses the OS keychain (Secret Service on Linux, macOS Keychain, Windows Credential Manager) for `password`, `sasl_password`, and `nickserv_password`. The config file stores the sentinel value `"<keychain>"` in place of the actual secret. Even if someone reads your `config.toml`, they cannot recover your passwords from it.
 
-When you open Edit Server for a server with a stored password, the field shows a placeholder (*Stored in keychain — type to change, clear to remove*) so you know the value is there. Leaving the field empty and saving preserves the entry. All password fields also have a show/hide eye toggle on the right edge.
+When you open Edit Server for a server with a stored password, the field shows a placeholder (*Stored in keychain - type to change, clear to remove*) so you know the value is there. Leaving the field empty and saving preserves the entry. All password fields also have a show/hide eye toggle on the right edge.
 
 If Uplink shows a red **"Keychain: no password stored for…"** error in the server buffer on connect, your config has `<keychain>` as a sentinel but no matching entry in the OS keychain (the entry was never written or was cleared). Fix: open Edit Server, type your password in the affected field, and save. Uplink will store it and authenticate normally going forward.
 
@@ -80,14 +80,14 @@ Passwords are stored in the OS keychain under the server's `name` field. If you 
 
 This was a bug fixed in v0.24.3. If you see a KWallet (or any OS keychain) unlock prompt when changing the font, theme, or any preference toggle, update to v0.24.3 or later.
 
-The root cause was that every config save — including unrelated UI changes — attempted to migrate plain-text passwords to the keychain. The fix restricts keychain writes to the Manage Servers dialog, which is the only place credentials are intentionally changed.
+The root cause was that every config save, including unrelated UI changes, attempted to migrate plain-text passwords to the keychain. The fix restricts keychain writes to the Manage Servers dialog, which is the only place credentials are intentionally changed.
 
-If you are on an older build and cannot update yet, a workaround is to unlock the wallet once and keep it unlocked for your session. Alternatively, store your password as plain text in `config.toml` (no `<keychain>` sentinel) — the prompt will not appear.
+If you are on an older build and cannot update yet, a workaround is to unlock the wallet once and keep it unlocked for your session. Alternatively, store your password as plain text in `config.toml` (no `<keychain>` sentinel); the prompt will not appear.
 
 Beyond that:
 
 - `config.toml` is written with **owner-only permissions** (mode `0600` on Linux/macOS) so other users on the machine cannot read it at all.
-- Saves are **atomic** — Uplink writes to a temporary file and renames it into place. A crash mid-save cannot leave the config corrupt or empty.
+- Saves are **atomic**: Uplink writes to a temporary file and renames it into place. A crash mid-save cannot leave the config corrupt or empty.
 
 If you ever need to verify permissions on Linux:
 
@@ -98,16 +98,16 @@ ls -l ~/.config/uplink/config.toml
 
 ### My config change isn't taking effect
 
-Uplink watches `config.toml` for external changes. If you edit the file in a text editor while Uplink is running, server additions and removals are picked up automatically — new servers appear in the sidebar within a second.
+Uplink watches `config.toml` for external changes. If you edit the file in a text editor while Uplink is running, server additions and removals are picked up automatically; new servers appear in the sidebar within a second.
 
-For other changes (theme, UI toggles, font sizes), click **File → Reload Config** — Uplink restarts immediately and picks up everything.
+For other changes (theme, UI toggles, font sizes), click **File → Reload Config**; Uplink restarts immediately and picks up everything.
 
 ### TOML parse error on startup
 
 All string values in TOML must be wrapped in double quotes. The `#` character starts a comment outside of strings, which trips up channel names.
 
 ```toml
-# Wrong — causes a parse error
+# Wrong, causes a parse error
 name = LinuxDojo
 
 # Correct
@@ -118,7 +118,7 @@ See [Configuration](configuration.md) for the full format reference.
 
 ### Where do I set the channel to auto-join?
 
-Add a `channels` key to the `[[server]]` block — comma-separated, all on one line:
+Add a `channels` key to the `[[server]]` block, comma-separated, all on one line:
 
 ```toml
 [[server]]
@@ -132,7 +132,7 @@ realname = "Uplink User"
 channels = "#uplink, #linux"
 ```
 
-You can also set this from **File → Manage Servers → Edit** using the **Auto-join** field — or, easiest of all, just visit the channel and click **Bookmarks → Bookmark This Channel**. Every saved channel is listed per network in the Bookmarks menu for one-click joining.
+You can also set this from **File → Manage Servers → Edit** using the **Auto-join** field; or, easiest of all, just visit the channel and click **Bookmarks → Bookmark This Channel**. Every saved channel is listed per network in the Bookmarks menu for one-click joining.
 
 ### How do I temporarily disable a server without removing it?
 
@@ -149,7 +149,7 @@ nick = "yournick"
 channels = "#linux"
 ```
 
-Uplink will skip the server entirely on startup — no connection, no sidebar entry — but keeps the block in the file and writes it back on every save.
+Uplink will skip the server entirely on startup (no connection, no sidebar entry) but keeps the block in the file and writes it back on every save.
 
 You can also tick **File → Manage Servers → Edit → Disabled** and uncheck it whenever you want to reconnect.
 
@@ -186,20 +186,20 @@ host = "irc.linuxdojo.org"
 port = 6697
 ssl = true
 nick = "yournick"
-away_message = "Away from keyboard — back soon"
+away_message = "Away from keyboard, back soon"
 ```
 
 When you type `/away` with no argument, this message is sent. Users who message you while you are away receive it automatically as a server reply.
 
-- `/away` — uses `away_message` (or `"Away"` if none is configured)
-- `/away Back in 10` — overrides for this session only
-- `/back` — always clears away regardless of config
+- `/away`: uses `away_message` (or `"Away"` if none is configured)
+- `/away Back in 10`: overrides for this session only
+- `/back`: always clears away regardless of config
 
 Set from the GUI: **File → Manage Servers → Edit → Away Message**.
 
 ### When should I use `ssl = false`?
 
-Almost never on a public server. All modern IRC networks support TLS — use `ssl = true` and port `6697`.
+Almost never on a public server. All modern IRC networks support TLS; use `ssl = true` and port `6697`.
 
 Set `ssl = false` (with port `6667`) only in these cases:
 
@@ -211,7 +211,7 @@ Set `ssl = false` (with port `6667`) only in these cases:
 | `.onion` IRC server via Tor | Tor provides its own end-to-end encryption through the hidden service |
 
 ```toml
-# Local test server — plain connection on loopback
+# Local test server, plain connection on loopback
 [[server]]
 name = "Local test"
 host = "127.0.0.1"
@@ -228,7 +228,7 @@ nick = "yournick"
 
 ### Can I connect to multiple servers at once?
 
-Yes. Add multiple `[[server]]` blocks in your config — each gets its own entry in the sidebar and connects independently. Each server must have a unique `name`. You can even have two entries pointing at the same host (e.g. a direct connection and a bouncer connection) as long as the names differ.
+Yes. Add multiple `[[server]]` blocks in your config; each gets its own entry in the sidebar and connects independently. Each server must have a unique `name`. You can even have two entries pointing at the same host (e.g. a direct connection and a bouncer connection) as long as the names differ.
 
 ```toml
 [[server]]
@@ -260,9 +260,9 @@ You can also connect to a server on the fly without editing config:
 /connect irc.oftc.net                # alias for /server
 ```
 
-### Uplink disconnected — will it reconnect?
+### Uplink disconnected: will it reconnect?
 
-Yes. Uplink reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all channels you had open — both those in your config and any you joined manually during the session.
+Yes. Uplink reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all channels you had open: both those in your config and any you joined manually during the session.
 
 If you disconnect deliberately with `/quit`, `/disconnect`, or the **Disconnect** option in the sidebar right-click menu, no reconnect is attempted.
 
@@ -270,7 +270,7 @@ You can also right-click a server in the sidebar and choose **Reconnect** to con
 
 ### Does Uplink enforce TLS automatically?
 
-Yes, when a server supports the IRCv3 **STS (Strict Transport Security)** capability. If Uplink connects to a server over plaintext and the server advertises an STS policy, Uplink immediately disconnects and reconnects over TLS on the port the server specified. The policy is cached to `~/.config/uplink/sts.ini` and re-applied on every future connection to that host — enforcing TLS even if `ssl = false` in your config — until the policy expires.
+Yes, when a server supports the IRCv3 **STS (Strict Transport Security)** capability. If Uplink connects to a server over plaintext and the server advertises an STS policy, Uplink immediately disconnects and reconnects over TLS on the port the server specified. The policy is cached to `~/.config/uplink/sts.ini` and re-applied on every future connection to that host, enforcing TLS even if `ssl = false` in your config, until the policy expires.
 
 This prevents downgrade attacks where someone on the network could intercept a plaintext connection before TLS is negotiated.
 
@@ -291,19 +291,19 @@ proxy_port = 9050          # Tor's default SOCKS5 port
 
 For an authenticated proxy, also add `proxy_user` and `proxy_pass`. You can also configure this from the GUI: **File → Manage Servers → Edit → SOCKS5 Proxy** section at the bottom of the dialog.
 
-The proxy applies to all connection attempts including reconnects. TLS still works — the TLS handshake happens inside the SOCKS5 tunnel. Leave `proxy_host` empty to connect directly.
+The proxy applies to all connection attempts including reconnects. TLS still works; the TLS handshake happens inside the SOCKS5 tunnel. Leave `proxy_host` empty to connect directly.
 
 ### How do I close a private message window?
 
 Type `/close` or `/leave` in the PM window, or right-click the entry in the sidebar and choose **Close Query**.
 
-In a **channel**, `/leave` and `/close` send a PART message (leaving the channel). In a **query** (PM window), they just close the local buffer — no message is sent to the server.
+In a **channel**, `/leave` and `/close` send a PART message (leaving the channel). In a **query** (PM window), they just close the local buffer; no message is sent to the server.
 
 ### How do I send a raw IRC command?
 
 You have two options:
 
-**Option 1 — just type the command directly.** Any slash command that Uplink does not recognize is sent straight to the server as a raw IRC line. No prefix needed:
+**Option 1: just type the command directly.** Any slash command that Uplink does not recognize is sent straight to the server as a raw IRC line. No prefix needed:
 
 ```
 /REHASH
@@ -312,7 +312,7 @@ You have two options:
 /OPER myname mypassword
 ```
 
-**Option 2 — use `/raw` or `/quote`.** Both do the same thing and accept a full IRC protocol line:
+**Option 2: use `/raw` or `/quote`.** Both do the same thing and accept a full IRC protocol line:
 
 ```
 /raw MODE #uplink +m
@@ -322,7 +322,7 @@ You have two options:
 
 `/raw` and `/quote` are identical aliases. Use whichever you prefer. The direct passthrough (option 1) is usually simpler for oper and server-specific commands.
 
-### My nick was already in use — what happened?
+### My nick was already in use: what happened?
 
 If your preferred nick is taken, Uplink appends `_` and tries again (e.g. `yournick_`). You will see the new nick reflected next to the input box. Use `/nick yournick` once the original nick becomes available.
 
@@ -340,11 +340,11 @@ You can also right-click a nick in the user list **or directly in the chat view*
 
 Set the `password` field for bouncer authentication, and set `bouncer = "znc"` or `bouncer = "soju"` to enable bouncer-specific IRCv3 capabilities such as chat history replay, self-message echo, and network enumeration.
 
-**ZNC** — password format is `username/network:password`:
+**ZNC**: password format is `username/network:password`:
 
 ```toml
 [[server]]
-name = "ZNC — Libera"
+name = "ZNC - Libera"
 host = "znc.example.com"
 port = 6697
 ssl = true
@@ -358,11 +358,11 @@ channels = "#linux"
 
 With `bouncer = "znc"`, Uplink negotiates `znc.in/playback` and replays missed messages on connect, and echoes messages you sent from other clients via `znc.in/self-message`.
 
-**soju** — password format is `username:password`. Use `bouncer_network` if your soju instance manages more than one IRC network:
+**soju**: password format is `username:password`. Use `bouncer_network` if your soju instance manages more than one IRC network:
 
 ```toml
 [[server]]
-name = "soju — Libera"
+name = "soju - Libera"
 host = "soju.example.com"
 port = 6697
 ssl = true
@@ -391,7 +391,7 @@ History messages are intentionally displayed at reduced opacity and with their o
 
 ### Can I view two channels at the same time?
 
-Yes — **right-click** any `#channel` in the sidebar and choose **Open in Pane**. The chat area splits and that channel appears as a new column with its own chat history, nick list, topic bar, and input bar. You can type and send messages in either pane independently.
+Yes: **right-click** any `#channel` in the sidebar and choose **Open in Pane**. The chat area splits and that channel appears as a new column with its own chat history, nick list, topic bar, and input bar. You can type and send messages in either pane independently.
 
 You can have up to **4 panes** open at once (the primary view plus 3 extras). The layout adjusts automatically:
 
@@ -402,9 +402,9 @@ You can have up to **4 panes** open at once (the primary view plus 3 extras). Th
 | 3 | Primary left, two panes stacked right |
 | 4 | 2×2 grid |
 
-Click the `✕` in a pane's header to close it. Closing a pane does not leave the channel — it just removes the split view.
+Click the `✕` in a pane's header to close it. Closing a pane does not leave the channel; it just removes the split view.
 
-**Pane layout is saved automatically.** The channels open in each pane, and the position of the primary column, are written to your preferences on quit and restored on the next launch — so your multi-channel layout persists across restarts without any configuration.
+**Pane layout is saved automatically.** The channels open in each pane, and the position of the primary column, are written to your preferences on quit and restored on the next launch, so your multi-channel layout persists across restarts without any configuration.
 
 See [Channel panes](howto.html#channel-panes) in the how-to guide for a full walkthrough.
 
@@ -414,17 +414,17 @@ Yes. Pressing <kbd>Tab</kbd> in any pane input bar completes nicks and slash com
 
 ### Why doesn't a channel open in a pane show an unread counter?
 
-By design. A channel that's visible in a pane or popped-out window never accumulates an unread badge in the sidebar — its messages are already on screen, so counting them as unread would just leave a badge you could never clear. Once the pane or window is closed, unread counting resumes like any other background channel.
+By design. A channel that's visible in a pane or popped-out window never accumulates an unread badge in the sidebar; its messages are already on screen, so counting them as unread would just leave a badge you could never clear. Once the pane or window is closed, unread counting resumes like any other background channel.
 
 ### Where is the Preferences button?
 
-Open **Settings → Preferences** from the menu bar, or press **Ctrl+,** from anywhere — the dialog stays open while you browse themes, toggle options, and try settings.
+Open **Settings → Preferences** from the menu bar, or press **Ctrl+,** from anywhere; the dialog stays open while you browse themes, toggle options, and try settings.
 
 Everything the old ☰ hamburger held now lives in the menu bar: server management and config actions under **File**, updates and documentation under **Help**. If you run with `menu_style = "hidden"`, **Ctrl+,** still opens Preferences.
 
 ### How do I change the theme?
 
-Open **Settings → Themes…** — it opens Preferences on the Appearance page with the theme list already expanded. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes.
+Open **Settings → Themes…**; it opens Preferences on the Appearance page with the theme list already expanded. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes.
 
 To set a theme in config directly:
 
@@ -449,13 +449,13 @@ font_nick_dock = 9
 
 ### How do I hide or show the server/channel list?
 
-Click the **close button** in the top-left corner of the sidebar panel. The sidebar collapses completely; the chat panel expands to fill the window. A **reveal button** appears at the bottom-left of the chat area — click it to bring the sidebar back.
+Click the **close button** in the top-left corner of the sidebar panel. The sidebar collapses completely; the chat panel expands to fill the window. A **reveal button** appears at the bottom-left of the chat area; click it to bring the sidebar back.
 
-You can also drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.
+You can also drag the divider between the sidebar and the chat area to resize it; the width is saved and restored on the next launch.
 
 ### How do I hide or show the user list?
 
-Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears at the top-right of the chat area so you can bring it back with one click. Drag the splitter between the chat view and the user list to resize the panel — the width is saved and restored on the next launch.
+Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears at the top-right of the chat area so you can bring it back with one click. Drag the splitter between the chat view and the user list to resize the panel; the width is saved and restored on the next launch.
 
 ### How do I show the channel topic?
 
@@ -466,7 +466,7 @@ The channel header row at the top of the chat area shows `#channel (+modes)`. Th
   [ui]
   show_topic = true
   ```
-- **Topic button:** every channel view has a small **speech bubble icon** in the channel header. Click it to show or hide the topic text independently of other channels. It is always visible — whether you are in single-window mode or have multiple panes open.
+- **Topic button:** every channel view has a small **speech bubble icon** in the channel header. Click it to show or hide the topic text independently of other channels. It is always visible, whether you are in single-window mode or have multiple panes open.
   - The icon is **muted** (grey) when the topic is hidden and turns **accent-colored** when the topic is showing, so you can see the state at a glance without clicking.
   - The topic opens automatically when you open a pane for a channel that has a topic set.
 
@@ -492,7 +492,7 @@ Set a default away message per-server in `config.toml` so you do not have to typ
 
 ```toml
 [[server]]
-away_message = "Away from keyboard — back soon"
+away_message = "Away from keyboard, back soon"
 ```
 
 ### How do I hide my nick next to the input box?
@@ -518,7 +518,7 @@ nick = "yournick"
 nickserv_password = "yourpassword"
 ```
 
-For servers that support it, SASL PLAIN is a better choice — it identifies you before you appear on the network. See [SASL setup](configuration.md#sasl-plain-authentication) in the config docs.
+For servers that support it, SASL PLAIN is a better choice; it identifies you before you appear on the network. See [SASL setup](configuration.md#sasl-plain-authentication) in the config docs.
 
 ### How do I use SASL to log in?
 
@@ -539,7 +539,7 @@ Uplink negotiates the `sasl` CAP and authenticates during the connection handsha
 
 ### How do I use SASL EXTERNAL (certificate login)?
 
-SASL EXTERNAL authenticates you via a TLS client certificate — no password is ever sent over the network.
+SASL EXTERNAL authenticates you via a TLS client certificate; no password is ever sent over the network.
 
 **1. Generate a certificate** (one time):
 
@@ -594,10 +594,10 @@ Click **File → Manage Servers...** to open the server manager. You do not need
 | **Connection** | Disabled checkbox (keep in config but skip on startup), Name (display name in sidebar), Host, Port, SSL checkbox |
 | **Identity** | Nick, Username, Real Name, Quit Message, Away Message |
 | **Authentication** | Server Password (for bouncers or password-protected servers), SASL User + Password (for SASL PLAIN), SASL EXTERNAL checkbox + Client Cert + Client Key (Browse buttons available), NickServ password |
-| **Channels** | Auto-join — comma-separated list of channels (e.g. `#uplink, #linux`). For password-protected channels, see the note in the dialog and use `config.toml` directly. |
+| **Channels** | Auto-join, comma-separated list of channels (e.g. `#uplink, #linux`). For password-protected channels, see the note in the dialog and use `config.toml` directly. |
 | **Bouncer** | Type (None / ZNC / Soju) and Network name (soju only) |
 
-4. Click **OK** — the server is added immediately and begins connecting.
+4. Click **OK**; the server is added immediately and begins connecting.
 
 > **Keyed channels:** The auto-join field does not support channel passwords. To join a password-protected channel, add it manually to `config.toml` using the `[[server.channel]]` format with a `key` field. The server dialog shows a note explaining the format.
 
@@ -606,17 +606,17 @@ Click **File → Manage Servers...** to open the server manager. You do not need
 1. Click **File → Manage Servers...**
 2. Select the server in the list
 3. Click **Edit**
-4. Make changes and click **OK** — the server reconnects with the new settings immediately.
+4. Make changes and click **OK**; the server reconnects with the new settings immediately.
 
 **Removing a server:**
 
 1. Click **File → Manage Servers...**
 2. Select the server
-3. Click **Remove** — the server disconnects and is removed from the sidebar and config.
+3. Click **Remove**; the server disconnects and is removed from the sidebar and config.
 
 ### How do I ignore someone?
 
-Right-click their nick in the user list or chat view and hover over **Ignore ▶**. A submenu opens with three checkboxes — **Private Messages**, **Notices**, and **Invites** — tick or untick each independently. **Channel messages are always visible** — ignore only affects private communication, so you can silence someone's PMs and invites while still seeing them talk in a channel.
+Right-click their nick in the user list or chat view and hover over **Ignore ▶**. A submenu opens with three checkboxes (**Private Messages**, **Notices**, and **Invites**); tick or untick each independently. **Channel messages are always visible**; ignore only affects private communication, so you can silence someone's PMs and invites while still seeing them talk in a channel.
 
 To unignore individual types, untick them in the submenu. To clear everything at once, choose **Unignore All** at the bottom of the submenu.
 
@@ -640,7 +640,7 @@ flags = ["pm", "notice", "invite"]
 
 [[ignore.entry]]
 nick = "recruiter"
-flags = ["invite"]    # invites only — their messages still visible
+flags = ["invite"]    # invites only, their messages still visible
 ```
 
 When any ignore flag is active for a nick, a **visibility-off icon** appears next to their name in the user list as a visual reminder. The icon appears and clears immediately when you toggle ignore from the right-click menu.
@@ -661,13 +661,13 @@ Join, quit, part, nick-change, and kick events are automatically collapsed into 
 
 **Click ▾** to collapse back to the compact view.
 
-The expanded view shows every event individually — full hostmask, quit/part reason, and exact timestamp per entry — regardless of how many nicks are in the group. The expanded state persists when you switch channels and return.
+The expanded view shows every event individually (full hostmask, quit/part reason, and exact timestamp per entry) regardless of how many nicks are in the group. The expanded state persists when you switch channels and return.
 
 This is useful any time you want to check a specific user's hostmask, read a quit reason, or confirm the exact order of events during a netsplit or reconnect storm.
 
 ### What is the "── N new messages ──" divider I see in chat?
 
-When you switch to a channel that has unread messages, Uplink inserts a separator line at the exact point where new messages begin — right before the first message that arrived while you were away. The view scrolls to show that separator at the top automatically, so you always land at the right spot without hunting for where you left off.
+When you switch to a channel that has unread messages, Uplink inserts a separator line at the exact point where new messages begin, right before the first message that arrived while you were away. The view scrolls to show that separator at the top automatically, so you always land at the right spot without hunting for where you left off.
 
 The separator clears as soon as you open the channel (the unread count resets to zero). On the next visit, if new messages have arrived, a fresh separator appears at the new boundary.
 
@@ -681,7 +681,7 @@ It depends on your state when you left:
 
 ### How do I filter the nick list to find someone in a big channel?
 
-The nick list panel has a filter box directly above the list (below the header). Click it and start typing — the list immediately narrows to only show nicks that **start with** your input.
+The nick list panel has a filter box directly above the list (below the header). Click it and start typing; the list immediately narrows to only show nicks that **start with** your input.
 
 **Example:** type `al` to see `alice`, `albert`, `alan`, and no one else.
 
@@ -689,7 +689,7 @@ The nick list panel has a filter box directly above the list (below the header).
 - Click the **✕** in the filter box, or press **Escape** while focused on it, to clear and restore the full list.
 - The filter clears automatically when you switch to a different channel.
 
-The filter only changes what you see — nicks that don't match are temporarily hidden. They are still in the channel, still visible in tab completion, and come back the moment you clear the filter.
+The filter only changes what you see; nicks that don't match are temporarily hidden. They are still in the channel, still visible in tab completion, and come back the moment you clear the filter.
 
 ### How do I send bold, italic, underlined, strikethrough, or colored text?
 
@@ -704,36 +704,36 @@ Press the formatting shortcut in the message input box before typing the text yo
 | **Ctrl+Shift+K** | Color (text + background) |
 | **Ctrl+O** | Reset all formatting |
 
-Formatting is applied **visually as you type** — bold text looks bold in the input box, italic looks italic. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active; a colored `A` joins it when a color is set. The IRC control codes are generated automatically at send time.
+Formatting is applied **visually as you type**: bold text looks bold in the input box, italic looks italic. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active; a colored `A` joins it when a color is set. The IRC control codes are generated automatically at send time.
 
 Shortcuts **stack**: press Ctrl+B then Ctrl+U to type bold+underlined text. Press a shortcut again to turn that one format off while keeping the others active. Press Ctrl+O to clear everything at once.
 
-**Color** works a little differently — it opens a menu instead of toggling. Press **Ctrl+Shift+K**, or **right-click the input box** and open the **Color** submenu, then pick a text color from the 16 standard mIRC colors and, optionally, a background. Choose **Reset color** to go back to the default.
+**Color** works a little differently: it opens a menu instead of toggling. Press **Ctrl+Shift+K**, or **right-click the input box** and open the **Color** submenu, then pick a text color from the 16 standard mIRC colors and, optionally, a background. Choose **Reset color** to go back to the default.
 
-**Example — bold part of a message:**
+**Example (bold part of a message):**
 ```
 Look at this [Ctrl+B]really important[Ctrl+B] thing
 ```
 Sends as: Look at this **really important** thing
 
-**Example — bold and underlined together:**
+**Example (bold and underlined together):**
 ```
 [Ctrl+B][Ctrl+U]critical warning[Ctrl+O] everything else normal
 ```
 
-Recipients using any standard IRC client will see the formatting. On clients that don't render mIRC codes, the text still arrives cleanly — no visible garbage characters.
+Recipients using any standard IRC client will see the formatting. On clients that don't render mIRC codes, the text still arrives cleanly; no visible garbage characters.
 
 ### Can I send a message that spans multiple lines?
 
 Yes. Press **Shift+Enter** in the input box to insert a line break. The box grows up to 4 lines automatically. Press **Enter** (without Shift) to send the whole thing.
 
-On servers that support IRCv3 `draft/multiline`, the message arrives as a single multi-line unit. On servers without it, each line is sent as a separate PRIVMSG — other users still see all the lines in order.
+On servers that support IRCv3 `draft/multiline`, the message arrives as a single multi-line unit. On servers without it, each line is sent as a separate PRIVMSG; other users still see all the lines in order.
 
-You can also paste multi-line text directly into the input — line breaks are preserved.
+You can also paste multi-line text directly into the input; line breaks are preserved.
 
 ### How do I react to a message?
 
-Right-click **anywhere on a message** — the timestamp, the nick, the message body, or any blank space on that line — and choose **React**. The emoji picker opens — search by name (`thumbs`, `fire`) or shortcode (`:poop:`), then click the emoji or press Enter to send it.
+Right-click **anywhere on a message** (the timestamp, the nick, the message body, or any blank space on that line) and choose **React**. The emoji picker opens: search by name (`thumbs`, `fire`) or shortcode (`:poop:`), then click the emoji or press Enter to send it.
 
 Reactions appear inline below the original message as `emoji(count)` for all clients that support `draft/react`.
 
@@ -755,12 +755,12 @@ Format:
 [2026-05-31 15:04:22] -- system message
 ```
 
-History replay messages are never logged — only live messages.
+History replay messages are never logged, only live messages.
 
 You can also set it in config:
 ```toml
 [ui]
-log_messages = true    # off by default — opt-in
+log_messages = true    # off by default, opt-in
 ```
 
 ### How do I message NickServ or ChanServ?
@@ -777,13 +777,13 @@ Use the service shortcuts:
 
 Or use the full form: `/msg NickServ identify mypassword`
 
-When you send a message to a service, Uplink opens a PM tab for that service (e.g. **NickServ** or **ChanServ**) in the sidebar. Replies from the service — including help output, confirmations, and error messages — arrive in that same PM tab. If no PM tab is open yet, their replies land in the server buffer.
+When you send a message to a service, Uplink opens a PM tab for that service (e.g. **NickServ** or **ChanServ**) in the sidebar. Replies from the service, including help output, confirmations, and error messages, arrive in that same PM tab. If no PM tab is open yet, their replies land in the server buffer.
 
-**Passwords are never shown in the chat.** When you type `/ns identify mypassword`, the NickServ tab shows `IDENTIFY <redacted>` — your actual password is replaced before it is displayed. The command still goes to the server correctly. This applies to `IDENTIFY`, `REGISTER`, `GHOST`, `RECOVER`, `RELEASE`, `REGAIN`, and `SETPASS`.
+**Passwords are never shown in the chat.** When you type `/ns identify mypassword`, the NickServ tab shows `IDENTIFY <redacted>`; your actual password is replaced before it is displayed. The command still goes to the server correctly. This applies to `IDENTIFY`, `REGISTER`, `GHOST`, `RECOVER`, `RELEASE`, `REGAIN`, and `SETPASS`.
 
 ### How do I copy text from the chat?
 
-Select the text with your mouse — click and drag to highlight it — then right-click the selection and choose **Copy**. Standard keyboard shortcuts (`Ctrl+C` after selecting) also work. You can start a selection from anywhere in the message including the timestamp; nick and URL clicks still work as normal on a plain click (no drag).
+Select the text with your mouse (click and drag to highlight it), then right-click the selection and choose **Copy**. Standard keyboard shortcuts (`Ctrl+C` after selecting) also work. You can start a selection from anywhere in the message including the timestamp; nick and URL clicks still work as normal on a plain click (no drag).
 
 The right-click menu for selected text also shows a **Reply** option for the message you clicked on, so you can select a quote and reply to the same message without two separate clicks.
 
@@ -817,14 +817,14 @@ Accept?   [Yes]  [No]
 
 They click **Yes**, choose where to save it, and a progress dialog tracks the download. Either side can click **Cancel** to abort.
 
-The file is written to a `.part` file while downloading and renamed to the final name only when the transfer completes. If the transfer fails or is cancelled, the partial file is deleted automatically. Stalled transfers — where the other side stops responding for over a minute — are aborted with an error rather than hanging forever.
+The file is written to a `.part` file while downloading and renamed to the final name only when the transfer completes. If the transfer fails or is cancelled, the partial file is deleted automatically. Stalled transfers, where the other side stops responding for over a minute, are aborted with an error rather than hanging forever.
 
 Uplink enforces two receive limits before accepting a transfer:
 
 - **Maximum file size: 2 GiB.** Files advertised as larger than this are rejected immediately.
 - **Disk space check.** Available space on the destination drive is checked against the advertised file size. The transfer is rejected with an error if there is not enough room.
 
-> **If both sides are behind NAT:** neither active nor passive DCC will work — there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
+> **If both sides are behind NAT:** neither active nor passive DCC will work; there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
 
 ### How do I check for updates?
 
@@ -837,7 +837,7 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 ### What do Uplink version numbers mean?
 
-Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme — the update checker handles both.)
+Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme; the update checker handles both.)
 
 ### What do the signal bars mean? (lag / latency indicator)
 
@@ -849,16 +849,16 @@ The four stair-step bars in the top-right of the server/channel list header show
 | ███ (3 green) | 50–149 ms | Good |
 | ██ (2 green) | 150–299 ms | Fair |
 | █ (1 green) | ≥ 300 ms | High lag |
-| Blue flashing | — | Connecting / reconnecting |
-| Red flashing | — | Disconnected |
+| Blue flashing | - | Connecting / reconnecting |
+| Red flashing | - | Disconnected |
 
 Uplink sends a `PING` every 30 seconds and updates the bars automatically from the round-trip time (RTT) of the reply. When you switch to a different server or channel, the bars update immediately to reflect that server's connection.
 
-### The server name in the sidebar turned purple — what does that mean?
+### The server name in the sidebar turned purple: what does that mean?
 
 The server name (e.g. **LINUXDOJO**) in the sidebar highlights purple when there are unread messages in the server window that you have not seen yet. This includes:
 
-- **CTCP VERSION replies** — when you do `/version <nick>` or right-click a user and choose **Version**, the reply appears in the server window
+- **CTCP VERSION replies**: when you do `/version <nick>` or right-click a user and choose **Version**, the reply appears in the server window
 - **NickServ and server auth notices** received during connection
 - Other server-directed notices
 
@@ -878,25 +878,25 @@ From then on, any message containing one of those words is treated just like a m
 - the channel gets the yellow mention indicator in the sidebar
 - it counts toward the mention badge if unread counts are enabled
 
-Matching is case-insensitive and whole-word only — `deploy` matches "time to deploy" but not "deployment". Changes apply immediately; no restart needed.
+Matching is case-insensitive and whole-word only: `deploy` matches "time to deploy" but not "deployment". Changes apply immediately; no restart needed.
 
-You can also set it in the config file with `highlight_words = "myproject, deploy"` under the `[ui]` block — see the [configuration guide](configuration.md#the-ui-block).
+You can also set it in the config file with `highlight_words = "myproject, deploy"` under the `[ui]` block; see the [configuration guide](configuration.md#the-ui-block).
 
 ### What can I do from the nick right-click menu?
 
-Right-click any nick — in the user list or directly on a nick link in the chat view — to open the full action menu:
+Right-click any nick, in the user list or directly on a nick link in the chat view, to open the full action menu:
 
 | Action | Description |
 |---|---|
 | **Message** | Open a PM buffer for that nick |
 | **Send File** | Send a file via active DCC (you open the port) |
-| **Send File (Passive)** | Send via passive DCC (recipient opens the port — use behind NAT) |
+| **Send File (Passive)** | Send via passive DCC (recipient opens the port; use behind NAT) |
 | **Whois** | Look up the user's info (result in server window) |
 | **Invite** | Invite the nick to a channel (dialog pre-fills current channel) |
 | **Give Op / Take Op** | Grant or remove `+o` (requires op) |
 | **Give Voice / Take Voice** | Grant or remove `+v` (requires op or half-op) |
 | **Version** | CTCP VERSION request (reply in server window) |
-| **Ping** | CTCP PING — shows round-trip time in the active buffer |
+| **Ping** | CTCP PING; shows round-trip time in the active buffer |
 | **Copy Nick** | Copy the nickname to clipboard |
 | **Ignore ▶** | Opens a submenu with checkboxes for Private Messages, Notices, and Invites. Tick/untick independently. Unignore All clears everything. Persists across sessions. |
 | **Kick** | Kick from current channel with optional reason (requires op) |
@@ -911,7 +911,7 @@ Right-clicking **anywhere on a message** (timestamp, nick, body, or blank space 
 |---|---|
 | **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Type your reply and press Enter. Escape cancels. |
 | **React** | Opens the emoji picker. Search by name or shortcode and click, or type `:shortcode:` and press Enter. Sends an IRCv3 `draft/react` shown inline below the message. |
-| **Copy** | Appears when you have text selected — copies the selection to the clipboard. |
+| **Copy** | Appears when you have text selected; copies the selection to the clipboard. |
 
 You do not have to click the timestamp exactly to get Reply. If you right-click anywhere in the message body while text is selected, the menu shows both **Copy** and **Reply** for the message you are in.
 
@@ -955,9 +955,9 @@ You can also use the slash command:
 
 Right-click their nick and choose **Kick**, **Ban**, or **Kick & Ban**. You need channel op (`@`) for these to work.
 
-- **Kick** — prompts for an optional reason, then sends `KICK #channel nick :reason`
-- **Ban** — sets `MODE #channel +b nick!*@*` (bans the nick from the channel regardless of hostname or ident)
-- **Kick & Ban** — applies the ban first, then kicks (correct order so the user cannot rejoin before the ban lands)
+- **Kick**: prompts for an optional reason, then sends `KICK #channel nick :reason`
+- **Ban**: sets `MODE #channel +b nick!*@*` (bans the nick from the channel regardless of hostname or ident)
+- **Kick & Ban**: applies the ban first, then kicks (correct order so the user cannot rejoin before the ban lands)
 
 You can also use slash commands:
 
@@ -969,7 +969,7 @@ You can also use slash commands:
 
 ### How do I invite someone to a channel?
 
-Right-click their nick and choose **Invite**. A dialog opens pre-filled with the current channel — click OK to send the invite, or type a different channel name first.
+Right-click their nick and choose **Invite**. A dialog opens pre-filled with the current channel; click OK to send the invite, or type a different channel name first.
 
 You can also use:
 
@@ -994,7 +994,7 @@ Messages in the server window are color-coded by type:
 
 ### How do I search the in-app documentation?
 
-Click **Help → Documentation** to open the help viewer. A search field sits at the top right of the tab bar, just to the right of the **Shortcuts** tab. Type any word or phrase — the active tab jumps to the first match immediately. Click **×** to clear. Switching tabs with a query active re-runs the search in the new tab.
+Click **Help → Documentation** to open the help viewer. A search field sits at the top right of the tab bar, just to the right of the **Shortcuts** tab. Type any word or phrase; the active tab jumps to the first match immediately. Click **×** to clear. Switching tabs with a query active re-runs the search in the new tab.
 
 ### How do link previews work?
 
@@ -1007,21 +1007,21 @@ link_previews = true
 
 When enabled, any live message containing an `http://` or `https://` URL causes Uplink to fetch the link in the background and append a preview card below the message.
 
-**Card layout** — the card appears directly below the message that contained the URL, aligned with the message body text. It shows the page title (bold, single line) and domain name below it, with the thumbnail image stacked beneath. The card background matches your current theme.
+**Card layout**: the card appears directly below the message that contained the URL, aligned with the message body text. It shows the page title (bold, single line) and domain name below it, with the thumbnail image stacked beneath. The card background matches your current theme.
 
-**Web pages** — Uplink fetches up to 32 KB of HTML using a messaging-app user-agent (the same trick used by Halloy and WhatsApp). This causes sites like YouTube to serve a compact metadata page with `og:title` and `og:image` tags early in the response, rather than a full JavaScript-heavy document.
+**Web pages**: Uplink fetches up to 32 KB of HTML using a messaging-app user-agent (the same trick used by Halloy and WhatsApp). This causes sites like YouTube to serve a compact metadata page with `og:title` and `og:image` tags early in the response, rather than a full JavaScript-heavy document.
 
-**Direct image links** — URLs ending in `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp` are shown as a thumbnail card directly without HTML parsing. The filename is used as the card label.
+**Direct image links**: URLs ending in `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp` are shown as a thumbnail card directly without HTML parsing. The filename is used as the card label.
 
-**Mouse interaction — URL text in chat:**
+**Mouse interaction (URL text in chat):**
 - **Left-click** → opens in your default browser
 - **Right-click** → context menu:
-  - **Copy URL** — copies the full URL to clipboard
-  - **Open URL** — opens in the default browser
-  - **Hide Preview** — hides the preview card for that link
-  - **Show Preview** — restores a previously hidden card (replaces Hide Preview when the card is hidden)
+  - **Copy URL**: copies the full URL to clipboard
+  - **Open URL**: opens in the default browser
+  - **Hide Preview**: hides the preview card for that link
+  - **Show Preview**: restores a previously hidden card (replaces Hide Preview when the card is hidden)
 
-**Mouse interaction — preview card below the message:**
+**Mouse interaction (preview card below the message):**
 - **Left-click** the card → opens the URL in your default browser
 - **Right-click** the card → same context menu as right-clicking the URL text (Open URL / Hide Preview)
 
@@ -1029,11 +1029,11 @@ Hovering over any URL shows the domain in the tooltip, updating to the full page
 
 **Preview queue:** when multiple URLs arrive at once, Uplink fetches their cards sequentially (up to 10 queued at a time) so fetches do not compete with each other. A URL hovered in chat triggers a lightweight title-only fetch that does not interfere with the card queue.
 
-Preview fetches are lightweight and automatic — HTML is capped at 32 KB, images at 2 MB, and results are cached in memory for the session.
+Preview fetches are lightweight and automatic: HTML is capped at 32 KB, images at 2 MB, and results are cached in memory for the session.
 
-**Private addresses are never fetched** — loopback (`127.x`, `::1`), RFC 1918 private ranges (`10.x`, `172.16–31.x`, `192.168.x`), link-local (`169.254.x`), and `.local` hostnames are blocked. A link posted in chat cannot be used to probe services on your local network.
+**Private addresses are never fetched**: loopback (`127.x`, `::1`), RFC 1918 private ranges (`10.x`, `172.16–31.x`, `192.168.x`), link-local (`169.254.x`), and `.local` hostnames are blocked. A link posted in chat cannot be used to probe services on your local network.
 
-Preview cards survive channel switches — cards are stored per-channel and reinjected when you switch back.
+Preview cards survive channel switches; cards are stored per-channel and reinjected when you switch back.
 
 ### The emoji button doesn't show
 
@@ -1044,15 +1044,15 @@ The emoji button is hidden by default. Click **⚙** to open **Preferences** and
 show_emoji_button = true
 ```
 
-Once visible, clicking `😊` opens a searchable grid of ~400 emoji. You can also type `:shortcode:` directly in the input box — a completion list appears as you type, and pressing Enter, Tab, or clicking an entry inserts the emoji. Typing the full `:trident:` with the closing colon substitutes it instantly without the completion list.
+Once visible, clicking `😊` opens a searchable grid of ~400 emoji. You can also type `:shortcode:` directly in the input box; a completion list appears as you type, and pressing Enter, Tab, or clicking an entry inserts the emoji. Typing the full `:trident:` with the closing colon substitutes it instantly without the completion list.
 
 ### How do I search the chat buffer?
 
 Press **Ctrl+F** to open the search bar below the chat area. Start typing to jump to the first match. Press **Enter** to find the next match (wraps around), **Shift+Enter** for the previous match, and **Escape** to close the bar and clear the highlight.
 
-The search is case-insensitive and works on the full visible buffer for the current channel. It does not search across channels or across sessions — switch to the channel you want to search, then press Ctrl+F.
+The search is case-insensitive and works on the full visible buffer for the current channel. It does not search across channels or across sessions; switch to the channel you want to search, then press Ctrl+F.
 
-To search *beyond* the loaded buffer — the channel's entire logged history — press **Ctrl+Shift+F**. This opens a separate window that scans the channel's on-disk log file and lists matches newest-first, with an optional **Regex** mode. It only covers history that was actually logged, so it requires message logging to be enabled in Preferences.
+To search *beyond* the loaded buffer (the channel's entire logged history), press **Ctrl+Shift+F**. This opens a separate window that scans the channel's on-disk log file and lists matches newest-first, with an optional **Regex** mode. It only covers history that was actually logged, so it requires message logging to be enabled in Preferences.
 
 To search **everything at once**, tick **All buffers** in the same window. Every logged channel and PM across all your servers is scanned, and results are grouped per buffer with a match count. Double-click a result to jump straight to that buffer.
 
@@ -1066,11 +1066,11 @@ Switching channels automatically cancels any pending reply.
 
 ### How do I minimize to the system tray?
 
-Close the window normally — it minimizes to the system tray instead of quitting. Left-click the tray icon to bring the window back. Right-click for a menu with **Show** and **Quit**.
+Close the window normally; it minimizes to the system tray instead of quitting. Left-click the tray icon to bring the window back. Right-click for a menu with **Show** and **Quit**.
 
 ### How do I switch the app icon between dark and light?
 
-Open **Preferences** (click **⚙** in the channel header) and find the **App Icon** section. Select **Dark** or **Light** — the icon changes immediately in the title bar and system tray without restarting.
+Open **Preferences** (click **⚙** in the channel header) and find the **App Icon** section. Select **Dark** or **Light**; the icon changes immediately in the title bar and system tray without restarting.
 
 You can also set it directly in `config.toml`:
 
@@ -1085,7 +1085,7 @@ Use **Dark** for dark OS themes and **Light** for light OS themes. The preferenc
 
 macOS Gatekeeper blocks apps that are not signed with an Apple Developer certificate. The Uplink DMG is currently unsigned, so Gatekeeper may refuse to open it.
 
-**Option 1 — Right-click open (easiest)**
+**Option 1: Right-click open (easiest)**
 
 1. Right-click (or Ctrl+click) the DMG in Finder.
 2. Choose **Open**.
@@ -1093,14 +1093,14 @@ macOS Gatekeeper blocks apps that are not signed with an Apple Developer certifi
 
 This bypasses Gatekeeper for that file and works on most macOS versions.
 
-**Option 2 — System Settings**
+**Option 2: System Settings**
 
-1. Try to open the DMG normally — macOS will block it and show a notification.
+1. Try to open the DMG normally; macOS will block it and show a notification.
 2. Open **System Settings → Privacy & Security**.
-3. Scroll to the Security section — you will see a message about the blocked app.
+3. Scroll to the Security section; you will see a message about the blocked app.
 4. Click **Open Anyway**.
 
-**Option 3 — Strip the quarantine flag (Terminal)**
+**Option 3: Strip the quarantine flag (Terminal)**
 
 If the options above do not work, open Terminal and run:
 
@@ -1110,7 +1110,7 @@ xattr -dr com.apple.quarantine ~/Downloads/Uplink-*.dmg
 
 Then open the DMG normally. The `-d` flag removes the attribute, `-r` applies it recursively (covers the app bundle inside).
 
-> The DMG is built for **Apple Silicon (arm64)**. On an Intel Mac, Rosetta 2 will run it automatically — no action needed on your part.
+> The DMG is built for **Apple Silicon (arm64)**. On an Intel Mac, Rosetta 2 will run it automatically; no action needed on your part.
 
 ---
 
@@ -1128,7 +1128,7 @@ You have three options:
 
 | Option | What it does |
 |---|---|
-| **Pin Certificate** | Saves the fingerprint to `config.toml`. All future connections verify this fingerprint — if it changes, you get a clear error and the connection is refused. |
+| **Pin Certificate** | Saves the fingerprint to `config.toml`. All future connections verify this fingerprint; if it changes, you get a clear error and the connection is refused. |
 | **Accept Once** | Allows this connection only. You will be asked again on the next connect. |
 | **Reject** | Disconnects immediately. |
 
@@ -1138,9 +1138,9 @@ You have three options:
 ssl_fingerprint = "AB:CD:EF:01:23:45:67:89:..."
 ```
 
-If the server ever renews its self-signed cert, delete that line and reconnect — you will get the pin dialog again with the new fingerprint.
+If the server ever renews its self-signed cert, delete that line and reconnect; you will get the pin dialog again with the new fingerprint.
 
-### The pinned certificate no longer matches — what do I do?
+### The pinned certificate no longer matches: what do I do?
 
 Uplink will disconnect with an error in the server buffer:
 
@@ -1155,11 +1155,11 @@ This means the server's certificate changed. To re-pin:
 1. Open `~/.config/uplink/config.toml`
 2. Find the `ssl_fingerprint` line in the affected server block and delete it
 3. Click **File → Reload Config**
-4. Reconnect — the pin dialog appears with the new fingerprint
+4. Reconnect; the pin dialog appears with the new fingerprint
 
 ### How do I add a custom theme?
 
-1. Create a `.toml` file in `~/.config/uplink/themes/` — the simplest starting point is to copy an existing theme from the `themes/` directory next to the binary and edit the color values.
+1. Create a `.toml` file in `~/.config/uplink/themes/`; the simplest starting point is to copy an existing theme from the `themes/` directory next to the binary and edit the color values.
 2. Restart Uplink (or click **File → Reload Config**).
 3. Your theme appears in the **Preferences** theme list.
 
@@ -1234,7 +1234,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 ## Getting help
 
-- Join **#uplink** on `irc.linuxdojo.org` — the Uplink development channel
+- Join **#uplink** on `irc.linuxdojo.org`, the Uplink development channel
 - File bugs and feature requests on the GitHub Issues page
 - Browse the full documentation index at [docs/index.md](index.md)
 
@@ -1247,15 +1247,15 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 Uplink fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
 
 - **Are link previews enabled?** They are off by default. Click **⚙** to open **Preferences** and check **Link Previews**, or add `link_previews = true` under `[privacy]` in `config.toml`.
-- **Direct image link** — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
-- **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — redirects are followed automatically.
-- **YouTube and heavy sites** — as of v0.12.0, Uplink uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
-- **SSL certificate errors** — self-signed or expired certs block the fetch. There is no per-site cert override.
-- **The page has no `<title>` or `og:title`** — no preview will appear; there is nothing to display.
+- **Direct image link**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
+- **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`); redirects are followed automatically.
+- **YouTube and heavy sites**: as of v0.12.0, Uplink uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
+- **SSL certificate errors**: self-signed or expired certs block the fetch. There is no per-site cert override.
+- **The page has no `<title>` or `og:title`**: no preview will appear; there is nothing to display.
 
 ### Previews disappear when I switch channels
 
-Preview cards are stored per-channel and reinjected when you switch back, so they survive channel switches. If a card is missing after switching back, the fetch may still be in progress — wait a moment and it will appear.
+Preview cards are stored per-channel and reinjected when you switch back, so they survive channel switches. If a card is missing after switching back, the fetch may still be in progress; wait a moment and it will appear.
 
 ---
 
@@ -1263,28 +1263,28 @@ Preview cards are stored per-channel and reinjected when you switch back, so the
 
 ### How do I see someone's NickServ account?
 
-Account names appear as tooltips in two places — hover over a nick in either location:
+Account names appear as tooltips in two places; hover over a nick in either location:
 
-- **Nick list** — hover any nick in the right-side user list panel
-- **Chat view** — hover the sender's nick link directly in a message
+- **Nick list**: hover any nick in the right-side user list panel
+- **Chat view**: hover the sender's nick link directly in a message
 
 The tooltip shows `account: <name>` when the server has reported their account. This is populated via four mechanisms:
 
-- **On join** — if the server supports `extended-join`, the account name arrives with the JOIN message.
-- **Login/logout** — `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
-- **Per-message** — `account-tag` attaches the account name to every message from an authenticated user, keeping the data current even without a separate notification.
-- **WHO scan** — Uplink sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field. On servers that do not advertise `WHOX` in `ISUPPORT` (e.g. Rizon), a plain `WHO #channel` is sent instead — account data is not available in that case, but no error is produced.
+- **On join**: if the server supports `extended-join`, the account name arrives with the JOIN message.
+- **Login/logout**: `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
+- **Per-message**: `account-tag` attaches the account name to every message from an authenticated user, keeping the data current even without a separate notification.
+- **WHO scan**: Uplink sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field. On servers that do not advertise `WHOX` in `ISUPPORT` (e.g. Rizon), a plain `WHO #channel` is sent instead; account data is not available in that case, but no error is produced.
 
 If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.
 
 ### How do I browse channels on a server?
 
-Type `/list` in any input bar. A **Channel Browser** dialog opens and populates live as results arrive from the server — no waiting for the full list before you can start browsing.
+Type `/list` in any input bar. A **Channel Browser** dialog opens and populates live as results arrive from the server; no waiting for the full list before you can start browsing.
 
-- **Filter** — type in the box at the top to narrow by channel name or topic.
-- **Sort** — click any column header (Channel, Users, Topic) to sort; click again to reverse. Users sorts numerically.
-- **Join** — double-click any row, or select it and click **Join**.
-- **Refresh** — click **Refresh** to re-request the list.
+- **Filter**: type in the box at the top to narrow by channel name or topic.
+- **Sort**: click any column header (Channel, Users, Topic) to sort; click again to reverse. Users sorts numerically.
+- **Join**: double-click any row, or select it and click **Join**.
+- **Refresh**: click **Refresh** to re-request the list.
 
 The dialog stays open after joining so you can explore and join multiple channels.
 
@@ -1302,20 +1302,20 @@ websocket = true
 nick = "alice"
 ```
 
-When `ssl = true`, Uplink uses `wss://` (encrypted). When `ssl = false`, it uses `ws://`. All other features — SASL, reconnect, IRCv3 CAP negotiation, SOCKS5 proxy — work identically over WebSocket.
+When `ssl = true`, Uplink uses `wss://` (encrypted). When `ssl = false`, it uses `ws://`. All other features (SASL, reconnect, IRCv3 CAP negotiation, SOCKS5 proxy) work identically over WebSocket.
 
 You can also enable it from the GUI: **File → Manage Servers → Edit** → tick **Use WebSocket**.
 
 ### How do I watch for a nick coming online?
 
-Use the `/monitor` command. Uplink uses the IRCv3 MONITOR system — more efficient than the older ISON polling approach.
+Use the `/monitor` command. Uplink uses the IRCv3 MONITOR system, more efficient than the older ISON polling approach.
 
 ```
-/monitor add alice       — start watching alice
-/monitor del alice       — stop watching alice
-/monitor list            — show everyone you're watching
-/monitor clear           — remove all watched nicks
-/monitor status          — force the server to report current online/offline status
+/monitor add alice       - start watching alice
+/monitor del alice       - stop watching alice
+/monitor list            - show everyone you're watching
+/monitor clear           - remove all watched nicks
+/monitor status          - force the server to report current online/offline status
 ```
 
 When a watched nick connects or disconnects, a status line appears in the server buffer: `Now online: alice` / `Now offline: alice`.
@@ -1330,11 +1330,11 @@ Message deletion uses the IRCv3 `draft/message-redaction` capability. If the oth
 
 ### The "Delete" option doesn't appear on my messages
 
-Two conditions must both be true: the message must be one you sent, and the server must have acknowledged the `draft/message-redaction` capability during the CAP handshake. If either condition fails, the option is not shown. Check the server buffer on connect — if you don't see the CAP listed, the server doesn't support it.
+Two conditions must both be true: the message must be one you sent, and the server must have acknowledged the `draft/message-redaction` capability during the CAP handshake. If either condition fails, the option is not shown. Check the server buffer on connect; if you don't see the CAP listed, the server doesn't support it.
 
 ### The window opens too wide and I can't resize it
 
-This can happen on screens narrower than the default 1100 px window width, or when saved geometry from a larger display is restored. Fixed in v0.25.1 — upgrade and delete the old settings file to start fresh:
+This can happen on screens narrower than the default 1100 px window width, or when saved geometry from a larger display is restored. Fixed in v0.25.1; upgrade and delete the old settings file to start fresh:
 
 ```bash
 # Remove old misnamed file (leftover from earlier builds)
@@ -1348,7 +1348,7 @@ Then relaunch. The window will clamp itself to the available screen area.
 
 ### Why does a busy channel always have a scrollbar?
 
-Uplink renders only the most recent 150 messages when you switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even before you type or receive anything — this is intentional, not a bug.
+Uplink renders only the most recent 150 messages when you switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even before you type or receive anything; this is intentional, not a bug.
 
 Scroll to the very top to load the previous 50 messages. Keep scrolling up to go further back, up to the 500-message buffer limit.
 

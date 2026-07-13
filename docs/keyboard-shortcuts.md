@@ -29,21 +29,21 @@ All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cm
 
 ## Navigation
 
-Navigate between channels and panes without touching the mouse. These shortcuts work from any focused widget — the input box, nick list, or anywhere else.
+Navigate between channels and panes without touching the mouse. These shortcuts work from any focused widget: the input box, nick list, or anywhere else.
 
 | Shortcut | Action |
 |---|---|
-| **Ctrl+K** | Quick channel switcher — type to filter, Enter to jump |
+| **Ctrl+K** | Quick channel switcher; type to filter, Enter to jump |
 | **Alt+Up** | Switch to the previous channel in the sidebar |
 | **Alt+Down** | Switch to the next channel in the sidebar |
 | **Alt+Left** | Move keyboard focus to the previous open pane |
 | **Alt+Right** | Move keyboard focus to the next open pane |
 
-**Ctrl+K** opens a floating search popup listing all joined channels. Start typing to filter by channel name or server — the list narrows as you type. Use Up/Down to select and Enter to switch. Press Escape to dismiss.
+**Ctrl+K** opens a floating search popup listing all joined channels. Start typing to filter by channel name or server; the list narrows as you type. Use Up/Down to select and Enter to switch. Press Escape to dismiss.
 
-**Alt+Left / Alt+Right** cycles keyboard focus through the open panes' input bars — the primary view's input included — in layout order. The panes stay exactly where they are; only the focus (and therefore where your typing goes) moves.
+**Alt+Left / Alt+Right** cycles keyboard focus through the open panes' input bars, the primary view's input included, in layout order. The panes stay exactly where they are; only the focus (and therefore where your typing goes) moves.
 
-Alt+arrow shortcuts wrap around — pressing Alt+Down on the last channel jumps back to the first, and Alt+Right on the last pane wraps to the first.
+Alt+arrow shortcuts wrap around: pressing Alt+Down on the last channel jumps back to the first, and Alt+Right on the last pane wraps to the first.
 
 ---
 
@@ -55,7 +55,7 @@ Alt+arrow shortcuts wrap around — pressing Alt+Down on the last channel jumps 
 | **Shift+Enter** | Insert a newline (multi-line compose) |
 | **Up Arrow** | Previous message in send history (from the first line only) |
 | **Down Arrow** | Next message in send history (from the last line only) |
-| **Tab** | Complete the nick or command at the cursor — press again to cycle |
+| **Tab** | Complete the nick or command at the cursor; press again to cycle |
 | **Shift+Tab** | Cycle backwards through completions |
 | **Escape** | Cancel a pending reply |
 
@@ -74,7 +74,7 @@ Slash commands complete the same way:
 
 ### Text formatting
 
-Apply mIRC formatting as you type. The input box shows formatted text live — bold looks bold, italic looks italic. IRC control codes are generated when you send. A small `B I U S` indicator at the bottom-left of the input shows which formats are active.
+Apply mIRC formatting as you type. The input box shows formatted text live: bold looks bold, italic looks italic. IRC control codes are generated when you send. A small `B I U S` indicator at the bottom-left of the input shows which formats are active.
 
 | Shortcut | Format |
 |---|---|
@@ -85,9 +85,9 @@ Apply mIRC formatting as you type. The input box shows formatted text live — b
 | **Ctrl+Shift+K** | Pick text / background color |
 | **Ctrl+O** | Reset all formatting |
 
-Formats stack — press Ctrl+B then Ctrl+U to type bold underlined text. Press the same shortcut again to turn off just that format. Use Ctrl+O to clear everything at once.
+Formats stack: press Ctrl+B then Ctrl+U to type bold underlined text. Press the same shortcut again to turn off just that format. Use Ctrl+O to clear everything at once.
 
-**Ctrl+Shift+K** — or **right-clicking the input box** and opening the **Color** submenu — shows the 16 mIRC colors, where you pick a **Text color** and, optionally, a **Background**. The chosen colors apply to what you type next (or to a selection), just like bold, and appear as a colored `A` in the format indicator. Choose **Reset color** to go back to the default.
+**Ctrl+Shift+K**, or **right-clicking the input box** and opening the **Color** submenu, shows the 16 mIRC colors, where you pick a **Text color** and, optionally, a **Background**. The chosen colors apply to what you type next (or to a selection), just like bold, and appear as a colored `A` in the format indicator. Choose **Reset color** to go back to the default.
 
 ```
 This is [Ctrl+B]important[Ctrl+B] now
@@ -100,7 +100,7 @@ Type a colon to start an emoji shortcode:
 
 | Input | Result |
 |---|---|
-| `:fire` | Completion list appears — navigate with Up/Down |
+| `:fire` | Completion list appears; navigate with Up/Down |
 | **Enter** or **Tab** | Insert the selected emoji |
 | **Escape** | Dismiss the list |
 | `:fire:` | Substituted to 🔥 immediately, no list needed |
@@ -125,9 +125,9 @@ Panes have their own search: with focus inside a docked pane, **Ctrl+F** opens t
 
 ### Full history (Ctrl+Shift+F)
 
-**Ctrl+Shift+F** opens a separate window that searches the current channel's entire **on-disk log**, not just the messages currently loaded in the buffer. Type to search (case-insensitive substring, or tick **Regex** for a regular expression); matches are listed newest-first. This requires message logging to be enabled in Preferences — without it, only the visible buffer exists to search.
+**Ctrl+Shift+F** opens a separate window that searches the current channel's entire **on-disk log**, not just the messages currently loaded in the buffer. Type to search (case-insensitive substring, or tick **Regex** for a regular expression); matches are listed newest-first. This requires message logging to be enabled in Preferences; without it, only the visible buffer exists to search.
 
-Tick **All buffers** to search every logged buffer across all servers at once. Results are grouped per buffer — a bold header names the channel and server with its match count, followed by that buffer's newest matches. Double-click any result (or press Enter on it) to jump to that buffer.
+Tick **All buffers** to search every logged buffer across all servers at once. Results are grouped per buffer: a bold header names the channel and server with its match count, followed by that buffer's newest matches. Double-click any result (or press Enter on it) to jump to that buffer.
 
 For example, with **Regex** enabled, `error|timeout` finds lines mentioning either word, `<alice>` finds messages from *alice*, and `^\[2026-07-04` matches everything logged on that date.
 
@@ -138,12 +138,12 @@ For example, with **Regex** enabled, `error|timeout` finds lines mentioning eith
 | Shortcut | Action |
 |---|---|
 | **Ctrl+W** | Minimize to system tray |
-| **Close button (×)** | Same as Ctrl+W — minimizes to tray, does not quit |
+| **Close button (×)** | Same as Ctrl+W; minimizes to tray, does not quit |
 | **Ctrl+Plus** / **Ctrl+=** | Increase font size (0.5 pt) for the focused UI region |
 | **Ctrl+Minus** | Decrease font size (0.5 pt) for the focused UI region |
 | **Ctrl+Scroll wheel** | Zoom font size for the region under the cursor |
 
-Font zoom is per-region — you can set different sizes for the chat view, nick list, sidebar, and input box independently.
+Font zoom is per-region: you can set different sizes for the chat view, nick list, sidebar, and input box independently.
 
 ---
 
