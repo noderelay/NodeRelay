@@ -655,6 +655,26 @@ void IrcClient::reconnect()
     doReconnect();
 }
 
+// Network reachability regained (laptop resume, Wi-Fi roam). Unlike
+// reconnect(), never clears m_intentionalDisconnect, so a server the
+// user /disconnect'ed stays down.
+void IrcClient::onNetworkOnline()
+{
+    if (m_intentionalDisconnect || m_host.isEmpty())
+        return;
+    if (m_reconnectTimer->isActive()) {
+        // Backoff wait in progress: retry now on the fresh network.
+        m_reconnectTimer->stop();
+        m_reconnectDelay = 5;
+        doReconnect();
+    } else if (isConnected()) {
+        // Socket may be stale after the network change; probe it now
+        // instead of waiting up to 30s for the ping watchdog tick.
+        sendPing();
+    }
+    // else: a connect attempt is already in flight; leave it alone.
+}
+
 void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
 {
     emit socketError(m_serverName, sockErrorString());

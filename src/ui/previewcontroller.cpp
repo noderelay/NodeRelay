@@ -1,6 +1,7 @@
 #include "ui/previewcontroller.h"
 #include "ui/linkpreview.h"
 #include "model/sessionmodel.h"
+#include "net/networkmonitor.h"
 
 #include <QBuffer>
 #include <QPixmap>
@@ -30,6 +31,7 @@ void PreviewController::enqueue(const QUrl &url, ServerId host, BufferId channel
 {
     const QString key = url.toString();
     if (key.isEmpty()) return;
+    if (m_model->networkMonitor()->isMetered()) return;  // spare metered data
     if (m_previewChannels.contains(key)) return;
     if (m_previewQueue.size() >= 10) return;
     if (m_previewChannels.size() >= 100) return;

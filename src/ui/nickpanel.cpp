@@ -3,6 +3,7 @@
 #include "ui/nickfilteredit.h"
 #include "ui/nicklistmodel.h"
 #include "model/sessionmodel.h"
+#include "net/networkmonitor.h"
 
 #include <QBuffer>
 #include <QLabel>
@@ -154,6 +155,9 @@ void MainWindow::fetchAvatar(const QString &url)
         cacheAndRefresh(QPixmap(url));
         return;
     }
+
+    if (m_model->networkMonitor()->isMetered())
+        return;   // spare metered data; local avatars above still load
 
     if (!m_avatarNam)
         m_avatarNam = new QNetworkAccessManager(this);

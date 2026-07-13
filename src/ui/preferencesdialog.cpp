@@ -2,6 +2,7 @@
 #include "ui/themeloader.h"
 #include "ui/menuicons.h"
 #include "ui/pillbutton.h"
+#include "ui/solidcombobox.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -175,6 +176,39 @@ QWidget *PreferencesDialog::createAppearancePage(const Config &cfg, const QColor
     connect(themeList, &QListWidget::itemClicked,        this, applyTheme);
     connect(themeList, &QListWidget::itemActivated,      this, applyTheme);
     connect(themeList, &QListWidget::currentItemChanged,  this, applyTheme);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    // Auto mode: follow the OS light/dark scheme with a day/night theme pair.
+    vbox->addSpacing(6);
+    m_themeAutoCheck = new QCheckBox("Follow System Light/Dark (Auto)");
+    m_themeAutoCheck->setToolTip("Switch between the two themes below whenever the\n"
+                                 "desktop flips between light and dark mode.\n"
+                                 "Picking a theme from the list above turns this off.");
+    m_themeAutoCheck->setChecked(cfg.ui.themeAuto);
+    connect(m_themeAutoCheck, &QCheckBox::toggled, this, [this](bool on){ emit themeAutoToggled(on); });
+    vbox->addWidget(m_themeAutoCheck);
+
+    auto makePairRow = [&](const QString &label, const QString &current) {
+        auto *row = new QHBoxLayout;
+        auto *lbl = new QLabel(label);
+        lbl->setMinimumWidth(90);
+        auto *combo = new SolidComboBox;
+        combo->addItems(ThemeLoader::availableThemes());
+        combo->setCurrentText(current);
+        combo->setEnabled(m_themeAutoCheck->isChecked());
+        connect(m_themeAutoCheck, &QCheckBox::toggled, combo, &QWidget::setEnabled);
+        row->addWidget(lbl);
+        row->addWidget(combo, 1);
+        vbox->addLayout(row);
+        return combo;
+    };
+    m_themeLightCombo = makePairRow("Light theme", cfg.ui.themeLight);
+    m_themeDarkCombo  = makePairRow("Dark theme",  cfg.ui.themeDark);
+    connect(m_themeLightCombo, &QComboBox::textActivated,
+            this, [this](const QString &name){ emit themeLightChanged(name); });
+    connect(m_themeDarkCombo, &QComboBox::textActivated,
+            this, [this](const QString &name){ emit themeDarkChanged(name); });
+#endif
 
     vbox->addSpacing(6);
     auto *fontBtn = new PillButton("Font Config...");
@@ -636,6 +670,15 @@ void PreferencesDialog::syncFromConfig(const Config &cfg)
     setCheck(m_unreadCountsCheck,  cfg.ui.showUnreadCounts);
     setCheck(m_panelCardsCheck,    cfg.ui.panelCards);
     setCheck(m_paneStackRowsCheck, cfg.ui.paneStackRows);
+    setCheck(m_themeAutoCheck,     cfg.ui.themeAuto);
+    auto setCombo = [&cfg](SolidComboBox *combo, const QString &text){
+        if (!combo) return;
+        QSignalBlocker block(combo);
+        combo->setCurrentText(text);
+        combo->setEnabled(cfg.ui.themeAuto);
+    };
+    setCombo(m_themeLightCombo, cfg.ui.themeLight);
+    setCombo(m_themeDarkCombo,  cfg.ui.themeDark);
 }
 
 void PreferencesDialog::showPage(const QString &navLabel)

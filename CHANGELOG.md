@@ -1,6 +1,32 @@
 # Changelog
 
 <!--
+Session 2026-07-13: auto theme + network-aware reconnect (unreleased):
+- Auto theme mode: theme_auto/theme_light/theme_dark config keys; when on,
+  Uplink follows the OS light/dark scheme via QStyleHints::colorScheme
+  (Qt 6.5+, guarded) and recolors live on colorSchemeChanged. Preferences
+  Appearance page gains the Auto checkbox plus Light/Dark theme combos
+  (SolidComboBox). A manual theme pick switches Auto off. OS-driven flips
+  do not rewrite ui.theme and do not save config (derived state only).
+  Refactor: the themeChanged lambda body moved to
+  MainWindow::applyThemeByName(); effectiveThemeName() resolves the pair.
+- NetworkMonitor (src/net/networkmonitor.{h,cpp}): QNetworkInformation
+  wrapper owned by SessionModel; onlineAgain() fires on the not-online to
+  Online edge; inert when no backend loads or Qt < 6.3.
+- Instant reconnect: SessionModel fans out to IrcClient::onNetworkOnline(),
+  which, unlike reconnect(), never clears m_intentionalDisconnect (a
+  /disconnect'ed server stays down). Backoff wait is cut short with a
+  fresh 5s delay; an already-connected socket gets an immediate PING so a
+  stale connection is detected in seconds, not 30-120s.
+- Metered gating: previews (PreviewController::enqueue), hover title
+  fetches, and remote avatar downloads are skipped while
+  QNetworkInformation reports a metered connection. UpdateChecker stays
+  manual and ungated. No new config key; documented in configuration.md
+  and faq.md.
+- tst_config: coverage for the three new keys (defaults + round-trip).
+-->
+
+<!--
 Session 2026-07-12 (late night) — code review fixes + nick list rework + card frame (v2026.7.3):
 - Four-lens code review (Qt memory, async networking, security, architecture/
   RAM). Verdict: no memory-safety defects, no high/critical vulns, layering

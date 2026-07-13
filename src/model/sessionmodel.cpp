@@ -1,6 +1,7 @@
 #include "sessionmodel.h"
 #include "irc/ircclient.h"
 #include "config/keychainhelper.h"
+#include "net/networkmonitor.h"
 
 #include <memory>
 #include <QPointer>
@@ -13,7 +14,13 @@
 
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
-{}
+{
+    m_netMonitor = new NetworkMonitor(this);
+    connect(m_netMonitor, &NetworkMonitor::onlineAgain, this, [this]{
+        for (IrcClient *cl : std::as_const(m_clients))
+            cl->onNetworkOnline();
+    });
+}
 
 // Resolve any "<keychain>" sentinel fields asynchronously, then connect.
 // If no sentinels are present the connection is started immediately.

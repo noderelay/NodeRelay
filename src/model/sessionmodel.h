@@ -10,6 +10,7 @@
 #include <QList>
 
 class IrcClient;
+class NetworkMonitor;
 
 class SessionModel : public QObject
 {
@@ -17,6 +18,9 @@ class SessionModel : public QObject
 
 public:
     explicit SessionModel(QObject *parent = nullptr);
+
+    // OS network state (reachability, metered). Never null.
+    NetworkMonitor *networkMonitor() const { return m_netMonitor; }
 
     // Create a client for each server in config and start connecting
     void loadConfig(const Config &cfg);
@@ -224,6 +228,7 @@ private:
 
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;
+    NetworkMonitor      *m_netMonitor{nullptr};
     Config               m_config;
     QHash<QString, IgnoreTypes> m_ignoredNicks;
     QHash<QString, QFile*> m_logFiles;

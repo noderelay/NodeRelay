@@ -42,6 +42,9 @@ nick = "joe"
         LOAD(cfg, R"(
 [ui]
 theme = "dracula"
+theme_auto = true
+theme_light = "solarized-light"
+theme_dark = "tokyo-night"
 show_nick_prefix = false
 colored_nicks = false
 font_chat = 14
@@ -53,6 +56,9 @@ highlight_words = "alert,urgent"
 menu_style = "hidden"
 )");
         QCOMPARE(cfg.ui.theme, "dracula");
+        QVERIFY(cfg.ui.themeAuto);
+        QCOMPARE(cfg.ui.themeLight, "solarized-light");
+        QCOMPARE(cfg.ui.themeDark, "tokyo-night");
         QVERIFY(!cfg.ui.showNickPrefix);
         QVERIFY(!cfg.ui.coloredNicks);
         QCOMPARE(cfg.ui.fontSizes.chat, 14.0);
@@ -62,6 +68,17 @@ menu_style = "hidden"
         QVERIFY(!cfg.ui.showTimestamps);
         QCOMPARE(cfg.ui.highlightWords, "alert,urgent");
         QCOMPARE(cfg.ui.menuStyle, "hidden");
+    }
+
+    void themeAutoDefaults()
+    {
+        LOAD(cfg, R"(
+[ui]
+theme = "nord"
+)");
+        QVERIFY(!cfg.ui.themeAuto);
+        QCOMPARE(cfg.ui.themeLight, "light");
+        QCOMPARE(cfg.ui.themeDark, "dark");
     }
 
     void menuStyleInvalidFallsBack()
@@ -217,6 +234,9 @@ nick = "joe"
     {
         Config orig;
         orig.ui.theme = "nord";
+        orig.ui.themeAuto = true;
+        orig.ui.themeLight = "gruvbox-light-hard-base16";
+        orig.ui.themeDark = "zenburn";
         orig.ui.coloredNicks = false;
         orig.ui.fontSizes.chat = 14.0;
         orig.ui.nickBrackets = "[]";
@@ -253,6 +273,9 @@ nick = "joe"
         Config loaded = Config::load(path);
 
         QCOMPARE(loaded.ui.theme, "nord");
+        QVERIFY(loaded.ui.themeAuto);
+        QCOMPARE(loaded.ui.themeLight, "gruvbox-light-hard-base16");
+        QCOMPARE(loaded.ui.themeDark, "zenburn");
         QVERIFY(!loaded.ui.coloredNicks);
         QCOMPARE(loaded.ui.fontSizes.chat, 14.0);
         QCOMPARE(loaded.ui.nickBrackets, "[]");

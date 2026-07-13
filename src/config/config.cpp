@@ -122,6 +122,9 @@ Config Config::load(const QString &path)
                 return QString::fromStdString((*ui)[key].value_or<std::string>(std::move(def)));
             };
             cfg.ui.theme           = ustr("theme", "default");
+            cfg.ui.themeAuto       = (*ui)["theme_auto"].value_or(false);
+            cfg.ui.themeLight      = ustr("theme_light", "light");
+            cfg.ui.themeDark       = ustr("theme_dark", "dark");
             cfg.ui.showNickPrefix  = (*ui)["show_nick_prefix"].value_or(true);
             cfg.ui.showTopic       = (*ui)["show_topic"].value_or(true);
             cfg.ui.showEmojiButton = (*ui)["show_emoji_button"].value_or(false);
@@ -327,6 +330,9 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
 
     out << "[ui]\n";
     out << "theme = " << tomlQuote(cfg.ui.theme) << "\n";
+    out << "theme_auto = " << boolStr(cfg.ui.themeAuto) << "\n";
+    out << "theme_light = " << tomlQuote(cfg.ui.themeLight) << "\n";
+    out << "theme_dark = " << tomlQuote(cfg.ui.themeDark) << "\n";
     out << "show_nick_prefix = " << boolStr(cfg.ui.showNickPrefix) << "\n";
     out << "show_topic = " << boolStr(cfg.ui.showTopic) << "\n";
     out << "show_emoji_button = " << boolStr(cfg.ui.showEmojiButton) << "\n";

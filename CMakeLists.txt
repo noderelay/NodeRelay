@@ -144,6 +144,8 @@ qt_add_executable(Uplink WIN32
     src/irc/ircparser.h
     src/irc/stsstore.cpp
     src/irc/stsstore.h
+    src/net/networkmonitor.cpp
+    src/net/networkmonitor.h
     src/irc/dccsend.cpp
     src/irc/dccsend.h
     src/irc/dccreceive.cpp

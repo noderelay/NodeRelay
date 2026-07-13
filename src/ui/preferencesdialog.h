@@ -8,6 +8,7 @@ class QLineEdit;
 class QListWidget;
 class QPushButton;
 class QStackedWidget;
+class SolidComboBox;
 
 class PreferencesDialog : public QDialog
 {
@@ -21,6 +22,9 @@ public:
 
 signals:
     void themeChanged(const QString &name);
+    void themeAutoToggled(bool on);
+    void themeLightChanged(const QString &name);
+    void themeDarkChanged(const QString &name);
     void fontConfigRequested();
     void appIconChanged(const QString &key);
     void topicBarToggled(bool on);
@@ -58,6 +62,9 @@ private:
     QListWidget    *m_navList{nullptr};
     QStackedWidget *m_pages{nullptr};
     QPushButton    *m_themeBtn{nullptr};   // Appearance page theme-list toggle
+    QCheckBox      *m_themeAutoCheck{nullptr};   // absent on Qt < 6.5 builds
+    SolidComboBox  *m_themeLightCombo{nullptr};
+    SolidComboBox  *m_themeDarkCombo{nullptr};
 
     QCheckBox *m_topicCheck{nullptr};
     QCheckBox *m_nickPrefixCheck{nullptr};

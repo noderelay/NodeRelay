@@ -101,6 +101,9 @@ struct FontSizes {
 
 struct UiConfig {
     QString   theme{"default"};
+    bool      themeAuto{false};      // follow the OS light/dark scheme (Qt 6.5+)
+    QString   themeLight{"light"};   // applied when the OS scheme is light
+    QString   themeDark{"dark"};     // applied when the OS scheme is dark
     bool      showNickPrefix{true};
     bool      showTopic{true};
     bool      showEmojiButton{false};
