@@ -419,7 +419,7 @@ void MainWindow::applyPanelChrome()
     // with square corners.
     const bool cards = m_config.ui.panelCards;
     const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
-    static_cast<ChromePanel *>(m_nickPanel)->setFill(fill, cards);
+    static_cast<ChromePanel *>(m_nickPanel)->setFill(fill, cards, /*roundedBottom=*/cards);
     static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(fill, cards);
     for (auto *pane : std::as_const(m_panes))
         pane->setNickChrome(fill.name(), cards);

@@ -273,7 +273,7 @@ void ChannelPane::setNickVisible(bool visible)
 void ChannelPane::setNickChrome(const QString &bg, bool rounded)
 {
     const QColor c(bg);
-    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c, rounded);
+    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c, rounded, /*roundedBottom=*/rounded);
     if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c, rounded);
 }
 

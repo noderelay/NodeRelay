@@ -251,6 +251,8 @@ QTreeWidget {
     outline: none;
     border-top-left-radius: {{panelRadius}};
     border-top-right-radius: {{panelRadius}};
+    border-bottom-left-radius: {{panelRadius}};
+    border-bottom-right-radius: {{panelRadius}};
 }
 QTreeWidget::item {
     padding: 2px 6px;
@@ -503,13 +505,12 @@ QSplitter::handle {
 }
 
 /* ── Embedded nick panel ── */
-/* Mirrors the sidebar card's rounded top. Both the panel and its header
-   carry the radii — the header fills the panel's top, so both must curve
+/* Mirrors the sidebar card's rounding. The header fills the panel's top and
+   the list its bottom, so each edge widget must curve along with the panel
    for the splitter's window-bg backdrop to show through the corners. */
 QWidget#nickPanel {
     background-color: {{panelNickBg}};
-    border-top-left-radius: {{panelRadius}};
-    border-top-right-radius: {{panelRadius}};
+    border-radius: {{panelRadius}};
 }
 QWidget#nickPanelHeader {
     background-color: {{panelNickBg}};
@@ -519,6 +520,8 @@ QWidget#nickPanelHeader {
 QWidget#nickPanel QListView {
     background-color: {{panelNickBg}};
     color: {{text}};
+    border-bottom-left-radius: {{panelRadius}};
+    border-bottom-right-radius: {{panelRadius}};
 }
 QWidget#nickPanel QListView::item:selected {
     background: transparent;
