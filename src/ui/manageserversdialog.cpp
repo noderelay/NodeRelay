@@ -429,7 +429,7 @@ void ManageServersDialog::loadServerToForm(int row)
 {
     if (row < 0 || row >= m_servers.size()) return;
 
-    static const QString kPlaceholder = QStringLiteral("Stored in keychain — type to change, clear to remove");
+    static const QString kPlaceholder = QStringLiteral("Stored in keychain - type to change, clear to remove");
     static const QString kOptional    = QStringLiteral("optional");
 
     const ServerConfig &sc = m_servers[row];

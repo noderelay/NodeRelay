@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Code Quality — Uplink IRC</title>
+<title>Code Quality · Uplink IRC</title>
 <meta name="description" content="Test results, code metrics, IRCv3 coverage, and compiler standards for the Uplink IRC client.">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <script>
@@ -15,55 +15,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
 <style>
-  :root {
-    --gb-bg0h:   #f9f5d7;
-    --gb-bg0:    #fbf1c7;
-    --gb-bg1:    #ebdbb2;
-    --gb-bg2:    #d5c4a1;
-    --gb-bg3:    #bdae93;
-    --gb-bg4:    #a89984;
-    --gb-fg:     #3c3836;
-    --gb-fg2:    #504945;
-    --gb-fg4:    #7c6f64;
-    --gb-red:    #9d0006;
-    --gb-green:  #79740e;
-    --gb-yellow: #b57614;
-    --gb-yellow-br: #d79921;
-    --gb-blue:   #076678;
-    --gb-purple: #8f3f71;
-    --gb-aqua:   #427b58;
-    --gb-orange: #af3a03;
-    --mono: 'IBM Plex Mono', ui-monospace, monospace;
-    --maxw: 1080px;
-  }
-  [data-theme="dark"] {
-    --gb-bg0h:      #1d2021;
-    --gb-bg0:       #282828;
-    --gb-bg1:       #3c3836;
-    --gb-bg2:       #504945;
-    --gb-bg3:       #665c54;
-    --gb-bg4:       #7c6f64;
-    --gb-fg:        #ebdbb2;
-    --gb-fg2:       #d5c4a1;
-    --gb-fg4:       #bdae93;
-    --gb-red:       #fb4934;
-    --gb-green:     #b8bb26;
-    --gb-yellow:    #d79921;
-    --gb-yellow-br: #fabd2f;
-    --gb-blue:      #83a598;
-    --gb-purple:    #d3869b;
-    --gb-aqua:      #8ec07c;
-    --gb-orange:    #fe8019;
-  }
-  [data-theme="dark"] nav { background: rgba(29,32,33,0.92); border-bottom-color: var(--gb-bg1); }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    *, *::before, *::after { animation: none !important; transition: none !important; }
-  }
   body {
     background: var(--gb-bg0);
     color: var(--gb-fg);
@@ -74,56 +27,6 @@
   a { color: var(--gb-aqua); text-decoration: none; }
   a:hover { text-decoration: underline; }
   a:focus-visible { outline: 2px solid var(--gb-aqua); outline-offset: 2px; }
-
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 1.5rem; }
-
-  /* ── NAV ── */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(249,245,215,0.92);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--gb-bg1);
-  }
-  .nav-inner {
-    max-width: var(--maxw); margin: 0 auto;
-    padding: 0.85rem 1.5rem;
-    display: flex; align-items: center; gap: 2rem;
-  }
-  .nav-logo {
-    font-weight: 700; font-size: 1.05rem;
-    color: var(--gb-yellow); text-decoration: none;
-    letter-spacing: 0.02em;
-    display: inline-flex; align-items: center; gap: 0.55rem;
-  }
-  .nav-links { display: flex; gap: 1.4rem; margin-left: auto; align-items: center; }
-  .nav-links a {
-    font-size: 0.85rem; font-weight: 500;
-    color: var(--gb-fg2); text-decoration: none; transition: color 0.15s;
-  }
-  .nav-links a:hover { color: var(--gb-yellow); text-decoration: none; }
-  .nav-gh {
-    border: 1px solid var(--gb-bg3);
-    padding: 0.35rem 0.85rem; border-radius: 4px; color: var(--gb-fg) !important;
-  }
-  .nav-gh:hover { border-color: var(--gb-yellow); }
-  @media (max-width: 760px) { .nav-links a:not(.nav-gh) { display: none; } }
-
-  .theme-toggle {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 50%;
-    border: none; cursor: pointer; background: transparent;
-    color: var(--gb-fg4); transition: background 0.15s, color 0.15s; flex-shrink: 0;
-    position: relative;
-  }
-  .theme-toggle:hover { background: var(--gb-bg1); color: var(--gb-yellow); }
-  .theme-toggle:focus-visible { outline: 2px solid var(--gb-aqua); outline-offset: 2px; }
-  .theme-toggle svg { display: block; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); }
-  .theme-toggle:hover svg { transform: rotate(20deg); }
-  .icon-sun, .icon-moon { position: absolute; transition: opacity 0.2s, transform 0.2s; }
-  [data-theme="light"] .icon-moon { opacity: 0; transform: scale(0.7); }
-  [data-theme="dark"]  .icon-sun  { opacity: 0; transform: scale(0.7); }
-  [data-theme="light"] .icon-sun  { opacity: 1; transform: scale(1); }
-  [data-theme="dark"]  .icon-moon { opacity: 1; transform: scale(1); }
 
   /* ── PAGE HEADER ── */
   .page-header {
@@ -344,14 +247,6 @@
   }
   .principle-card p { font-size: 0.84rem; color: var(--gb-fg2); }
 
-  /* ── FOOTER ── */
-  footer { border-top: 1px solid var(--gb-bg1); padding: 2.5rem 0 3rem; text-align: center; }
-  .footer-logo { font-weight: 700; color: var(--gb-yellow); margin-bottom: 1rem; }
-  .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
-  .footer-links a { font-size: 0.85rem; font-weight: 500; color: var(--gb-fg2); text-decoration: none; }
-  .footer-links a:hover { color: var(--gb-yellow); }
-  .footer-meta { margin-top: 1.25rem; font-size: 0.75rem; color: var(--gb-fg4); }
-
   .pass-badge {
     display: inline-flex; align-items: center; gap: 0.4rem;
     background: rgba(121,116,14,0.12); color: var(--gb-green);
@@ -414,7 +309,7 @@
       905 commits
     </div>
     <h1 class="page-title">Code <span class="hl">Quality</span> &amp; Correctness</h1>
-    <p class="page-sub">Real test results, real numbers. Every claim on this page is backed by the test suite, the compiler, or the source code — not marketing.</p>
+    <p class="page-sub">Every claim on this page is backed by the test suite, the compiler, or the source code.</p>
   </div>
 </div>
 
@@ -468,7 +363,7 @@
 <section>
   <div class="wrap">
     <span class="section-tag c-green">Test suite</span>
-    <h2>All tests pass — no exceptions</h2>
+    <h2>All tests pass</h2>
     <p class="section-sub">
       Two Qt Test suites cover the IRC protocol parser and the mIRC chat renderer.
       Below is the live output from the last run.
@@ -546,7 +441,7 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">fuzz harnesses — corpus replay</span>
+        <span class="terminal-label">fuzz harnesses - corpus replay</span>
       </div>
       <div class="terminal-body"><span class="t-dim">$ ./build/tests/fuzz_ircparser tests/corpus</span>
 
@@ -557,15 +452,15 @@
 <span class="t-dim">  014_client_tags  015_batch_open  016_batch_close  017_names_server_time</span>
 <span class="t-dim">  018_nick_change  019_kick  020_prefix_only  … +30 more</span>
 
-<span class="t-ok">fuzz_ircparser: replayed 50 input(s) — no crashes</span>
+<span class="t-ok">fuzz_ircparser: replayed 50 input(s) - no crashes</span>
 
 <span class="t-dim">$ ./build/tests/fuzz_chatformat tests/corpus_chatformat</span>
 
-<span class="t-dim">Replaying hostile message content against the chat renderer —</span>
+<span class="t-dim">Replaying hostile message content against the chat renderer:</span>
 <span class="t-dim">mIRC colour codes, unterminated sequences, emoji/ZWJ runs, RTL</span>
 <span class="t-dim">overrides, invalid UTF-8, 300-char words, redactions, replies …</span>
 
-<span class="t-ok">fuzz_chatformat: replayed 11 input(s) — no crashes</span>
+<span class="t-ok">fuzz_chatformat: replayed 11 input(s) - no crashes</span>
 
 <span class="t-dim">libFuzzer mode also available: cmake -DUPLINK_BUILD_FUZZ=ON (requires clang, ASan, libFuzzer)</span></div>
     </div>
@@ -588,7 +483,7 @@
     <h2>37 IRCv3 capabilities negotiated</h2>
     <p class="section-sub">
       Full <code>CAP LS 302</code> negotiation. Only capabilities the server actually advertises
-      are requested — no blindly batched REQs that fail silently.
+      are requested; no blindly batched REQs that fail silently.
     </p>
 
     <table class="cap-table">
@@ -601,12 +496,12 @@
       </thead>
       <tbody>
         <tr><td class="cap-name">message-tags</td><td>Transport layer for all tag-based features; full IRCv3 escape unescaping</td><td class="cap-status status-full">Full</td></tr>
-        <tr><td class="cap-name">server-time</td><td>Uses server timestamp over local clock — essential for bouncer history replay</td><td class="cap-status status-full">Full</td></tr>
+        <tr><td class="cap-name">server-time</td><td>Uses server timestamp over local clock, essential for bouncer history replay</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">batch</td><td>Buffers all tagged messages; delivers on close; 8-batch / 1 000-msg safety limits</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">sasl PLAIN</td><td>Authenticates before appearing on-network; holds CAP END until 903/904</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">sasl EXTERNAL</td><td>Client certificate TLS auth; RSA and EC PEM keys supported</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">chathistory</td><td>Sends CHATHISTORY LATEST after join; renders history dimmed with original timestamps</td><td class="cap-status status-full">Full</td></tr>
-        <tr><td class="cap-name">draft/chathistory</td><td>Same as above — covers Ergo IRCd's draft name</td><td class="cap-status status-full">Full</td></tr>
+        <tr><td class="cap-name">draft/chathistory</td><td>Same as above, covers Ergo IRCd's draft name</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">draft/typing</td><td>Sends active/paused/done TAGMSG; renders "nick is typing…" with auto-timeout</td><td class="cap-status status-full">Full (send + recv)</td></tr>
         <tr><td class="cap-name">msgid</td><td>Stored on every message; anchor for reply, react, redact</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">draft/reply</td><td>Right-click → Reply; renders ↩ origNick indicator on incoming replies</td><td class="cap-status status-full">Full (send + recv)</td></tr>
@@ -626,7 +521,7 @@
         <tr><td class="cap-name">userhost-in-names</td><td>Strips !user@host from display; stores for future ban/ignore work</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">Monitor</td><td>Sends MONITOR + after welcome; /monitor add|del|list|status commands</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">WHOX</td><td>Detects ISUPPORT token; uses WHO %cnfa,42 when available; falls back to plain WHO</td><td class="cap-status status-full">Full</td></tr>
-        <tr><td class="cap-name">sts</td><td>Caches STS policy to disk (sts.ini); enforces TLS on reconnect — HSTS equivalent</td><td class="cap-status status-full">Full</td></tr>
+        <tr><td class="cap-name">sts</td><td>Caches STS policy to disk (sts.ini); enforces TLS on reconnect (HSTS equivalent)</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">standard-replies</td><td>Routes FAIL/WARN/NOTE to the correct buffer with colored [FAIL]/[WARN]/[NOTE] prefix</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">cap-notify</td><td>Handles CAP NEW / CAP DEL to stay in sync if server cap set changes at runtime</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">netsplit batch type</td><td>Collapses QUIT flood into one summary line per channel</td><td class="cap-status status-full">Full</td></tr>
@@ -672,11 +567,11 @@
 
 <span class="t-head">********* TstIrcParser *********</span>
 <span class="t-pass">PASS</span>   : 13 test cases
-<span class="t-ok">Totals: 15 passed, 0 failed — 0ms</span>
+<span class="t-ok">Totals: 15 passed, 0 failed, 0ms</span>
 
 <span class="t-head">********* TstChatFormat *********</span>
 <span class="t-pass">PASS</span>   : 15 test cases
-<span class="t-ok">Totals: 17 passed, 0 failed — 1ms</span>
+<span class="t-ok">Totals: 17 passed, 0 failed, 1ms</span>
 
 <span class="t-ok">ASan: 0 heap errors · 0 stack errors · 0 use-after-free · 0 leaks</span>
 <span class="t-ok">UBSan: 0 integer overflows · 0 null dereferences · 0 misaligned access</span></div>
@@ -688,7 +583,7 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">clang-tidy — bugprone-* + clang-analyzer-*</span>
+        <span class="terminal-label">clang-tidy - bugprone-* + clang-analyzer-*</span>
       </div>
       <div class="terminal-body"><span class="t-dim">$ clang-tidy -p build/compile_commands.json \
     --checks='-*,bugprone-*,clang-analyzer-*' \
@@ -704,7 +599,7 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">cppcheck 2.21 — 27 source files</span>
+        <span class="terminal-label">cppcheck 2.21 - 27 source files</span>
       </div>
       <div class="terminal-body"><span class="t-dim">$ cppcheck --enable=all --std=c++17 -I src src/</span>
 <span class="t-dim">27/27 files checked 100% done</span>
@@ -718,10 +613,10 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">GitHub CodeQL — security-and-quality</span>
+        <span class="terminal-label">GitHub CodeQL - security-and-quality</span>
       </div>
       <div class="terminal-body"><span class="t-dim">Runs automatically on every push to main, every pull request, and weekly.</span>
-<span class="t-dim">Query suite: <span class="t-info">security-and-quality</span> (broader than default — covers code quality + security)</span>
+<span class="t-dim">Query suite: <span class="t-info">security-and-quality</span> (broader than default: covers code quality + security)</span>
 
 <span class="t-ok">Semantic analysis · data-flow tracking · taint analysis</span>
 <span class="t-ok">Catches: buffer overflows, use-after-free, SQL/command injection patterns,</span>
@@ -763,19 +658,19 @@
       </div>
       <div class="flag-card f-orange">
         <div class="flag-name">-Wconversion</div>
-        <div class="flag-desc">Warns on implicit type narrowing — a common source of subtle integer bugs at protocol boundaries.</div>
+        <div class="flag-desc">Warns on implicit type narrowing, a common source of subtle integer bugs at protocol boundaries.</div>
       </div>
       <div class="flag-card f-orange">
         <div class="flag-name">-Wsign-conversion</div>
-        <div class="flag-desc">Warns specifically on signed/unsigned conversions — critical when mixing Qt's qsizetype with size_t.</div>
+        <div class="flag-desc">Warns specifically on signed/unsigned conversions, which matter when mixing Qt's qsizetype with size_t.</div>
       </div>
       <div class="flag-card f-purple">
         <div class="flag-name">-Wshadow</div>
-        <div class="flag-desc">Prevents local variables silently hiding class members — a hard-to-spot bug in deep call stacks.</div>
+        <div class="flag-desc">Prevents local variables silently hiding class members, a hard-to-spot bug in deep call stacks.</div>
       </div>
       <div class="flag-card f-blue">
         <div class="flag-name">-Wnon-virtual-dtor</div>
-        <div class="flag-desc">Warns when a class with virtual functions has a non-virtual destructor — prevents silent UB in polymorphic delete.</div>
+        <div class="flag-desc">Warns when a class with virtual functions has a non-virtual destructor, preventing silent UB in polymorphic delete.</div>
       </div>
       <div class="flag-card f-red">
         <div class="flag-name">-Wold-style-cast</div>
@@ -788,7 +683,7 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">CMakeLists.txt — compiler flags</span>
+        <span class="terminal-label">CMakeLists.txt - compiler flags</span>
       </div>
       <div class="terminal-body"><span class="t-dim">if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")</span>
     <span class="t-pass">target_compile_options</span>(Uplink PRIVATE
@@ -818,7 +713,7 @@
     <div class="flag-grid">
       <div class="flag-card f-aqua">
         <div class="flag-name">Build matrix</div>
-        <div class="flag-desc">Compiled and tested on Linux (Ubuntu 24.04), Windows (MSVC 2025), and macOS — every push. Tests run on all three platforms, not just Linux.</div>
+        <div class="flag-desc">Compiled and tested on Linux (Ubuntu 24.04), Windows (MSVC 2025), and macOS on every push. Tests run on all three platforms, not just Linux.</div>
       </div>
       <div class="flag-card f-orange">
         <div class="flag-name">Sanitizer job</div>
@@ -843,7 +738,7 @@
     <h2>Strict layer separation</h2>
     <p class="section-sub">
       The UI never touches the socket. The IRC layer never touches widgets.
-      Data flows one direction through Qt signals — no circular dependencies.
+      Data flows one direction through Qt signals, with no circular dependencies.
     </p>
 
     <div class="arch-diagram">
@@ -853,7 +748,7 @@
 <span class="arch-rule">│</span>
 <span class="arch-name">├─ IrcClient</span>                  <span class="arch-note">src/irc/ircclient.cpp  (1 677 lines)</span>
 <span class="arch-rule">│</span>   Owns the <span class="t-dim">QSslSocket</span>. Drives CAP LS 302 handshake, SASL, STS, all commands.
-<span class="arch-rule">│</span>   Emits signals — UI never calls methods directly on the socket.
+<span class="arch-rule">│</span>   Emits signals; the UI never calls methods directly on the socket.
 <span class="arch-rule">│</span>
 <span class="arch-name">├─ SessionModel</span>               <span class="arch-note">src/model/sessionmodel.cpp</span>
 <span class="arch-rule">│</span>   In-memory state: servers, channels, nick lists, message history.
@@ -875,7 +770,7 @@
       <div class="principle-card">
         <span class="principle-icon">🔒</span>
         <h3>No HTML injection from IRC</h3>
-        <p>All IRC message text passes through <code>htmlEscape()</code> before rendering. mIRC colour/bold codes are translated to inline CSS spans — untrusted input can never inject raw HTML.</p>
+        <p>All IRC message text passes through <code>htmlEscape()</code> before rendering. mIRC colour/bold codes are translated to inline CSS spans, so untrusted input can never inject raw HTML.</p>
       </div>
       <div class="principle-card">
         <span class="principle-icon">🔌</span>
@@ -885,7 +780,7 @@
       <div class="principle-card">
         <span class="principle-icon">🛡️</span>
         <h3>Credentials in the OS keychain</h3>
-        <p>Server passwords and SASL credentials are stored via QtKeychain — the system credential store (libsecret / Windows Credential Manager / macOS Keychain), not plaintext config files.</p>
+        <p>Server passwords and SASL credentials are stored via QtKeychain, the system credential store (libsecret / Windows Credential Manager / macOS Keychain), not plaintext config files.</p>
       </div>
       <div class="principle-card">
         <span class="principle-icon">📐</span>
@@ -895,7 +790,7 @@
       <div class="principle-card">
         <span class="principle-icon">✂️</span>
         <h3>Long message splitting</h3>
-        <p>Outgoing messages that exceed the 512-byte IRC line limit are automatically split at word boundaries before sending — no truncated lines, no server errors.</p>
+        <p>Outgoing messages that exceed the 512-byte IRC line limit are automatically split at word boundaries before sending. No truncated lines, no server errors.</p>
       </div>
       <div class="principle-card">
         <span class="principle-icon">🚧</span>
@@ -912,7 +807,7 @@
     <span class="section-tag c-aqua">Footprint</span>
     <h2>Light on memory</h2>
     <p class="section-sub">
-      A full IRCv3 client — TLS, SASL, link previews, DCC — with a resident
+      A full IRCv3 client (TLS, SASL, link previews, DCC) with a resident
       footprint smaller than a browser tab. No Electron, no bundled Chromium.
       Your mileage varies with how many networks, channels, and scrollback you
       keep open, but the baseline stays light.
@@ -930,7 +825,7 @@
              alt="System monitor sorted by memory: Uplink at 60.5 MiB, below Chromium and Mailspring"
              style="width:100%; border:1px solid var(--gb-bg1); border-radius:10px; display:block;">
         <figcaption style="font-size:0.75rem; color:var(--gb-fg4); margin-top:0.6rem;">
-          Applications sorted by memory. Uplink at 60.5 MiB — under Chromium (133.9) and Mailspring (61.7).
+          Applications sorted by memory. Uplink at 60.5 MiB, under Chromium (133.9) and Mailspring (61.7).
         </figcaption>
       </figure>
     </div>
@@ -943,7 +838,7 @@
     <span class="section-tag c-yellow">Summary</span>
     <h2>What "drilled-down" actually means here</h2>
     <p class="section-sub">
-      The numbers above are facts, not claims. Here's what they add up to.
+      Here's what the numbers above add up to.
     </p>
 
     <div class="principle-grid" style="margin-top:1.5rem">
@@ -961,7 +856,7 @@
           17 unit tests cover XSS-critical paths: <code>&lt;</code>, <code>&amp;</code>, <code>"</code>,
           mIRC bold/italic/underline/colour with proper reset, linkification that only wraps
           http/https (not ftp), highlight-word rendering, and empty-input edge cases. A dedicated
-          fuzz harness also hammers the renderer with hostile input — mIRC codes, emoji/ZWJ runs,
+          fuzz harness also hammers the renderer with hostile input: mIRC codes, emoji/ZWJ runs,
           RTL overrides, invalid UTF-8. No raw IRC text reaches the browser engine unescaped.
         </p>
       </div>
@@ -970,13 +865,13 @@
         <p>
           The test suite runs under AddressSanitizer and UndefinedBehaviorSanitizer on every push.
           Zero heap errors, zero stack errors, zero integer overflows, zero null dereferences.
-          clang-tidy, cppcheck, and GitHub CodeQL also run each build — all clean.
+          clang-tidy, cppcheck, and GitHub CodeQL also run each build, all clean.
         </p>
       </div>
       <div class="principle-card">
         <h3 style="color:var(--gb-blue)">Protocol depth</h3>
         <p>
-          37 IRCv3 capabilities — not a checkbox list. Each one has an implementation
+          37 IRCv3 capabilities, each with an implementation
           that was tested against a live Ergo IRCd instance. Bouncer-specific caps are only
           requested when a bouncer type is configured.
         </p>
@@ -985,7 +880,7 @@
         <h3 style="color:var(--gb-orange)">No silent surprises</h3>
         <p>
           8 warning flags catch narrowing, shadowing, sign mismatches, C-style casts, and
-          non-virtual destructors at compile time — before they become runtime bugs.
+          non-virtual destructors at compile time, before they become runtime bugs.
           The codebase compiles clean at all 8 levels with GCC 16.
         </p>
       </div>
@@ -1003,20 +898,20 @@
     </p>
 
     <p style="margin-top:1.5rem; font-size:0.92rem; color:var(--gb-fg1); line-height:1.7">
-      UplinkIRC is being built by a group of volunteers, some with professional development backgrounds, and over 100 years of combined time on IRC networks. AI helped us write code faster. It didn't decide what the security model should be, which IRCv3 caps to support, or how to handle credentials. Those calls came from people who've been using and building on IRC for decades. The tool doesn't replace the judgment — it just types faster than we do.
+      UplinkIRC is being built by a group of volunteers, some with professional development backgrounds, and over 100 years of combined time on IRC networks. AI helped us write code faster. It didn't decide what the security model should be, which IRCv3 caps to support, or how to handle credentials. Those calls came from people who've been using and building on IRC for decades. The tool doesn't replace the judgment; it just types faster than we do.
     </p>
 
     <div class="principle-grid" style="margin-top:1.5rem">
       <div class="principle-card">
         <h3 style="color:var(--gb-green)">Security is deliberate</h3>
         <p>
-          TLS enforced by default — invalid certs disconnect immediately. Passwords stored in the OS keychain, not config files. Config written atomically with 0600 permissions. CTCP replies rate-limited per nick. DCC filenames sanitized against CTCP injection, stalled transfers detected and aborted. Link previews block RFC 1918 and loopback to prevent LAN probing. Reactions accepted only for messages actually held in the buffer, so fabricated msgids can't grow memory. None of this is accidental.
+          TLS enforced by default; invalid certs disconnect immediately. Passwords stored in the OS keychain, not config files. Config written atomically with 0600 permissions. CTCP replies rate-limited per nick. DCC filenames sanitized against CTCP injection, stalled transfers detected and aborted. Link previews block RFC 1918 and loopback to prevent LAN probing. Reactions accepted only for messages actually held in the buffer, so fabricated msgids can't grow memory. None of this is accidental.
         </p>
       </div>
       <div class="principle-card">
         <h3 style="color:var(--gb-green)">Protocol knowledge is real</h3>
         <p>
-          37 IRCv3 protocol features with full CAP LS 302 negotiation, SASL PLAIN and EXTERNAL, STS policy enforcement, bouncer-specific extensions for ZNC and soju. You don't get these right by prompting an LLM — you get them right by reading the specs and testing against live servers.
+          37 IRCv3 protocol features with full CAP LS 302 negotiation, SASL PLAIN and EXTERNAL, STS policy enforcement, bouncer-specific extensions for ZNC and soju. You don't get these right by prompting an LLM. You get them right by reading the specs and testing against live servers.
         </p>
       </div>
       <div class="principle-card">
@@ -1028,7 +923,7 @@
       <div class="principle-card">
         <h3 style="color:var(--gb-orange)">The code is public</h3>
         <p>
-          The project is open source, the code is auditable, and the security decisions are documented. Anyone who wants to evaluate it is welcome to read it. The question isn't "was AI used" — it's "is this safe?" The answer is in the codebase.
+          The project is open source, the code is auditable, and the security decisions are documented. Anyone who wants to evaluate it is welcome to read it. The question isn't "was AI used", it's "is this safe?" The answer is in the codebase.
         </p>
       </div>
     </div>
@@ -1048,29 +943,6 @@
   </div>
 </footer>
 
-<script>
-  const btn = document.getElementById('themeToggle');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('uplink-theme', next);
-    });
-  }
-
-  /* ── random app icon rotation ── */
-  (function() {
-    const icons = [
-      'black-old-orange','black-orange','colorful-blueish','colorful-greenblue',
-      'colorful-hotbluepink','colorful-orange','colorful-purple','flat-black',
-      'gruvbox-blue','gruvbox-colorful','gruvbox-orange','gruvbox-purple',
-      'gruvbox-yellow','original-black','original-flat-shine'
-    ];
-    const pick = icons[Math.floor(Math.random() * icons.length)];
-    document.querySelectorAll('[data-uplink-icon]').forEach(function(img) {
-      img.src = 'assets/icons/' + pick + '.png';
-    });
-  })();
-</script>
+<script src="assets/site.js"></script>
 </body>
 </html>

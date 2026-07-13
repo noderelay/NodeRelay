@@ -222,7 +222,7 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_realname->setText(existing.realname);
     m_quitMessage->setText(existing.quitMessage);
     m_awayMessage->setText(existing.awayMessage);
-    static const QString kPlaceholder = QStringLiteral("Stored in keychain — type to change, clear to remove");
+    static const QString kPlaceholder = QStringLiteral("Stored in keychain - type to change, clear to remove");
     auto setupPw = [&](QLineEdit *field, const QString &value, bool &flag) {
         if (value == kKeychainSentinel) { field->setPlaceholderText(kPlaceholder); flag = true; }
         else                            { field->setText(value); }
