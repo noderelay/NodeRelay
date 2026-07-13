@@ -16,6 +16,7 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListView>
 #include <QListWidget>
 #include <QMenu>
 #include <QMessageBox>
@@ -308,9 +309,9 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
 
 void MainWindow::onNickListContextMenu(const QPoint &pos)
 {
-    auto *item = m_nickList->itemAt(pos);
-    if (!item) return;
-    const QString nick = item->data(Qt::UserRole).toString();
+    const QModelIndex idx = m_nickList->indexAt(pos);
+    if (!idx.isValid()) return;
+    const QString nick = idx.data(Qt::UserRole).toString();
     if (nick.isEmpty()) return;
     showNickContextMenu(nick, m_nickList->mapToGlobal(pos));
 }

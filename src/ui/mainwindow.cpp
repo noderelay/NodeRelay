@@ -46,6 +46,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QTreeWidget>
+#include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QTextBrowser>
@@ -1531,6 +1532,7 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
     if (m_panes.contains(key)) return nullptr;
 
     auto *pane = new ChannelPane(host, channel, this);
+    pane->setNickModel(new NickListModel(m_model, &m_nickStyle));
     if (m_theme.valid)
         pane->chatView()->setColors(QColor(m_theme.text), QColor(m_theme.background),
                                     QColor(m_theme.accent), QColor(m_theme.background),
@@ -1934,15 +1936,9 @@ void MainWindow::rebuildPaneLayout()
 void MainWindow::refreshPaneNickList(ChannelPane *pane)
 {
     pane->clearNickFilter();
-    pane->nickList()->clear();
-    auto *ch   = m_model->channel(pane->host(), pane->channel());
-    if (!ch) return;
-    auto *sess = m_model->session(pane->host());
-
-    for (const auto &e : std::as_const(ch->nicks))
-        pane->nickList()->addItem(makeNickItem(e, ch, sess));
-
-    pane->setNickCount(static_cast<int>(ch->nicks.size()));
+    pane->nickModel()->setBuffer(pane->host(), pane->channel());
+    auto *ch = m_model->channel(pane->host(), pane->channel());
+    pane->setNickCount(ch ? static_cast<int>(ch->nicks.size()) : 0);
 }
 
 QString MainWindow::topicAgeStr(quint64 ts)

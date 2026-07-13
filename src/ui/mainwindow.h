@@ -12,6 +12,7 @@
 #include <QPair>
 #include "model/sessionmodel.h"
 #include "config/config.h"
+#include "ui/nicklistmodel.h"
 #include "ui/themeloader.h"
 
 class CommandDispatcher;
@@ -46,6 +47,7 @@ class QMenu;
 class QPushButton;
 class QListWidget;
 class QListWidgetItem;
+class QListView;
 class QToolButton;
 class QSplitter;
 class QVBoxLayout;
@@ -113,6 +115,7 @@ private:
     void loadOlderMessages();
     void onOlderHistoryLoaded(ServerId host, BufferId channel, int count);
     void refreshNickList(ServerId host, BufferId channel);
+    void updateNickViews(ServerId host, BufferId channel);
     void scheduleNickRefresh(ServerId host, BufferId channel);
     void refreshTopicBar(ServerId host, BufferId channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
@@ -161,8 +164,6 @@ private:
     void setNickPanelVisible(bool on);
     void clearActiveBuffer();
 
-    QListWidgetItem *makeNickItem(const NickEntry &e, const Channel *ch, const ServerSession *sess);
-    static int       findNickRow (QListWidget *list, const QString &nick);
     static QString   topicAgeStr (quint64 ts);
 
     QString    formatMessage(const Message &msg) const;
@@ -239,7 +240,8 @@ private:
     QToolButton  *m_searchBtn{nullptr};
     QToolButton  *m_popOutBtn{nullptr};
     QToolButton  *m_primaryCloseBtn{nullptr};
-    QListWidget  *m_nickList;
+    QListView    *m_nickList{nullptr};
+    NickListModel *m_nickModel{nullptr};
     QWidget      *m_nickPanel{nullptr};
     QWidget      *m_nickPanelHeader{nullptr};
     NickFilterEdit *m_nickFilter{nullptr};
@@ -309,6 +311,7 @@ private:
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     QHash<QString, int>           m_botIconIdx;        // lowercased nick → 0 (robot) or 1 (alien)
+    NickListStyle                 m_nickStyle;         // shared by main + pane nick models
     QHash<QString, int>           m_renderStart;        // "host\tchannel" → first rendered msg index
     QHash<QString, int>           m_scrollPositions;   // "host\tchannel" → saved scroll px (non-bottom)
     bool                          m_loadingOlder{false};

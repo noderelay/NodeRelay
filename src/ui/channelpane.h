@@ -11,9 +11,10 @@
 class ChatView;
 class SearchBar;
 class NickFilterEdit;
+class NickListModel;
 class DropFrame;
 class QShortcut;
-class QListWidget;
+class QListView;
 class QPlainTextEdit;
 class QLabel;
 class QToolButton;
@@ -26,7 +27,9 @@ public:
     const BufferId &channel() const { return m_channel; }
     QString         key()     const { return paneKey(m_host, m_channel); }
     ChatView     *chatView() const { return m_chatView; }
-    QListWidget  *nickList() const { return m_nickList; }
+    QListView    *nickList() const { return m_nickList; }
+    NickListModel *nickModel() const { return m_nickModel; }
+    void setNickModel(NickListModel *model); // wires view + filter; reparents to the pane
     QPlainTextEdit *input()  const { return m_input; }
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
@@ -78,7 +81,8 @@ private:
     bool          m_dragPending{false};
     bool          m_dragging{false};
     ChatView     *m_chatView{nullptr};
-    QListWidget  *m_nickList{nullptr};
+    QListView    *m_nickList{nullptr};
+    NickListModel *m_nickModel{nullptr};
     QWidget      *m_nickWrapper{nullptr};
     QWidget      *m_nickHeader{nullptr};
     QLabel       *m_nickGroupsIcon{nullptr};

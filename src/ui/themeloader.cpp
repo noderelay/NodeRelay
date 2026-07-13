@@ -279,21 +279,21 @@ QTextEdit {
 }
 
 /* ── Nick list ── */
-QListWidget {
+QListView {
     background-color: {{nicklistBg}};
     color: {{nicklistText}};
     border: none;
     outline: none;
 }
-QListWidget::item {
+QListView::item {
     padding: 2px 8px;
     height: 22px;
 }
-QListWidget::item:selected {
+QListView::item:selected {
     background-color: {{accent}};
     color: {{sidebarActive}};
 }
-QListWidget::item:hover:!selected {
+QListView::item:hover:!selected {
     background-color: {{border}};
 }
 
@@ -516,15 +516,15 @@ QWidget#nickPanelHeader {
     border-top-left-radius: {{panelRadius}};
     border-top-right-radius: {{panelRadius}};
 }
-QWidget#nickPanel QListWidget {
+QWidget#nickPanel QListView {
     background-color: {{panelNickBg}};
     color: {{text}};
 }
-QWidget#nickPanel QListWidget::item:selected {
+QWidget#nickPanel QListView::item:selected {
     background: transparent;
     color: {{sidebarActive}};
 }
-QWidget#nickPanel QListWidget::item:hover {
+QWidget#nickPanel QListView::item:hover {
     background: transparent;
 }
 QWidget#nickPanelHeader QToolButton {
