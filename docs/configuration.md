@@ -1,6 +1,6 @@
 # Configuration
 
-Uplink is configured with a single TOML file. On first launch it is created automatically with default settings — you just need to fill in your nickname.
+Uplink is configured with a single TOML file. On first launch it is created automatically with default settings; you just need to fill in your nickname.
 
 ---
 
@@ -14,10 +14,10 @@ Uplink is configured with a single TOML file. On first launch it is created auto
 
 You can edit the file directly, or use the in-app tools:
 
-- **File → Open Config** — opens `config.toml` in your system's default text editor
-- **File → Reload Config** — restarts Uplink immediately, picking up all config changes (useful after a manual edit)
-- **File → Manage Servers** — add, edit, or remove servers; changes take effect immediately without editing config by hand
-- **Settings → Preferences (Ctrl+,)** — the GUI for themes, font sizes, and UI toggles; changes are saved automatically
+- **File → Open Config**: opens `config.toml` in your system's default text editor
+- **File → Reload Config**: restarts Uplink immediately, picking up all config changes (useful after a manual edit)
+- **File → Manage Servers**: add, edit, or remove servers; changes take effect immediately without editing config by hand
+- **Settings → Preferences (Ctrl+,)**: the GUI for themes, font sizes, and UI toggles; changes are saved automatically
 
 ---
 
@@ -75,7 +75,7 @@ realname = "Uplink User"
 # sasl_user = "yournick"       # uncomment to enable SASL PLAIN
 # sasl_password = "yourpassword"
 # nickserv_password = "yourpassword"   # alternative: NickServ IDENTIFY on connect
-# bouncer = "soju"           # "znc" or "soju" — enables bouncer-specific caps
+# bouncer = "soju"           # "znc" or "soju", enables bouncer-specific caps
 # bouncer_network = "libera"         # znc or soju: network name (see Bouncer section)
 # proxy_host = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
 # proxy_port = 1080             # SOCKS5 proxy port (default 1080)
@@ -93,7 +93,7 @@ name = "#uplink"
 [[server.channel]]
 name = "#linux"
 
-# Per-type ignore — channel messages always visible
+# Per-type ignore, channel messages always visible
 [[ignore.entry]]
 nick = "spammer"
 flags = ["pm", "notice", "invite"]
@@ -103,11 +103,11 @@ flags = ["pm", "notice", "invite"]
 
 ## The `[ui]` block
 
-Controls the look and feel of the interface. All keys are optional — missing keys use the default.
+Controls the look and feel of the interface. All keys are optional; missing keys use the default.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `theme` | string | `"default"` | Theme name — must match a `.toml` file in `themes/` without the extension. On Windows, `"default"` uses the native Windows style with no custom colors. |
+| `theme` | string | `"default"` | Theme name; must match a `.toml` file in `themes/` without the extension. On Windows, `"default"` uses the native Windows style with no custom colors. |
 | `show_nick_prefix` | bool | `true` | Show your nickname label next to the message input box |
 | `show_topic` | bool | `true` | Show the channel topic bar below the channel header row |
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
@@ -115,17 +115,17 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Chat Window → Hanging Indent**. |
-| `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in — off by default. Toggle from **Preferences → Logging → Log Messages to Disk**. |
+| `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in, off by default. Toggle from **Preferences → Logging → Log Messages to Disk**. |
 | `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Interface → Show Unread Message Counts**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Notifications → Tray Notifications**. |
-| `highlight_words` | string | `""` | Extra words that get treated like a mention of your nick: they render **red bold** in chat and count as mentions for unread indicators. Comma-separated, case-insensitive, whole words only — `highlight_words = "myproject, deploy, lunch"` highlights "deploy" but not "deployment". Leave empty to only highlight your own nick. Change live from **Preferences → Notifications → Highlight Words**. |
+| `highlight_words` | string | `""` | Extra words that get treated like a mention of your nick: they render **red bold** in chat and count as mentions for unread indicators. Comma-separated, case-insensitive, whole words only: `highlight_words = "myproject, deploy, lunch"` highlights "deploy" but not "deployment". Leave empty to only highlight your own nick. Change live from **Preferences → Notifications → Highlight Words**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `pane_stack_rows` | bool | `false` | When you have 2+ [detachable channel panes](howto.html#channel-panes) open, `false` stacks them in columns (side by side), `true` stacks them in horizontal rows. Toggle live from **Preferences → Interface → Stack Panes in Rows**. |
 | `panel_cards` | bool | `true` | The server/channel list and user list use their own `[sidebar]`/`[nicklist]` theme backgrounds and float as fully rounded cards, framed by an even `[general] background` gap on all sides. Set `false` for the classic flat look where the whole window sits on the buffer color. Toggle live from **Preferences → Interface → Panel Cards**. |
-| `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the classic **File / Edit / View / Window / Plugins / Settings / Help / Search** menu bar — on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
+| `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the classic **File / Edit / View / Window / Plugins / Settings / Help / Search** menu bar; on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
 | `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
-| `font_toolbar` | integer | `10` | Legacy top-bar font size — kept for config compatibility |
+| `font_toolbar` | integer | `10` | Legacy top-bar font size, kept for config compatibility |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
 | `font_chat` | integer | `10` | Font size (pt) for the message area |
 | `font_nick_list` | integer | `10` | Font size (pt) for the user list |
@@ -135,7 +135,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_input` | integer | `10` | Font size (pt) for the message input box |
 | `font_typing` | integer | `9` | Font size (pt) for the "nick is typing…" indicator |
 | `font_server_header` | integer | `9` | Font size (pt) for server/section header rows in the sidebar |
-| `font_emoji` | integer | `16` | Font size (pt) for emoji characters in chat messages — independent of `font_chat` so emoji stay readable at small font sizes |
+| `font_emoji` | integer | `16` | Font size (pt) for emoji characters in chat messages, independent of `font_chat` so emoji stay readable at small font sizes |
 
 All font sizes and the theme can be changed live from **Preferences → Appearance → Font Config...** and the theme list in **Preferences → Appearance** without editing the file.
 
@@ -145,7 +145,7 @@ All font sizes and the theme can be changed live from **Preferences → Appearan
 
 The `nick_brackets` key controls the characters that wrap nick names in chat messages.
 
-The value is a string split at its midpoint — the first half becomes the opening bracket and the second half becomes the closing bracket. An empty string removes brackets entirely.
+The value is a string split at its midpoint: the first half becomes the opening bracket and the second half becomes the closing bracket. An empty string removes brackets entirely.
 
 | Value | Result | How it looks |
 |---|---|---|
@@ -165,10 +165,10 @@ nick_brackets = "<>"
 # Square bracket style
 nick_brackets = "[]"
 
-# Double colons (4 chars — split at 2, so :: on each side)
+# Double colons (4 chars, split at 2, so :: on each side)
 nick_brackets = "::::"
 
-# No brackets at all — just the nick
+# No brackets at all, just the nick
 nick_brackets = ""
 ```
 
@@ -197,7 +197,7 @@ Controls features that make outgoing network requests triggered by incoming data
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites — the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Chat Window → Link Previews** or set here. |
+| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites; the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Chat Window → Link Previews** or set here. |
 
 ```toml
 [privacy]
@@ -214,22 +214,22 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | yes | Display name shown in the sidebar. **Must be unique** — Uplink uses this as the identity key, so two servers cannot share the same name (even if they share the same host). **Renaming a server requires re-entering its password** — passwords are stored in the OS keychain under this name, so a rename loses the keychain association. Open Manage Servers, select the renamed entry, re-enter the password, and save. |
+| `name` | string | yes | Display name shown in the sidebar. **Must be unique**: Uplink uses this as the identity key, so two servers cannot share the same name (even if they share the same host). **Renaming a server requires re-entering its password**; passwords are stored in the OS keychain under this name, so a rename loses the keychain association. Open Manage Servers, select the renamed entry, re-enter the password, and save. |
 | `host` | string | yes | IRC server hostname or IP address |
 | `port` | integer | yes | Server port. Standard ports: `6697` for TLS (recommended), `6667` for plain (unencrypted). |
-| `ssl` | bool | yes | Use TLS encryption. Set `true` for any public server — all modern networks support it. Set `false` only for plain connections: local test servers, LAN servers, some bouncers on localhost, or `.onion` addresses where the Tor tunnel provides its own encryption. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |
+| `ssl` | bool | yes | Use TLS encryption. Set `true` for any public server; all modern networks support it. Set `false` only for plain connections: local test servers, LAN servers, some bouncers on localhost, or `.onion` addresses where the Tor tunnel provides its own encryption. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |
 | `nick` | string | yes | Your preferred nickname |
 | `user` | string | no | Username in your hostmask (defaults to `"uplink"`) |
 | `realname` | string | no | Shown in WHOIS (defaults to `"Uplink User"`) |
-| `password` | string | no | Sent as `PASS` during connection. Required for most bouncers; also used for password-protected servers. **Stored in OS keychain — see note below.** |
+| `password` | string | no | Sent as `PASS` during connection. Required for most bouncers; also used for password-protected servers. **Stored in OS keychain; see note below.** |
 | `sasl_user` | string | no | SASL username for SASL PLAIN authentication. Set together with `sasl_password` |
-| `sasl_password` | string | no | SASL password for SASL PLAIN authentication. Set together with `sasl_user`. **Stored in OS keychain — see note below.** |
+| `sasl_password` | string | no | SASL password for SASL PLAIN authentication. Set together with `sasl_user`. **Stored in OS keychain; see note below.** |
 | `sasl_external` | bool | no | Use SASL EXTERNAL (certificate-based auth). Set to `true` together with `client_cert` and `client_key`. Cannot be combined with `sasl_user`/`sasl_password`. |
 | `client_cert` | string | no | Path to the PEM client certificate for SASL EXTERNAL. |
 | `client_key` | string | no | Path to the PEM private key for SASL EXTERNAL. RSA and EC (ECDSA) keys are both supported. |
-| `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support. **Stored in OS keychain — see note below.** |
+| `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support. **Stored in OS keychain; see note below.** |
 | `bouncer` | string | no | Bouncer type. Set to `"znc"` or `"soju"` to enable bouncer-specific IRCv3 capabilities. Omit or set `"none"` for a direct server connection |
-| `bouncer_network` | string | no | The IRC network name inside your bouncer. For **ZNC**: set this alongside `sasl_user` and `sasl_password` and Uplink assembles `user/network:password` automatically — or leave blank and put the full string in `password` manually. For **soju**: the network to attach to, sent via SASL. Leave empty for single-network instances. |
+| `bouncer_network` | string | no | The IRC network name inside your bouncer. For **ZNC**: set this alongside `sasl_user` and `sasl_password` and Uplink assembles `user/network:password` automatically, or leave blank and put the full string in `password` manually. For **soju**: the network to attach to, sent via SASL. Leave empty for single-network instances. |
 | `proxy_host` | string | no | SOCKS5 proxy hostname or IP (e.g. `"127.0.0.1"`). Leave empty (the default) to connect directly with no proxy. |
 | `proxy_port` | integer | no | SOCKS5 proxy port. Defaults to `1080`. |
 | `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
@@ -238,7 +238,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
 | `quit_message` | string | no | Message broadcast to the server when you disconnect or type `/quit` with no argument. Defaults to `"Uplink"` when omitted or blank. You can always override it for a single disconnect with `/quit <message>`. |
 | `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` sends `"Away"` as a fallback. You can always override for a single session with `/away <message>`. Use `/back` to clear away status. |
-| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **File → Manage Servers** → select the server → **Disabled** checkbox in the Connection section. Defaults to `false`. |
+| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup: no connection attempt, no sidebar entry. Toggle from **File → Manage Servers** → select the server → **Disabled** checkbox in the Connection section. Defaults to `false`. |
 
 ### Minimal server block
 
@@ -258,9 +258,9 @@ name = "#uplink"
 
 ### Plain (unencrypted) connections
 
-Set `ssl = false` and use port `6667` (the standard plaintext IRC port) when the server does not support TLS. This is uncommon on public networks — most have supported TLS for years — but it comes up in a few scenarios:
+Set `ssl = false` and use port `6667` (the standard plaintext IRC port) when the server does not support TLS. This is uncommon on public networks (most have supported TLS for years) but it comes up in a few scenarios:
 
-**Local test server** — an IRCd running on your own machine for development or testing:
+**Local test server**: an IRCd running on your own machine for development or testing:
 
 ```toml
 [[server]]
@@ -271,7 +271,7 @@ ssl = false
 nick = "yournick"
 ```
 
-**LAN server** — a private IRC server on your home or office network that has no TLS certificate:
+**LAN server**: a private IRC server on your home or office network that has no TLS certificate:
 
 ```toml
 [[server]]
@@ -282,7 +282,7 @@ ssl = false
 nick = "yournick"
 ```
 
-**Bouncer on localhost** — some bouncers (ZNC, soju) are configured to listen locally without TLS, relying on the bouncer's own TLS for the upstream connection:
+**Bouncer on localhost**: some bouncers (ZNC, soju) are configured to listen locally without TLS, relying on the bouncer's own TLS for the upstream connection:
 
 ```toml
 [[server]]
@@ -295,7 +295,7 @@ password = "username/network:password"
 bouncer = "znc"
 ```
 
-**Tor hidden service** — `.onion` IRC servers route traffic through Tor, which provides its own layer of encryption. Some `.onion` servers offer only a plain port:
+**Tor hidden service**: `.onion` IRC servers route traffic through Tor, which provides its own layer of encryption. Some `.onion` servers offer only a plain port:
 
 ```toml
 [[server]]
@@ -314,7 +314,7 @@ proxy_port = 9050
 
 ## Authentication
 
-### Password storage — OS keychain
+### Password storage: OS keychain
 
 Uplink stores all passwords (`password`, `sasl_password`, `nickserv_password`) in your **OS keychain**, not as plaintext in `config.toml`. The file stores the sentinel value `"<keychain>"` instead of the actual secret.
 
@@ -335,9 +335,9 @@ name = "LinuxDojo"
 nickserv_password = "<keychain>"   # the actual value is in the OS keychain
 ```
 
-**Startup is non-blocking.** Keychain reads happen in the background after the main window appears. Each server's connection is established as soon as its passwords are resolved — you do not need to wait for all servers before the first one connects.
+**Startup is non-blocking.** Keychain reads happen in the background after the main window appears. Each server's connection is established as soon as its passwords are resolved; you do not need to wait for all servers before the first one connects.
 
-**If the keychain is unavailable** (e.g. no secret service daemon running on a headless Linux server), Uplink falls back gracefully — the password field simply reads as empty. In that case, enter your password in the server dialog and it will be stored once a keychain becomes available.
+**If the keychain is unavailable** (e.g. no secret service daemon running on a headless Linux server), Uplink falls back gracefully: the password field simply reads as empty. In that case, enter your password in the server dialog and it will be stored once a keychain becomes available.
 
 ---
 
@@ -358,16 +358,16 @@ channels = "#uplink"
 nickserv_password = "yourpassword"
 ```
 
-The server buffer will show `Sent NickServ IDENTIFY` when this fires. For servers that support SASL, prefer `sasl_user`/`sasl_password` — SASL identifies you before you appear on the network.
+The server buffer will show `Sent NickServ IDENTIFY` when this fires. For servers that support SASL, prefer `sasl_user`/`sasl_password`; SASL identifies you before you appear on the network.
 
 ### SASL EXTERNAL (certificate authentication)
 
-SASL EXTERNAL authenticates you by your TLS client certificate — no password is ever sent. It is the most secure authentication method and is supported by Libera.Chat, OFTC, and most modern IRC servers.
+SASL EXTERNAL authenticates you by your TLS client certificate; no password is ever sent. It is the most secure authentication method and is supported by Libera.Chat, OFTC, and most modern IRC servers.
 
-**Step 1 — Generate a client certificate**
+**Step 1: Generate a client certificate**
 
 ```bash
-# ECDSA P-384 (recommended — smaller, equally secure)
+# ECDSA P-384 (recommended: smaller, equally secure)
 openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-384 \
     -keyout ~/.irc/client.key -out ~/.irc/client.crt \
     -days 3650 -nodes -subj "/CN=yournick"
@@ -381,7 +381,7 @@ openssl req -x509 -newkey rsa:4096 \
 chmod 600 ~/.irc/client.key ~/.irc/client.crt
 ```
 
-**Step 2 — Register your fingerprint with the server** (Libera.Chat example)
+**Step 2: Register your fingerprint with the server** (Libera.Chat example)
 
 ```
 /msg NickServ CERT ADD
@@ -389,7 +389,7 @@ chmod 600 ~/.irc/client.key ~/.irc/client.crt
 
 This adds your certificate's SHA-512 fingerprint to your account. From then on, connecting with the certificate logs you in automatically.
 
-**Step 3 — Add to config**
+**Step 3: Add to config**
 
 ```toml
 [[server]]
@@ -406,7 +406,7 @@ client_cert = "/home/joe/.irc/client.crt"
 client_key = "/home/joe/.irc/client.key"
 ```
 
-The server buffer shows `SASL authentication successful` when it works. Uplink presents the certificate during the TLS handshake, negotiates `AUTHENTICATE EXTERNAL`, and sends an empty response — the server derives your identity from the cert's fingerprint.
+The server buffer shows `SASL authentication successful` when it works. Uplink presents the certificate during the TLS handshake, negotiates `AUTHENTICATE EXTERNAL`, and sends an empty response; the server derives your identity from the cert's fingerprint.
 
 > **Note:** Do not combine `sasl_external` with `sasl_user`/`sasl_password`. They are mutually exclusive.
 
@@ -430,7 +430,7 @@ sasl_user = "yournick"
 sasl_password = "yourpassword"
 ```
 
-The server buffer shows `SASL authentication successful` on connect. Authentication failure does not disconnect — the connection continues without services authentication.
+The server buffer shows `SASL authentication successful` on connect. Authentication failure does not disconnect; the connection continues without services authentication.
 
 ---
 
@@ -438,7 +438,7 @@ The server buffer shows `SASL authentication successful` on connect. Authenticat
 
 Uplink has first-class bouncer support. Setting `bouncer = "znc"` or `bouncer = "soju"` in the server block activates bouncer-specific IRCv3 capabilities, enabling features like chat history replay, read markers, and network enumeration.
 
-> **Important:** `host` and `port` point at your **bouncer server**, not at the IRC network. The bouncer stays connected to IRC on your behalf — Uplink connects to the bouncer.
+> **Important:** `host` and `port` point at your **bouncer server**, not at the IRC network. The bouncer stays connected to IRC on your behalf; Uplink connects to the bouncer.
 
 ### Connecting to ZNC
 
@@ -446,13 +446,13 @@ ZNC identifies clients via the IRC `PASS` command using the format `username/net
 
 When `znc.in/playback` is available, Uplink sends `PRIVMSG *playback :PLAY * 0` after the welcome message to replay all missed messages. Self-messages sent from other clients are echoed correctly via `znc.in/self-message`.
 
-**Recommended — let Uplink assemble the password:** set `sasl_user`, `sasl_password`, and `bouncer_network` separately. Uplink constructs `user/network:password` automatically at connect time:
+**Recommended (let Uplink assemble the password):** set `sasl_user`, `sasl_password`, and `bouncer_network` separately. Uplink constructs `user/network:password` automatically at connect time:
 
 ```toml
 # Uplink connects to ZNC, which connects to Libera on your behalf.
 # host/port point at your ZNC server, not at the IRC network.
 [[server]]
-name = "ZNC — Libera"
+name = "ZNC - Libera"
 host = "znc.example.com"   # your ZNC server, not the IRC network
 port = 6697
 ssl = true
@@ -466,11 +466,11 @@ bouncer_network = "libera"            # network name inside ZNC
 channels = "#linux, #archlinux"
 ```
 
-**Alternative — embed the full string in `password`:** if you prefer the old-style format or your ZNC requires it:
+**Alternative (embed the full string in `password`):** if you prefer the old-style format or your ZNC requires it:
 
 ```toml
 [[server]]
-name = "ZNC — Libera"
+name = "ZNC - Libera"
 host = "znc.example.com"
 port = 6697
 ssl = true
@@ -482,11 +482,11 @@ bouncer = "znc"
 channels = "#linux, #archlinux"
 ```
 
-If your ZNC instance carries multiple networks, add one `[[server]]` block per network — only `bouncer_network` (or the network name in the password) changes:
+If your ZNC instance carries multiple networks, add one `[[server]]` block per network; only `bouncer_network` (or the network name in the password) changes:
 
 ```toml
 [[server]]
-name = "ZNC — Libera"
+name = "ZNC - Libera"
 host = "znc.example.com"
 port = 6697
 ssl = true
@@ -500,7 +500,7 @@ bouncer_network = "libera"
 channels = "#linux"
 
 [[server]]
-name = "ZNC — OFTC"
+name = "ZNC - OFTC"
 host = "znc.example.com"
 port = 6697
 ssl = true
@@ -541,13 +541,13 @@ channels = "#uplink"
 
 #### Multi-network soju
 
-When your soju instance carries multiple networks (Libera, OFTC, a self-hosted Ergo, etc.), you need to tell soju which network to attach to. There are two ways to do this — pick one, do not combine them.
+When your soju instance carries multiple networks (Libera, OFTC, a self-hosted Ergo, etc.), you need to tell soju which network to attach to. There are two ways to do this: pick one, do not combine them.
 
-**Option A — `bouncer_network`** (Uplink appends the network to the SASL username automatically):
+**Option A: `bouncer_network`** (Uplink appends the network to the SASL username automatically):
 
 ```toml
 [[server]]
-name = "soju — Libera"
+name = "soju - Libera"
 host = "soju.example.com"
 port = 6697
 ssl = true
@@ -563,11 +563,11 @@ channels = "#linux"
 
 Uplink sends `yournick/libera` as the SASL username. Add one `[[server]]` block per network, changing only `bouncer_network` and `channels`.
 
-**Option B — embed the network in `sasl_user` directly** (useful if your SASL username already includes the network, e.g. when soju is configured that way or when migrating from another client):
+**Option B: embed the network in `sasl_user` directly** (useful if your SASL username already includes the network, e.g. when soju is configured that way or when migrating from another client):
 
 ```toml
 [[server]]
-name = "soju — Libera"
+name = "soju - Libera"
 host = "soju.example.com"
 port = 6697
 ssl = true
@@ -584,7 +584,7 @@ channels = "#linux"
 
 #### Finding your soju network name
 
-The name in `bouncer_network` (or after the `/` in `sasl_user`) must exactly match the network identifier in soju's own configuration — not necessarily the `name =` label you give the server in Uplink. To find it, message BouncerServ while connected:
+The name in `bouncer_network` (or after the `/` in `sasl_user`) must exactly match the network identifier in soju's own configuration, not necessarily the `name =` label you give the server in Uplink. To find it, message BouncerServ while connected:
 
 ```
 /msg BouncerServ network status
@@ -597,10 +597,10 @@ The name in the first column of the response is what to use.
 When `chathistory` is negotiated (supported by soju, modern ZNC, and some IRC servers), Uplink automatically requests the last 100 messages for each channel after joining. History messages are:
 
 - Displayed at reduced opacity so they are visually distinct from live messages
-- Shown with their original timestamp — the date is prepended (`MM/dd hh:mm`) when the message is from a previous day
+- Shown with their original timestamp; the date is prepended (`MM/dd hh:mm`) when the message is from a previous day
 - Not counted as unread, so they do not badge the channel in the sidebar
 
-No configuration is required — history replay happens automatically whenever the server supports it.
+No configuration is required; history replay happens automatically whenever the server supports it.
 
 ---
 
@@ -652,9 +652,9 @@ Go to **File → Manage Servers** and click **Add** (or select an existing serve
 ### Notes
 
 - The proxy is applied to every connection attempt including automatic reconnects and STS TLS upgrades.
-- SSL/TLS still works through the proxy — the TLS handshake happens inside the SOCKS5 tunnel.
+- SSL/TLS still works through the proxy; the TLS handshake happens inside the SOCKS5 tunnel.
 - To use **Tor**, set `proxy_host = "127.0.0.1"` and `proxy_port = 9050` (the default Tor SOCKS5 port). Make sure the Tor daemon is running.
-- Leaving `proxy_host` empty (the default) connects directly — no proxy is used.
+- Leaving `proxy_host` empty (the default) connects directly; no proxy is used.
 
 ---
 
@@ -677,7 +677,7 @@ realname = "Uplink User"
 channels = "#uplink"
 ```
 
-All features work identically over WebSocket — SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog.
+All features work identically over WebSocket: SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog.
 
 ---
 
@@ -685,7 +685,7 @@ All features work identically over WebSocket — SASL, IRCv3 CAP negotiation, ST
 
 Channels to auto-join on connect. Two formats are supported.
 
-The easiest way to manage this list is the **Bookmarks** menu: **Bookmarks → Bookmark This Channel** adds the channel you're viewing to its server's auto-join list (uncheck it to remove), and every saved channel is listed per network in the same menu for one-click join — clicking one joins it (or just switches to it if you're already there).
+The easiest way to manage this list is the **Bookmarks** menu: **Bookmarks → Bookmark This Channel** adds the channel you're viewing to its server's auto-join list (uncheck it to remove), and every saved channel is listed per network in the same menu for one-click join; clicking one joins it (or just switches to it if you're already there).
 
 ### Simple format (string)
 
@@ -723,7 +723,7 @@ Both formats load correctly. On the next save (via **Manage Servers** or **Reloa
 
 ## The `[[ignore.entry]]` block
 
-Stores your client-side ignore list. Each entry suppresses specific types of private communication from a nick — private messages, private notices, and/or invites. **Channel messages are never blocked** — you can ignore someone's PMs and invites while still seeing them talk in a channel.
+Stores your client-side ignore list. Each entry suppresses specific types of private communication from a nick: private messages, private notices, and/or invites. **Channel messages are never blocked**; you can ignore someone's PMs and invites while still seeing them talk in a channel.
 
 The block is written automatically when you use `/ignore` or the right-click → **Ignore** menu. You do not normally edit it by hand.
 
@@ -761,12 +761,12 @@ Channel messages and actions from the ignored nick are **always visible**, regar
 Use slash commands in the input bar:
 
 ```
-/ignore spammer              — suppress PMs, notices, and invites (default: all three)
-/ignore spammer pm           — suppress private messages only
-/ignore spammer invite       — suppress invites only
-/ignore spammer pm invite    — suppress PMs and invites, but not notices
-/unignore spammer            — remove spammer from the list entirely
-/ignored                     — list all ignored nicks and their flags
+/ignore spammer              - suppress PMs, notices, and invites (default: all three)
+/ignore spammer pm           - suppress private messages only
+/ignore spammer invite       - suppress invites only
+/ignore spammer pm invite    - suppress PMs and invites, but not notices
+/unignore spammer            - remove spammer from the list entirely
+/ignored                     - list all ignored nicks and their flags
 ```
 
 Or right-click any nick in the user list or chat and choose **Ignore**. The context menu applies all three flags by default. For per-type control, use `/ignore` directly.
@@ -786,7 +786,7 @@ Entries in this format are loaded as if all three flags (`pm`, `notice`, `invite
 
 ## The `[monitor]` block
 
-Stores your IRCv3 **Monitor** watch list — nicks to watch for coming online or going offline. When any watched nick connects or disconnects, a status line appears in the server buffer: `Now online: nick` / `Now offline: nick`.
+Stores your IRCv3 **Monitor** watch list: nicks to watch for coming online or going offline. When any watched nick connects or disconnects, a status line appears in the server buffer: `Now online: nick` / `Now offline: nick`.
 
 The block is written automatically when you use `/monitor add` or `/monitor del`.
 
@@ -809,7 +809,7 @@ The list is sent to all connected servers on every connect and reconnect.
 
 ## The `[profile]` block
 
-Stores your IRCv3 `draft/metadata-2` display name and avatar. Values are published to every server you connect to that advertises the capability — other users see them in the nick list tooltip.
+Stores your IRCv3 `draft/metadata-2` display name and avatar. Values are published to every server you connect to that advertises the capability; other users see them in the nick list tooltip.
 
 ```toml
 [profile]
@@ -822,7 +822,7 @@ The block is written automatically when you use the **Preferences → Profile** 
 | Key | Type | Description |
 |---|---|---|
 | `display_name` | string | Friendly name shown in the nick list tooltip alongside your IRC nick. Does not replace your nick. |
-| `avatar_url` | string | URL to your avatar image, or a local file path (e.g. `/home/you/avatar.png`). A web URL is broadcast to the server via `METADATA SET` and visible to other users. A local path is displayed only to you — it is never sent to the server. Leave blank to publish no avatar. |
+| `avatar_url` | string | URL to your avatar image, or a local file path (e.g. `/home/you/avatar.png`). A web URL is broadcast to the server via `METADATA SET` and visible to other users. A local path is displayed only to you; it is never sent to the server. Leave blank to publish no avatar. |
 
 **Setting from Preferences:** Open **Preferences** (click **⚙** in the channel header) and select the **Profile** page from the left navigation. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
 
@@ -841,7 +841,7 @@ Leave the argument blank to clear a value:
 /avatar
 ```
 
-Both commands save the value to config automatically. On the next connect to a server that supports `draft/metadata-2`, the profile is re-published automatically — no need to re-enter anything.
+Both commands save the value to config automatically. On the next connect to a server that supports `draft/metadata-2`, the profile is re-published automatically; no need to re-enter anything.
 
 **Example with both keys:**
 
@@ -885,7 +885,7 @@ enabled = false
 | `path` | string | Absolute path to the executable script |
 | `enabled` | boolean | Whether the command is active. Set to `false` to disable without removing. |
 
-User scripts cannot shadow built-in commands (`/join`, `/quit`, etc.) — built-in commands always take priority.
+User scripts cannot shadow built-in commands (`/join`, `/quit`, etc.); built-in commands always take priority.
 
 See the [Slash Commands → User Scripts](commands.md#user-scripts) section for full details on writing and using scripts.
 
@@ -893,7 +893,7 @@ See the [Slash Commands → User Scripts](commands.md#user-scripts) section for 
 
 ## Disabling a server
 
-Set `disabled = true` in a server block to keep it in your config without connecting to it on startup. The server block is preserved and written back on every save — nothing is lost.
+Set `disabled = true` in a server block to keep it in your config without connecting to it on startup. The server block is preserved and written back on every save; nothing is lost.
 
 ```toml
 [[server]]
@@ -908,7 +908,7 @@ channels = "#linux"
 
 This is the safe alternative to commenting out a `[[server]]` block. Commented-out entries are not parsed by Uplink and will be **permanently removed** the next time the app writes the config file. `disabled = true` is the correct way to temporarily skip a server.
 
-**GUI:** Open **File → Manage Servers**, select the server, and tick the **Disabled** checkbox in the Connection section on the right. Uncheck it to re-enable the server — it will connect immediately.
+**GUI:** Open **File → Manage Servers**, select the server, and tick the **Disabled** checkbox in the Connection section on the right. Uncheck it to re-enable the server; it will connect immediately.
 
 **Re-enabling:** Remove the `disabled = true` line (or set it to `false`) and reload the config with **File → Reload Config**, or use the GUI checkbox.
 
@@ -920,7 +920,7 @@ Each server block can have its own `quit_message` and `away_message`. Both are o
 
 ### `quit_message`
 
-The message sent to the server when you disconnect — visible to other users in the channel as `*** yournick has quit (your message here)`.
+The message sent to the server when you disconnect, visible to other users in the channel as `*** yournick has quit (your message here)`.
 
 ```toml
 [[server]]
@@ -956,7 +956,7 @@ host = "irc.linuxdojo.org"
 port = 6697
 ssl = true
 nick = "yournick"
-away_message = "Away from keyboard — back soon"
+away_message = "Away from keyboard, back soon"
 ```
 
 **When omitted or blank:** `/away` with no argument sends `"Away"` as a fallback message.
@@ -987,7 +987,7 @@ nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
 quit_message = "Later!"
-away_message = "Away from keyboard — back soon"
+away_message = "Away from keyboard, back soon"
 channels = "#uplink, #linux"
 ```
 
@@ -1059,7 +1059,7 @@ name = "#archlinux"
 
 Set `theme` in `[ui]` to any theme name from the list below. The name must match the `.toml` filename in the `themes/` folder without the extension.
 
-Uplink ships with 297 built-in themes — 57 hand-picked originals plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
+Uplink ships with 297 built-in themes: 57 hand-picked originals plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
 
 Popular picks:
 
@@ -1076,7 +1076,7 @@ Popular picks:
 | `tokyo-night-dark-base16` | Tokyo Night dark, base16 variant |
 | `rose-pine-base16` | Rosé Pine, base16 variant |
 | `one-dark` | Atom One Dark |
-| `mactahoe26` | macOS Tahoe dark — Apple system grays |
+| `mactahoe26` | macOS Tahoe dark, Apple system grays |
 | `mactahoe26-light` | macOS Tahoe light variant |
 | `default` | Built-in fallback theme |
 
@@ -1084,9 +1084,9 @@ Themes can be switched live from the **Preferences → Appearance** page (click 
 
 ### Theme search path
 
-1. `~/.config/uplink/themes/<name>.toml` — personal themes
-2. `<exe directory>/themes/<name>.toml` — shipped themes next to the binary
-3. `themes/<name>.toml` — relative to the current working directory
+1. `~/.config/uplink/themes/<name>.toml`, personal themes
+2. `<exe directory>/themes/<name>.toml`, shipped themes next to the binary
+3. `themes/<name>.toml`, relative to the current working directory
 
 To add a custom theme, drop a `.toml` file into `~/.config/uplink/themes/`. It appears in the Preferences theme list on the next launch.
 
@@ -1099,7 +1099,7 @@ To add a custom theme, drop a `.toml` file into `~/.config/uplink/themes/`. It a
 All string values in TOML must be in double quotes. The `#` character starts a comment if it appears outside a string, which trips up channel names written bare.
 
 ```toml
-# Wrong — parse error
+# Wrong, parse error
 name = LinuxDojo
 
 # Correct
