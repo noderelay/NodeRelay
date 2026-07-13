@@ -434,6 +434,44 @@
       --teal:     #427b58;
     }
 
+    /* Palettes from the shipped client themes
+       (themes/Nord.toml, themes/Catppuccin-Mocha.toml). */
+    [data-theme="nord"] {
+      --bg:       #3b4252;
+      --surface:  #2e3440;
+      --overlay:  #434c5e;
+      --muted:    #616e88;
+      --subtle:   #4c566a;
+      --text:     #d8dee9;
+      --subtext:  #b6c0d4;
+      --blue:     #81a1c1;
+      --lavender: #b48ead;
+      --green:    #a3be8c;
+      --yellow:   #ebcb8b;
+      --peach:    #d08770;
+      --mauve:    #b48ead;
+      --red:      #bf616a;
+      --teal:     #88c0d0;
+    }
+
+    [data-theme="catppuccin"] {
+      --bg:       #181825;
+      --surface:  #11111b;
+      --overlay:  #313244;
+      --muted:    #6c7086;
+      --subtle:   #45475a;
+      --text:     #cdd6f4;
+      --subtext:  #a6adc8;
+      --blue:     #89b4fa;
+      --lavender: #b4befe;
+      --green:    #a6e3a1;
+      --yellow:   #f9e2af;
+      --peach:    #fab387;
+      --mauve:    #cba6f7;
+      --red:      #f38ba8;
+      --teal:     #94e2d5;
+    }
+
     /* ── THEME TOGGLE BUTTON ── */
     .theme-toggle-btn {
       display: inline-flex; align-items: center; justify-content: center;
@@ -448,11 +486,6 @@
     .theme-toggle-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
     .theme-toggle-btn svg { display: block; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1); }
     .theme-toggle-btn:hover svg { transform: rotate(20deg); }
-    .t-sun, .t-moon { position: absolute; transition: opacity 0.2s, transform 0.2s; }
-    [data-theme="dark"]  .t-sun  { opacity: 1; transform: scale(1); }
-    [data-theme="dark"]  .t-moon { opacity: 0; transform: scale(0.7); }
-    [data-theme="light"] .t-sun  { opacity: 0; transform: scale(0.7); }
-    [data-theme="light"] .t-moon { opacity: 1; transform: scale(1); }
 
     .nav-logo-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -466,12 +499,11 @@
   <div class="nav-logo">
     <div class="nav-logo-row">
       <a href="index.html"><img data-uplink-icon src="assets/uplink-icon-192.png" alt="" width="22" height="22" style="vertical-align:middle;margin-right:6px;">Uplink</a>
-      <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle dark mode">
-        <svg class="t-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-        <svg class="t-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      <button class="theme-toggle-btn" id="themeToggle" aria-label="Cycle site theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="8.5" cy="9.5" r="5" style="fill:var(--yellow)"/>
+          <circle cx="15.5" cy="9.5" r="5" style="fill:var(--teal);fill-opacity:0.85"/>
+          <circle cx="12" cy="15.5" r="5" style="fill:var(--mauve);fill-opacity:0.85"/>
         </svg>
       </button>
     </div>
