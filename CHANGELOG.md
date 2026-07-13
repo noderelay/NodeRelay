@@ -1,7 +1,52 @@
 # Changelog
 
 <!--
-Session 2026-07-12 (night) — menu bar v2 (ROADMAP item):
+Session 2026-07-12 (late night) — code review fixes + nick list rework + card frame (v2026.7.3):
+- Four-lens code review (Qt memory, async networking, security, architecture/
+  RAM). Verdict: no memory-safety defects, no high/critical vulns, layering
+  ~85% real (irc/+model/ compile headless; clientFor() is the facade hole).
+  All confirmed findings fixed across PRs #51/#52:
+  - onReadyRead extracts lines + trims BEFORE dispatch (nested event loops
+    from DCC dialogs re-scanned the buffer); DCC controller slots moved to
+    Qt::QueuedConnection
+  - encrypted→onConnected is SingleShot|Unique — failed TLS handshakes were
+    stacking connections, replaying CAP/PASS/NICK/USER N+1 times
+  - CommandDispatcher joins /sysinfo + /exec worker threads in its dtor
+    (captured `this` could be used after free at quit)
+  - PreviewController releases the fetch slot only for the in-flight URL —
+    stale cards corrupted queue state until previews died for the session
+  - reconnect timer stopped after every sockAbort() (sync onDisconnected
+    re-armed it; >5s TLS handshakes got killed by the second attempt)
+  - Link previews pin the connection to the DNS-validated IP (pinnedRequest:
+    IP in URL, hostname in Host header + setPeerVerifyName, h2 off) — closes
+    the DNS-rebinding TOCTOU; redirects resolve against the logical URL
+  - Bounded: CAP LS 512 tokens, NAMES 64 chans/50k nicks, STS duration ≤1yr
+    (epoch overflow corrupted the pin expiry), STS upgrade skipped on ws
+  - DCC: advance-based mid-transfer stall guard on receives; both accept
+    paths reject a 2nd connection; progress dialogs close() on success
+    (setValue(max) only hides → WA_DeleteOnClose never fired, leaked one
+    hidden dialog per completed transfer); receive dialog shown before
+    start(); tray menu parented (setContextMenu doesn't take ownership)
+  - removeServer/closeServer disconnect the dying client's signals before
+    deleteLater; postMessage reads unread before the emit (Qt6 QHash rehash
+    could invalidate the held Channel& during a directly-connected slot)
+- Nick list virtualized (PR #53): QListWidget → QListView + new
+  NickListModel (QAbstractListModel). The view materializes only painted
+  rows, tooltips (base64 avatar HTML) build lazily on hover via ToolTipRole,
+  and the filter lives in the model (joins mid-filter now respect it).
+  NickEntry slimmed: dropped the duplicated lowerNick QString (sort uses
+  QString::compare CaseInsensitive), QSet<QChar> prefixes → quint8 bitmask;
+  addNick/removeNick reindex from the mutation point instead of a full
+  rebuild per JOIN/PART. ~5-10 MB + O(n)/event saved on 10k-nick channels.
+  GOTCHA: model/ids.h include in ircclient.cpp is NOT dead (isChannelName).
+- Card frame (same PR): the sidebar and user-list panels now float as fully
+  rounded cards with a uniform kPanelGap (8px) backdrop gutter on all four
+  sides, matching the input strip. ChromePanel gained top/bottom/right
+  insets; the outer (window-facing) gaps expose the panel's own backdrop
+  rather than rightContent's margins (which don't paint reliably —
+  pixel-sampled to confirm), the inner gaps are painted splitter handles,
+  and rightContent drops its margins in cards mode so the chat column stays
+  flush. Flat mode (panel_cards off) unchanged. Screenshots pending re-shoot.
 - Bookmarks menu (between Window and Plugins): "Bookmark This Channel"
   toggles the active channel's presence in its server's auto-join list
   ([[server.channel]] / channels key). Config is edited IN PLACE +
@@ -806,6 +851,13 @@ Session 2026-07-06:
   Ctrl+F in-buffer find untouched. Docs updated (keyboard-shortcuts, faq, howto, index.html).
 No regressions; 5/5 tests pass. No release tagged.
 -->
+
+## v2026.7.3 — 2026-07-12
+
+- **Lighter user lists**: the nick list is now virtualized, so it stays smooth and light in channels with thousands of users — no more rebuilding a widget item per nick on every update. Per-user memory is trimmed too, and joins/parts in huge channels no longer cause a hitch
+- **Floating side cards**: the server/channel list and the user list now float as fully rounded cards with an even backdrop gap on every side, matching the gutter around the message box — one uniform frame all the way around. Prefer the classic flat look? **Preferences → Interface → Panel Cards** still turns it off
+- Fix: the nick filter now keeps working correctly when people join while you're filtering — new nicks respect the filter instead of popping in unfiltered
+- Under the hood: a four-lens code review (Qt memory, async networking, security, C++ safety) landed a batch of hardening — a DNS-rebinding guard for link previews, bounds on server-driven buffers, a mid-transfer stall guard for DCC receives, safer TLS reconnects, and several small leak fixes. No behavior changes you'll notice, but the client is sturdier against hostile servers and flaky networks
 
 ## v2026.7.2 — 2026-07-12
 

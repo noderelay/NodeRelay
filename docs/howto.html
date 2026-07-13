@@ -1581,7 +1581,7 @@ channels = "#uplink"</pre>
   <!-- SIDEBAR -->
   <section id="sidebar">
     <h2>Sidebar — server &amp; channel list</h2>
-    <p>The sidebar on the left shows all your servers and channels. It lives <strong>inside the same rounded floating card</strong> as the chat area and the nick list — all three columns share one seamless surface with a matching background color. Each server is a heading; its channels are listed beneath it.</p>
+    <p>The sidebar on the left shows all your servers and channels. It is drawn as <strong>its own rounded floating card</strong>, framed by an even backdrop gap on every side — the user list on the right gets the same treatment, so the two side cards and the message box share one uniform gutter. Each server is a heading; its channels are listed beneath it.</p>
 
     <figure class="shot">
       <img src="shots/sidebar.png" loading="lazy"
@@ -3053,7 +3053,7 @@ theme = "catppuccin-mocha"</pre>
       <strong>Custom themes:</strong> drop a <code>.toml</code> file into <code>~/.config/uplink/themes/</code> and it appears in the list on next launch. The format matches the shipped themes in the <code>themes/</code> folder.
     </div>
 
-    <p>Each section of a theme colors its own region of the window: <code>[sidebar]&nbsp;background</code> fills the server/channel list, <code>[nicklist]&nbsp;background</code> the user list, <code>[buffer]&nbsp;background</code> the chat area, and <code>[general]&nbsp;background</code> the window backdrop that shows around the rounded panel cards. Both side panels run the full window height and are drawn as cards with rounded top corners; themes that define distinct backgrounds per section get a layered, multi-tone look, while themes that reuse one color stay flat.</p>
+    <p>Each section of a theme colors its own region of the window: <code>[sidebar]&nbsp;background</code> fills the server/channel list, <code>[nicklist]&nbsp;background</code> the user list, <code>[buffer]&nbsp;background</code> the chat area, and <code>[general]&nbsp;background</code> the window backdrop that shows around the rounded panel cards. Both side panels float as fully rounded cards with an even backdrop gap on all sides; themes that define distinct backgrounds per section get a layered, multi-tone look, while themes that reuse one color stay flat.</p>
     <p>Prefer the old uniform look? Untick <strong>Preferences → Interface → Panel Cards</strong> (config key <code>panel_cards</code>) and every theme renders flat on the buffer color, exactly as before — no rounded corners, no per-panel tones.</p>
   </section>
 

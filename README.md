@@ -25,19 +25,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-2026.7.2-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-2026.7.3-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.2-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.2-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.2-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -152,8 +152,8 @@
 
 | Feature | Details |
 |---|---|
-| **Embedded nick panel** | User list sits in a panel on the right side of the chat view. Click the close button in the panel header to collapse it; a reveal button appears at the top-right of the chat area to restore it. Panel width persists across sessions. |
-| **Embedded sidebar** | Server/channel list lives inside the same rounded floating card as the chat area and nick list — all three columns share one seamless surface with a matching background. A close button in the sidebar panel collapses it (chat fills the card); a reveal button at the bottom-left restores it. Width is drag-resizable and persists across sessions. |
+| **Embedded nick panel** | User list floats as its own rounded card on the right side of the chat view, framed by an even backdrop gap on every side. The list is virtualized — it stays smooth and light even in channels with thousands of users. Click the close button in the panel header to collapse it; a reveal button appears at the top-right of the chat area to restore it. Panel width persists across sessions. |
+| **Embedded sidebar** | Server/channel list floats as its own rounded card, framed by the same even backdrop gap as the user list — the two side cards and the message box share one uniform gutter. A close button in the sidebar panel collapses it (chat fills the space); a reveal button at the bottom-left restores it. Width is drag-resizable and persists across sessions. |
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **Settings → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
