@@ -14,6 +14,7 @@ class NickFilterEdit;
 class NickListModel;
 class DropFrame;
 class QShortcut;
+class QSplitter;
 class QListView;
 class QPlainTextEdit;
 class QLabel;
@@ -97,6 +98,7 @@ private:
     QToolButton  *m_searchBtn{nullptr};
     QToolButton  *m_popOutBtn{nullptr};
     SearchBar    *m_searchBar{nullptr};
+    QSplitter    *m_bodySplitter{nullptr};
     DropFrame    *m_dropFrame{nullptr};
     QShortcut    *m_findShortcut{nullptr};
     QWidget      *m_topicBar{nullptr};

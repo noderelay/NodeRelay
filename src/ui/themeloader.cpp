@@ -588,6 +588,14 @@ QWidget#rightContent {
     background-color: {{rcBackdrop}};
 }
 
+/* Splitter handles double as the inner frame around the floating cards —
+   they carry the backdrop color so the gap reads like the window margins. */
+QSplitter#mainSplitter::handle,
+QSplitter#chatSplitter::handle,
+QSplitter#paneBodySplitter::handle {
+    background-color: {{panelBackdrop}};
+}
+
 QLabel#channelLabel {
     color: {{accent}};
     font-weight: bold;

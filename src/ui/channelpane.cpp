@@ -212,6 +212,8 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     ccVbox->addWidget(m_chatView, 1);
 
     auto *bodySplitter = new QSplitter(Qt::Horizontal);
+    m_bodySplitter = bodySplitter;
+    bodySplitter->setObjectName("paneBodySplitter");
     // Backdrop behind the nick panel's rounded top corners.
     bodySplitter->setAttribute(Qt::WA_StyledBackground, true);
     bodySplitter->setHandleWidth(0);
@@ -273,8 +275,16 @@ void ChannelPane::setNickVisible(bool visible)
 void ChannelPane::setNickChrome(const QString &bg, bool rounded)
 {
     const QColor c(bg);
-    if (m_nickWrapper) static_cast<ChromePanel *>(m_nickWrapper)->setFill(c, rounded, /*roundedBottom=*/rounded);
+    const int gap = rounded ? kPanelGap : 0;
+    if (m_nickWrapper) {
+        auto *wrapper = static_cast<ChromePanel *>(m_nickWrapper);
+        wrapper->setFill(c, rounded, /*roundedBottom=*/rounded);
+        wrapper->setBottomInset(gap);
+        if (m_nickWrapper->layout())
+            m_nickWrapper->layout()->setContentsMargins(0, 0, 0, gap);
+    }
     if (m_nickHeader)  static_cast<ChromePanel *>(m_nickHeader)->setFill(c, rounded);
+    if (m_bodySplitter) m_bodySplitter->setHandleWidth(gap);
 }
 
 void ChannelPane::setNickPanelIcons(const QIcon &hide, const QIcon &reveal, const QPixmap &groups)

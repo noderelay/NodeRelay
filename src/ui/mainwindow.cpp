@@ -416,11 +416,23 @@ void MainWindow::applyPanelChrome()
 {
     if (!m_theme.valid) return;
     // With panel cards off, the nick panel flattens onto the buffer color
-    // with square corners.
+    // with square corners and no floating gaps.
     const bool cards = m_config.ui.panelCards;
     const QColor fill(cards ? m_theme.nicklistBg : m_theme.bufferBg);
-    static_cast<ChromePanel *>(m_nickPanel)->setFill(fill, cards, /*roundedBottom=*/cards);
+    // Cards float: backdrop shows under the side cards and along their inner
+    // edges (the splitter handles), matching the input strip's 8px bottom
+    // margin and the window-edge margins so the frame is uniform all around.
+    const int gap = cards ? kPanelGap : 0;
+    auto *nickPanel = static_cast<ChromePanel *>(m_nickPanel);
+    nickPanel->setFill(fill, cards, /*roundedBottom=*/cards);
+    nickPanel->setBottomInset(gap);
+    if (m_nickPanel->layout())
+        m_nickPanel->layout()->setContentsMargins(0, 0, 0, gap);
     static_cast<ChromePanel *>(m_nickPanelHeader)->setFill(fill, cards);
+    if (m_sidebarPanel && m_sidebarPanel->layout())
+        m_sidebarPanel->layout()->setContentsMargins(0, 0, 0, gap);
+    if (m_mainSplitter) m_mainSplitter->setHandleWidth(gap);
+    if (m_chatSplitter) m_chatSplitter->setHandleWidth(gap);
     for (auto *pane : std::as_const(m_panes))
         pane->setNickChrome(fill.name(), cards);
 }

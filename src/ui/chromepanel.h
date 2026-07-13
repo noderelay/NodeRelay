@@ -4,6 +4,11 @@
 #include <QPainterPath>
 #include <QWidget>
 
+// Gap between floating panel cards and the backdrop (bottom + inner edges) in
+// panel-cards mode — matches the input strip's bottom margin and the
+// window-edge margins on rightContent.
+inline constexpr int kPanelGap = 8;
+
 // Panel chrome surface that paints its own fill with rounded corners.
 // Stylesheet background painting for plain QWidgets (app-wide QSS and even
 // local per-widget sheets) is silently dropped in some Wayland/KDE sessions,
@@ -23,6 +28,15 @@ public:
         update();
     }
 
+    // Stop the fill this many px above the widget's bottom edge, exposing the
+    // parent's backdrop. Pair with an equal bottom margin on the panel's
+    // layout so children stop with the fill.
+    void setBottomInset(int px)
+    {
+        m_bottomInset = px;
+        update();
+    }
+
 protected:
     void paintEvent(QPaintEvent *) override
     {
@@ -30,15 +44,15 @@ protected:
         QPainter p(this);
         p.setPen(Qt::NoPen);
         p.setBrush(m_fill);
+        const QRectF r = QRectF(rect()).adjusted(0, 0, 0, -m_bottomInset);
         if (!m_rounded) {
-            p.drawRect(rect());
+            p.drawRect(r);
             return;
         }
         p.setRenderHint(QPainter::Antialiasing);
         QPainterPath path;
-        path.addRoundedRect(
-            QRectF(rect()).adjusted(0, 0, 0, m_roundedBottom ? 0 : kRadius),
-            kRadius, kRadius);
+        path.addRoundedRect(r.adjusted(0, 0, 0, m_roundedBottom ? 0 : kRadius),
+                            kRadius, kRadius);
         p.drawPath(path);
     }
 
@@ -46,5 +60,6 @@ private:
     QColor m_fill;
     bool   m_rounded{true};
     bool   m_roundedBottom{false};
+    int    m_bottomInset{0};
     static constexpr int kRadius = 10;
 };
