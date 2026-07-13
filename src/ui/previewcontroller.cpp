@@ -51,9 +51,14 @@ void PreviewController::processQueue()
 void PreviewController::onCardReady(const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail)
 {
     const QString urlStr = pageUrl.toString();
-    m_previewWatchdog->stop();
-    m_inFlightUrl.clear();
-    m_previewFetchBusy = false;
+    // Only release the fetch slot for the URL we're actually waiting on. A
+    // stale card (finished after its watchdog already fired) must not clear
+    // state belonging to the next in-flight fetch.
+    if (urlStr == m_inFlightUrl) {
+        m_previewWatchdog->stop();
+        m_inFlightUrl.clear();
+        m_previewFetchBusy = false;
+    }
 
     auto it = m_previewChannels.find(urlStr);
     if (it == m_previewChannels.end()) {

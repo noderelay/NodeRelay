@@ -19,12 +19,14 @@
 DccController::DccController(SessionModel *model, QWidget *parentWindow)
     : QObject(parentWindow), m_model(model), m_window(parentWindow)
 {
+    // Queued: these slots open modal dialogs, which must not run inside the
+    // socket's readyRead signal chain (nested event loop re-enters the client).
     connect(m_model, &SessionModel::dccSendReceived,
-            this, &DccController::onSendReceived);
+            this, &DccController::onSendReceived, Qt::QueuedConnection);
     connect(m_model, &SessionModel::dccPassiveOfferReceived,
-            this, &DccController::onPassiveOfferReceived);
+            this, &DccController::onPassiveOfferReceived, Qt::QueuedConnection);
     connect(m_model, &SessionModel::dccPassiveSendReply,
-            this, &DccController::onPassiveSendReply);
+            this, &DccController::onPassiveSendReply, Qt::QueuedConnection);
 }
 
 void DccController::onSendReceived(ServerId, const QString &fromNick,

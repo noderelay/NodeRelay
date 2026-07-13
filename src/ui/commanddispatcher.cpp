@@ -317,6 +317,21 @@ CommandDispatcher::CommandDispatcher(SessionModel *model, Config *config,
     , m_dialogParent(dialogParent)
 {}
 
+CommandDispatcher::~CommandDispatcher()
+{
+    // Join worker threads before this object goes away — their lambdas capture
+    // `this` and invokeMethod it. Every worker self-terminates (all its QProcess
+    // waits carry timeouts), so these waits cannot hang.
+    for (const auto &t : m_workers)
+        if (t) t->wait();
+}
+
+void CommandDispatcher::trackWorker(QThread *thread)
+{
+    m_workers.removeAll(nullptr);
+    m_workers.append(thread);
+}
+
 bool CommandDispatcher::dispatch(const QString &text, ServerId host,
                                   BufferId channel, const QString &replyMsgid)
 {
@@ -534,6 +549,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
                 }, Qt::QueuedConnection);
             });
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+            trackWorker(thread);
 
             auto *timer = new QTimer(this);
             timer->setSingleShot(true);
@@ -874,6 +890,7 @@ void CommandDispatcher::executeScript(const ScriptBinding &binding,
     });
 
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    trackWorker(thread);
 
     auto *timer = new QTimer(this);
     timer->setSingleShot(true);

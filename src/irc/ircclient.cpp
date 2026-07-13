@@ -108,6 +108,9 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
 #endif
         } else if (m_wsSocket->state() != QAbstractSocket::UnconnectedState) {
             m_wsSocket->abort();
+            // abort() can fire onDisconnected() synchronously, re-arming the
+            // reconnect timer that was stopped above.
+            m_reconnectTimer->stop();
         }
         applyProxy();
         QUrl url;
@@ -145,8 +148,12 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
         }
     }
 
-    if (sockState() != QAbstractSocket::UnconnectedState)
+    if (sockState() != QAbstractSocket::UnconnectedState) {
         sockAbort();
+        // abort() can fire onDisconnected() synchronously, re-arming the
+        // reconnect timer that was stopped above.
+        m_reconnectTimer->stop();
+    }
 
     applyProxy();
     if (m_ssl)
@@ -463,10 +470,13 @@ void IrcClient::sendRaw(const QString &line)
 
 void IrcClient::onConnected()
 {
-    // For SSL connections, defer until TLS handshake completes.
+    // For SSL connections, defer until TLS handshake completes. UniqueConnection:
+    // a single-shot connection survives a failed handshake (it is only removed
+    // when the signal fires), so without it each failed attempt stacks another
+    // onConnected invocation — registration would then run N+1 times.
     if (m_ssl && !m_useWs && !m_socket->isEncrypted()) {
         connect(m_socket, &QSslSocket::encrypted, this, &IrcClient::onConnected,
-                Qt::SingleShotConnection);
+                static_cast<Qt::ConnectionType>(Qt::SingleShotConnection | Qt::UniqueConnection));
         return;
     }
 
@@ -546,13 +556,23 @@ void IrcClient::onReadyRead()
     }
     m_buffer += raw;
 
+    // Extract complete lines and trim the buffer BEFORE dispatching: a slot
+    // reached from processLine may spin a nested event loop (e.g. a dialog),
+    // and a reentrant onReadyRead must not rescan lines already taken.
+    QList<QByteArray> lines;
     qsizetype start = 0, idx;
     while ((idx = m_buffer.indexOf('\n', start)) != -1) {
         QByteArray lineBytes = m_buffer.mid(start, idx - start);
         start = idx + 1;
         if (!lineBytes.isEmpty() && lineBytes.back() == '\r')
             lineBytes.chop(1);
-        if (lineBytes.isEmpty()) continue;
+        if (!lineBytes.isEmpty())
+            lines.append(lineBytes);
+    }
+    if (start > 0)
+        m_buffer = m_buffer.mid(start);
+
+    for (const QByteArray &lineBytes : lines) {
         if (lineBytes.size() > kMaxIrcLine) {
             emit socketError(m_serverName, "Dropped oversized IRC line from server");
             continue;
@@ -561,8 +581,6 @@ void IrcClient::onReadyRead()
         emit rawReceived(line);
         processLine(line);
     }
-    if (start > 0)
-        m_buffer = m_buffer.mid(start);
 
     // Only disconnect if the *remaining* partial line (no newline yet) is absurdly large
     if (m_buffer.size() > kMaxPendingBuffer) {
@@ -678,6 +696,10 @@ void IrcClient::doReconnect()
     m_saslPending = false;
     if (sockState() != QAbstractSocket::UnconnectedState)
         sockAbort();
+    // abort() can invoke onDisconnected() synchronously (see the STS comment
+    // below), which re-arms the reconnect timer; left running, its next fire
+    // would abort a TLS handshake slower than the 5s delay.
+    m_reconnectTimer->stop();
     applyProxy();
     if (m_useWs) {
         QUrl url;
