@@ -1093,7 +1093,6 @@ void MainWindow::onServerConnected(ServerId host)
         item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::connectedServer()));
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Connected);
-    updateBookmarksMenu();   // server submenu enable state
 
     if (!m_config.profileDisplayName.isEmpty() || !m_config.profileAvatarUrl.isEmpty()) {
         auto *cl = m_model->clientFor(host);
@@ -1124,7 +1123,6 @@ void MainWindow::onServerDisconnected(ServerId host)
         item->setData(0, Qt::UserRole + 2, QVariant());
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Disconnected);
-    updateBookmarksMenu();   // server submenu enable state
 
     // Prune typing state for all channels on this host
     const QString prefix = host.str() + "|";
@@ -1186,7 +1184,6 @@ void MainWindow::onServerClosed(ServerId host)
 
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Disconnected);
-    updateBookmarksMenu();   // server may have been removed from config
 
     onSidebarSelectionChanged();
 }
@@ -1566,7 +1563,6 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
 
     setWindowTitle("Uplink — " + channel.str() + " @ " + host.str());
     updateTypingLabel();
-    updateBookmarksMenu();   // "Bookmark This Channel" label tracks the active buffer
 }
 
 void MainWindow::openChannelList(ServerId host)

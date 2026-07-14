@@ -96,8 +96,8 @@ void MainWindow::setupMenuActions()
     connect(m_actPreferences, &QAction::triggered, this, &MainWindow::openPreferences);
     addAction(m_actPreferences);
 
-    // Checkable view toggles — shared by the View/Window menus; check state
-    // is refreshed both from the appliers and on menu aboutToShow.
+    // Checkable view toggles — check state is refreshed both from the
+    // appliers and on menu aboutToShow.
     m_actViewSidebar = new QAction(tr("Server/Channel List"), this);
     m_actViewSidebar->setCheckable(true);
     connect(m_actViewSidebar, &QAction::triggered, this, &MainWindow::setSidebarVisible);
@@ -121,10 +121,6 @@ void MainWindow::setupMenuActions()
     m_actViewCards = new QAction(tr("Panel Cards"), this);
     m_actViewCards->setCheckable(true);
     connect(m_actViewCards, &QAction::triggered, this, &MainWindow::applyPanelCardsSetting);
-
-    m_actStackRows = new QAction(tr("Stack Panes in Rows"), this);
-    m_actStackRows->setCheckable(true);
-    connect(m_actStackRows, &QAction::triggered, this, &MainWindow::applyPaneStackRowsSetting);
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +145,6 @@ void MainWindow::buildMenuBar()
         m_model->addServer(sc);
         saveConfig(true);
         syncSidebarOrderFromConfig();
-        updateBookmarksMenu();
     });
     fileMenu->addAction(MenuIcons::manageServers(ic), tr("Manage Servers…"),
                         this, &MainWindow::openManageServers);
@@ -229,56 +224,14 @@ void MainWindow::buildMenuBar()
         m_actViewCards->setChecked(m_config.ui.panelCards);
     });
 
-    // ── Window ────────────────────────────────────────────────────────────
-    auto *winMenu = m_menuBarWidget->addMenu(tr("&Window"));
-    QAction *paneAct = winMenu->addAction(tr("Open Channel in Pane"), this, [this]{
-        openChannelPane(m_model->activeHost(), m_model->activeChannel());
-    });
-    QAction *popAct = winMenu->addAction(MenuIcons::pipEnter(ic), tr("Pop Out Channel"), this, [this]{
-        popOutChannel(m_model->activeHost(), m_model->activeChannel());
-    });
-    winMenu->addSeparator();
-    winMenu->addAction(m_actStackRows);
-    connect(winMenu, &QMenu::aboutToShow, this, [this, paneAct, popAct]{
-        const bool isChan = isChannelName(m_model->activeChannel().str());
-        paneAct->setEnabled(isChan);
-        popAct->setEnabled(isChan);
-        m_actStackRows->setChecked(m_config.ui.paneStackRows);
-    });
-
-    // ── Bookmarks ─────────────────────────────────────────────────────────
-    // Kept current eagerly (updateBookmarksMenu) instead of rebuilding on
-    // aboutToShow — the KDE global menu serves a pre-built layout instantly,
-    // but makes the user wait through a DBus round-trip for a lazy one.
-    m_bookmarksMenu = m_menuBarWidget->addMenu(tr("&Bookmarks"));
-    updateBookmarksMenu();
-
-    // ── Plugins ───────────────────────────────────────────────────────────
-    auto *plugMenu = m_menuBarWidget->addMenu(tr("&Plugins"));
-    connect(plugMenu, &QMenu::aboutToShow, this, [this, plugMenu, ic]{
-        plugMenu->clear();
-        plugMenu->addAction(MenuIcons::scripts(ic), tr("Manage Scripts…"), this, [this]{
-            openPreferences();
-            if (m_prefsDialog) m_prefsDialog->showScriptsPage();
-        });
-        plugMenu->addSeparator();
-        const bool haveBuffer = !m_model->activeHost().str().isEmpty();
-        for (const auto &sb : std::as_const(m_config.scripts)) {
-            if (!sb.enabled) continue;
-            QAction *a = plugMenu->addAction(QStringLiteral("/") + sb.command);
-            a->setEnabled(haveBuffer);
-            connect(a, &QAction::triggered, this, [this, cmd = sb.command]{
-                m_dispatcher->dispatch(QStringLiteral("/") + cmd,
-                                       m_model->activeHost(), m_model->activeChannel(),
-                                       QString());
-            });
-        }
-    });
-
     // ── Settings ──────────────────────────────────────────────────────────
     auto *setMenu = m_menuBarWidget->addMenu(tr("&Settings"));
     m_actPreferences->setIcon(MenuIcons::preferences(ic));
     setMenu->addAction(m_actPreferences);
+    setMenu->addAction(MenuIcons::scripts(ic), tr("Scripts…"), this, [this]{
+        openPreferences();
+        if (m_prefsDialog) m_prefsDialog->showScriptsPage();
+    });
     setMenu->addSeparator();
     setMenu->addAction(MenuIcons::theme(ic), tr("Themes…"), this, [this]{
         openPreferences();
@@ -321,16 +274,6 @@ void MainWindow::buildMenuBar()
         m_aboutDialog->showCentered();
     });
 
-    // ── Search ────────────────────────────────────────────────────────────
-    auto *searchMenu = m_menuBarWidget->addMenu(tr("Sea&rch"));
-    searchMenu->addAction(m_actFind);
-    searchMenu->addAction(m_actHistorySearch);
-    searchMenu->addAction(m_actQuickSwitch);
-    searchMenu->addSeparator();
-    searchMenu->addAction(tr("Channel List"), this, [this]{
-        openChannelList(m_model->activeHost());
-    });
-
     setMenuBar(m_menuBarWidget);
 }
 
@@ -344,7 +287,6 @@ void MainWindow::applyMenuStyle()
         if (m_menuBarWidget) {
             setMenuBar(nullptr);  // deletes the old bar; actions survive (parented to this)
             m_menuBarWidget = nullptr;
-            m_bookmarksMenu = nullptr;  // owned by the bar, died with it
         }
     } else {
         buildMenuBar();
@@ -390,7 +332,6 @@ void MainWindow::openManageServers()
     m_config.servers = updated;
     saveConfig(true);
     syncSidebarOrderFromConfig();
-    updateBookmarksMenu();
 }
 
 void MainWindow::openFontConfig()
@@ -404,112 +345,6 @@ void MainWindow::openFontConfig()
     appFont.setStyleHint(QFont::Monospace);
     QApplication::setFont(appFont);
     applyFontSizes();
-}
-
-// ---------------------------------------------------------------------------
-// Bookmarks — the per-server auto-join list surfaced as a menu. Config edits
-// are in-place + saveConfig() only; SessionModel::updateServer() would tear
-// down and reconnect the live session, so it is never used here.
-// ---------------------------------------------------------------------------
-
-// Rebuilds the Bookmarks menu from current state. Called whenever an input
-// changes (bookmark toggled, active channel switched, server connect state,
-// server list edited) so the KDE global menu always has the finished layout
-// — a lazy aboutToShow rebuild makes the user wait through a DBus round-trip.
-void MainWindow::updateBookmarksMenu()
-{
-    if (!m_bookmarksMenu) return;
-    m_bookmarksMenu->clear();
-    const QColor ic(m_theme.valid ? m_theme.text : "#ffffff");
-
-    const ServerId host    = m_model->activeHost();
-    const BufferId channel = m_model->activeChannel();
-    const QString  chan    = channel.str();
-    // Space/comma can't appear in valid channel names and would corrupt
-    // the compact channels = "#a, #b" config form.
-    const bool bookmarkable = isChannelName(chan)
-                              && !chan.contains(' ') && !chan.contains(',');
-    const bool saved = bookmarkable && isBookmarked(host, channel);
-    QAction *bm = m_bookmarksMenu->addAction(MenuIcons::bookmark(ic),
-        saved ? tr("Remove Bookmark") : tr("Bookmark This Channel"));
-    bm->setEnabled(bookmarkable);
-    connect(bm, &QAction::triggered, this, [this, host, channel, saved]{
-        toggleBookmark(host, channel, !saved);
-    });
-    m_bookmarksMenu->addSeparator();
-
-    bool any = false;
-    for (const auto &sc : std::as_const(m_config.servers)) {
-        if (sc.channels.isEmpty()) continue;
-        any = true;
-        auto *sub = m_bookmarksMenu->addMenu(sc.name);
-        auto *sess = m_model->session(ServerId{sc.name});
-        sub->setEnabled(sess && sess->connected);   // JOIN is a silent no-op offline
-        for (const auto &cc : sc.channels) {
-            connect(sub->addAction(cc.name), &QAction::triggered, this,
-                    [this, srv = sc.name, name = cc.name]{
-                joinBookmark(ServerId{srv}, name);
-            });
-        }
-    }
-    if (!any)
-        m_bookmarksMenu->addAction(tr("No bookmarked channels"))->setEnabled(false);
-}
-
-bool MainWindow::isBookmarked(ServerId host, BufferId channel) const
-{
-    const QString name = channel.str().toLower();
-    for (const auto &sc : m_config.servers) {
-        if (sc.name != host.str()) continue;
-        for (const auto &cc : sc.channels)
-            if (cc.name.toLower() == name) return true;
-        return false;
-    }
-    return false;
-}
-
-void MainWindow::toggleBookmark(ServerId host, BufferId channel, bool on)
-{
-    for (auto &sc : m_config.servers) {
-        if (sc.name != host.str()) continue;
-        const QString lower = channel.str().toLower();
-        sc.channels.removeIf([&](const ChannelConfig &cc){
-            return cc.name.toLower() == lower;
-        });
-        if (on)
-            sc.channels.append(ChannelConfig{channel.str(), QString()});
-        saveConfig();
-        // Visible confirmation — the config write itself changes nothing on
-        // screen, so say what happened in the channel that was bookmarked.
-        m_model->localMessage(host, channel,
-            on ? channel.str() + " added to auto-join for " + sc.name
-                 + " — it will open automatically at startup"
-               : channel.str() + " removed from auto-join for " + sc.name);
-        updateBookmarksMenu();
-        return;
-    }
-}
-
-void MainWindow::joinBookmark(ServerId host, const QString &channelName)
-{
-    // Already joined → just switch; otherwise JOIN with the stored key
-    // (the switch follows automatically via channelAdded when the server
-    // confirms the join).
-    const BufferId channel{channelName};
-    if (m_model->channel(host, channel)) {
-        switchToChannel(host, channel);
-        return;
-    }
-    auto *sess = m_model->session(host);
-    if (!sess || !sess->connected) return;
-    QString key;
-    for (const auto &sc : m_config.servers) {
-        if (sc.name != host.str()) continue;
-        for (const auto &cc : sc.channels)
-            if (cc.name.toLower() == channelName.toLower()) { key = cc.password; break; }
-        break;
-    }
-    m_model->sendJoin(host, channel, key);
 }
 
 void MainWindow::openIgnoreList()
@@ -594,8 +429,7 @@ void MainWindow::applyPaneStackRowsSetting(bool on)
     m_config.ui.paneStackRows = on;
     saveConfig();
     rebuildPaneLayout();
-    if (m_actStackRows) m_actStackRows->setChecked(on);
-    if (m_prefsDialog)  m_prefsDialog->syncFromConfig(m_config);
+    if (m_prefsDialog) m_prefsDialog->syncFromConfig(m_config);
 }
 
 // ---------------------------------------------------------------------------
