@@ -110,6 +110,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QPointer>
+#include <QPixmapCache>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
 #endif
@@ -803,28 +804,13 @@ void MainWindow::setupChatArea()
         const auto p = ch->previews.constFind(urlStr);
         if (p == ch->previews.constEnd()) return;
 
+        // Seed the shared pixmap cache with the just-fetched thumbnail so
+        // the builder (and every later refresh) skips the PNG decode.
+        if (!thumb.isNull())
+            QPixmapCache::insert(QStringLiteral("prevpx:") + urlStr, thumb);
         auto makeCardLine = [&]() -> ChatLine {
-            ChatLine line;
-            line.id   = "preview:" + urlStr;
-            line.role = ChatLineRole::PreviewCard;
-            line.image = thumb;
-            line.text = p->title + "\n" + p->domain;
-            QTextCharFormat titleFmt;
-            titleFmt.setFontWeight(QFont::Bold);
-            ChatSegment titleSeg;
-            titleSeg.start  = 0;
-            titleSeg.length = static_cast<int>(p->title.size());
-            titleSeg.format = titleFmt;
-            titleSeg.anchor = "preview:" + urlStr;
-            line.segments.append(titleSeg);
-            QTextCharFormat domainFmt;
-            domainFmt.setForeground(QColor("#888888"));
-            ChatSegment domainSeg;
-            domainSeg.start  = static_cast<int>(p->title.size()) + 1;
-            domainSeg.length = static_cast<int>(p->domain.size());
-            domainSeg.format = domainFmt;
-            line.segments.append(domainSeg);
-            return line;
+            return ChatRenderer::buildPreviewCardLine(urlStr, p->title, p->domain,
+                                                      p->pngData);
         };
 
         const bool isActive = (host == m_model->activeHost() &&

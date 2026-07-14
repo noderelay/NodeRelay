@@ -31,6 +31,10 @@ ChatLine formatMessageLine    (const Message &msg, const Context &ctx);
 ChatLine formatEventGroupLine (const QList<Message> &msgs, const Context &ctx,
                                const QString &groupId = {}, bool expanded = false);
 ChatLine makeStatusLine       (const QString &text, const QString &color = QStringLiteral("#888888"));
+// Link-preview card line. The thumbnail is decoded once per URL app-wide and
+// shared between views through QPixmapCache (size-capped, LRU).
+ChatLine buildPreviewCardLine (const QString &urlStr, const QString &title,
+                               const QString &domain, const QByteArray &pngData);
 
 // HTML rendering (kept for topic bar QLabel)
 QString formatMessage    (const Message &msg, const Context &ctx);

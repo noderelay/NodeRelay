@@ -15,6 +15,7 @@ public:
     QSize minimumSizeHint() const override { return {1, 1}; }
 
     void appendLine(const ChatLine &line);
+    void setMaxLines(int n); // retention cap; panes use a smaller one than the main view
     void prependLines(QList<ChatLine> lines);
     void replaceLine(const QString &id, const ChatLine &line);
     void insertAfter(const QString &id, const ChatLine &line);
@@ -83,6 +84,7 @@ private:
     QTimer          *m_relayoutTimer{nullptr}; // deferred off-screen relayout after width change
 
     static constexpr int kMaxLines   = 2000;
+    int              m_maxLines{kMaxLines};
     static constexpr int kVPad       = 2;
     static constexpr int kHPad       = 6;
     static constexpr int kCardIndent = 20;
