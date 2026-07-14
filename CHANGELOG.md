@@ -1,6 +1,34 @@
 # Changelog
 
 <!--
+Session 2026-07-13 (ii): pane splitter + macOS user-list frame (PR #61, unreleased):
+- Fix: pane dividers couldn't shrink the column holding the primary panel — the
+  header's channel-name and topic-setter QLabels enforce their full text width
+  as a hard layout minimum, and QSplitter respects it. New ElidedLabel
+  (src/ui/elidedlabel.h, KSqueezedTextLabel pattern: elide on resize through
+  the normal QSS paint path, full text as tooltip when truncated) used for the
+  primary header labels and pane channel-name labels. Word-wrapped topic text
+  (main + panes) gets an explicit 1px minimum so an unbreakable URL can't pin
+  the splitter either.
+- Fix: dragging a pane divider past a column's minimum snap-collapsed the
+  stacked panes to zero — panes splitter and nested cross splitters are now
+  setChildrenCollapsible(false), so the handle clamps at the minimum.
+- Fix (macOS): the user-list card was missing its right/bottom frame gaps —
+  stale QSS backgrounds on #nickPanel/#nickPanelHeader painted the full widget
+  rect underneath the ChromePanel inset fill. KDE/Wayland silently drops QSS
+  backgrounds on plain QWidgets (the reason ChromePanel exists), so Linux never
+  showed the double-paint. Rules removed; ChromePanel owns those fills.
+- Debugging detour worth remembering: the "fix doesn't work" reports were from
+  binaries that never contained the fix — the mac checkout was stuck on main
+  (uplink-update.sh pulls the current branch; 220 locally-deleted theme files
+  blocked checkout) and macOS `open` re-focuses a running instance instead of
+  launching the new binary. SSH access from fortis to the MacBook is now set up;
+  diagnosis nailed with an env-gated ChromePanel debug dump (reverted).
+- No regressions; 6/6 tests pass. No release tagged.
+Next: v2026.7.4 release (rolls up PRs #59, #60, #61).
+-->
+
+<!--
 Session 2026-07-13: auto theme + network-aware reconnect (unreleased):
 - Auto theme mode: theme_auto/theme_light/theme_dark config keys; when on,
   Uplink follows the OS light/dark scheme via QStyleHints::colorScheme
