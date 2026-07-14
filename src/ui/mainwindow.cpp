@@ -3,6 +3,7 @@
 #endif
 #include "mainwindow.h"
 #include "ui/mainwindowdelegates.h"
+#include "ui/elidedlabel.h"
 #include "ui/commanddispatcher.h"
 #include "ui/uistyle.h"
 #include "ui/searchbar.h"
@@ -1997,14 +1998,14 @@ void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
         if (sc.name == host.str() && !sc.name.isEmpty()) { serverName = sc.name; break; }
 
     if (channel.str() == "(server)") {
-        m_topicLabel->clear();
+        m_topicLabel->setFullText({});
         m_userInfoLabel->setText(serverName);
         if (m_topicText) m_topicText->clear();
         if (m_topicSetByLabel) m_topicSetByLabel->hide();
     } else {
         const QString modes   = ch ? ch->modes : QString();
         const QString modeStr = modes.isEmpty() ? QString() : " (" + modes + ")";
-        m_topicLabel->setText(channel.str() + modeStr);
+        m_topicLabel->setFullText(channel.str() + modeStr);
         m_userInfoLabel->clear();
 
         if (m_topicText) {
@@ -2019,7 +2020,7 @@ void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
             const QString setter = ch ? ch->topicSetBy : QString();
             const quint64 ts     = ch ? ch->topicSetAt : 0;
             if (!setter.isEmpty() && ts > 0) {
-                m_topicSetByLabel->setText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setFullText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
                 m_topicSetByLabel->show();
             } else {
                 m_topicSetByLabel->hide();

@@ -505,18 +505,12 @@ QSplitter::handle {
 }
 
 /* ── Embedded nick panel ── */
-/* Mirrors the sidebar card's rounding. The header fills the panel's top and
-   the list its bottom, so each edge widget must curve along with the panel
-   for the splitter's window-bg backdrop to show through the corners. */
-QWidget#nickPanel {
-    background-color: {{panelNickBg}};
-    border-radius: {{panelRadius}};
-}
-QWidget#nickPanelHeader {
-    background-color: {{panelNickBg}};
-    border-top-left-radius: {{panelRadius}};
-    border-top-right-radius: {{panelRadius}};
-}
+/* The card fill, rounded corners, and inset frame are painted by
+   ChromePanel's paintEvent (see MainWindow::applyPanelChrome) — no QSS
+   background on #nickPanel/#nickPanelHeader. On platforms that do honor
+   QSS backgrounds on plain QWidgets (macOS), a rule here paints the full
+   widget rect underneath the ChromePanel fill and swallows the card's
+   right/bottom inset gaps. */
 QWidget#nickPanel QListView {
     background-color: {{panelNickBg}};
     color: {{text}};

@@ -7,6 +7,7 @@
 #include "ui/nicklistmodel.h"
 #include "ui/chromepanel.h"
 #include "ui/dropframe.h"
+#include "ui/elidedlabel.h"
 
 #include <QListView>
 #include <QScroller>
@@ -60,7 +61,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
 
-    auto *nameLabel = new QLabel(m_channel.str());
+    auto *nameLabel = new ElidedLabel(m_channel.str());
     nameLabel->setObjectName("paneChannelLabel");
     QFont f = nameLabel->font();
     f.setBold(true);
@@ -121,6 +122,9 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
             QDesktopServices::openUrl(u);
     });
     m_topicText->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    // Explicit minimum so an unbreakable topic word (a long URL) can't pin
+    // the pane splitter; the label just clips when squeezed that far.
+    m_topicText->setMinimumWidth(1);
     tbhbox->addWidget(m_topicText);
     m_topicBar->hide(); // added to the chat column below, next to the body splitter
 
