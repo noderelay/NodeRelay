@@ -1,6 +1,37 @@
 # Changelog
 
 <!--
+Session 2026-07-14 (ii, close): ROADMAP overhaul + Find menu (PRs #71-#73, unreleased):
+- #71 ROADMAP.md rewritten top to bottom (505 -> ~90 lines): the ~450 checked
+  items are condensed into per-area Completed summaries with honest
+  completeness notes (DCC NAT handling is the one unfinished area; FreeBSD
+  port skeleton was never submitted; draft IRCv3 specs are moving targets).
+  New Planned sections: Qt6/C++ modernization (C++20 bump, IrcParser
+  QStringView/qTokenize pass, QStringDecoder Latin-1 fallback, QFuture
+  continuations for search v3, Qt::StringLiterals, chrono timeouts, preview
+  transfer-timeout audit, QLoggingCategory, Qt 6.8 emoji segmenter check),
+  carried-over features (search v3, accessibility, long-press menus, more
+  bundled scripts, spellcheck), and DCC NAT work. Old checklist lives in the
+  file's git history.
+- #72 Uplink's Search menu renamed to Find (F&ind, Alt+I; Alt+F is File's) so
+  it can't be confused with the non-removable Search entry Plasma's appmenu
+  applet appends after our menus on Wayland. Same contents. Bar is now
+  File/Edit/View/Settings/Help/Find. README/configuration.md/howto.html
+  updated; changelog history left as-is.
+- #73 Known issue recorded in ROADMAP: that Plasma Search entry is also
+  BROKEN upstream — KDE bug 518161, confirmed, regressed ~6.6.3, still
+  present on 6.7.2 (bug 505876 was the same symptom, fixed in 6.4.4).
+  Verified Uplink's side is correct via busctl GetLayout/AboutToShow against
+  a live instance (/MenuBar/2: full tree, labels, shortcuts) — when KDE
+  fixes the applet, Uplink's menus become searchable with zero app-side
+  work. Decision: wait for the KDE fix; no in-app command palette.
+- Release pace: Joe is slowing releases down — merged PRs accumulate on main
+  (source builds get them immediately); tag only when he asks.
+- CI + CodeQL green on all three merges. uplinkbot restarted after #71;
+  restart still owed for the #72/#73 doc changes.
+-->
+
+<!--
 Session 2026-07-13 (iv, close): v2026.7.5 released same night (PRs #68-#69):
 - #66's menu slimdown removed the WRONG Search: the target was the type-input
   "Search" at the END of the global menu bar, which turned out to be PLASMA'S,
