@@ -261,15 +261,8 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
                     const auto p = ch->previews.constFind(urlStr);
                     if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
                         continue;
-                    ChatLine card;
-                    card.role   = ChatLineRole::PreviewCard;
-                    card.id     = "preview:" + urlStr;
-                    if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
-                    card.text   = p->title + "\n" + p->domain;
-                    ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
-                    seg.anchor = "preview:" + urlStr;
-                    card.segments.append(seg);
-                    pane->chatView()->appendLine(card);
+                    pane->chatView()->appendLine(ChatRenderer::buildPreviewCardLine(
+                        urlStr, p->title, p->domain, p->pngData));
                 }
             }
             ++i;
@@ -360,15 +353,8 @@ void MainWindow::refreshChatView(ServerId host, BufferId channel, bool resetToLa
                     const auto p = ch->previews.constFind(urlStr);
                     if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
                         continue;
-                    ChatLine card;
-                    card.role   = ChatLineRole::PreviewCard;
-                    card.id     = "preview:" + urlStr;
-                    if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
-                    card.text   = p->title + "\n" + p->domain;
-                    ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
-                    seg.anchor = "preview:" + urlStr;
-                    card.segments.append(seg);
-                    m_chatView->appendLine(card);
+                    m_chatView->appendLine(ChatRenderer::buildPreviewCardLine(
+                        urlStr, p->title, p->domain, p->pngData));
                 }
             }
             ++i;
@@ -586,15 +572,8 @@ void MainWindow::appendPreviewCards(ChatView *view, const Message &msg,
         if (ch) {
             const auto p = ch->previews.constFind(urlStr);
             if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr)) {
-                ChatLine card;
-                card.role   = ChatLineRole::PreviewCard;
-                card.id     = "preview:" + urlStr;
-                if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
-                card.text   = p->title + "\n" + p->domain;
-                ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
-                seg.anchor = "preview:" + urlStr;
-                card.segments.append(seg);
-                view->appendLine(card);
+                view->appendLine(ChatRenderer::buildPreviewCardLine(
+                    urlStr, p->title, p->domain, p->pngData));
                 continue;
             }
         }

@@ -154,6 +154,7 @@ static constexpr int kDefaultWindowW  = 900;
 static constexpr int kDefaultWindowH  = 650;
 static constexpr int kMaxExtraPanes   = 3;
 static constexpr int kMaxPaneWindows  = 4;
+static constexpr int kPaneMaxLines    = 800; // pane scrollback retention (main view: 2000)
 
 // Returns the slot index sharing a nested cross-splitter ("stack") with
 // `slot`, or -1 if `slot` is a full/lone top-level column with no stack-
@@ -1618,6 +1619,9 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
     if (m_panes.contains(key)) return nullptr;
 
     auto *pane = new ChannelPane(host, channel, this);
+    // Panes are auxiliary views — cap their scrollback below the main
+    // view's so each extra pane costs less memory over a long session.
+    pane->chatView()->setMaxLines(kPaneMaxLines);
     pane->setNickModel(new NickListModel(m_model, &m_nickStyle));
     if (m_theme.valid)
         pane->chatView()->setColors(QColor(m_theme.text), QColor(m_theme.background),

@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QRegularExpression>
 #include <QFont>
+#include <QPixmapCache>
 
 namespace ChatRenderer {
 
@@ -894,6 +895,39 @@ ChatLine makeStatusLine(const QString &text, const QString &color)
     line.text     = tb.text;
     line.segments = tb.segs;
     line.role     = ChatLineRole::StatusLine;
+    return line;
+}
+
+ChatLine buildPreviewCardLine(const QString &urlStr, const QString &title,
+                              const QString &domain, const QByteArray &pngData)
+{
+    ChatLine line;
+    line.id   = "preview:" + urlStr;
+    line.role = ChatLineRole::PreviewCard;
+    // Decode the thumbnail once per URL app-wide; every view showing this
+    // card shares the pixmap through QPixmapCache instead of holding its
+    // own decoded copy.
+    const QString cacheKey = QStringLiteral("prevpx:") + urlStr;
+    if (!QPixmapCache::find(cacheKey, &line.image) && !pngData.isEmpty()) {
+        if (line.image.loadFromData(pngData, "PNG"))
+            QPixmapCache::insert(cacheKey, line.image);
+    }
+    line.text = title + "\n" + domain;
+    QTextCharFormat titleFmt;
+    titleFmt.setFontWeight(QFont::Bold);
+    ChatSegment titleSeg;
+    titleSeg.start  = 0;
+    titleSeg.length = static_cast<int>(title.size());
+    titleSeg.format = titleFmt;
+    titleSeg.anchor = "preview:" + urlStr;
+    line.segments.append(titleSeg);
+    QTextCharFormat domainFmt;
+    domainFmt.setForeground(QColor("#888888"));
+    ChatSegment domainSeg;
+    domainSeg.start  = static_cast<int>(title.size()) + 1;
+    domainSeg.length = static_cast<int>(domain.size());
+    domainSeg.format = domainFmt;
+    line.segments.append(domainSeg);
     return line;
 }
 
