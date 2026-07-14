@@ -563,10 +563,12 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::FontChange && !m_fontGuardBusy) {
         auto *w = qobject_cast<QWidget*>(obj);
         const auto it = w ? m_fontGuards.constFind(w) : m_fontGuards.constEnd();
-        if (it != m_fontGuards.constEnd()) {
+        if (w && it != m_fontGuards.constEnd()) {
             const QFont cur = w->font();
+            // cppcheck-suppress-begin derefInvalidIterator ; guarded by the constEnd() check above
             if (cur.families() != it->families()
                 || !qFuzzyCompare(cur.pointSizeF(), it->pointSizeF())) {
+            // cppcheck-suppress-end derefInvalidIterator
                 m_fontGuardBusy = true;
                 if (w == m_chatView) m_chatView->setFont(it.value());
                 else                 w->setFont(it.value());
