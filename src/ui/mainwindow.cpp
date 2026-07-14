@@ -442,6 +442,9 @@ void MainWindow::applyPanelChrome()
     // top/bottom are the panels' own insets. rightContent drops its margins in
     // cards mode so the gaps aren't doubled and the chat column stays flush.
     const int gap = cards ? kPanelGap : 0;
+    if (qEnvironmentVariableIsSet("UPLINK_CHROME_DEBUG"))
+        qDebug() << "applyPanelChrome cards" << cards << "gap" << gap
+                 << "fill" << fill << "theme valid" << m_theme.valid;
     auto *nickPanel = static_cast<ChromePanel *>(m_nickPanel);
     nickPanel->setFill(fill, cards, /*roundedBottom=*/cards);
     nickPanel->setTopInset(gap);

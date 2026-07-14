@@ -1,5 +1,6 @@
 #pragma once
 #include <QColor>
+#include <QDebug>
 #include <QPainter>
 #include <QPainterPath>
 #include <QWidget>
@@ -52,6 +53,19 @@ public:
 protected:
     void paintEvent(QPaintEvent *) override
     {
+        // UPLINK_CHROME_DEBUG=1: dump paint state and flood the widget red so
+        // the inset strips (normal fill drawn on top) are unmissable.
+        static const bool dbg = qEnvironmentVariableIsSet("UPLINK_CHROME_DEBUG");
+        if (dbg) {
+            qDebug() << "ChromePanel" << objectName() << "rect" << rect()
+                     << "insets t/b/r" << m_topInset << m_bottomInset << m_rightInset
+                     << "fill" << m_fill << "rounded" << m_rounded
+                     << "roundedBottom" << m_roundedBottom
+                     << "mapToGlobal" << mapToGlobal(QPoint(0, 0))
+                     << "window" << (window() ? window()->geometry() : QRect());
+            QPainter dp(this);
+            dp.fillRect(rect(), Qt::red);
+        }
         if (!m_fill.isValid()) return;
         QPainter p(this);
         p.setPen(Qt::NoPen);
