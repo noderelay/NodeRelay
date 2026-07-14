@@ -53,6 +53,7 @@ class QSplitter;
 class QVBoxLayout;
 class QAction;
 class QMenuBar;
+class ElidedLabel;
 
 class MainWindow : public QMainWindow
 {
@@ -267,11 +268,11 @@ private:
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
     int                          m_primarySlot{0}; // position of primary panel in layout order
     bool          m_nickExpanded{true};
-    QLabel       *m_topicLabel{nullptr};    // #channel (modes)
+    ElidedLabel  *m_topicLabel{nullptr};    // #channel (modes)
     QLabel       *m_userInfoLabel{nullptr}; // * network (in nick panel header)
     QWidget      *m_topicDisplay{nullptr};  // topic text — shown when showTopic
     QLabel       *m_topicText{nullptr};
-    QLabel       *m_topicSetByLabel{nullptr};
+    ElidedLabel  *m_topicSetByLabel{nullptr};
     QLabel       *m_appLabel{nullptr};
     QLabel       *m_typingLabel{nullptr};
     QWidget      *m_inputBar{nullptr};

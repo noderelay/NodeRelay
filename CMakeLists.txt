@@ -124,6 +124,7 @@ qt_add_executable(Uplink WIN32
     src/ui/linkpreview.h
     src/ui/fadescrollbar.cpp
     src/ui/fadescrollbar.h
+    src/ui/elidedlabel.h
     src/ui/signalbars.cpp
     src/ui/signalbars.h
     src/ui/quickswitcher.cpp

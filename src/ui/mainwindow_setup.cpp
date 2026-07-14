@@ -7,6 +7,7 @@
 #endif
 #include "mainwindow.h"
 #include "ui/mainwindowdelegates.h"
+#include "ui/elidedlabel.h"
 #include "ui/commanddispatcher.h"
 #include "irc/ircclient.h"
 #include "net/networkmonitor.h"
@@ -654,10 +655,10 @@ void MainWindow::setupChatArea()
                 popOutChannel(host, ch);
         });
 
-        m_topicLabel = new QLabel;
+        m_topicLabel = new ElidedLabel;
         m_topicLabel->setObjectName("channelLabel");
 
-        m_topicSetByLabel = new QLabel;
+        m_topicSetByLabel = new ElidedLabel;
         m_topicSetByLabel->setObjectName("topicSetByLabel");
         m_topicSetByLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
         m_topicSetByLabel->setStyleSheet(
@@ -686,6 +687,9 @@ void MainWindow::setupChatArea()
     m_topicText->setTextFormat(Qt::RichText);
     m_topicText->setTextInteractionFlags(Qt::TextBrowserInteraction);
     m_topicText->setOpenExternalLinks(false);
+    // Explicit minimum so an unbreakable topic word (a long URL) can't pin
+    // the pane splitter; the label just clips when squeezed that far.
+    m_topicText->setMinimumWidth(1);
     connect(m_topicText, &QLabel::linkActivated, this, [](const QString &link){
         const QUrl u(link);
         const QString s = u.scheme().toLower();
@@ -960,6 +964,9 @@ void MainWindow::setupChatArea()
     m_panesSplitter = new QSplitter(Qt::Horizontal);
     m_panesSplitter->setObjectName("panesSplitter");
     m_panesSplitter->setHandleWidth(2);
+    // Clamp at the panes' minimum instead of snap-collapsing them to zero
+    // when the handle is dragged past it.
+    m_panesSplitter->setChildrenCollapsible(false);
     m_panesSplitter->addWidget(m_primaryPanel);
     m_panesSplitter->setStretchFactor(0, 1);
 
@@ -1004,7 +1011,7 @@ void MainWindow::connectModel()
             [this](ServerId h, BufferId ch, const QString &setter, quint64 ts){
         if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
             if (m_topicSetByLabel) {
-                m_topicSetByLabel->setText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setFullText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
                 m_topicSetByLabel->setVisible(!setter.isEmpty() && ts > 0);
             }
     });
