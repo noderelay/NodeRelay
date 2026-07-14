@@ -125,7 +125,7 @@ Controls the look and feel of the interface. All keys are optional; missing keys
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `pane_stack_rows` | bool | `false` | When you have 2+ [detachable channel panes](howto.html#channel-panes) open, `false` stacks them in columns (side by side), `true` stacks them in horizontal rows. Toggle live from **Preferences → Interface → Stack Panes in Rows**. |
 | `panel_cards` | bool | `true` | The server/channel list and user list use their own `[sidebar]`/`[nicklist]` theme backgrounds and float as fully rounded cards, framed by an even `[general] background` gap on all sides. Set `false` for the classic flat look where the whole window sits on the buffer color. Toggle live from **Preferences → Interface → Panel Cards**. |
-| `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the classic **File / Edit / View / Window / Plugins / Settings / Help / Search** menu bar; on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
+| `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the **File / Edit / View / Settings / Help** menu bar; on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
 | `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Legacy top-bar font size, kept for config compatibility |
@@ -688,7 +688,7 @@ All features work identically over WebSocket: SASL, IRCv3 CAP negotiation, STS, 
 
 Channels to auto-join on connect. Two formats are supported.
 
-The easiest way to manage this list is the **Bookmarks** menu: **Bookmarks → Bookmark This Channel** adds the channel you're viewing to its server's auto-join list (uncheck it to remove), and every saved channel is listed per network in the same menu for one-click join; clicking one joins it (or just switches to it if you're already there).
+The easiest way to manage this list from inside the app is **File → Manage Servers → Edit**, which has an **Auto-join** field per server.
 
 ### Simple format (string)
 

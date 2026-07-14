@@ -132,7 +132,7 @@ realname = "Uplink User"
 channels = "#uplink, #linux"
 ```
 
-You can also set this from **File → Manage Servers → Edit** using the **Auto-join** field; or, easiest of all, just visit the channel and click **Bookmarks → Bookmark This Channel**. Every saved channel is listed per network in the Bookmarks menu for one-click joining.
+You can also set this from **File → Manage Servers → Edit** using the **Auto-join** field.
 
 ### How do I temporarily disable a server without removing it?
 
