@@ -33,6 +33,7 @@
 #include <QDropEvent>
 #include <QShortcut>
 #include <QMainWindow>
+#include <QAbstractButton>
 
 // Scale of the pane snapshot that follows the cursor during a header drag.
 static constexpr qreal kDragGhostScale = 0.5;
@@ -624,27 +625,8 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
                 m_dragPending = false;
                 m_dragging    = true;
 
-                // Snapshot the pane before the placeholder covers it, so the
-                // drag ghost that follows the cursor shows the live content.
-                const QPixmap snap = grab();
-                const qreal   dpr  = snap.devicePixelRatio();
-                QPixmap ghost = snap.scaled(snap.size() * kDragGhostScale,
-                                            Qt::KeepAspectRatio,
-                                            Qt::SmoothTransformation);
-                ghost.setDevicePixelRatio(dpr);
+                execPaneDrag(this, key(), m_dragStartPos); // blocks until drop or cancel
 
-                if (!m_dragPlaceholder) m_dragPlaceholder = new DragPlaceholder(this);
-                m_dragPlaceholder->activate();
-
-                auto *mime = new QMimeData;
-                mime->setData(mimeType(), key().toUtf8());
-                auto *drag = new QDrag(this);
-                drag->setMimeData(mime);
-                drag->setPixmap(ghost);
-                drag->setHotSpot(mapFromGlobal(m_dragStartPos) * kDragGhostScale);
-                drag->exec(Qt::MoveAction); // blocks until drop or cancel
-
-                m_dragPlaceholder->hide();
                 m_dragging = false;
                 qApp->removeEventFilter(this);
             }
@@ -674,7 +656,43 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
             m_dragPending  = true;
             m_dragStartPos = me->globalPosition().toPoint();
             qApp->installEventFilter(this);
+            // Consume presses on the passive header surfaces (background and
+            // labels). Left to propagate, they bubble up to the QMainWindow,
+            // where KDE's Breeze style arms its "drag windows from empty
+            // areas" whole-window move — a top-level QMainWindow is always
+            // eligible — and that compositor grab races and usually steals
+            // the pane drag. Buttons accept their own presses and stop the
+            // propagation naturally, so they keep native behavior.
+            if (!qobject_cast<QAbstractButton *>(obj))
+                return true;
         }
     }
     return false;
+}
+
+// Runs the shared pane-drag gesture: snapshots the pane before the
+// placeholder covers it, lifts the scaled ghost under the cursor, and marks
+// the vacated slot with a DragPlaceholder until the drop lands or the drag
+// is cancelled. Blocks in QDrag::exec. Used by docked ChannelPanes and by
+// the main window for the primary panel.
+void ChannelPane::execPaneDrag(QWidget *pane, const QString &key, const QPoint &grabbedAtGlobal)
+{
+    const QPixmap snap = pane->grab();
+    const qreal   dpr  = snap.devicePixelRatio();
+    QPixmap ghost = snap.scaled(snap.size() * kDragGhostScale,
+                                Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    ghost.setDevicePixelRatio(dpr);
+
+    auto *placeholder = new DragPlaceholder(pane);
+    placeholder->activate();
+
+    auto *mime = new QMimeData;
+    mime->setData(mimeType(), key.toUtf8());
+    auto *drag = new QDrag(pane);
+    drag->setMimeData(mime);
+    drag->setPixmap(ghost);
+    drag->setHotSpot(pane->mapFromGlobal(grabbedAtGlobal) * kDragGhostScale);
+    drag->exec(Qt::MoveAction); // blocks until drop or cancel
+
+    placeholder->deleteLater();
 }

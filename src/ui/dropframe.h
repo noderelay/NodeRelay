@@ -61,7 +61,7 @@ protected:
         QPainter p(this);
         p.fillRect(rect(), palette().color(QPalette::AlternateBase));
         QColor frame = palette().color(QPalette::Highlight);
-        frame.setAlphaF(0.45);
+        frame.setAlphaF(0.45f);
         QPen pen(frame, kFrameWidth);
         pen.setStyle(Qt::DashLine);
         p.setPen(pen);

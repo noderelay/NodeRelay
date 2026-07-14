@@ -13,7 +13,6 @@ class SearchBar;
 class NickFilterEdit;
 class NickListModel;
 class DropFrame;
-class DragPlaceholder;
 class QShortcut;
 class QSplitter;
 class QListView;
@@ -57,6 +56,9 @@ public:
     void toggleSearch();
     void enableSearchShortcut(); // for popped-out windows, where the main window's Ctrl+F can't reach
     static QString mimeType();
+    // Shared drag gesture body: ghost pixmap under the cursor + themed
+    // placeholder over the vacated slot; blocks in QDrag::exec.
+    static void execPaneDrag(QWidget *pane, const QString &key, const QPoint &grabbedAtGlobal);
 signals:
     void closeRequested();
     void popOutRequested();
@@ -101,7 +103,6 @@ private:
     SearchBar    *m_searchBar{nullptr};
     QSplitter    *m_bodySplitter{nullptr};
     DropFrame    *m_dropFrame{nullptr};
-    DragPlaceholder *m_dragPlaceholder{nullptr};
     QShortcut    *m_findShortcut{nullptr};
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
