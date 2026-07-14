@@ -1,6 +1,23 @@
 # Changelog
 
 <!--
+Session 2026-07-13 (iv, close): v2026.7.5 released same night (PRs #68-#69):
+- #66's menu slimdown removed the WRONG Search: the target was the type-input
+  "Search" at the END of the global menu bar, which turned out to be PLASMA'S,
+  not Uplink's — Plasma 6.7's Global Menu applet hardcodes a Search action
+  (QLineEdit dropdown) after every app's menus on Wayland sessions
+  (appmenumodel.cpp, gated only on isPlatformWayland; no config option in
+  main.xml). Uplink cannot remove it; only a KDE-side toggle/patch could.
+- #68 restored Uplink's own Search menu (Find in Buffer / Search All History /
+  Quick Switcher / Channel List) with a source comment marking the
+  distinction; docs re-list Search.
+- #69 released v2026.7.5 (tag 717bd24) so published builds match main; all
+  five artifacts verified on the release. v2026.7.4 artifacts ship without
+  the Search menu.
+- uplinkbot restarted after the docs settled (reads docs at startup).
+-->
+
+<!--
 Session 2026-07-13 (iii): drag visuals, grab fix, RAM, audit, menu slimdown (PRs #62-#66, released as v2026.7.4):
 - Pane drag ghost (#62): header drags lift a half-scale DPR-aware snapshot
   (QDrag setPixmap, kDragGhostScale in channelpane.cpp) and cover the vacated
