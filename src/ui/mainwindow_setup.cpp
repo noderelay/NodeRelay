@@ -964,6 +964,9 @@ void MainWindow::setupChatArea()
     m_panesSplitter = new QSplitter(Qt::Horizontal);
     m_panesSplitter->setObjectName("panesSplitter");
     m_panesSplitter->setHandleWidth(2);
+    // Clamp at the panes' minimum instead of snap-collapsing them to zero
+    // when the handle is dragged past it.
+    m_panesSplitter->setChildrenCollapsible(false);
     m_panesSplitter->addWidget(m_primaryPanel);
     m_panesSplitter->setStretchFactor(0, 1);
 

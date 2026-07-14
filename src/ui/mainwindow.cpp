@@ -1919,6 +1919,7 @@ void MainWindow::rebuildPaneLayout()
     auto makeCross = [crossAxis]() -> QSplitter * {
         auto *s = new QSplitter(crossAxis);
         s->setHandleWidth(2);
+        s->setChildrenCollapsible(false); // clamp, don't snap panes closed
         return s;
     };
 
