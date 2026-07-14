@@ -424,7 +424,7 @@ Everything the old ☰ hamburger held now lives in the menu bar: server manageme
 
 ### How do I change the theme?
 
-Open **Settings → Themes…**; it opens Preferences on the Appearance page with the theme list already expanded. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes.
+Open **Settings → Preferences** (**Ctrl+,**), select the **Appearance** page, and click the theme button to expand the list. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes.
 
 To set a theme in config directly:
 

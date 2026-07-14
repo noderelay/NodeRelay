@@ -622,7 +622,7 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
         auto *restoreBtn = new PillButton("Restore Defaults");
         restoreBtn->setAccentColor(accent);
         restoreBtn->setAutoDefault(false);
-        connect(restoreBtn, &QPushButton::clicked, this, [this, addRow, emitScripts, scriptsContainer] {
+        connect(restoreBtn, &QPushButton::clicked, this, [addRow, emitScripts, scriptsContainer] {
             QList<ScriptBinding> current;
             const auto rows = scriptsContainer->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
             for (auto *row : rows) {
@@ -679,25 +679,4 @@ void PreferencesDialog::syncFromConfig(const Config &cfg)
     };
     setCombo(m_themeLightCombo, cfg.ui.themeLight);
     setCombo(m_themeDarkCombo,  cfg.ui.themeDark);
-}
-
-void PreferencesDialog::showPage(const QString &navLabel)
-{
-    for (int i = 0; i < m_navList->count(); ++i)
-        if (m_navList->item(i)->text() == navLabel) {
-            m_navList->setCurrentRow(i);
-            return;
-        }
-}
-
-void PreferencesDialog::showScriptsPage()
-{
-    showPage(QStringLiteral("Scripts"));
-}
-
-// Expands/collapses the theme browser on the Appearance page; the existing
-// toggled connection drives the list's visibility.
-void PreferencesDialog::setThemeListExpanded(bool on)
-{
-    if (m_themeBtn) m_themeBtn->setChecked(on);
 }

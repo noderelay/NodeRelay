@@ -16,9 +16,6 @@ class PreferencesDialog : public QDialog
 public:
     explicit PreferencesDialog(const Config &cfg, QWidget *parent = nullptr);
     void syncFromConfig(const Config &cfg);
-    void showPage(const QString &navLabel);
-    void showScriptsPage();
-    void setThemeListExpanded(bool on);
 
 signals:
     void themeChanged(const QString &name);

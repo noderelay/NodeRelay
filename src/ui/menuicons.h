@@ -53,14 +53,8 @@ inline QIcon documentation  (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon servers        (const QColor &c = {}) { return fromSvg(":/icons/mi-dns.svg",                c); }
 inline QIcon fontConfig     (const QColor &c = {}) { return fromSvg(":/icons/mi-font-download.svg",      c); }
 inline QIcon theme          (const QColor &c = {}) { return fromSvg(":/icons/mi-palette.svg",            c); }
-inline QIcon appIcon        (const QColor &c = {}) { return fromSvg(":/icons/mi-widgets.svg",            c); }
-inline QIcon topicBar       (const QColor &c = {}) { return fromSvg(":/icons/mi-view-headline.svg",      c); }
-inline QIcon nickInInput    (const QColor &c = {}) { return fromSvg(":/icons/mi-badge.svg",              c); }
-inline QIcon emojiButton    (const QColor &c = {}) { return fromSvg(":/icons/mi-emoji-emotions.svg",     c); }
-inline QIcon typingIndicator(const QColor &c = {}) { return fromSvg(":/icons/mi-pending.svg",            c); }
 inline QIcon pipExit        (const QColor &c = {}) { return fromSvg(":/icons/mi-pip-exit.svg",          c); }
 inline QIcon pipEnter       (const QColor &c = {}) { return fromSvg(":/icons/mi-pip.svg",               c); }
-inline QIcon connStatus     (const QColor &c = {}) { return fromSvg(":/icons/mi-signal-cellular-alt.svg",c); }
 inline QIcon coloredNicks   (const QColor &c = {}) { return fromSvg(":/icons/mi-format-color-text.svg",  c); }
 inline QIcon checkForUpdates(const QColor &c = {}) { return fromSvg(":/icons/mi-new-releases.svg",       c); }
 inline QIcon exit           (const QColor &c = {}) { return fromSvg(":/icons/mi-logout.svg",             c); }
@@ -74,12 +68,17 @@ inline QIcon unread         (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon send           (const QColor &c = {}, int sz = 16) { return fromSvg(":/icons/mi-send.svg", c, sz); }
 inline QIcon connectedServer(const QColor &c = {}) { return fromSvg(":/icons/mi-host.svg",                c); }
 inline QIcon manageServers  (const QColor &c = {}) { return fromSvg(":/icons/mi-add-link.svg",           c, 24); }
-inline QIcon hamburger      (const QColor &c = {}) { return fromSvg(":/icons/menu.svg",                   c, 24); }
 inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/mi-manage-accounts.svg",     c, 24); }
 
 inline QIcon scripts        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",        c); }
 inline QIcon deleteIcon     (const QColor &c = {}) { return fromSvg(":/icons/mi-delete.svg",            c); }
-inline QIcon bookmark       (const QColor &c = {}) { return fromSvg(":/icons/mi-bookmark.svg",           c); }
+inline QIcon cut            (const QColor &c = {}) { return fromSvg(":/icons/mi-content-cut.svg",        c); }
+inline QIcon copy           (const QColor &c = {}) { return fromSvg(":/icons/mi-content-copy.svg",       c); }
+inline QIcon paste          (const QColor &c = {}) { return fromSvg(":/icons/mi-content-paste.svg",      c); }
+inline QIcon keyboard       (const QColor &c = {}) { return fromSvg(":/icons/mi-keyboard.svg",           c); }
+inline QIcon openConfig     (const QColor &c = {}) { return fromSvg(":/icons/mi-file-open.svg",          c); }
+inline QIcon reloadConfig   (const QColor &c = {}) { return fromSvg(":/icons/mi-restart-alt.svg",        c); }
+inline QIcon clearBuffer    (const QColor &c = {}) { return fromSvg(":/icons/mi-clear-all.svg",          c); }
 
 // Speech-bubble topic icon, drawn with painter primitives (no SVG asset).
 inline QIcon topicBubble(const QColor &color)

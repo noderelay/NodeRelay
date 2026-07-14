@@ -158,10 +158,10 @@ void MainWindow::buildMenuBar()
         else                 cl->reconnect();
     });
     fileMenu->addSeparator();
-    fileMenu->addAction(tr("Open Config"), this, []{
+    fileMenu->addAction(MenuIcons::openConfig(ic), tr("Open Config"), this, []{
         QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
     });
-    fileMenu->addAction(tr("Reload Config"), this, []{
+    fileMenu->addAction(MenuIcons::reloadConfig(ic), tr("Reload Config"), this, []{
         // arguments() includes argv[0]; passing it verbatim would add a
         // duplicate program path to the child's argv on every reload.
         QProcess::startDetached(QCoreApplication::applicationFilePath(),
@@ -182,9 +182,9 @@ void MainWindow::buildMenuBar()
     // WidgetShortcut: the key sequence renders in the menu but never fires
     // globally — widgets keep their native Ctrl+X/C/V handling (ChatView
     // copies from its own keyPressEvent).
-    auto addFocusEdit = [&](const QString &text, QKeySequence::StandardKey key,
-                            const char *member){
-        QAction *a = editMenu->addAction(text);
+    auto addFocusEdit = [&](const QIcon &icon, const QString &text,
+                            QKeySequence::StandardKey key, const char *member){
+        QAction *a = editMenu->addAction(icon, text);
         a->setShortcut(key);
         a->setShortcutContext(Qt::WidgetShortcut);
         connect(a, &QAction::triggered, this, [member]{
@@ -192,14 +192,15 @@ void MainWindow::buildMenuBar()
                 QMetaObject::invokeMethod(fw, member);
         });
     };
-    addFocusEdit(tr("Cut"),   QKeySequence::Cut,   "cut");
-    addFocusEdit(tr("Copy"),  QKeySequence::Copy,  "copy");
-    addFocusEdit(tr("Paste"), QKeySequence::Paste, "paste");
+    addFocusEdit(MenuIcons::cut(ic),   tr("Cut"),   QKeySequence::Cut,   "cut");
+    addFocusEdit(MenuIcons::copy(ic),  tr("Copy"),  QKeySequence::Copy,  "copy");
+    addFocusEdit(MenuIcons::paste(ic), tr("Paste"), QKeySequence::Paste, "paste");
     editMenu->addSeparator();
     m_actInsertColor->setIcon(MenuIcons::coloredNicks(ic));
     editMenu->addAction(m_actInsertColor);
     editMenu->addSeparator();
-    editMenu->addAction(tr("Clear Buffer"), this, &MainWindow::clearActiveBuffer);
+    editMenu->addAction(MenuIcons::clearBuffer(ic), tr("Clear Buffer"),
+                        this, &MainWindow::clearActiveBuffer);
     editMenu->addAction(MenuIcons::eyeOff(ic), tr("Ignore List…"),
                         this, &MainWindow::openIgnoreList);
 
@@ -228,42 +229,20 @@ void MainWindow::buildMenuBar()
     auto *setMenu = m_menuBarWidget->addMenu(tr("&Settings"));
     m_actPreferences->setIcon(MenuIcons::preferences(ic));
     setMenu->addAction(m_actPreferences);
-    setMenu->addAction(MenuIcons::scripts(ic), tr("Scripts…"), this, [this]{
-        openPreferences();
-        if (m_prefsDialog) m_prefsDialog->showScriptsPage();
-    });
-    setMenu->addSeparator();
-    setMenu->addAction(MenuIcons::theme(ic), tr("Themes…"), this, [this]{
-        openPreferences();
-        m_prefsDialog->showPage(QStringLiteral("Appearance"));
-        m_prefsDialog->setThemeListExpanded(true);
-    });
-    setMenu->addAction(MenuIcons::appIcon(ic), tr("App Icon…"), this, [this]{
-        openPreferences();
-        m_prefsDialog->showPage(QStringLiteral("Appearance"));
-    });
-    setMenu->addAction(MenuIcons::fontConfig(ic), tr("Fonts…"),
-                       this, &MainWindow::openFontConfig);
-    setMenu->addAction(MenuIcons::gear(ic), tr("Profile…"), this, [this]{
-        openPreferences();
-        m_prefsDialog->showPage(QStringLiteral("Profile"));
-    });
 
     // ── Help ──────────────────────────────────────────────────────────────
     auto *helpMenu = m_menuBarWidget->addMenu(tr("&Help"));
-    helpMenu->addAction(MenuIcons::documentation(ic), tr("Documentation"), this, [this]{
+    auto openDocs = [this](const QString &tab){
         if (!m_docsDialog) m_docsDialog = new DocsDialog(this);
+        if (!tab.isEmpty()) m_docsDialog->showTab(tab);
         m_docsDialog->show();
         m_docsDialog->raise();
         m_docsDialog->activateWindow();
-    });
-    helpMenu->addAction(tr("Keyboard Shortcuts"), this, [this]{
-        if (!m_docsDialog) m_docsDialog = new DocsDialog(this);
-        m_docsDialog->showTab(QStringLiteral("Shortcuts"));
-        m_docsDialog->show();
-        m_docsDialog->raise();
-        m_docsDialog->activateWindow();
-    });
+    };
+    helpMenu->addAction(MenuIcons::documentation(ic), tr("Documentation"),
+                        this, [openDocs]{ openDocs({}); });
+    helpMenu->addAction(MenuIcons::keyboard(ic), tr("Keyboard Shortcuts"),
+                        this, [openDocs]{ openDocs(QStringLiteral("Shortcuts")); });
     helpMenu->addAction(MenuIcons::checkForUpdates(ic), tr("Check for Updates"), this, [this]{
         if (!m_updateChecker) m_updateChecker = new UpdateChecker(this);
         m_updateChecker->check();
