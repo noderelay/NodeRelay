@@ -45,7 +45,8 @@ struct NickEntry {
 
     void removePrefix(QChar p)
     {
-        if (const int r = prefixRank(p)) prefixes &= ~quint8(1u << (r - 1));
+        if (const int r = prefixRank(p))
+            prefixes &= static_cast<quint8>(~(1u << (r - 1)));
         recomputePrefix();
     }
 

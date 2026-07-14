@@ -200,7 +200,7 @@ void DccReceive::onReadyRead()
     }
     const QByteArray data = m_socket->read(qMin(m_socket->bytesAvailable(), remaining));
     if (m_file.write(data) != data.size()) {
-        if (m_socket) m_socket->disconnect(this);
+        m_socket->disconnect(this); // non-null: this slot only fires on its readyRead
         cancel();
         emit error("Write failed");
         return;

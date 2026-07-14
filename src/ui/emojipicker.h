@@ -32,6 +32,6 @@ private:
     QWidget     *m_gridWidget{nullptr};
     QGridLayout *m_gridLayout{nullptr};
 
-    struct BtnEntry { QToolButton *btn; QString shortcode; };
+    struct BtnEntry { QToolButton *btn{nullptr}; QString shortcode; };
     QVector<BtnEntry> m_buttons;
 };
