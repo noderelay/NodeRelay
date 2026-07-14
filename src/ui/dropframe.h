@@ -36,3 +36,40 @@ protected:
 private:
     static constexpr int kFrameWidth = 3;
 };
+
+// Overlay that stands in for a pane while it is being dragged: the pane's
+// old area is filled with the theme's alternate colour (sidebarBg via
+// QPalette::AlternateBase) plus a dashed accent frame, so the slot reads as
+// vacated until the drag is dropped or cancelled.
+class DragPlaceholder : public QWidget {
+public:
+    explicit DragPlaceholder(QWidget *parent) : QWidget(parent) {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        setAttribute(Qt::WA_NoSystemBackground);
+        setStyleSheet(QStringLiteral("background: transparent;"));
+        hide();
+    }
+
+    void activate() {
+        setGeometry(parentWidget()->rect());
+        raise();
+        show();
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override {
+        QPainter p(this);
+        p.fillRect(rect(), palette().color(QPalette::AlternateBase));
+        QColor frame = palette().color(QPalette::Highlight);
+        frame.setAlphaF(0.45);
+        QPen pen(frame, kFrameWidth);
+        pen.setStyle(Qt::DashLine);
+        p.setPen(pen);
+        p.setBrush(Qt::NoBrush);
+        const qreal half = kFrameWidth / 2.0;
+        p.drawRect(QRectF(rect()).adjusted(half, half, -half, -half));
+    }
+
+private:
+    static constexpr int kFrameWidth = 2;
+};

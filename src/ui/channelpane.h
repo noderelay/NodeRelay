@@ -13,6 +13,7 @@ class SearchBar;
 class NickFilterEdit;
 class NickListModel;
 class DropFrame;
+class DragPlaceholder;
 class QShortcut;
 class QSplitter;
 class QListView;
@@ -100,6 +101,7 @@ private:
     SearchBar    *m_searchBar{nullptr};
     QSplitter    *m_bodySplitter{nullptr};
     DropFrame    *m_dropFrame{nullptr};
+    DragPlaceholder *m_dragPlaceholder{nullptr};
     QShortcut    *m_findShortcut{nullptr};
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
