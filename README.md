@@ -109,6 +109,7 @@
 | Feature | Details |
 |---|---|
 | **297 built-in themes** | 57 hand-picked originals (Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and more) plus 240 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes), named with a `-base16` suffix. Your favorite is almost certainly already in there — browse with arrow keys, apply with Enter. |
+| **Follow system light/dark** | Tick **Follow System Light/Dark (Auto)** in Preferences, Appearance and pick a day and a night theme; Uplink switches between them live whenever the desktop flips its color scheme (Qt 6.5+). A manual theme pick always wins and turns Auto off. |
 | **Reworked Preferences** | Theme as a collapsible list — browse and apply without closing. App icon as radio buttons. Hanging indent toggle and all other UI options. Open with **Settings → Preferences** or **Ctrl+,**. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
 | **Menu bar** | Classic **File / Edit / View / Window / Bookmarks / Plugins / Settings / Help / Search** menus — joins the KDE global menu automatically, renders in-window everywhere else. Prefer a chrome-free window? `menu_style = "hidden"` keeps everything reachable by shortcut (**Ctrl+,** opens Preferences, **Ctrl+Q** quits). |
