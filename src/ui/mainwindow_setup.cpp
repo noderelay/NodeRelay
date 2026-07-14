@@ -703,6 +703,10 @@ void MainWindow::setupChatArea()
     m_topicLabel->installEventFilter(this);
     m_topicDisplay->installEventFilter(this);
     m_primaryHeader->installEventFilter(this);
+    // Every direct header child feeds the primary pane drag gesture, same
+    // as ChannelPane does for its own header.
+    for (auto *w : m_primaryHeader->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))
+        w->installEventFilter(this);
 
     m_chatSection     = new QWidget;
     m_chatSection->setObjectName("chatSection");

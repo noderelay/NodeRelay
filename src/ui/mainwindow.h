@@ -267,6 +267,9 @@ private:
     QSet<QString>                m_nickRefreshPending;    // channels with a debounced refresh queued
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
     int                          m_primarySlot{0}; // position of primary panel in layout order
+    bool          m_primaryDragPending{false}; // primary header press seen, waiting for threshold
+    bool          m_primaryDragging{false};    // primary pane drag in flight
+    QPoint        m_primaryDragStart;          // global press position of the pending drag
     bool          m_nickExpanded{true};
     ElidedLabel  *m_topicLabel{nullptr};    // #channel (modes)
     QLabel       *m_userInfoLabel{nullptr}; // * network (in nick panel header)

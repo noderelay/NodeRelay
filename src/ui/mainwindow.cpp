@@ -169,6 +169,10 @@ static int siblingSlot(qsizetype totalSlots, int slot)
     return slot ^ 1; // n == 4
 }
 
+// Mime payload marking a drag of the primary panel. Real pane keys are
+// "host|channel", so this can't collide with one.
+static const QString kPrimaryDragKey = QStringLiteral("__primary__");
+
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -642,11 +646,57 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
+    // Primary pane header drag — same gesture ChannelPane implements for its
+    // own header (see the long comment there for why the tracking filter is
+    // app-wide and installed just-in-time).
+    if (m_primaryDragPending || m_primaryDragging) {
+        if (event->type() == QEvent::MouseButtonRelease && m_primaryDragPending) {
+            m_primaryDragPending = false;
+            qApp->removeEventFilter(this);
+        } else if (event->type() == QEvent::MouseMove && m_primaryDragPending) {
+            auto *me = static_cast<QMouseEvent *>(event);
+            const QPoint gp = me->globalPosition().toPoint();
+            if (!(me->buttons() & Qt::LeftButton)) {
+                m_primaryDragPending = false;
+                qApp->removeEventFilter(this);
+            } else if ((gp - m_primaryDragStart).manhattanLength()
+                       >= QApplication::startDragDistance()) {
+                m_primaryDragPending = false;
+                m_primaryDragging    = true;
+                ChannelPane::execPaneDrag(m_primaryPanel, kPrimaryDragKey,
+                                          m_primaryDragStart); // blocks
+                m_primaryDragging = false;
+                qApp->removeEventFilter(this);
+            }
+        }
+        // fall through — never swallow events meant for other widgets
+    }
+    if (event->type() == QEvent::MouseButtonPress && m_primaryHeader
+        && !m_primaryDragPending && !m_primaryDragging && !m_orderedPanes.isEmpty()) {
+        bool inHeader = (obj == m_primaryHeader);
+        if (!inHeader)
+            for (auto *w : m_primaryHeader->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))
+                if (obj == w) { inHeader = true; break; }
+        auto *me = static_cast<QMouseEvent *>(event);
+        if (inHeader && me->button() == Qt::LeftButton) {
+            m_primaryDragPending = true;
+            m_primaryDragStart   = me->globalPosition().toPoint();
+            qApp->installEventFilter(this);
+            // Same as ChannelPane: consume presses on the passive header
+            // surfaces so they can't bubble to the QMainWindow and arm
+            // Breeze's whole-window empty-area drag against this gesture.
+            if (!qobject_cast<QAbstractButton *>(obj))
+                return true;
+        }
+    }
+
     // Pane header dropped onto the primary view: pane <-> primary swap.
     if (obj == m_primaryPanel) {
         if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
             auto *de = static_cast<QDragMoveEvent *>(event);
-            if (de->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8())) {
+            const QByteArray fmt = ChannelPane::mimeType().toUtf8();
+            if (de->mimeData()->hasFormat(fmt)
+                && QString::fromUtf8(de->mimeData()->data(fmt)) != kPrimaryDragKey) {
                 de->acceptProposedAction();
                 if (!m_primaryDropFrame)
                     m_primaryDropFrame = new DropFrame(m_primaryPanel);
@@ -1662,6 +1712,26 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
         dispatchInput(text, host, channel);
     });
     connect(pane, &ChannelPane::dropReceived, this, [this, pane](const QString &sourceKey){
+        if (sourceKey == kPrimaryDragKey) {
+            // Primary dragged onto this pane: plain slot swap — the primary
+            // takes this pane's slot, the pane takes the primary's old one.
+            const qsizetype nSlots = 1 + m_orderedPanes.size();
+            QList<ChannelPane*> combined; // nullptr marks the primary slot
+            int pi = 0;
+            for (int i = 0; i < nSlots; i++)
+                combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
+            const qsizetype paneSlot = combined.indexOf(pane);
+            if (paneSlot < 0 || paneSlot == m_primarySlot) return;
+            combined[m_primarySlot] = pane;
+            combined[paneSlot]      = nullptr;
+            m_orderedPanes.clear();
+            for (int i = 0; i < nSlots; i++) {
+                if (!combined[i]) m_primarySlot = i;
+                else m_orderedPanes.append(combined[i]);
+            }
+            rebuildPaneLayout();
+            return;
+        }
         ChannelPane *source = m_panes.value(sourceKey);
         ChannelPane *target = pane;
         if (!source || source == target) return;
