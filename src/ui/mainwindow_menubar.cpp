@@ -274,6 +274,19 @@ void MainWindow::buildMenuBar()
         m_aboutDialog->showCentered();
     });
 
+    // ── Search ────────────────────────────────────────────────────────────
+    // NOTE: the extra "Search" that can appear AFTER this menu on KDE (a
+    // magnifier that unfolds a text field) is Plasma's own global-menu
+    // search, drawn by the appmenu applet — it is not part of Uplink.
+    auto *searchMenu = m_menuBarWidget->addMenu(tr("Sea&rch"));
+    searchMenu->addAction(m_actFind);
+    searchMenu->addAction(m_actHistorySearch);
+    searchMenu->addAction(m_actQuickSwitch);
+    searchMenu->addSeparator();
+    searchMenu->addAction(tr("Channel List"), this, [this]{
+        openChannelList(m_model->activeHost());
+    });
+
     setMenuBar(m_menuBarWidget);
 }
 
