@@ -34,6 +34,9 @@
 #include <QShortcut>
 #include <QMainWindow>
 
+// Scale of the pane snapshot that follows the cursor during a header drag.
+static constexpr qreal kDragGhostScale = 0.5;
+
 ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
 {
@@ -621,12 +624,27 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
                 m_dragPending = false;
                 m_dragging    = true;
 
+                // Snapshot the pane before the placeholder covers it, so the
+                // drag ghost that follows the cursor shows the live content.
+                const QPixmap snap = grab();
+                const qreal   dpr  = snap.devicePixelRatio();
+                QPixmap ghost = snap.scaled(snap.size() * kDragGhostScale,
+                                            Qt::KeepAspectRatio,
+                                            Qt::SmoothTransformation);
+                ghost.setDevicePixelRatio(dpr);
+
+                if (!m_dragPlaceholder) m_dragPlaceholder = new DragPlaceholder(this);
+                m_dragPlaceholder->activate();
+
                 auto *mime = new QMimeData;
                 mime->setData(mimeType(), key().toUtf8());
                 auto *drag = new QDrag(this);
                 drag->setMimeData(mime);
+                drag->setPixmap(ghost);
+                drag->setHotSpot(mapFromGlobal(m_dragStartPos) * kDragGhostScale);
                 drag->exec(Qt::MoveAction); // blocks until drop or cancel
 
+                m_dragPlaceholder->hide();
                 m_dragging = false;
                 qApp->removeEventFilter(this);
             }
