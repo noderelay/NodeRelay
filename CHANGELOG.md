@@ -1,6 +1,32 @@
 # Changelog
 
 <!--
+Session 2026-07-14 (iii, close): Settings menu simplification + icon cleanup (PR #75, unreleased):
+- Settings menu reduced to a single Preferences entry. Scripts/Themes/App
+  Icon/Fonts/Profile were all shortcuts into pages of the same dialog;
+  nothing is lost (Fonts stays reachable via the Preferences font button).
+  Dead PreferencesDialog helpers (showPage, showScriptsPage,
+  setThemeListExpanded) removed with them.
+- Menu icon polish: Open Config, Reload Config, Clear Buffer,
+  Cut/Copy/Paste and Keyboard Shortcuts now carry Material Symbols icons
+  (official Google SVGs, same outlined style/viewBox as the existing set).
+  Help's duplicated DocsDialog show/raise boilerplate folded into one
+  openDocs lambda.
+- Dead-weight sweep: 7 unused MenuIcons builders (topicBar, nickInInput,
+  emojiButton, typingIndicator, connStatus, hamburger, bookmark) and 12
+  orphaned SVGs + qrc entries deleted. App-icon PNGs verified live (loaded
+  dynamically via ":/icons/%1.png" in appicons.h) and kept.
+- Docs: three stale references to the removed menu items fixed (faq.md
+  theme answer, howto.html profile + theme steps). uplinkbot restart owed
+  for these AND the still-unrestarted #72/#73 doc changes.
+- Build: CMAKE_EXPORT_COMPILE_COMMANDS ON in CMakeLists — the root
+  compile_commands.json symlink was dangling, which is why clangd showed
+  bogus "Qt header not found" errors. Tree confirmed warning-free under
+  the existing -Wall/-Wextra/-Wconversion flags (CMakeLists.txt:179).
+- No release, per the slow-release policy; PR merged to main only.
+-->
+
+<!--
 Session 2026-07-14 (ii, close): ROADMAP overhaul + Find menu (PRs #71-#73, unreleased):
 - #71 ROADMAP.md rewritten top to bottom (505 -> ~90 lines): the ~450 checked
   items are condensed into per-area Completed summaries with honest
