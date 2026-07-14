@@ -1,6 +1,43 @@
 # Changelog
 
 <!--
+Session 2026-07-13 (iii): drag visuals, grab fix, RAM, audit, menu slimdown (PRs #62-#66, released as v2026.7.4):
+- Pane drag ghost (#62): header drags lift a half-scale DPR-aware snapshot
+  (QDrag setPixmap, kDragGhostScale in channelpane.cpp) and cover the vacated
+  slot with DragPlaceholder (dropframe.h) painted in QPalette::AlternateBase
+  (= theme sidebarBg) + dashed accent frame.
+- Grab fix (#63), the "only bottom-right pane grabs" report, two causes:
+  (1) primary panel had no drag-out gesture at all (drop-target only) — now
+  mirrors the pane gesture via shared ChannelPane::execPaneDrag with a
+  "__primary__" sentinel payload; drop on a pane = plain slot swap.
+  (2) Breeze's "drag windows from empty areas" armed on the unaccepted header
+  press bubbling to the QMainWindow (always drag-eligible; QLabels only in
+  statusbars) and startSystemMove stole the gesture when the press lingered
+  past its ~500ms timer — why it felt positional. Passive header presses that
+  arm a pane drag are now consumed; buttons keep native behavior. Proven with
+  an offscreen harness driving real ChannelPanes: gesture logic was uniform,
+  the killer was environmental.
+- RAM (#64): live-process measurement first (174MB RSS but 63MB PSS — RSS is
+  mostly shared Qt). ChatRenderer::buildPreviewCardLine replaces 4 duplicate
+  card builders; thumbnails decode once per URL shared via QPixmapCache
+  (fetch path seeds it); panes cap scrollback at 800 lines (kPaneMaxLines,
+  ChatView::setMaxLines; main view keeps 2000).
+- Audit (#65): cppcheck (qt lib config) + ASan/UBSan + fuzz 622k/184k runs
+  clean; fixed ~quint8 -Wconversion, BtnEntry::btn init, dead null-check in
+  DccReceive::onReadyRead; documented FP suppression (derefInvalidIterator).
+  Arch gotcha: fuzz builds need CMAKE_CXX_STANDARD_LIBRARIES=/usr/lib/libstdc++.so.6
+  (clang 22 resolves -lstdc++ to GCC 16's static archive).
+- Menu slimdown (#66, user request): Window/Bookmarks/Plugins/Search menus
+  removed — bar is File/Edit/View/Settings/Help. All shortcuts survive
+  (window-owned persistent QActions). Scripts… deep-link added under Settings.
+  Bookmark helpers (isBookmarked/toggleBookmark/joinBookmark/
+  updateBookmarksMenu) deleted wholesale; auto-join editing = Manage Servers.
+- Docs updated: README menu/auto-join/pane rows, configuration.md menu_style +
+  channels, faq.md, howto.html menu line + pane-rearrange paragraph.
+6/6 tests, warning-free everywhere. Released as v2026.7.4.
+-->
+
+<!--
 Session 2026-07-13 (ii): pane splitter + macOS user-list frame (PR #61, unreleased):
 - Fix: pane dividers couldn't shrink the column holding the primary panel — the
   header's channel-name and topic-setter QLabels enforce their full text width
@@ -905,6 +942,17 @@ Session 2026-07-06:
   Ctrl+F in-buffer find untouched. Docs updated (keyboard-shortcuts, faq, howto, index.html).
 No regressions; 5/5 tests pass. No release tagged.
 -->
+
+## v2026.7.4 — 2026-07-13
+
+- **Follow system light/dark**: tick **Follow System Light/Dark (Auto)** in Preferences → Appearance and pick a day theme and a night theme — Uplink switches between them live whenever your desktop flips its color scheme (Qt 6.5+). Picking a theme manually always wins and turns Auto off
+- **Instant reconnect**: when the network comes back (Wi-Fi rejoins, cable back in, laptop wakes), Uplink reconnects immediately instead of waiting out the retry timer
+- **Pane drags you can see**: grab a pane by its header and it lifts out — a snapshot of the pane follows your cursor, and its old spot fills with a placeholder in the theme's panel color until you drop it
+- **Every pane is grabbable now** — including the main view, which previously couldn't be dragged at all. Also fixed: on KDE, the desktop's "drag windows from empty areas" feature could hijack a pane drag into moving the whole window if you hesitated mid-grab; pane headers now keep the gesture to themselves
+- **Slimmer menu bar**: down to **File / Edit / View / Settings / Help**. The Window, Bookmarks, Plugins, and Search menus are gone — everything they did stays reachable: panes and pop-outs via right-click and the header buttons, auto-join lists via **File → Manage Servers**, scripts via **Settings → Scripts…**, and Ctrl+F / Ctrl+Shift+F / Ctrl+K all still work
+- **Leaner memory**: link-preview thumbnails are decoded once and shared across every view showing them (previously each pane kept its own copy), and panes retain a lighter scrollback than the main view — long multi-pane sessions grow noticeably slower
+- Fix: pane dividers could refuse to move when a long channel name or topic URL pinned the layout minimum; header labels now elide and dividers clamp instead of snap-collapsing panes (also fixes the missing user-list frame edges on macOS)
+- Under the hood: pre-release audit — cppcheck clean, tests pass under AddressSanitizer/UBSan, 800k+ fuzzer runs on the IRC parser and chat formatter with zero findings
 
 ## v2026.7.3 — 2026-07-12
 

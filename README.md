@@ -25,19 +25,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-2026.7.3-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-2026.7.4-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.4-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.4-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.3-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.4-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -112,9 +112,9 @@
 | **Follow system light/dark** | Tick **Follow System Light/Dark (Auto)** in Preferences, Appearance and pick a day and a night theme; Uplink switches between them live whenever the desktop flips its color scheme (Qt 6.5+). A manual theme pick always wins and turns Auto off. |
 | **Reworked Preferences** | Theme as a collapsible list — browse and apply without closing. App icon as radio buttons. Hanging indent toggle and all other UI options. Open with **Settings → Preferences** or **Ctrl+,**. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
-| **Menu bar** | Classic **File / Edit / View / Window / Bookmarks / Plugins / Settings / Help / Search** menus — joins the KDE global menu automatically, renders in-window everywhere else. Prefer a chrome-free window? `menu_style = "hidden"` keeps everything reachable by shortcut (**Ctrl+,** opens Preferences, **Ctrl+Q** quits). |
-| **Bookmarks** | **Bookmarks → Bookmark This Channel** saves the current channel to its server's auto-join list; saved channels are listed per network in the same menu for one-click join or switch. |
-| **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), search, and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid — or stack in rows instead of columns via **Preferences → Interface → Stack Panes in Rows**. Drag any pane's header to rearrange — the drop target highlights with a frame while you drag. Channels open in a pane never accumulate unread badges: you're already watching them. |
+| **Menu bar** | A lean **File / Edit / View / Settings / Help** bar — joins the KDE global menu automatically, renders in-window everywhere else. Prefer a chrome-free window? `menu_style = "hidden"` keeps everything reachable by shortcut (**Ctrl+,** opens Preferences, **Ctrl+Q** quits). |
+| **Auto-join channels** | Each server keeps an auto-join list — those channels open by themselves at startup. Edit it under **File → Manage Servers → Edit → Auto-join**. |
+| **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), search, and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid — or stack in rows instead of columns via **Preferences → Interface → Stack Panes in Rows**. Grab any pane's header (the main view included) to rearrange: the pane lifts out and follows your cursor, its old slot fills with a theme color, and the drop target highlights with a frame. Channels open in a pane never accumulate unread badges: you're already watching them. |
 | **Pop-out windows** | Float any channel into its own standalone window — via the pop-out icon in the channel/pane header or right-click → **Open in Window**. A popped-out channel is checked out of the main view (dimmed in the sidebar); closing the window returns it. Layout — and each window's size and position, per channel — is remembered across restarts. |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |

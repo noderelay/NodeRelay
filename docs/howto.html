@@ -809,7 +809,7 @@ cmake --build build</pre>
       <figcaption>Uplink on first launch, connected to #uplink with the sidebar, chat area, and nick list.</figcaption>
     </figure>
 
-    <p>The menu bar across the top (<strong>File, Edit, View, Window, Bookmarks, Plugins, Settings, Help, Search</strong>) carries every app action; on KDE it docks into the global menu automatically. Preferences lives under <strong>Settings</strong>, or press <kbd>Ctrl</kbd>+<kbd>,</kbd>.</p>
+    <p>The menu bar across the top (<strong>File, Edit, View, Settings, Help</strong>) carries the app actions; on KDE it docks into the global menu automatically. Preferences lives under <strong>Settings</strong>, or press <kbd>Ctrl</kbd>+<kbd>,</kbd>.</p>
 
     <div class="tip">
       <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>File → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>File → Reload Config</strong>. Uplink will restart and connect.
@@ -1699,7 +1699,7 @@ channels = "#uplink"</pre>
     <p>By default panes stack in <strong>columns</strong> (as in the table above). If you'd rather stack them in <strong>horizontal rows</strong> instead (handy on a portrait or vertically-oriented monitor), turn on <strong>Preferences → Interface → Stack Panes in Rows</strong>. The layout re-flows immediately and the choice is remembered across restarts (<code>pane_stack_rows</code> in <code>config.toml</code>). Every shape in the table above is simply rotated 90°: 2 panes stack top/bottom, 3 panes become a full-width row plus two side by side beneath it, and 4 panes stay a 2×2 grid with rows and columns swapped.</p>
 
     <h3>Rearranging panes</h3>
-    <p>Click and drag any pane's header bar to rearrange it. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop it on the primary channel area instead, and the dragged pane stays exactly where it is; the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content.</p>
+    <p>Click and drag any pane's header bar to rearrange it — the primary view included. The pane <strong>lifts out and follows your cursor</strong> as a snapshot, and its old spot fills with a placeholder in the theme's panel color until you drop. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop a pane on the primary channel area instead, and the dragged pane stays exactly where it is; the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content.</p>
     <p>You can also cycle keyboard focus between the open panes without touching the mouse: <strong>Alt+Left / Alt+Right</strong> moves focus through the pane input bars (the primary input included), in layout order.</p>
 
     <h3>Popping a channel out into its own window</h3>
