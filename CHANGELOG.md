@@ -943,6 +943,10 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.5 — 2026-07-13
+
+- The **Search** menu is back — v2026.7.4 removed it by mistake. The extra "Search" that can appear at the very end of the bar on KDE (a magnifier that unfolds a text field) is Plasma's own global-menu search, not Uplink's; the menu cleanup was aimed at that one, but only Plasma can remove it
+
 ## v2026.7.4 — 2026-07-13
 
 - **Follow system light/dark**: tick **Follow System Light/Dark (Auto)** in Preferences → Appearance and pick a day theme and a night theme — Uplink switches between them live whenever your desktop flips its color scheme (Qt 6.5+). Picking a theme manually always wins and turns Auto off
