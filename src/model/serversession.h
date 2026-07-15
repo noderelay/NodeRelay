@@ -23,6 +23,7 @@ struct ServerSession {
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)
     static constexpr int kNickMetaCap = 300;
     QHash<QString, NickMeta> nickMeta; // lowercase nick → metadata; capped at kNickMetaCap
+    QSet<QString> metaRequested;       // lowercase nicks with a METADATA GET in flight or answered
 
     void setNickMeta(const QString &lowerNick, const QString &key, const QString &value)
     {

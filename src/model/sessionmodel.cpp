@@ -815,6 +815,8 @@ void SessionModel::onDisconnected(const QString &host)
         ch.nicks.clear();
         ch.nickIndex.clear();
     }
+    // Unanswered metadata requests died with the connection — allow re-asks.
+    sess->metaRequested.clear();
     emit serverDisconnected(ServerId{host});
     postMessage(host, "(server)", Message::make(MessageType::Server, "", "Disconnected."));
 }
@@ -1295,16 +1297,24 @@ void SessionModel::onAccountChanged(const QString &host, const QString &nick,
         if (ch.nickIndex.contains(nick.toLower()))
             emit nickListChanged(ServerId{host}, BufferId{ch.name});
     }
-    // If this nick has no avatar yet and the server supports metadata, request it.
+}
+
+// Metadata is only ever shown in hover tooltips, so it's fetched on demand
+// rather than roster-wide: account-notify/WHOX used to trigger one GET per
+// nick on every join, and Ergo's fakelag drains such a burst at ~2 commands/s,
+// queueing real traffic behind minutes of metadata chatter. SUB (sent at
+// registration) still pushes changes for nicks we've fetched once.
+void SessionModel::requestNickMeta(ServerId host, const QString &nick)
+{
+    auto *sess = session(host);
+    if (!sess || nick.isEmpty()) return;
     const QString lower = nick.toLower();
-    const bool noAvatar = !sess->nickMeta.contains(lower)
-                       || sess->nickMeta[lower].avatarUrl.isEmpty();
-    if (noAvatar) {
-        if (auto *cl = clientFor(ServerId{host})) {
-            if (cl->hasCap("draft/metadata-2"))
-                sendRaw(ServerId{host}, "METADATA " + nick + " GET avatar display-name");
-        }
-    }
+    if (sess->metaRequested.contains(lower) || sess->nickMeta.contains(lower))
+        return;
+    auto *cl = clientFor(host);
+    if (!cl || !cl->hasCap("draft/metadata-2")) return;
+    sess->metaRequested.insert(lower);
+    sendRaw(host, "METADATA " + nick + " GET avatar display-name");
 }
 
 void SessionModel::onUserMetaChanged(ServerId host, const QString &nick,

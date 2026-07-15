@@ -99,6 +99,8 @@ public:
     void sendRedact(ServerId host, BufferId target,
                     const QString &msgid, const QString &reason = {});
 
+    void requestNickMeta(ServerId host, const QString &nick); // on-demand, deduped
+
     void monitorAdd   (ServerId host, const QString &nick);
     void monitorRemove(ServerId host, const QString &nick);
     void monitorClear (ServerId host);
