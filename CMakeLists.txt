@@ -155,6 +155,19 @@ qt_add_executable(Uplink WIN32
 )
 
 configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+
+# gitversion.h carries the current commit hash; regenerated on every build
+# so an incremental rebuild after git pull picks up the new hash
+add_custom_target(gitversion
+    COMMAND ${CMAKE_COMMAND}
+        -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+        -DBASE_VERSION=${PROJECT_VERSION}
+        -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/gitversion.cmake
+    BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
+    COMMENT "Updating gitversion.h"
+)
+add_dependencies(Uplink gitversion)
 target_include_directories(Uplink PRIVATE src ${CMAKE_CURRENT_BINARY_DIR} ${QTKEYCHAIN_COMPAT_INCLUDE})
 
 target_link_libraries(Uplink PRIVATE
