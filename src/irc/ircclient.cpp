@@ -4,6 +4,7 @@
 #include "config/config.h"
 #include "model/ids.h" // for isChannelName()
 #include "gitversion.h"
+#include "logging.h"
 
 #include <QCryptographicHash>
 #include <QRandomGenerator>
@@ -118,6 +119,7 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
         url.setHost(m_host);
         url.setPort(m_port);
         url.setPath("/");
+        qCDebug(lcIrc) << m_serverName << "connecting to" << url.toString();
         m_wsSocket->open(url);
         return;
     }
@@ -156,6 +158,8 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     }
 
     applyProxy();
+    qCDebug(lcIrc) << m_serverName << "connecting to" << m_host << m_port
+                   << (m_ssl ? "(tls)" : "(plain)");
     if (m_ssl)
         m_socket->connectToHostEncrypted(m_host, m_port);
     else
@@ -460,7 +464,9 @@ void IrcClient::sendRaw(const QString &line)
         utf8.truncate(i);
     }
     const QString clean = QString::fromUtf8(utf8);
-    emit rawReceived(">> " + redactRawForLog(clean));
+    const QString logLine = redactRawForLog(clean);
+    emit rawReceived(">> " + logLine);
+    qCDebug(lcIrc).noquote() << m_serverName << ">>" << logLine;
     sockWrite(clean);
 }
 
@@ -485,6 +491,7 @@ void IrcClient::onConnected()
     m_pingPending = false;
     m_pingTimer->start();
 
+    qCDebug(lcIrc) << m_serverName << "connected, registering";
     sendRaw("CAP LS 302");
 
     // For ZNC with bouncer_network + SASL credentials, assemble the ZNC PASS format
@@ -513,6 +520,7 @@ void IrcClient::onConnected()
 
 void IrcClient::onDisconnected()
 {
+    qCDebug(lcIrc) << m_serverName << "disconnected";
     m_pingTimer->stop();
     m_pingPending = false;
     m_buffer.clear();
@@ -544,6 +552,7 @@ void IrcClient::onWsTextReceived(const QString &message)
     const QString line = message.trimmed();
     if (line.isEmpty() || line.size() > kMaxIrcLine) return;
     emit rawReceived(line);
+    qCDebug(lcIrc).noquote() << m_serverName << "<<" << line;
     processLine(line);
 }
 
@@ -579,6 +588,7 @@ void IrcClient::onReadyRead()
         }
         const QString line = QString::fromUtf8(lineBytes);
         emit rawReceived(line);
+        qCDebug(lcIrc).noquote() << m_serverName << "<<" << line;
         processLine(line);
     }
 
@@ -622,6 +632,8 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
 
     if (!m_pinnedFingerprint.isEmpty()) {
         if (m_pinnedFingerprint.compare(fp, Qt::CaseInsensitive) == 0) {
+            qCDebug(lcIrc) << m_serverName << "pinned fingerprint matched, ignoring ssl errors:"
+                           << errorMsgs;
             if (m_useWs) m_wsSocket->ignoreSslErrors(errors);
             else         m_socket->ignoreSslErrors(errors);
             return;

@@ -1,4 +1,5 @@
 #include "dccsend.h"
+#include "logging.h"
 
 #include <QFileInfo>
 #include <QRandomGenerator>
@@ -36,6 +37,8 @@ bool DccSend::listen(const QHostAddress &bindAddr, std::optional<QHostAddress> e
         return false;
     }
     connect(m_server, &QTcpServer::newConnection, this, &DccSend::onNewConnection);
+    qCDebug(lcDcc) << "send: listening on port" << m_server->serverPort()
+                   << "for" << filename() << m_filesize << "bytes";
 
     QTimer::singleShot(60000, this, [this]{
         if (!m_socket) {
@@ -82,6 +85,8 @@ void DccSend::connectOut(quint32 ip, quint16 port)
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
         if (!m_finished) emit error(m_socket->errorString());
     });
+    qCDebug(lcDcc) << "send: connecting to" << QHostAddress(ip).toString() << port
+                   << "for" << filename();
     m_socket->connectToHost(QHostAddress(ip), port);
 }
 
@@ -124,12 +129,14 @@ void DccSend::onNewConnection()
         return;
     }
     if (m_expectedPeer && incoming->peerAddress() != *m_expectedPeer) {
+        qCDebug(lcDcc) << "send: rejected unexpected peer" << incoming->peerAddress().toString();
         incoming->abort();
         incoming->deleteLater();
         return;
     }
     m_socket = incoming;
     m_server->close();
+    qCDebug(lcDcc) << "send: peer connected from" << m_socket->peerAddress().toString();
     connect(m_socket, &QTcpSocket::readyRead,     this, &DccSend::onReadyRead);
     connect(m_socket, &QTcpSocket::bytesWritten,  this, &DccSend::onBytesWritten);
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
@@ -172,6 +179,7 @@ void DccSend::onReadyRead()
         m_acked = qMax(m_acked, static_cast<qint64>(qFromBigEndian(raw)));
         if (m_acked >= filesize()) {
             m_finished = true;
+            qCDebug(lcDcc) << "send: complete," << m_acked << "bytes acked";
             emit finished();
             return;
         }

@@ -1,4 +1,5 @@
 #include "linkpreview.h"
+#include "logging.h"
 #include "net/addresscheck.h"
 
 #include <QBuffer>
@@ -139,7 +140,10 @@ void LinkPreview::resolveAndFetchHover(const QUrl &url)
             if (info.error() != QHostInfo::NoError) return;
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
-                if (isPrivateAddress(a)) return;
+                if (isPrivateAddress(a)) {
+                    qCDebug(lcPreview) << "blocked private address for" << url.host();
+                    return;
+                }
 
             QNetworkRequest req = pinnedRequest(url, info.addresses().first());
             req.setRawHeader("User-Agent", "WhatsApp/2");
@@ -200,7 +204,10 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
             if (info.error() != QHostInfo::NoError) return;
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
-                if (isPrivateAddress(a)) return;
+                if (isPrivateAddress(a)) {
+                    qCDebug(lcPreview) << "blocked private address for" << url.host();
+                    return;
+                }
             doPageFetch(url, info.addresses().first());
         });
 }
@@ -295,7 +302,10 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
             if (info.error() != QHostInfo::NoError) return;
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
-                if (isPrivateAddress(a)) return;
+                if (isPrivateAddress(a)) {
+                    qCDebug(lcPreview) << "blocked private address for" << imageUrl.host();
+                    return;
+                }
             doImageFetch(pageUrl, title, imageUrl, info.addresses().first());
         });
 }
