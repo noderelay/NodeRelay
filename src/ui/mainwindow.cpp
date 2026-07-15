@@ -636,11 +636,25 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
 
-    // A stylesheet (re)application resets the input viewport's autofill
-    // (QStyleSheetStyle::polish) — re-assert the fractional-scale seam guard.
-    if (m_input && obj == m_input->viewport() && event->type() == QEvent::StyleChange) {
-        if (!m_input->viewport()->autoFillBackground())
-            updateInputViewportFill();
+    // Fractional-scale seam guard: at 1.45x-style scale factors the QSS
+    // rounded fill and the text fills can round to different device rows,
+    // leaving an unpainted hairline that shows the input bar through. QSS
+    // and palette fills proved unreliable here (polish resets them), so the
+    // background is painted in code, every frame — the ChromePanel doctrine.
+    // The filter runs before the widget's own paintEvent, so text and the
+    // QSS fill land on top of ours.
+    if (m_input && m_theme.valid && event->type() == QEvent::Paint) {
+        if (obj == m_input->viewport()) {
+            QPainter p(m_input->viewport());
+            p.fillRect(m_input->viewport()->rect(), QColor(m_theme.inputBg));
+        } else if (obj == m_input) {
+            QPainter p(m_input);
+            p.setRenderHint(QPainter::Antialiasing);
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(m_theme.inputBg));
+            // Radius matches the theme template's input rule (border-radius: 8px)
+            p.drawRoundedRect(m_input->rect(), 8, 8);
+        }
         return false;
     }
 
