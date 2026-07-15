@@ -1,6 +1,6 @@
 #include "aboutdialog.h"
 #include "appicons.h"
-#include "version.h"
+#include "gitversion.h"
 
 #include <QVBoxLayout>
 #include <QLabel>
@@ -33,7 +33,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     logo->setAlignment(Qt::AlignCenter);
     layout->addWidget(logo);
 
-    auto *version = new QLabel("Uplink  v" UPLINK_VERSION);
+    auto *version = new QLabel("Uplink  v" UPLINK_VERSION_FULL);
     QFont f = version->font();
     f.setBold(true);
     f.setPointSize(f.pointSize() + 2);

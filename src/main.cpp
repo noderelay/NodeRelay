@@ -10,7 +10,7 @@
 #include "model/sessionmodel.h"
 #include "ui/mainwindow.h"
 #include "ui/themeloader.h"
-#include "version.h"
+#include "gitversion.h"
 
 int main(int argc, char *argv[])
 {
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QPixmapCache::setCacheLimit(2048); // 2 MB
     app.setApplicationName("Uplink");
-    app.setApplicationVersion(UPLINK_VERSION);
+    app.setApplicationVersion(UPLINK_VERSION_FULL);
 
 #if defined(Q_OS_WIN)
     // Use native Windows rendering as the base style.

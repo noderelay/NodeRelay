@@ -3,7 +3,7 @@
 #include "stsstore.h"
 #include "config/config.h"
 #include "model/ids.h" // for isChannelName()
-#include "version.h"
+#include "gitversion.h"
 
 #include <QCryptographicHash>
 #include <QRandomGenerator>
@@ -858,7 +858,7 @@ void IrcClient::processLine(const QString &line)
                     if (m_ctcpTimestamps.size() >= 500)
                         m_ctcpTimestamps.erase(m_ctcpTimestamps.begin());
                     m_ctcpTimestamps.insert(rkey, now);
-                    sendRaw("NOTICE " + msg.nick + " :\x01VERSION Uplink " UPLINK_VERSION "\x01");
+                    sendRaw("NOTICE " + msg.nick + " :\x01VERSION Uplink " UPLINK_VERSION_FULL "\x01");
                     emit serverMessage(m_serverName, "CTCP VERSION from " + msg.nick);
                 }
             } else if (!selfEcho && ctcpCmd == "PING") {
