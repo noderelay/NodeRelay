@@ -23,4 +23,5 @@ class IrcParser
 {
 public:
     static IrcMessage parse(const QString &raw);
+    static QString    decodeLine(const QByteArray &raw);
 };

@@ -12,7 +12,6 @@ Overhauled 2026-07-14. Everything shipped through v2026.7.5 is summarized by are
 We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal quality items, no user-visible features. The C++20 bump landed 2026-07-15; new-standard idioms (designated initializers, ranges, `Qt::StringLiterals`, chrono) get adopted opportunistically when touching a file, not as a sweep.
 
 - [ ] IrcParser allocation pass — `parseLine()` splits every incoming line into a `QStringList`. Rework the hot path on `QStringView` slices and `qTokenize` (zero-allocation splitting), materializing `QString` only at the edges. Benchmark before/after on a busy-channel replay.
-- [ ] Encoding fallback — Qt 6 dropped QTextCodec; we decode incoming lines as UTF-8 unconditionally. Use `QStringDecoder` to detect invalid UTF-8 per line and fall back to Latin-1, so legacy clients don't render as mojibake. Interacts with the existing UTF8ONLY handling.
 - [ ] QFuture continuations for history search — full-history search currently uses manual worker-thread plumbing. `QtConcurrent::run(...).then(this, ...)` gives off-thread scanning with results delivered back on the GUI thread for free. Do this as part of search v3 rather than as a standalone rewrite.
 - [ ] `Qt::StringLiterals` adoption — `u"..."_s` / `"..."_L1` instead of `QStringLiteral` / `QLatin1String` in new code; convert existing call sites opportunistically when touching a file, not as a big-bang sweep.
 - [ ] std::chrono timeouts — `QTimer::singleShot(250ms, ...)`, `setTransferTimeout(10s)` etc. in reconnect, typing-debounce, and DCC timeout code. Ergonomic only, do alongside other edits.
@@ -41,7 +40,7 @@ The one area of the old roadmap that isn't actually finished. Transfers work on 
 
 How complete "complete" is, by area. Detail is in git history of this file and in CHANGELOG.md.
 
-**Core protocol & connection** — done. TLS with real certificate verification and per-server TOFU fingerprint pinning, SASL PLAIN + EXTERNAL, NickServ auto-identify, STS, SOCKS5 proxy, WebSocket (wss://) transport, soju/ZNC bouncer support, auto-reconnect with backoff, ping watchdog. No known gaps.
+**Core protocol & connection** — done. TLS with real certificate verification and per-server TOFU fingerprint pinning, SASL PLAIN + EXTERNAL, NickServ auto-identify, STS, SOCKS5 proxy, WebSocket (wss://) transport, soju/ZNC bouncer support, auto-reconnect with backoff, ping watchdog, Latin-1 fallback for invalid-UTF-8 lines (2026-07-15). No known gaps.
 
 **IRCv3** — effectively full coverage: server-time, message-tags, batch, labeled-response, echo-message, msgid, cap-notify, account-notify, account-tag, extended-join, chghost, invite-notify, setname, userhost-in-names, WHOX, MONITOR, standard replies, UTF8ONLY, netsplit/netjoin batches, chathistory, plus the draft specs (typing, reply, react, message-redaction, multiline, metadata-2, no-implicit-names). Caveat: the draft/* specs track moving targets; revisit when they ratify or when Ergo changes behavior.
 
