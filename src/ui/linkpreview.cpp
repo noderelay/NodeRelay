@@ -19,42 +19,8 @@ static constexpr int kTimeoutMs    = 6000;
 static constexpr int kImgTimeoutMs = 15000;
 static constexpr int kMaxRedirects = 3;
 
-// Returns true if the URL should be blocked without a DNS lookup.
-// Handles scheme enforcement, literal private IPs, and well-known private hostnames.
-static bool isBlockedBySchemeOrLiteral(const QUrl &url)
-{
-    const QString scheme = url.scheme().toLower();
-    if (scheme != "http" && scheme != "https") return true;
-
-    const QString host = url.host().toLower();
-    if (host.isEmpty()) return true;
-    if (host == "localhost" || host.endsWith(".local")) return true;
-
-    QHostAddress addr(host);
-    if (!addr.isNull())
-        return isPrivateAddress(addr);
-
-    return false;
-}
-
-// Builds a request pinned to a DNS-validated address: connect by IP while
-// keeping the original hostname for the Host header and TLS validation/SNI.
-// QNAM would otherwise re-resolve the hostname itself, letting a rebinding DNS
-// server swap in a private address between our check and the actual connect.
-static QNetworkRequest pinnedRequest(const QUrl &url, const QHostAddress &addr)
-{
-    QUrl pinned = url;
-    pinned.setHost(addr.toString());
-    QNetworkRequest req(pinned);
-    QByteArray hostHeader = url.host(QUrl::FullyEncoded).toUtf8();
-    if (url.port() != -1)
-        hostHeader += ':' + QByteArray::number(url.port());
-    req.setRawHeader("Host", hostHeader);
-    req.setPeerVerifyName(url.host());
-    // A raw Host header doesn't survive HTTP/2 (:authority comes from the URL)
-    req.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
-    return req;
-}
+// SSRF guards (isBlockedBySchemeOrLiteral, pinnedRequest) live in
+// net/addresscheck.h — shared with the avatar fetch in nickpanel.cpp.
 
 // ── misc helpers ──────────────────────────────────────────────────────────────
 

@@ -3,9 +3,13 @@
 #include "ui/nickfilteredit.h"
 #include "ui/nicklistmodel.h"
 #include "model/sessionmodel.h"
+#include "net/addresscheck.h"
 #include "net/networkmonitor.h"
+#include "logging.h"
 
 #include <QBuffer>
+#include <QHostInfo>
+#include <QImageReader>
 #include <QLabel>
 #include <QListView>
 #include <QNetworkAccessManager>
@@ -15,7 +19,11 @@
 #include <QScrollBar>
 #include <QTimer>
 #include <QUrl>
+#include <memory>
 #include "version.h"
+
+// Avatars render at 36px; anything past this is hostile or broken.
+static constexpr qsizetype kMaxAvatarBytes = 1 * 1024 * 1024;
 
 // Re-snapshot the model without the view jumping: a model reset drops the
 // scroll position, so save and restore it around the refresh.
@@ -145,36 +153,78 @@ void MainWindow::fetchAvatar(const QString &url)
         scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
     };
 
-    // Local file — load directly without network
+    // Local file — honored only for the user's own configured avatar. Avatar
+    // URLs also arrive via metadata from other users, who must never be able
+    // to point Uplink at the local filesystem.
     const QUrl qurl(url);
-    if (qurl.isLocalFile()) {
-        cacheAndRefresh(QPixmap(qurl.toLocalFile()));
-        return;
-    }
-    if (url.startsWith('/')) {
-        cacheAndRefresh(QPixmap(url));
+    if (qurl.isLocalFile() || url.startsWith('/')) {
+        if (url != m_config.profileAvatarUrl) return;
+        cacheAndRefresh(QPixmap(qurl.isLocalFile() ? qurl.toLocalFile() : url));
         return;
     }
 
     if (m_model->networkMonitor()->isMetered())
         return;   // spare metered data; local avatars above still load
 
+    // Same SSRF discipline as link previews: scheme/literal gate, DNS
+    // pre-check against private ranges, then fetch pinned to the vetted IP.
+    if (isBlockedBySchemeOrLiteral(qurl)) {
+        qCDebug(lcPreview) << "avatar: blocked" << url;
+        return;
+    }
+
     if (!m_avatarNam)
         m_avatarNam = new QNetworkAccessManager(this);
     m_avatarFetching.insert(url);
-    QNetworkRequest req{qurl};
-    req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
-    // Without a timeout a stalled server keeps the URL in m_avatarFetching
-    // forever, permanently blocking retries for that avatar.
-    req.setTransferTimeout(10000);
-    auto *reply = m_avatarNam->get(req);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, url, cacheAndRefresh] {
-        reply->deleteLater();
-        m_avatarFetching.remove(url);
-        if (reply->error() != QNetworkReply::NoError)
+    QHostInfo::lookupHost(qurl.host(), this,
+        [this, url, qurl, cacheAndRefresh](const QHostInfo &info) {
+        const auto addrs = info.addresses();
+        bool blocked = info.error() != QHostInfo::NoError || addrs.isEmpty();
+        for (const QHostAddress &a : addrs)
+            if (isPrivateAddress(a)) blocked = true;
+        if (blocked) {
+            m_avatarFetching.remove(url);
+            qCDebug(lcPreview) << "avatar: blocked private address for" << qurl.host();
             return;
-        QPixmap px;
-        if (px.loadFromData(reply->readAll()))
-            cacheAndRefresh(px);
+        }
+
+        QNetworkRequest req = pinnedRequest(qurl, addrs.first());
+        req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
+        // A followed redirect would escape the pinned address, so don't follow.
+        req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::ManualRedirectPolicy);
+        // Without a timeout a stalled server keeps the URL in m_avatarFetching
+        // forever, permanently blocking retries for that avatar.
+        req.setTransferTimeout(10000);
+
+        auto *reply = m_avatarNam->get(req);
+        auto  buf   = std::make_shared<QByteArray>();
+        connect(reply, &QNetworkReply::readyRead, this, [reply, buf] {
+            const qsizetype rem = kMaxAvatarBytes - buf->size();
+            if (rem <= 0) { reply->abort(); return; }
+            buf->append(reply->read(rem));
+            if (buf->size() >= kMaxAvatarBytes) reply->abort();
+        });
+        connect(reply, &QNetworkReply::finished, this,
+            [this, reply, url, buf, cacheAndRefresh] {
+            reply->deleteLater();
+            m_avatarFetching.remove(url);
+            if (reply->error() != QNetworkReply::NoError) return;
+            if (reply->attribute(QNetworkRequest::RedirectionTargetAttribute).isValid())
+                return;
+
+            // Decode via QImageReader with a dimension gate and scaled decode —
+            // a small compressed file must not balloon into a huge bitmap.
+            QBuffer imgBuf(buf.get());
+            imgBuf.open(QIODevice::ReadOnly);
+            QImageReader reader(&imgBuf);
+            const QSize srcSize = reader.size();
+            if (!srcSize.isValid() || srcSize.width() > 4096 || srcSize.height() > 4096)
+                return;
+            reader.setScaledSize(srcSize.scaled(36, 36, Qt::KeepAspectRatio));
+            const QImage img = reader.read();
+            if (!img.isNull())
+                cacheAndRefresh(QPixmap::fromImage(img));
+        });
     });
 }
