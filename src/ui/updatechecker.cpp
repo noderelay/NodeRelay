@@ -165,6 +165,9 @@ void UpdateChecker::downloadAndApplyUpdate(const QString &url, const QString &as
     req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                      QNetworkRequest::NoLessSafeRedirectPolicy);
+    // Inactivity timeout — resets while bytes flow, so slow-but-alive
+    // downloads survive; only a genuine stall aborts.
+    req.setTransferTimeout(30000);
     auto *reply = nam->get(req);
 
     connect(reply, &QNetworkReply::readyRead, f, [reply, f]{ f->write(reply->readAll()); });

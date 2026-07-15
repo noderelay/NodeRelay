@@ -164,6 +164,9 @@ void MainWindow::fetchAvatar(const QString &url)
     m_avatarFetching.insert(url);
     QNetworkRequest req{qurl};
     req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
+    // Without a timeout a stalled server keeps the URL in m_avatarFetching
+    // forever, permanently blocking retries for that avatar.
+    req.setTransferTimeout(10000);
     auto *reply = m_avatarNam->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply, url, cacheAndRefresh] {
         reply->deleteLater();
