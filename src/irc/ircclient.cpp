@@ -586,7 +586,9 @@ void IrcClient::onReadyRead()
             emit socketError(m_serverName, "Dropped oversized IRC line from server");
             continue;
         }
-        const QString line = QString::fromUtf8(lineBytes);
+        if (Q_UNLIKELY(!lineBytes.isValidUtf8()))
+            qCDebug(lcIrc) << m_serverName << "non-UTF-8 line, decoding as Latin-1";
+        const QString line = IrcParser::decodeLine(lineBytes);
         emit rawReceived(line);
         qCDebug(lcIrc).noquote() << m_serverName << "<<" << line;
         processLine(line);

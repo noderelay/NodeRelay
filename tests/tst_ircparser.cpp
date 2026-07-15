@@ -19,6 +19,9 @@ private slots:
     void numericCommand();
     void tagsThenNoPrefix();
     void malformedTagsOnly();
+    void decodeValidUtf8();
+    void decodeLatin1Fallback();
+    void decodeAsciiAndEmpty();
 };
 
 void TstIrcParser::basicPrivmsg()
@@ -148,6 +151,33 @@ void TstIrcParser::malformedTagsOnly()
 {
     // Tags with no space → no command → invalid
     QVERIFY(!IrcParser::parse(QStringLiteral("@key=val")).isValid());
+}
+
+void TstIrcParser::decodeValidUtf8()
+{
+    // "héllo ☺" as UTF-8 bytes — multi-byte sequences decode intact
+    const QByteArray utf8("h\xC3\xA9llo \xE2\x98\xBA");
+    QCOMPARE(IrcParser::decodeLine(utf8), QString::fromUtf8(utf8));
+    QVERIFY(!IrcParser::decodeLine(utf8).contains(QChar::ReplacementCharacter));
+}
+
+void TstIrcParser::decodeLatin1Fallback()
+{
+    // "café" in Latin-1: 0xE9 alone is invalid UTF-8 → Latin-1 fallback
+    QCOMPARE(IrcParser::decodeLine(QByteArray("caf\xE9")),
+             QStringLiteral("café"));
+    // Lone continuation byte — invalid UTF-8, must not become U+FFFD
+    QVERIFY(!IrcParser::decodeLine(QByteArray("x\xB5y"))
+                 .contains(QChar::ReplacementCharacter));
+    QCOMPARE(IrcParser::decodeLine(QByteArray("x\xB5y")),
+             QStringLiteral("xµy"));
+}
+
+void TstIrcParser::decodeAsciiAndEmpty()
+{
+    QCOMPARE(IrcParser::decodeLine(QByteArrayLiteral("PING :token")),
+             QStringLiteral("PING :token"));
+    QVERIFY(IrcParser::decodeLine(QByteArray()).isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TstIrcParser)

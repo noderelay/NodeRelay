@@ -98,3 +98,10 @@ IrcMessage IrcParser::parse(const QString &raw)
 
     return msg;
 }
+
+QString IrcParser::decodeLine(const QByteArray &raw)
+{
+    // UTF-8 when valid; otherwise Latin-1, which cannot fail (every byte maps
+    // to a code point) — the classic pre-UTF-8 IRC convention.
+    return raw.isValidUtf8() ? QString::fromUtf8(raw) : QString::fromLatin1(raw);
+}
