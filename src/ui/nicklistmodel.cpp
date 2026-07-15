@@ -105,6 +105,8 @@ QVariant NickListModel::tooltipFor(const NickEntry &e) const
         if (it != sess->nickMeta.constEnd())
             meta = &it.value();
     }
+    if (!meta)  // fetched on first hover, not roster-wide; shows on next hover
+        m_model->requestNickMeta(m_host, e.nick);
     const bool hasAvatarImage = meta && !meta->avatarUrl.isEmpty()
                                 && m_style->avatarCache->contains(meta->avatarUrl);
     if (hasAvatarImage) {

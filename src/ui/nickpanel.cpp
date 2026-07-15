@@ -42,6 +42,8 @@ QString MainWindow::nickTooltip(const QString &nick, const ServerId &host) const
     if (sess) {
         auto it = sess->nickMeta.constFind(nick.toLower());
         if (it != sess->nickMeta.constEnd()) meta = &it.value();
+        if (!meta)  // fetched on first hover, not roster-wide; shows on next hover
+            const_cast<SessionModel *>(m_model)->requestNickMeta(host, nick);
         // account comes from Channel's nicks list
         for (const auto &ch : std::as_const(sess->channels)) {
             auto ni = std::find_if(ch.nicks.cbegin(), ch.nicks.cend(),
