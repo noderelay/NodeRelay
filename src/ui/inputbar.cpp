@@ -70,9 +70,11 @@ void MainWindow::setupInputBar()
     m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    updateInputViewportFill();
     m_input->document()->setDocumentMargin(2);
     m_input->setFixedHeight(m_input->fontMetrics().lineSpacing() + 10);
     m_input->installEventFilter(this);
+    m_input->viewport()->installEventFilter(this); // seam-guard re-assert hook
 
     // Right-click: standard edit menu plus a Color submenu.
     m_input->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -222,6 +224,22 @@ void MainWindow::setupInputBar()
     });
 
     QTimer::singleShot(0, this, [this]{ repositionSendBtn(); });
+}
+
+// The stylesheet's rounded background and the viewport's text fills can round
+// to different device rows at fractional display scale, leaving an unpainted
+// hairline that shows the input bar behind. Autofill the viewport with the
+// theme's input background so the seam row is erased first. The plain palette
+// Base must be set explicitly — the QSS background-color never reaches the
+// viewport's palette. (The viewport sits inside the QSS padding, clear of the
+// rounded corners, so the square fill can't clip them.)
+void MainWindow::updateInputViewportFill()
+{
+    if (!m_input || !m_theme.valid) return;
+    QPalette vp = m_input->viewport()->palette();
+    vp.setColor(QPalette::Base, QColor(m_theme.inputBg));
+    m_input->viewport()->setPalette(vp);
+    m_input->viewport()->setAutoFillBackground(true);
 }
 
 void MainWindow::repositionSendBtn()

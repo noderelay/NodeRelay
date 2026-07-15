@@ -47,6 +47,7 @@ public:
     void setTypingEnabled(bool on);
     void setTypingFont(const QFont &f);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
+    void setInputBase(const QColor &bg); // viewport fill — fractional-scale seam guard, re-asserted after repolish
     void setChatFont(const QFont &f);
     void setNickListFont(const QFont &f);
     void setTopicFont(const QFont &f);
@@ -111,4 +112,5 @@ private:
     QString       m_rawTopicHtml;
     QHash<QWidget*, QFont> m_fontGuards;
     bool          m_fontGuardBusy{false};
+    QColor        m_inputBase; // theme input bg for the viewport seam guard
 };
