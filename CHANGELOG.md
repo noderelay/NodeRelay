@@ -1,6 +1,70 @@
 # Changelog
 
 <!--
+Session 2026-07-14/15 (iv, close): testing-phase tooling, modernization, security, input hairline (PRs #76-#84, unreleased):
+- Context for this run: main is now the rolling test build — IRC users on
+  #uplink build from source and shake out bugs; releases only when Joe
+  decides. #76/#77 exist specifically to support that model.
+- #76 git hash embedded in the version string: builds from a checkout report
+  e.g. 2026.7.5+4c048ba (".dirty" when the tree has uncommitted changes) in
+  About, applicationVersion, and the CTCP VERSION reply. gitversion.h is
+  regenerated at BUILD time (cmake/gitversion.cmake custom target), so
+  git pull + incremental build refreshes the hash without a reconfigure.
+  Update checker and User-Agents intentionally stay on bare X.Y.Z.
+- #77 runtime debug logging: QLoggingCategory categories uplink.irc /
+  uplink.dcc / uplink.preview (src/logging.*), all off by default, enabled
+  via QT_LOGGING_RULES. irc logs connects, registration, TOFU pin matches,
+  and every raw line in/out (outbound through the existing credential
+  redaction — verified live: AUTHENTICATE <redacted>). FAQ gained a "debug
+  logs for a bug report" entry.
+- #78 C++20 (CMAKE_CXX_STANDARD 20): all 64 TUs compile warning-free; full
+  CI (GCC/MSVC/AppleClang/ASan/CodeQL) green before merge. Docs swept
+  (CONTRIBUTING, faq build reqs, howto, quality.html x4, ROADMAP).
+- #79 Latin-1 fallback for invalid-UTF-8 inbound lines: new
+  IrcParser::decodeLine() (isValidUtf8 ? fromUtf8 : fromLatin1) — legacy
+  clients no longer render as replacement characters. Placed in IrcParser
+  so it's unit-tested (3 new slots, parser suite 18/18). Socket path logs
+  a uplink.irc note when the fallback fires; ws path unchanged (QWebSocket
+  pre-decodes); UTF8ONLY warning sniff kept.
+- #80 transfer-timeout audit (ROADMAP item closed): the update artifact
+  download (30s) and avatar fetches (10s) had no timeout — a stalled CDN
+  hung the progress dialog, and a hung avatar fetch blocked that URL's
+  retries forever. Qt's timeout is inactivity-based, so slow-but-alive
+  downloads are unaffected.
+- #81 avatar fetch hardening (the audit's findings): avatar URLs are
+  attacker-controlled metadata but had no SSRF guard, no size cap, and
+  loaded file:// paths off local disk. Now: scheme/literal gate + DNS
+  pre-check + IP-pinned request (guards moved from linkpreview.cpp statics
+  to net/addresscheck.h, shared), redirects refused, 1 MB cap enforced
+  during readyRead, QImageReader dimension gate (<=4096^2) + scaled decode,
+  local paths honored only for the user's own configured avatar.
+- #82 metadata drip killed: account-notify/WHOX fired one METADATA GET per
+  nick per join, and Ergo's fakelag drains bursts at ~2 cmd/s — minutes of
+  queued chatter after connect with real commands stuck behind it. Avatars/
+  display-names only surface in hover tooltips, so the fetch moved there:
+  SessionModel::requestNickMeta(), deduped per session, cleared on
+  disconnect. Connect-time metadata traffic: hundreds of GETs -> zero.
+- #83+#84 the input hairline (fractional-scale seam): a 1-device-px row
+  between the QSS rounded fill and the text fills showed the input bar's
+  background through as a full-width line under the text (KDE Wayland
+  1.45x; pixel-matched from Joe's screenshot — line color == bar bg).
+  #83's palette/autofill approach did NOT fix it live (QStyleSheetStyle
+  resets autofill on every repolish) but carries a real crash fix:
+  MainWindow::m_input/m_nickPrefix/m_emojiBtn were uninitialized members —
+  reading m_input pre-setup segfaulted. #84 is the actual fix: the input
+  event filters paint the rounded frame + viewport in the theme input
+  color on every Paint event, ahead of the widget's own painting
+  (ChromePanel doctrine — QSS fills are unreliable at fractional scale).
+  Joe-verified gone; geometry byte-identical to before.
+- Fresh memory numbers this session: RSS 140MB but PSS 52MB / private
+  dirty 28MB (leaner than the July 13 baseline) — RAM work is done.
+- No release, per the slow-release policy; all nine PRs merged to main
+  only. uplinkbot restart owed (faq.md changed in #77; plus the older
+  #72/#73/#75 debt). Held/parked by Joe: search v3 + infinite scrollback,
+  nightly-builds CI channel.
+-->
+
+<!--
 Session 2026-07-14 (iii, close): Settings menu simplification + icon cleanup (PR #75, unreleased):
 - Settings menu reduced to a single Preferences entry. Scripts/Themes/App
   Icon/Fonts/Profile were all shortcuts into pages of the same dialog;
