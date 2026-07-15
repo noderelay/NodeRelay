@@ -14,6 +14,7 @@
 #include <QPlainTextEdit>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QPainter>
 #include <QLineEdit>
 #include <QToolButton>
 #include <QSplitter>
@@ -568,11 +569,19 @@ void ChannelPane::dropEvent(QDropEvent *event)
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
-    // A repolish resets the input viewport's autofill — re-assert the
-    // fractional-scale seam guard (see MainWindow::updateInputViewportFill).
-    if (m_input && obj == m_input->viewport() && event->type() == QEvent::StyleChange) {
-        if (m_inputBase.isValid() && !m_input->viewport()->autoFillBackground())
-            setInputBase(m_inputBase);
+    // Fractional-scale seam guard — paint the input background in code every
+    // frame; see the matching block in MainWindow::eventFilter for why.
+    if (m_input && m_inputBase.isValid() && event->type() == QEvent::Paint) {
+        if (obj == m_input->viewport()) {
+            QPainter p(m_input->viewport());
+            p.fillRect(m_input->viewport()->rect(), m_inputBase);
+        } else if (obj == m_input) {
+            QPainter p(m_input);
+            p.setRenderHint(QPainter::Antialiasing);
+            p.setPen(Qt::NoPen);
+            p.setBrush(m_inputBase);
+            p.drawRoundedRect(m_input->rect(), 8, 8);
+        }
         return false;
     }
 
