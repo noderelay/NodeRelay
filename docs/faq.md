@@ -852,6 +852,33 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme; the update checker handles both.)
 
+Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.5+9dbfe64` — the base version plus the short git hash (with `.dirty` added if the source tree had uncommitted changes). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
+
+### How do I get debug logs for a bug report?
+
+Uplink can print protocol-level debug output to the terminal, switched on at runtime with the `QT_LOGGING_RULES` environment variable — no special build needed. Three categories exist:
+
+| Category | Covers |
+|---|---|
+| `uplink.irc` | connection lifecycle, every raw IRC line sent and received |
+| `uplink.dcc` | DCC file transfer setup, peer connections, completion |
+| `uplink.preview` | link preview fetches, timeouts, blocked addresses |
+
+Examples:
+
+```bash
+# Just IRC traffic
+QT_LOGGING_RULES="uplink.irc.debug=true" ./Uplink
+
+# Everything
+QT_LOGGING_RULES="uplink.*.debug=true" ./Uplink
+
+# To a file
+QT_LOGGING_RULES="uplink.irc.debug=true" ./Uplink 2> uplink-debug.log
+```
+
+Passwords and SASL credentials are redacted from the logged traffic, but the output still contains your conversations and the channels you're in — read it before pasting it anywhere public.
+
 ### What do the signal bars mean? (lag / latency indicator)
 
 The four stair-step bars in the top-right of the server/channel list header show your connection latency to the active server. Hover over them to see the exact millisecond value.

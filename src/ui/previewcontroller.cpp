@@ -1,4 +1,5 @@
 #include "ui/previewcontroller.h"
+#include "logging.h"
 #include "ui/linkpreview.h"
 #include "model/sessionmodel.h"
 #include "net/networkmonitor.h"
@@ -15,6 +16,7 @@ PreviewController::PreviewController(SessionModel *model, QObject *parent)
     m_previewWatchdog = new QTimer(this);
     m_previewWatchdog->setSingleShot(true);
     connect(m_previewWatchdog, &QTimer::timeout, this, [this]{
+        qCDebug(lcPreview) << "fetch timed out:" << m_inFlightUrl;
         // Release the timed-out fetch's slot so it doesn't consume the
         // m_previewChannels budget forever and can be retried later.
         m_previewChannels.remove(m_inFlightUrl);
@@ -46,6 +48,7 @@ void PreviewController::processQueue()
     m_previewFetchBusy = true;
     const QUrl url = m_previewQueue.dequeue();
     m_inFlightUrl = url.toString();
+    qCDebug(lcPreview) << "fetching" << m_inFlightUrl;
     m_previewWatchdog->start(20000);
     m_linkPreview->fetch(url);
 }
@@ -61,6 +64,8 @@ void PreviewController::onCardReady(const QUrl &pageUrl, const QString &title, c
         m_inFlightUrl.clear();
         m_previewFetchBusy = false;
     }
+    qCDebug(lcPreview) << "card ready:" << urlStr
+                       << "title:" << !title.isEmpty() << "thumb:" << !thumbnail.isNull();
 
     auto it = m_previewChannels.find(urlStr);
     if (it == m_previewChannels.end()) {

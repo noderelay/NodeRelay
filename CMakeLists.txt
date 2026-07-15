@@ -67,6 +67,8 @@ qt_standard_project_setup()
 qt_add_executable(Uplink WIN32
     resources/resources.qrc
     src/main.cpp
+    src/logging.cpp
+    src/logging.h
     src/config/config.cpp
     src/config/config.h
     src/config/keychainhelper.cpp

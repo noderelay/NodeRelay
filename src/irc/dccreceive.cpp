@@ -1,4 +1,5 @@
 #include "dccreceive.h"
+#include "logging.h"
 #include "net/addresscheck.h"
 
 #include <QFileInfo>
@@ -81,6 +82,8 @@ void DccReceive::start()
         }
     });
 
+    qCDebug(lcDcc) << "recv: connecting to" << peerAddr.toString() << m_port
+                   << "expecting" << m_total << "bytes";
     m_socket->connectToHost(peerAddr, m_port);
 }
 
@@ -118,6 +121,8 @@ bool DccReceive::listenPassive(quint32 expectedIp)
         if (validatePeer) {
             // Reject connections from unexpected peers (race/injection protection).
             if (incoming->peerAddress().toIPv4Address() != expected.toIPv4Address()) {
+                qCDebug(lcDcc) << "recv: rejected unexpected peer"
+                               << incoming->peerAddress().toString();
                 incoming->abort();
                 incoming->deleteLater();
                 return;
@@ -125,6 +130,7 @@ bool DccReceive::listenPassive(quint32 expectedIp)
         }
         m_socket = incoming;
         m_server->close();
+        qCDebug(lcDcc) << "recv: peer connected from" << m_socket->peerAddress().toString();
         connect(m_socket, &QTcpSocket::readyRead,          this, &DccReceive::onReadyRead);
         connect(m_socket, &QAbstractSocket::errorOccurred, this, &DccReceive::onSocketError);
         // Stall guard: if no data arrives within 30s of the peer connecting, abort.
@@ -144,6 +150,8 @@ bool DccReceive::listenPassive(quint32 expectedIp)
             emit error("No connection received (timeout)");
         }
     });
+    qCDebug(lcDcc) << "recv (passive): listening on port" << m_server->serverPort()
+                   << "expecting" << m_total << "bytes";
     return true;
 }
 
@@ -220,6 +228,7 @@ void DccReceive::onReadyRead()
     emit progress(m_received, m_total);
 
     if (m_received >= m_total) {
+        qCDebug(lcDcc) << "recv: complete," << m_received << "bytes";
         const QString partPath = m_file.fileName();
         m_file.close();
         m_socket->disconnectFromHost();
