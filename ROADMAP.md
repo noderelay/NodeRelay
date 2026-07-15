@@ -9,9 +9,8 @@ Overhauled 2026-07-14. Everything shipped through v2026.7.5 is summarized by are
 
 ## Planned — Qt6 / C++ modernization
 
-We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal quality items, no user-visible features.
+We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal quality items, no user-visible features. The C++20 bump landed 2026-07-15; new-standard idioms (designated initializers, ranges, `Qt::StringLiterals`, chrono) get adopted opportunistically when touching a file, not as a sweep.
 
-- [ ] C++20 bump — raise `CMAKE_CXX_STANDARD` to 20. One-line change, unlocks designated initializers, ranges, and Qt's `std::format` integration for Qt types. Prerequisite for a couple of items below.
 - [ ] IrcParser allocation pass — `parseLine()` splits every incoming line into a `QStringList`. Rework the hot path on `QStringView` slices and `qTokenize` (zero-allocation splitting), materializing `QString` only at the edges. Benchmark before/after on a busy-channel replay.
 - [ ] Encoding fallback — Qt 6 dropped QTextCodec; we decode incoming lines as UTF-8 unconditionally. Use `QStringDecoder` to detect invalid UTF-8 per line and fall back to Latin-1, so legacy clients don't render as mojibake. Interacts with the existing UTF8ONLY handling.
 - [ ] QFuture continuations for history search — full-history search currently uses manual worker-thread plumbing. `QtConcurrent::run(...).then(this, ...)` gives off-thread scanning with results delivered back on the GUI thread for free. Do this as part of search v3 rather than as a standalone rewrite.
@@ -52,7 +51,7 @@ How complete "complete" is, by area. Detail is in git history of this file and i
 
 **Security** — backlog cleared as of 2026-06: outbound injection prevention, credential redaction across all paths, OS keychain storage, SSRF guard with DNS pre-check, inbound DoS bounds, URL scheme guard, CodeQL and ASan/UBSan in CI. Treated as ongoing work, not a finished list.
 
-**Performance & maintainability** — the 2026-06/07 review backlogs are fully cleared: MainWindow split into controllers (~5,300 → ~3,200 lines), ChatView rewritten on QTextLayout with cached layouts, virtualized nick list, memory caps + glibc arena tuning (idle RSS roughly halved), unit tests (parser, chat format, config, ignore) and libFuzzer targets in CI.
+**Performance & maintainability** — the 2026-06/07 review backlogs are fully cleared: MainWindow split into controllers (~5,300 → ~3,200 lines), ChatView rewritten on QTextLayout with cached layouts, virtualized nick list, memory caps + glibc arena tuning (idle RSS roughly halved), unit tests (parser, chat format, config, ignore) and libFuzzer targets in CI. Builds as C++20 since 2026-07-15.
 
 **Packaging & distribution** — CI and release builds on Linux, Windows, macOS; AppImage with desktop self-integration and in-place auto-update; release automation via scripts/release.sh; CalVer since v2026.7.0. Caveat: the FreeBSD port skeleton (`packaging/freebsd/`) was never submitted upstream — it still needs `make makesum` and qt6-keychain port verification.
 

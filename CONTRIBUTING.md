@@ -69,7 +69,7 @@ is appreciated but not required — CI replays the corpus on every PR.
 - Minimal comments. Don't add block descriptions above simple functions.
 - Keep changes small and focused. One fix or feature per PR.
 - Don't add dependencies unless absolutely necessary.
-- Follow C++17 and Qt6 conventions used throughout the codebase.
+- Follow C++20 and Qt6 conventions used throughout the codebase.
 
 ## What we won't merge
 

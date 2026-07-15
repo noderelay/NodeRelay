@@ -1213,7 +1213,7 @@ The theme format uses named `{{key}}` placeholders for colors. Look at any of th
 
 - CMake 3.16 or newer
 - Qt 6.2 or newer (Widgets + Network + Ssl modules)
-- A C++17 compiler (GCC, Clang, or MSVC)
+- A C++20 compiler (GCC 10+, Clang 12+, or MSVC 2019 16.11+)
 - tomlplusplus (header-only, available via most package managers)
 
 See the [Quick Start](https://github.com/noderelay/UplinkIRC#quick-start) and platform-specific install steps in the README.
