@@ -15,7 +15,6 @@ We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal qu
 - [ ] QFuture continuations for history search — full-history search currently uses manual worker-thread plumbing. `QtConcurrent::run(...).then(this, ...)` gives off-thread scanning with results delivered back on the GUI thread for free. Do this as part of search v3 rather than as a standalone rewrite.
 - [ ] `Qt::StringLiterals` adoption — `u"..."_s` / `"..."_L1` instead of `QStringLiteral` / `QLatin1String` in new code; convert existing call sites opportunistically when touching a file, not as a big-bang sweep.
 - [ ] std::chrono timeouts — `QTimer::singleShot(250ms, ...)`, `setTransferTimeout(10s)` etc. in reconnect, typing-debounce, and DCC timeout code. Ergonomic only, do alongside other edits.
-- [ ] Link preview transfer timeout audit — confirm every `QNetworkRequest` in PreviewController and UpdateChecker sets a transfer timeout; a stalled server must not hold a queue slot indefinitely.
 - [ ] QLoggingCategory — `uplink.irc`, `uplink.dcc`, `uplink.preview` categories so protocol debugging is runtime-switchable via `QT_LOGGING_RULES` instead of recompiling with qDebug.
 - [ ] Color emoji rendering check — Qt 6.8+ ships a proper emoji segmenter (ZWJ sequences, skin tones). Verify ChatView renders combined emoji correctly and remove any workarounds that predate it.
 
@@ -48,7 +47,7 @@ How complete "complete" is, by area. Detail is in git history of this file and i
 
 **DCC file transfer** — mostly done: active and passive send/receive, progress UI, and the full hardening list (offer validation, size caps, filename sanitization, peer checks, timeout/cleanup races). Incomplete: NAT handling, see Planned — DCC.
 
-**Security** — backlog cleared as of 2026-06: outbound injection prevention, credential redaction across all paths, OS keychain storage, SSRF guard with DNS pre-check, inbound DoS bounds, URL scheme guard, CodeQL and ASan/UBSan in CI. Treated as ongoing work, not a finished list.
+**Security** — backlog cleared as of 2026-06: outbound injection prevention, credential redaction across all paths, OS keychain storage, SSRF guard with DNS pre-check, inbound DoS bounds, URL scheme guard, CodeQL and ASan/UBSan in CI. Treated as ongoing work, not a finished list. Transfer-timeout audit done 2026-07-15: every outbound `QNetworkRequest` (previews, update check + download, avatar fetches) now sets an inactivity timeout.
 
 **Performance & maintainability** — the 2026-06/07 review backlogs are fully cleared: MainWindow split into controllers (~5,300 → ~3,200 lines), ChatView rewritten on QTextLayout with cached layouts, virtualized nick list, memory caps + glibc arena tuning (idle RSS roughly halved), unit tests (parser, chat format, config, ignore) and libFuzzer targets in CI. Builds as C++20 since 2026-07-15.
 
