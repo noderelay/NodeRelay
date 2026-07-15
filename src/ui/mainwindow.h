@@ -185,6 +185,7 @@ private:
     // Tab completion
     void handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel);
     void repositionSendBtn();
+    void updateInputViewportFill();
     void updateFormatIndicator();
     void showColorPicker();
     QMenu *makeColorMenu(QWidget *parent);   // reused by Ctrl+Shift+K and right-click
@@ -220,9 +221,9 @@ private:
     SidebarDelegate  *m_sidebarDelegate{nullptr};
     NickDelegate     *m_nickDelegate{nullptr};
     ChatView *m_chatView;
-    QPlainTextEdit *m_input;
-    QLabel       *m_nickPrefix;
-    QPushButton  *m_emojiBtn;
+    QPlainTextEdit *m_input{nullptr};
+    QLabel       *m_nickPrefix{nullptr};
+    QPushButton  *m_emojiBtn{nullptr};
     QToolButton  *m_sendBtn{nullptr};
     QLabel       *m_formatIndicator{nullptr};
     QWidget      *m_sidebarPanel{nullptr};

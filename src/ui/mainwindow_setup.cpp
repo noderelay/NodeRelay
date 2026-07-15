@@ -140,6 +140,7 @@ void MainWindow::applyThemeByName(const QString &name)
                                   QColor(m_theme.text));
     if (m_theme.valid)
         m_nickStyle.accent = QColor(m_theme.accent);
+    updateInputViewportFill();
     if (m_theme.valid) {
         if (m_primaryTopicBtn) {
             const bool on = m_primaryTopicBtn->isChecked();
@@ -155,6 +156,7 @@ void MainWindow::applyThemeByName(const QString &name)
             pane->setTopicIcon(
                 MenuIcons::topicBubble(QColor(m_theme.placeholder)),
                 MenuIcons::topicBubble(QColor(m_theme.accent)));
+            pane->setInputBase(QColor(m_theme.inputBg));
             const QColor ic(m_theme.text);
             pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
             pane->setPopOutIcon(MenuIcons::pipEnter(ic));

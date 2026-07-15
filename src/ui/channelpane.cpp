@@ -258,6 +258,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->document()->setDocumentMargin(2);
     m_input->installEventFilter(this);
+    m_input->viewport()->installEventFilter(this); // seam-guard re-assert hook
     ibox->addWidget(m_nickPrefix);
     ibox->addWidget(m_input, 1);
     ccVbox->addWidget(inputBar);
@@ -409,6 +410,17 @@ void ChannelPane::guardFont(QWidget *w, const QFont &f)
     w->installEventFilter(this);
 }
 
+// Fractional-scale hairline guard — see MainWindow::updateInputViewportFill.
+void ChannelPane::setInputBase(const QColor &bg)
+{
+    if (!m_input || !bg.isValid()) return;
+    m_inputBase = bg;
+    QPalette vp = m_input->viewport()->palette();
+    vp.setColor(QPalette::Base, bg);
+    m_input->viewport()->setPalette(vp);
+    m_input->viewport()->setAutoFillBackground(true);
+}
+
 void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
 {
     guardFont(m_nickPrefix, nickFont);
@@ -556,6 +568,14 @@ void ChannelPane::dropEvent(QDropEvent *event)
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
+    // A repolish resets the input viewport's autofill — re-assert the
+    // fractional-scale seam guard (see MainWindow::updateInputViewportFill).
+    if (m_input && obj == m_input->viewport() && event->type() == QEvent::StyleChange) {
+        if (m_inputBase.isValid() && !m_input->viewport()->autoFillBackground())
+            setInputBase(m_inputBase);
+        return false;
+    }
+
     // A repolish reset a guarded widget's font — put ours back. Compare the
     // attributes we care about (not QFont equality, whose resolve-mask
     // comparison never matches a resolved widget font) and latch against the

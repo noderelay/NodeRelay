@@ -636,6 +636,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
 
+    // A stylesheet (re)application resets the input viewport's autofill
+    // (QStyleSheetStyle::polish) — re-assert the fractional-scale seam guard.
+    if (m_input && obj == m_input->viewport() && event->type() == QEvent::StyleChange) {
+        if (!m_input->viewport()->autoFillBackground())
+            updateInputViewportFill();
+        return false;
+    }
+
     // A popped-out pane window was closed via its OS title-bar button.
     if (event->type() == QEvent::Close && !m_paneWindows.isEmpty()) {
         for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it) {
@@ -1635,9 +1643,11 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
             MenuIcons::fromSvg(QStringLiteral(":/icons/mi-right-panel-close.svg"), ic, 20),
             MenuIcons::fromSvg(QStringLiteral(":/icons/mi-left-panel-close.svg"), ic, 20),
             MenuIcons::groups(ic, 20));
-        if (m_theme.valid)
+        if (m_theme.valid) {
             pane->setNickChrome(m_config.ui.panelCards ? m_theme.nicklistBg : m_theme.bufferBg,
                                 m_config.ui.panelCards);
+            pane->setInputBase(QColor(m_theme.inputBg));
+        }
     }
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,
