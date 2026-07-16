@@ -45,14 +45,14 @@ avatar_url = "https://example.com/avatar.png"   # https:// URL or /local/path.pn
 
 [[server]]
 # disabled = true             # uncomment to keep this server in config but skip it on startup
-name = "LinuxDojo"            # display name in the sidebar
-host = "irc.linuxdojo.org"    # server hostname
-port = 6697                   # 6697 = standard TLS port
-ssl = true                    # always use TLS
-nick = "yournick"             # change this to your nickname
-user = "uplink"               # username in your hostmask
-realname = "Uplink User"      # shown in WHOIS
-channels = "#uplink, #linux"  # channels to join on connect (comma-separated)
+name = "LiberaChat"              # display name in the sidebar
+host = "irc.libera.chat"         # server hostname
+port = 6697                      # 6697 = standard TLS port
+ssl = true                       # always use TLS
+nick = "yournick"                # change this to your nickname
+user = "uplink"                  # username in your hostmask
+realname = "Uplink User"         # shown in WHOIS
+channels = "#uplinkirc, #linux"  # channels to join on connect (comma-separated)
 
 # quit_message — sent to the server when you disconnect or type /quit with no argument.
 # Leave blank (or omit) to use the default: "Uplink".
@@ -94,8 +94,8 @@ away_message = "Away from keyboard"
 
 # [[server]]
 # disabled = true
-# name = "Libera"
-# host = "irc.libera.chat"
+# name = "OFTC"
+# host = "irc.oftc.net"
 # port = 6697
 # ssl = true
 # nick = "yournick"

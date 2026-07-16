@@ -137,7 +137,7 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     addEyeToggle(m_nickservPassword);
 
     m_autoJoin = new QLineEdit;
-    m_autoJoin->setPlaceholderText("#uplink, #linux, #archlinux");
+    m_autoJoin->setPlaceholderText("#uplinkirc, #linux, #archlinux");
 
     auto *channelNote = new QLabel(
         "⚠ To join a password-protected channel, edit <b>config.toml</b> directly:<br/>"

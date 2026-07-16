@@ -33,7 +33,7 @@ Tick each off as you shoot it.
 
 ## Tier 2: fill in later
 
-- [ ] **first-launch.png**: The app right after first launch: connected to #uplink, everything at defaults.
+- [ ] **first-launch.png**: The app right after first launch: connected to #uplinkirc, everything at defaults.
 - [ ] **keychain-prompt.png**: Your OS keychain unlock/save prompt appearing when Uplink stores a password.
 - [x] **event-condensation-expanded.png**: The same join/part group expanded to full lines (hostmasks + quit reasons).
 - [ ] **unread-separator.png**: The `── N new messages ──` divider in the chat view.

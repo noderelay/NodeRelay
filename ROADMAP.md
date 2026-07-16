@@ -1,7 +1,7 @@
 # Uplink Roadmap
 
 A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.
-Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
+Default network: **irc.libera.chat:6697** — channel **#uplinkirc**
 
 Overhauled 2026-07-14. Everything shipped through v2026.7.5 is summarized by area under **Completed**, with notes on how complete each area actually is. The old item-by-item checklist (roughly 450 entries) lives in this file's git history.
 
