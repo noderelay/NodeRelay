@@ -1193,6 +1193,17 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.6 — 2026-07-16
+
+- **New home: Libera.Chat.** First launch now connects to **irc.libera.chat** and joins **#uplinkirc**, the project's support channel. Existing configs are not touched. Docs and examples all point at the new network
+- **Uplink is on the AUR**: `yay -S uplink-irc` on Arch builds the latest release against system Qt. The plain `uplink` name was already taken, by the Introversion game of all things
+- **Byte counter in the input box**: once a line passes half the IRC message budget a small counter appears ("412/493"). If the line would be split into more than one message it turns amber and says how many. Nothing gets blocked, it just tells you what will happen when you hit enter
+- **Taskbar icon fixed for good**: the app identifies as `io.github.noderelay.UplinkIRC` everywhere now. Some gamer icon themes ship the Introversion game's icon under the bare name "uplink", and KDE's dash-stripping fallback matched it for our old "uplink-irc" name before ever reaching the real icon. Reverse-DNS names have no dash suffix to strip, so the right icon shows in every theme
+- **Even pane stacks**: a third pane splits its slot down the middle and four panes make even quarters, instead of lopsided slices
+- Fix: a profile/avatar lookup that failed at the wrong moment (user going offline mid-hover) no longer hides that user's info for the rest of the session. Failed lookups can retry, and a rejoin refreshes the cached profile
+- Fix: loading older history through soju bouncers works now. History requests use timestamp bounds instead of message-id bounds, which soju rejects
+- Fix: connecting through ZNC with SASL attaches your network instead of parking you in an empty status window
+
 ## v2026.7.5 — 2026-07-13
 
 - The **Search** menu is back — v2026.7.4 removed it by mistake. The extra "Search" that can appear at the very end of the bar on KDE (a magnifier that unfolds a text field) is Plasma's own global-menu search, not Uplink's; the menu cleanup was aimed at that one, but only Plasma can remove it
