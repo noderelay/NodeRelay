@@ -9,6 +9,7 @@
 #include "ui/dropframe.h"
 #include "ui/elidedlabel.h"
 #include "ui/menuicons.h"
+#include "ui/splittergrip.h"
 
 #include <QListView>
 #include <QScroller>
@@ -233,6 +234,9 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     bodySplitter->setStretchFactor(1, 0);
     bodySplitter->setSizes({999, 120});
     vbox->addWidget(bodySplitter, 1);
+    // Widen the resize grab area past the visible gap; grows toward the
+    // chat column, matching the main window's grips (see SplitterGrip).
+    new SplitterGrip(bodySplitter, 1, kGripExtra, 0);
 
     // Search bar (hidden until the magnifier is clicked)
     m_searchBar = new SearchBar(m_chatView);
