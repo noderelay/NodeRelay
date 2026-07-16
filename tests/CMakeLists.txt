@@ -34,12 +34,6 @@ uplink_test(tst_ignoretypes
         tst_ignoretypes.cpp
 )
 
-uplink_test(tst_pluginprotocol
-    SOURCES
-        tst_pluginprotocol.cpp
-        ${CMAKE_SOURCE_DIR}/src/plugins/pluginprotocol.cpp
-)
-
 # ---------------------------------------------------------------------------
 # Fuzz targets — two build modes:
 #   Standalone replay (default): any compiler, replays corpus as a smoke test

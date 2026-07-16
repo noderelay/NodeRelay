@@ -40,7 +40,6 @@
         <file alias="mi-delete.svg">icons/mi-delete.svg</file>
         <file alias="mi-check.svg">icons/mi-check.svg</file>
         <file alias="mi-lightbulb-2.svg">icons/mi-lightbulb-2.svg</file>
-        <file alias="mi-extension.svg">icons/mi-extension.svg</file>
         <file alias="mi-bolt.svg">icons/mi-bolt.svg</file>
         <file alias="mi-do-not-disturb.svg">icons/mi-do-not-disturb.svg</file>
         <file alias="mi-forum.svg">icons/mi-forum.svg</file>
@@ -59,11 +58,6 @@
         <file alias="mi-file-open.svg">icons/mi-file-open.svg</file>
         <file alias="mi-clear-all.svg">icons/mi-clear-all.svg</file>
     </qresource>
-    <qresource prefix="/plugins">
-        <file alias="linklog.py">../plugins/linklog.py</file>
-        <file alias="pingpong.py">../plugins/pingpong.py</file>
-        <file alias="greeter.sh">../plugins/greeter.sh</file>
-    </qresource>
     <qresource prefix="/scripts">
         <file alias="music.sh">../scripts/music.sh</file>
         <file alias="weather.sh">../scripts/weather.sh</file>
@@ -76,6 +70,5 @@
         <file alias="ircv3.md">../docs/ircv3.md</file>
         <file alias="faq.md">../docs/faq.md</file>
         <file alias="keyboard-shortcuts.md">../docs/keyboard-shortcuts.md</file>
-        <file alias="plugins.md">../docs/plugins.md</file>
     </qresource>
 </RCC>

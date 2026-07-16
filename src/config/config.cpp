@@ -240,20 +240,6 @@ Config Config::load(const QString &path)
             }
         }
 
-        // [[plugin]]
-        if (auto plugins = tbl["plugin"].as_array()) {
-            for (auto &node : *plugins) {
-                auto *p = node.as_table();
-                if (!p) continue;
-                PluginBinding pb;
-                pb.name    = QString::fromStdString((*p)["name"].value_or<std::string>("")).trimmed();
-                pb.path    = QString::fromStdString((*p)["path"].value_or<std::string>(""));
-                pb.enabled = (*p)["enabled"].value_or(false);
-                if (!pb.name.isEmpty() && !pb.path.isEmpty())
-                    cfg.plugins.append(pb);
-            }
-        }
-
         // [[server]]
         if (auto servers = tbl["server"].as_array()) {
             for (auto &node : *servers) {
@@ -324,7 +310,6 @@ Config Config::load(const QString &path)
     }
 
     installDefaultScripts(cfg.scripts);
-    installDefaultPlugins(cfg.plugins);
 
     return cfg;
 }
@@ -415,13 +400,6 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         out << "command = " << tomlQuote(sb.command) << "\n";
         out << "path = " << tomlQuote(sb.path) << "\n";
         out << "enabled = " << boolStr(sb.enabled) << "\n\n";
-    }
-
-    for (const auto &pb : cfg.plugins) {
-        out << "[[plugin]]\n";
-        out << "name = " << tomlQuote(pb.name) << "\n";
-        out << "path = " << tomlQuote(pb.path) << "\n";
-        out << "enabled = " << boolStr(pb.enabled) << "\n\n";
     }
 
     for (const auto &s : cfg.servers) {
@@ -596,55 +574,5 @@ void Config::installDefaultScripts(QList<ScriptBinding> &scripts)
         }
         if (!found)
             scripts.append({QLatin1String(bs.command), dest, true});
-    }
-}
-
-QString Config::defaultPluginsPath()
-{
-    return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-           + "/.config/uplink/plugins";
-}
-
-struct BundledPlugin {
-    const char *name;
-    const char *resource;
-    const char *filename;
-};
-
-static const BundledPlugin kBundledPlugins[] = {
-    { "linklog",  ":/plugins/linklog.py",  "linklog.py"  },
-    { "pingpong", ":/plugins/pingpong.py", "pingpong.py" },
-    { "greeter",  ":/plugins/greeter.sh",  "greeter.sh"  },
-};
-
-void Config::installDefaultPlugins(QList<PluginBinding> &plugins)
-{
-    const QString dir = defaultPluginsPath();
-    QDir().mkpath(dir);
-
-    for (const auto &bp : kBundledPlugins) {
-        const QString dest = dir + "/" + bp.filename;
-
-        // Always overwrite bundled plugins with the version shipped in the app
-        QFile src(bp.resource);
-        if (src.open(QIODevice::ReadOnly)) {
-            QFile out(dest);
-            if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                out.write(src.readAll());
-                out.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner
-                                   | QFileDevice::ExeOwner);
-            }
-        }
-
-        // Add config entry (disabled — plugins are opt-in) if the name is new
-        bool found = false;
-        for (const auto &pb : std::as_const(plugins)) {
-            if (pb.name == QLatin1String(bp.name)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-            plugins.append({QLatin1String(bp.name), dest, false});
     }
 }

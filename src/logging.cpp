@@ -6,4 +6,3 @@
 Q_LOGGING_CATEGORY(lcIrc,     "uplink.irc",     QtInfoMsg)
 Q_LOGGING_CATEGORY(lcDcc,     "uplink.dcc",     QtInfoMsg)
 Q_LOGGING_CATEGORY(lcPreview, "uplink.preview", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPlugin,  "uplink.plugin",  QtInfoMsg)
