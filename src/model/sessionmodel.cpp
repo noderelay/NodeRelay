@@ -605,6 +605,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::netsplitDetected, this, &SessionModel::onNetsplitDetected);
     connect(cl, &IrcClient::netjoinDetected,  this, &SessionModel::onNetjoinDetected);
     connect(cl, &IrcClient::standardReply,    this, &SessionModel::onStandardReply);
+    connect(cl, &IrcClient::historyBatchDone, this, &SessionModel::onHistoryBatchDone);
     connect(cl, &IrcClient::nickChanged,     this, &SessionModel::onNickChanged);
     connect(cl, &IrcClient::kicked,          this, &SessionModel::onKicked);
     connect(cl, &IrcClient::topicReceived,    this, &SessionModel::onTopicReceived);
@@ -756,18 +757,33 @@ void SessionModel::requestOlderHistory(ServerId host, BufferId channel)
     auto *cl = clientFor(host);
     if (!cl) return;
 
-    m_pendingHistoryBefore.insert(key);
-    cl->requestHistoryBefore(channel.str(), oldest, 100);
+    if (!cl->requestHistoryBefore(channel.str(), oldest, 100)) {
+        // No chathistory cap on this connection — nothing will ever arrive.
+        emit olderHistoryLoaded(host, channel, 0);
+        return;
+    }
 
-    QTimer::singleShot(0, this, [this, host, channel, key]{
-        m_pendingHistoryBefore.remove(key);
-        const QList<Message> msgs = m_historyBeforeBuf.take(key);
-        if (!msgs.isEmpty()) {
-            auto *target = this->channel(host, channel);
-            if (target) target->prependMessages(msgs);
-        }
-        emit olderHistoryLoaded(host, channel, static_cast<int>(msgs.size()));
+    // Completed by onHistoryBatchDone when the reply batch closes. The
+    // timeout is only a safety net for a server that never answers.
+    m_pendingHistoryBefore.insert(key);
+    QTimer::singleShot(10000, this, [this, host, channel, key]{
+        if (!m_pendingHistoryBefore.remove(key)) return;  // batch already landed
+        m_historyBeforeBuf.remove(key);
+        emit olderHistoryLoaded(host, channel, 0);
     });
+}
+
+void SessionModel::onHistoryBatchDone(const QString &host, const QString &target)
+{
+    const QString key = host + '\t' + target.toLower();
+    if (!m_pendingHistoryBefore.remove(key)) return;  // join-time LATEST etc.
+
+    const QList<Message> msgs = m_historyBeforeBuf.take(key);
+    if (!msgs.isEmpty()) {
+        if (auto *ch = this->channel(ServerId{host}, BufferId{target}))
+            ch->prependMessages(msgs);
+    }
+    emit olderHistoryLoaded(ServerId{host}, BufferId{target}, static_cast<int>(msgs.size()));
 }
 
 // ---------------------------------------------------------------------------

@@ -197,6 +197,7 @@ private:
                             const QStringList &channels, const QStringList &nicks);
     void onStandardReply   (const QString &host, const QString &channel,
                             const QString &severity, const QString &text);
+    void onHistoryBatchDone(const QString &host, const QString &target);
     void onNickChanged    (const QString &host, const QString &oldNick, const QString &newNick);
     void onKicked         (const QString &host, const QString &channel, const QString &nick,
                            const QString &by,   const QString &reason);
