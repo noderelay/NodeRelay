@@ -153,7 +153,6 @@
 | **Jump to bottom** | Floating button appears when scrolled up in a busy channel — click to return to live chat. |
 | **Touch scrolling** | Kinetic flick-to-scroll with momentum on touchscreen and tablet devices — chat, sidebar, and nick list. |
 | **User scripts** | Link external scripts (any language) to custom `/commands` via Preferences → Scripts. Four bundled: `/music`, `/weather`, `/uptime`, `/roll`. Cross-platform — works on Linux, macOS, and Windows (via Git Bash). |
-| **Plugins** | Long-running scripts that react to IRC events: auto-responders, link loggers, bots. Events in as JSON lines on stdin, actions out on stdout — any language, crash-isolated, no SDK needed. Three commented examples ship built-in; see [docs/plugins.md](docs/plugins.md). |
 
 ### 🖥️ Nick List & Sidebar
 

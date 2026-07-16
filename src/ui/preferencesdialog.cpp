@@ -93,7 +93,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     addNavItem("Logging",       MenuIcons::documentation());
     addNavItem("Profile",       MenuIcons::gear());
     addNavItem("Scripts",       MenuIcons::scripts());
-    addNavItem("Plugins",       MenuIcons::plugins());
 
     m_pages = new QStackedWidget;
     m_pages->addWidget(createAppearancePage(cfg, accent));
@@ -103,7 +102,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     m_pages->addWidget(createLoggingPage(cfg));
     m_pages->addWidget(createProfilePage(cfg, accent));
     m_pages->addWidget(createScriptsPage(cfg, accent));
-    m_pages->addWidget(createPluginsPage(cfg, accent));
 
     connect(m_navList, &QListWidget::currentRowChanged,
             m_pages, &QStackedWidget::setCurrentIndex);
@@ -647,158 +645,6 @@ QWidget *PreferencesDialog::createScriptsPage(const Config &cfg, const QColor &a
                     addRow(sb);
             }
             emitScripts();
-        });
-        btnRow->addWidget(restoreBtn);
-
-        btnRow->addStretch();
-        vbox->addLayout(btnRow);
-    }
-
-    vbox->addStretch();
-    return page;
-}
-
-QWidget *PreferencesDialog::createPluginsPage(const Config &cfg, const QColor &accent)
-{
-    auto *page = new QWidget;
-    auto *vbox = new QVBoxLayout(page);
-    vbox->setContentsMargins(12, 8, 12, 8);
-    vbox->setSpacing(6);
-
-    vbox->addWidget(pageTitle("Plugins"));
-
-    {
-        auto *note = new QLabel(
-            "Plugins are scripts that keep running and react to IRC events — "
-            "auto-responders, loggers, bots. Uplink sends events to the script "
-            "as JSON lines on stdin; the script prints JSON actions on stdout. "
-            "Any language works. Type <b>/plugins</b> to see what's running. "
-            "See the Plugins guide in the docs for a 5-minute tutorial.");
-        note->setWordWrap(true);
-        note->setStyleSheet("font-size: 9pt;");
-        vbox->addWidget(note);
-    }
-
-    vbox->addSpacing(4);
-
-    auto *pluginsList = new QVBoxLayout;
-    pluginsList->setSpacing(8);
-    auto *pluginsContainer = new QWidget;
-    pluginsContainer->setLayout(pluginsList);
-
-    auto emitPlugins = [this, pluginsContainer] {
-        QList<PluginBinding> plugins;
-        const auto rows = pluginsContainer->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
-        for (auto *row : rows) {
-            auto *nameEdit = row->findChild<QLineEdit*>("nameEdit");
-            auto *pathEdit = row->findChild<QLineEdit*>("pathEdit");
-            auto *chk      = row->findChild<QCheckBox*>("enabledChk");
-            if (!nameEdit || !pathEdit || !chk) continue;
-            PluginBinding pb;
-            pb.name    = nameEdit->text().trimmed();
-            pb.path    = pathEdit->text().trimmed();
-            pb.enabled = chk->isChecked();
-            if (!pb.name.isEmpty() && !pb.path.isEmpty())
-                plugins.append(pb);
-        }
-        emit pluginsChanged(plugins);
-    };
-
-    auto addRow = [this, pluginsList, emitPlugins](const PluginBinding &pb) {
-        auto *row = new QWidget;
-        auto *rowLayout = new QHBoxLayout(row);
-        rowLayout->setContentsMargins(0, 4, 0, 4);
-        rowLayout->setSpacing(6);
-
-        auto *chk = new QCheckBox;
-        chk->setObjectName("enabledChk");
-        chk->setChecked(pb.enabled);
-        chk->setToolTip("Enabled — the plugin starts with Uplink and runs until you disable it");
-        rowLayout->addWidget(chk);
-
-        auto *nameEdit = new QLineEdit(pb.name);
-        nameEdit->setObjectName("nameEdit");
-        nameEdit->setPlaceholderText("name");
-        nameEdit->setFixedWidth(108);
-        rowLayout->addWidget(nameEdit);
-
-        auto *pathEdit = new QLineEdit(pb.path);
-        pathEdit->setObjectName("pathEdit");
-        pathEdit->setPlaceholderText("Path to plugin...");
-        rowLayout->addWidget(pathEdit, 1);
-
-        auto *browseBtn = new QPushButton("Browse...");
-        browseBtn->setAutoDefault(false);
-        connect(browseBtn, &QPushButton::clicked, this, [this, pathEdit] {
-            const QString path = QFileDialog::getOpenFileName(
-                this, "Select Plugin", Config::defaultPluginsPath(), "All Files (*)");
-            if (!path.isEmpty())
-                pathEdit->setText(path);
-        });
-        rowLayout->addWidget(browseBtn);
-
-        auto *removeBtn = new QPushButton;
-        removeBtn->setIcon(MenuIcons::deleteIcon());
-        removeBtn->setIconSize(QSize(18, 18));
-        removeBtn->setFixedSize(28, 28);
-        removeBtn->setFlat(true);
-        removeBtn->setAutoDefault(false);
-        removeBtn->setToolTip("Remove");
-        connect(removeBtn, &QPushButton::clicked, this, [row, emitPlugins] {
-            row->deleteLater();
-            emitPlugins();
-        });
-        rowLayout->addWidget(removeBtn);
-
-        pluginsList->addWidget(row);
-
-        connect(nameEdit, &QLineEdit::editingFinished, this, emitPlugins);
-        connect(pathEdit, &QLineEdit::editingFinished, this, emitPlugins);
-        connect(chk,      &QCheckBox::toggled,         this, emitPlugins);
-    };
-
-    for (const auto &pb : cfg.plugins)
-        addRow(pb);
-
-    vbox->addWidget(pluginsContainer);
-
-    {
-        auto *btnRow = new QHBoxLayout;
-
-        auto *addBtn = new PillButton("Add Plugin");
-        addBtn->setAccentColor(accent);
-        addBtn->setAutoDefault(false);
-        connect(addBtn, &QPushButton::clicked, this, [addRow] {
-            addRow(PluginBinding{});
-        });
-        btnRow->addWidget(addBtn);
-
-        auto *restoreBtn = new PillButton("Restore Examples");
-        restoreBtn->setAccentColor(accent);
-        restoreBtn->setAutoDefault(false);
-        connect(restoreBtn, &QPushButton::clicked, this, [addRow, emitPlugins, pluginsContainer] {
-            QList<PluginBinding> current;
-            const auto rows = pluginsContainer->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
-            for (auto *row : rows) {
-                auto *nameEdit = row->findChild<QLineEdit*>("nameEdit");
-                if (nameEdit)
-                    current.append({nameEdit->text().trimmed(), {}, false});
-            }
-            Config::installDefaultPlugins(current);
-            // Add rows for any newly installed examples
-            for (const auto &pb : std::as_const(current)) {
-                bool exists = false;
-                for (auto *row : rows) {
-                    auto *nameEdit = row->findChild<QLineEdit*>("nameEdit");
-                    if (nameEdit && nameEdit->text().trimmed() == pb.name) {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (!exists)
-                    addRow(pb);
-            }
-            emitPlugins();
         });
         btnRow->addWidget(restoreBtn);
 

@@ -1,52 +1,6 @@
 # Changelog
 
 <!--
-Session 2026-07-16 (iii): plugin support (unreleased):
-- Plugins: long-running external processes that react to IRC events.
-  JSON lines both ways — Uplink writes events (hello, message with
-  kind/self/mentions_you/account, join, part, quit, kick, nick with
-  old/new via Message.replyTo, topic, connected, disconnected) to the
-  plugin's stdin; plugin writes actions (say, me, print, command) to
-  stdout. command routes through CommandDispatcher::dispatch so plugins
-  get every built-in; non-slash command lines fall through to
-  sendMessage, same as typing.
-- New: src/plugins/pluginprotocol.{h,cpp} — pure Qt Core codec,
-  unit-tested (tests/tst_pluginprotocol.cpp, 20 tests: shapes, action
-  parsing incl. malformed/unknown/oversized/UTF-8). History and
-  redacted messages are NEVER forwarded (chathistory backfill would
-  make bots answer week-old triggers); netsplit/netjoin synthetic
-  Join/Quit (empty nick) skipped.
-- New: src/ui/plugincontroller.{h,cpp} — QProcess per enabled plugin,
-  line-buffered stdout with 1MB runaway guard, stderr → uplink.plugin
-  logging category (new, logging.{h,cpp}), crash restart with 1s/4s/9s
-  backoff then 3-strike fail + visible notice, flood guard 10 actions
-  per 5s with one-time warning, terminate→kill(1.5s) on quit.
-  Notices go to the active buffer via SessionModel::localMessage.
-- Config: [[plugin]] block (name/path/enabled, DISABLED by default —
-  opt-in), Config::plugins, installDefaultPlugins() mirrors the
-  scripts installer into ~/.config/uplink/plugins. Three commented
-  example plugins ship as Qt resources from /plugins: pingpong.py
-  (canonical bot, cooldown + self-guard), linklog.py (watch-only),
-  greeter.sh (bash+jq, proves language-agnostic). All three verified
-  standalone by piping event lines.
-- UI: Preferences → Plugins page (mirrors Scripts page, Restore
-  Examples), /plugins status command (running pid/stopped/failed/
-  disabled), /help lists it, new MenuIcons::plugins() from
-  mi-extension.svg (Material Symbols, same source as the mi-* set).
-- Docs (the headline deliverable, Joe: "AWESOME documentation for the
-  most basic user"): NEW docs/plugins.md — 5-minute tutorial, full
-  event/action reference with JSON examples, standalone testing,
-  troubleshooting table, cookbook; in-app as Help → Documentation →
-  Plugins tab. howto.html #plugins section + nav; configuration.md
-  [[plugin]] block; commands.md /plugins + scripts-vs-plugins pointer;
-  faq.md "Scripts & plugins" section (difference, not-responding
-  checklist, self-loop); README feature row; config.toml.example block.
-- The self:true loop trap and stdout flushing are called out in every
-  doc surface and every example — the two failure modes basic users
-  will actually hit.
--->
-
-<!--
 Session 2026-07-16: input byte counter, icon identity fixed for real, equal pane stacks, metadata/chathistory fixes, ZNC login (PRs #92-#98, unreleased):
 - #92 the message input shows a byte counter once a line passes half the
   per-message wire budget (510 minus the PRIVMSG overhead, minus the
