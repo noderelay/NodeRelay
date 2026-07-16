@@ -703,6 +703,8 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         }
     } else if (cmd == "/clear") {
         emit clearChat();
+    } else if (cmd == "/plugins") {
+        emit pluginsStatusRequested(host, channel);
     } else if (cmd == "/help") {
         const QStringList lines = {
             "Available commands:",
@@ -755,6 +757,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             "  /server [host[:port]]       — alias for /connect",
             "  /disconnect                 — close the current server and all its channels",
             "  /quit [message]             — disconnect from server",
+            "  /plugins                    — list configured plugins and their status",
         };
         for (const QString &line : lines)
             m_model->localMessage(host, channel, line);

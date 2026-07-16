@@ -611,6 +611,7 @@
     <li><a href="#link-previews">Link previews</a></li>
     <li><a href="#dcc">DCC file transfer</a></li>
     <li><a href="#scripting">User scripts</a></li>
+    <li><a href="#plugins">Plugins</a></li>
   </ul>
 
   <div class="nav-section">Tweaks</div>
@@ -3093,6 +3094,44 @@ link_previews = true</pre>
 
     <div class="tip">
       <strong>Deleted a bundled script?</strong> Click <strong>Restore Defaults</strong> in Preferences → Scripts to bring back only the missing ones; your custom scripts are never touched.
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- PLUGINS -->
+  <section id="plugins">
+    <h2>Plugins: scripts that react to events</h2>
+    <p>Scripts run once when you type their command. <strong>Plugins keep running and react on their own</strong> — auto-responders, link loggers, notify rules, bots. A plugin is any program that reads events from stdin (one JSON object per line: "alice said hi in #linux") and prints actions to stdout ("say pong in #linux"). Any language works.</p>
+
+    <p>Three example plugins are installed to <code>~/.config/uplink/plugins/</code> on first launch, disabled until you opt in:</p>
+
+    <table>
+      <tr><th>Plugin</th><th>What it does</th><th>Needs</th></tr>
+      <tr><td><code>pingpong.py</code></td><td>Answers "pong" when someone says <code>!ping</code></td><td>python3</td></tr>
+      <tr><td><code>linklog.py</code></td><td>Saves every link you see to <code>~/uplink-links.txt</code></td><td>python3</td></tr>
+      <tr><td><code>greeter.sh</code></td><td>Welcomes people joining a channel you name</td><td>bash + jq</td></tr>
+    </table>
+
+    <h3>Try one in two minutes</h3>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>Settings → Preferences</strong> (<kbd>Ctrl</kbd>+<kbd>,</kbd>) and pick the <strong>Plugins</strong> page.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Tick the checkbox next to <strong>pingpong</strong>. It's running immediately.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Type <code>/plugins</code> in any channel — you should see <code>pingpong — running</code>.</div></div>
+    <div class="step-row"><span class="step">4</span><div>Have anyone say <code>!ping</code> in a channel you're in. The plugin answers <code>pong</code> as you.</div></div>
+
+    <h3>Write your own</h3>
+    <p>Copy <code>pingpong.py</code> — it's commented line-by-line for exactly this purpose. Edit the trigger and the reply, save under a new name, <code>chmod +x</code>, then <strong>Preferences → Plugins → Add Plugin</strong>. Because the interface is plain stdin/stdout, you can test any plugin in a terminal without touching IRC:</p>
+
+    <pre><code>echo '{"event":"message","server":"s","buffer":"#c","nick":"alice","text":"!ping","kind":"message","self":false}' | ./pingpong.py</code></pre>
+
+    <p>If it prints the right action line, it works in Uplink. The full event and action reference — every field, lifecycle rules, debugging, a cookbook of ideas — lives in the <a href="https://github.com/noderelay/UplinkIRC/blob/main/docs/plugins.md" target="_blank">Plugins guide</a>, also available in-app under <strong>Help → Documentation → Plugins</strong>.</p>
+
+    <div class="tip">
+      <strong>Two rules every plugin must follow:</strong> skip events with <code>"self": true</code> (or your plugin answers itself forever), and flush stdout after every line (in Python: <code>print(..., flush=True)</code>). A plugin that "does nothing" is almost always missing the flush.
+    </div>
+
+    <div class="tip">
+      <strong>Misbehaving plugin?</strong> Crashed plugins restart automatically; after three crashes Uplink stops them and tells you. A plugin sending more than 10 actions in 5 seconds gets throttled. <code>/plugins</code> shows the live status of everything.
     </div>
   </section>
 

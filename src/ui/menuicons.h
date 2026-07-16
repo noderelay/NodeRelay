@@ -73,6 +73,7 @@ inline QIcon manageServers  (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/mi-manage-accounts.svg",     c, 24); }
 
 inline QIcon scripts        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",        c); }
+inline QIcon plugins        (const QColor &c = {}) { return fromSvg(":/icons/mi-extension.svg",          c); }
 inline QIcon deleteIcon     (const QColor &c = {}) { return fromSvg(":/icons/mi-delete.svg",            c); }
 inline QIcon cut            (const QColor &c = {}) { return fromSvg(":/icons/mi-content-cut.svg",        c); }
 inline QIcon copy           (const QColor &c = {}) { return fromSvg(":/icons/mi-content-copy.svg",       c); }

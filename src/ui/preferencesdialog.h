@@ -46,6 +46,7 @@ signals:
     void docsRequested();
     void profileSetRequested(const QString &displayName, const QString &avatarUrl);
     void scriptsChanged(const QList<ScriptBinding> &scripts);
+    void pluginsChanged(const QList<PluginBinding> &plugins);
 
 private:
     QWidget *createAppearancePage(const Config &cfg, const QColor &accent);
@@ -55,6 +56,7 @@ private:
     QWidget *createLoggingPage(const Config &cfg);
     QWidget *createProfilePage(const Config &cfg, const QColor &accent);
     QWidget *createScriptsPage(const Config &cfg, const QColor &accent);
+    QWidget *createPluginsPage(const Config &cfg, const QColor &accent);
 
     QListWidget    *m_navList{nullptr};
     QStackedWidget *m_pages{nullptr};

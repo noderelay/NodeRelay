@@ -34,6 +34,12 @@ struct ScriptBinding {
     bool    enabled{true};
 };
 
+struct PluginBinding {
+    QString name;       // display name, e.g. "pingpong"
+    QString path;       // absolute path to executable
+    bool    enabled{false};  // opt-in: plugins run continuously
+};
+
 struct ChannelConfig {
     QString name;
     QString password;
@@ -134,6 +140,7 @@ struct Config {
     QList<IgnoreEntry>  ignoreList;
     QStringList         monitorList;   // nicks to watch with MONITOR
     QList<ScriptBinding> scripts;
+    QList<PluginBinding> plugins;
     QString             profileDisplayName; // draft/metadata-2 display-name
     QString             profileAvatarUrl;   // draft/metadata-2 avatar URL
 
@@ -145,4 +152,6 @@ struct Config {
     static void      ensureExists(const QString &path);
     static QString   defaultScriptsPath();
     static void      installDefaultScripts(QList<ScriptBinding> &scripts);
+    static QString   defaultPluginsPath();
+    static void      installDefaultPlugins(QList<PluginBinding> &plugins);
 };

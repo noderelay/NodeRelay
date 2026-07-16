@@ -89,6 +89,17 @@ away_message = "Away from keyboard"
 # path = "/usr/games/fortune"
 # enabled = true
 
+# ─── Plugins ─────────────────────────────────────────────────────────────────
+# Plugins keep running and react to IRC events (scripts run once per command).
+# Three examples are installed to ~/.config/uplink/plugins on first launch.
+# Manage them from the GUI: Settings → Preferences (Ctrl+,) → Plugins
+# Full guide: docs/plugins.md
+
+# [[plugin]]
+# name = "pingpong"
+# path = "/home/you/.config/uplink/plugins/pingpong.py"
+# enabled = false
+
 # ─── Multiple servers ─────────────────────────────────────────────────────────
 # Add more [[server]] blocks to connect to additional networks.
 

@@ -28,6 +28,7 @@
 #include "ui/nickfilteredit.h"
 #include "ui/linkpreview.h"
 #include "ui/previewcontroller.h"
+#include "ui/plugincontroller.h"
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
@@ -413,6 +414,13 @@ void MainWindow::connectPreferences()
             this, [this](const QList<ScriptBinding> &scripts) {
         m_config.scripts = scripts;
         saveConfig();
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::pluginsChanged,
+            this, [this](const QList<PluginBinding> &plugins) {
+        m_config.plugins = plugins;
+        saveConfig();
+        m_plugins->reconcile(plugins);
     });
 }
 

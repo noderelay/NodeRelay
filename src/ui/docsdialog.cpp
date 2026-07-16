@@ -28,6 +28,7 @@ DocsDialog::DocsDialog(QWidget *parent)
     m_tabs = new QTabWidget;
     addTab(m_tabs, "Configuration",  ":/docs/configuration.md");
     addTab(m_tabs, "Commands",       ":/docs/commands.md");
+    addTab(m_tabs, "Plugins",        ":/docs/plugins.md");
     addTab(m_tabs, "IRCv3",          ":/docs/ircv3.md");
     addTab(m_tabs, "FAQ",            ":/docs/faq.md");
     addTab(m_tabs, "Shortcuts",      ":/docs/keyboard-shortcuts.md");
