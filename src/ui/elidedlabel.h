@@ -14,7 +14,12 @@ public:
     explicit ElidedLabel(const QString &text, QWidget *parent = nullptr)
         : QLabel(parent) { setFullText(text); }
 
-    void setFullText(const QString &text) { m_fullText = text; elide(); }
+    // updateGeometry() is load-bearing: elide() may leave the *displayed*
+    // text unchanged (e.g. still elided-to-nothing at the current width),
+    // and QLabel::setText only invalidates the layout when the shown text's
+    // size changes — without it the layout keeps serving a stale cached
+    // width hint (an empty-constructed label stays 0 px wide forever).
+    void setFullText(const QString &text) { m_fullText = text; elide(); updateGeometry(); }
     QString fullText() const { return m_fullText; }
 
     QSize minimumSizeHint() const override
@@ -46,8 +51,14 @@ protected:
 private:
     void elide()
     {
-        const QString shown = fontMetrics().elidedText(
-            m_fullText, Qt::ElideRight, contentsRect().width());
+        // Explicit fits-check first: elidedText() can elide at exactly the
+        // fitting width (its text engine may measure a hair wider than
+        // horizontalAdvance), which clips the tail when the layout grants
+        // precisely the size hint.
+        const int w = contentsRect().width();
+        const QString shown = fontMetrics().horizontalAdvance(m_fullText) <= w
+            ? m_fullText
+            : fontMetrics().elidedText(m_fullText, Qt::ElideRight, w);
         QLabel::setText(shown);
         setToolTip(shown == m_fullText ? QString() : m_fullText);
     }

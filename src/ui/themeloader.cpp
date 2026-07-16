@@ -592,7 +592,6 @@ QSplitter#paneBodySplitter::handle {
 
 QLabel#channelLabel {
     color: {{accent}};
-    font-weight: bold;
 }
 QLabel#modesLabel {
     color: {{placeholder}};
