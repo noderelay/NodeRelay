@@ -2121,7 +2121,11 @@ typing_indicator = true   # set to false to disable completely</pre>
     </p>
 
     <div class="note">
-      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> and <a href="https://soju.im/" target="_blank" rel="noopener">soju</a> support it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability: no errors, it just does nothing.
+      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> supports it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability: no errors, it just does nothing.
+    </div>
+
+    <div class="note">
+      <strong>Bouncers block metadata.</strong> Neither soju nor ZNC passes <code>draft/metadata-2</code> through to clients, so behind a bouncer you will not see anyone's avatar and your own profile will not publish — even when the network itself supports metadata. Connect to the network directly for the full experience. Run <code>/caps</code> in a server buffer to see which capabilities survived your bouncer.
     </div>
 
     <h3>Where it displays</h3>
@@ -2261,6 +2265,14 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
 
     <p>To perform an action (like <em>* alice waves</em>), use <code>/me</code>:</p>
     <pre>/me waves at everyone</pre>
+
+    <h3>The byte counter</h3>
+    <p>
+      IRC limits each message to roughly 500 bytes on the wire. When a message passes half that budget, a small counter fades in at the right edge of the input box, e.g. <code>412/493</code> (bytes used / bytes available — the exact budget depends on the channel name and any pending reply). Cross the limit and the counter turns amber and switches to a message count, e.g. <code>2 messages</code>: nothing is ever cut off — Uplink splits long text into multiple messages (always at character-safe boundaries) and the counter tells you how many will be sent.
+    </p>
+    <p>
+      Bold/color formatting and emoji count against the budget (they cost bytes on the wire even when they look like one character), so the counter can move faster than your character count. Under half budget the counter stays hidden — normal chat never sees it.
+    </p>
   </section>
 
   <!-- COMMANDS -->

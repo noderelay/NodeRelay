@@ -52,7 +52,7 @@ History messages are visually distinct from live messages:
 - Timestamped with their original send time; previous-day messages show `MM/dd hh:mm` so you always know when they were sent
 - Not counted as unread, so they do not badge the channel in the sidebar
 
-When the user scrolls to the top of a channel buffer and all loaded messages have been displayed, Uplink sends `CHATHISTORY BEFORE <channel> msgid=<oldest> 100` to fetch the next batch of older messages. These are prepended to the buffer without jumping the scroll position. Uplink stops requesting when the server returns an empty batch.
+When the user scrolls to the top of a channel buffer and all loaded messages have been displayed, Uplink sends `CHATHISTORY BEFORE <channel> timestamp=<oldest> 100` to fetch the next batch of older messages. These are prepended to the buffer without jumping the scroll position. Uplink stops requesting when the server returns an empty batch. The bound is a timestamp rather than a msgid because some implementations (soju) reject msgid bounds; timestamps are accepted everywhere.
 
 This works on any server or bouncer that supports either cap name, including Ergo, soju, and modern ZNC.
 
@@ -290,7 +290,7 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 
 Associates key-value metadata with users: display names and avatar URLs stored server-side and synced to clients in real time.
 
-When a user sets or changes a `display-name` or `avatar` key, the server pushes a `METADATA` notification. Uplink receives and stores the data per-nick, fetches the avatar image in the background, and shows it in the **nick list tooltip**:
+Uplink subscribes to `display-name` and `avatar` changes at registration (`METADATA * SUB`), and fetches a user's keys on demand the first time you hover their nick — a channel-wide fetch on join would flood rate-limited servers. When a subscribed user changes a key, the server pushes a `METADATA` notification and Uplink updates immediately. Data is stored per-nick, the avatar image is fetched in the background, and everything shows in the **nick list tooltip**:
 
 ```
 [avatar image]  Name: Alice Smith
@@ -333,6 +333,12 @@ avatar_url = "https://example.com/avatar.png"
 ```
 
 No additional configuration is required; metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2`.
+
+#### Fetch semantics and bouncers
+
+The on-demand fetch is retried sensibly: a lookup that fails because the user just went offline no longer blocks that nick for the rest of the session, and a user rejoining clears their cached metadata so the next hover fetches fresh values (the server only pushes changes while both sides are online). The first hover on a nick requests the data; the tooltip fills in on the next hover.
+
+**Bouncers:** neither soju nor ZNC passes `draft/metadata-2` through to clients, so metadata works on direct connections only — behind a bouncer Uplink never sees the capability and skips metadata entirely. Use `/caps` in a server buffer to check what your bouncer forwards.
 
 ### WebSocket transport
 

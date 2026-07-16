@@ -1,6 +1,64 @@
 # Changelog
 
 <!--
+Session 2026-07-16: input byte counter, icon identity fixed for real, equal pane stacks, metadata/chathistory fixes, ZNC login (PRs #92-#98, unreleased):
+- #92 the message input shows a byte counter once a line passes half the
+  per-message wire budget (510 minus the PRIVMSG overhead, minus the
+  pending reply tag; measured on the IRC-encoded text so formatting
+  bytes count). Muted "412/493" while it fits, amber "2 messages" once
+  privmsg() would split — long input is never an error, the counter
+  reports the split. Threshold started at 80%, dropped to 50% for
+  discoverability. Main input only; pane inputs are a follow-up if it
+  earns its keep.
+- #93/#94/#95 the taskbar icon saga concluded. #93 renamed packaging to
+  uplink-irc to match the #90 app id; #94 stopped generating a user
+  icon-theme.cache (rewriting a PNG doesn't bump the dir mtime, so any
+  cache stays "fresh" and pins the old pixmap forever); both helped but
+  the panel icon still resolved wrong. Root cause, proven with
+  kiconfinder6: KIconLoader strips dash-suffixes per theme, so
+  "uplink-irc" fell back to "uplink" INSIDE gamer icon themes
+  (FairyWren/Hatter/Slot ship the Introversion game's icon under that
+  bare name) before the search ever reached our hicolor entry. #95
+  renamed the app identity to the reverse-DNS AppStream id
+  io.github.noderelay.UplinkIRC everywhere — app_id, desktop entry,
+  Icon=, hicolor PNG, CMake install, FreeBSD plist, metainfo
+  launchable, AppImage incl. the AppRun self-integration — no dash to
+  strip and no theme will ever ship it. New
+  AppIcons::publishSystemIcon() replaces the two duplicated hicolor
+  save sites and cleans up old-named PNGs and stale caches. Verified on
+  KDE Wayland (Arch) and KDE X11 (FreeBSD).
+- #96 stacked panes open 50/50: rebuildPaneLayout() equalized only the
+  top-level splitter slices; the nested cross splitters now get the
+  same treatment, so a 3rd pane splits its slot evenly and 4 panes make
+  even quarters. Any rebuild re-equalizes, matching existing behavior.
+- #97 metadata + chathistory fixes, diagnosed with a raw-protocol probe
+  against LinuxDojo (Ergo 2.19-dev): METADATA GETs were deduped once
+  per nick per connection with no retry path — a hover that raced the
+  target going offline (FAIL INVALID_TARGET) poisoned the nick for the
+  whole session, hiding avatars the server would happily serve
+  (world-readable, probe-confirmed). The FAIL now clears the request
+  marker, a user's join wipes their cached meta (SUB only pushes while
+  both sides are online), and the FAIL itself is silenced — background
+  noise, same class as the already-silenced KEY_INVALID. CHATHISTORY
+  BEFORE switched from msgid= to timestamp= bounds: soju rejects msgid
+  bounds ("Invalid first bound"); timestamps work everywhere.
+- #98 ZNC + SASL now attaches the network: the user/network SASL
+  username assembly only covered soju; ZNC authenticated the user with
+  no network attached and parked the client in a status query (the
+  PASS fallback never applies once SASL succeeds).
+- Learned along the way: soju AND ZNC both strip draft/metadata-2 (ZNC
+  only forwards module-known caps), so metadata works on direct
+  connections only. A ZNC passthrough module (metadatapass.cpp, uses
+  AddServerDependentCapability) was written and installed on the
+  LinuxDojo bouncer but is not yet enabled. Local-path avatars are
+  deliberately never published — hosting at an https URL is the answer.
+  Docs corrected to stop claiming soju passes metadata through.
+- Next: metadata features queued — status text first, channel avatars
+  in the sidebar second. Search v3, nightlies, pane-input counter
+  still parked.
+-->
+
+<!--
 Session 2026-07-15 (v, close): pane-drag cursor, resize grab areas, input wrap, taskbar icon (PRs #86-#90, unreleased):
 - #86 pane drags keep the grab-hand cursor from pickup to drop. On Wayland
   the compositor picks the dnd cursor from whether the surface under the

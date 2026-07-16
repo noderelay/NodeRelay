@@ -1305,6 +1305,22 @@ Preview cards are stored per-channel and reinjected when you switch back, so the
 
 ---
 
+## Avatars & display names
+
+### Why don't avatars or display names show through my bouncer?
+
+Metadata travels in the IRCv3 `draft/metadata-2` capability, and a client can only use the capabilities its bouncer re-offers. Neither soju nor ZNC passes `draft/metadata-2` through (ZNC only forwards capabilities its loaded modules declare), so behind a bouncer Uplink never sees the capability and correctly skips all metadata — no avatars in, no profile out. Connect to the network directly and everything works. To see exactly which capabilities survived your bouncer, run `/caps` in that server's buffer.
+
+### My own avatar shows for me but nobody else sees it
+
+A local file path (e.g. `/home/you/avatar.png`) is displayed only in your own client and is deliberately never published — other people's clients can't read files on your disk. Host the image at a public `https://` URL and set that as your avatar instead (Preferences → Profile, or `/avatar https://...`).
+
+### Someone set their avatar but my tooltip doesn't show it
+
+Hover twice: the first hover requests the data in the background, the second renders it. Uplink fetches metadata lazily on hover (a channel-wide fetch on join would flood servers with rate limiting). If a user was offline when you first hovered them, Uplink retries automatically after they rejoin.
+
+---
+
 ## Account tracking & Monitor
 
 ### How do I see someone's NickServ account?
