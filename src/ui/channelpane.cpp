@@ -740,7 +740,11 @@ protected:
         const QEvent::Type t = event->type();
         if (t != QEvent::DragEnter && t != QEvent::DragMove && t != QEvent::Drop)
             return false;
-        if (!qobject_cast<QLineEdit *>(obj) && !qobject_cast<QPlainTextEdit *>(obj))
+        // A QPlainTextEdit receives dnd on its VIEWPORT (a plain QWidget
+        // child), so match the parent too — matching only the edit itself
+        // leaves the guard dead for the message inputs.
+        if (!qobject_cast<QLineEdit *>(obj) && !qobject_cast<QPlainTextEdit *>(obj)
+            && !qobject_cast<QPlainTextEdit *>(obj->parent()))
             return false;
         auto *de = static_cast<QDropEvent *>(event);
         if (!de->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
