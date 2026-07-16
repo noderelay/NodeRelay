@@ -190,6 +190,8 @@ private:
     void repositionSendBtn();
     void updateInputViewportFill();
     void updateFormatIndicator();
+    void updateLengthIndicator();
+    void moveLengthIndicator();
     void showColorPicker();
     QMenu *makeColorMenu(QWidget *parent);   // reused by Ctrl+Shift+K and right-click
     void applyInputColor(int fg, int bg);    // -1 clears, -2 leaves unchanged
@@ -229,6 +231,7 @@ private:
     QPushButton  *m_emojiBtn{nullptr};
     QToolButton  *m_sendBtn{nullptr};
     QLabel       *m_formatIndicator{nullptr};
+    QLabel       *m_lengthIndicator{nullptr};
     QWidget      *m_sidebarPanel{nullptr};
     bool          m_sidebarExpanded{true};
     int           m_sidebarExpandedWidth{180};

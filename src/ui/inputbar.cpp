@@ -120,6 +120,12 @@ void MainWindow::setupInputBar()
         "background: rgba(120,120,120,0.25); border-radius: 4px;");
     m_formatIndicator->hide();
 
+    // Length counter: floats at bottom-right of input, left of the send
+    // button. Hidden until a line nears the per-message byte budget.
+    m_lengthIndicator = new QLabel(m_input);
+    m_lengthIndicator->setObjectName("lengthIndicator");
+    m_lengthIndicator->hide();
+
     hbox->addWidget(m_nickPrefix);
     hbox->addWidget(m_input, 1);
     hbox->addWidget(m_emojiBtn);
@@ -200,6 +206,7 @@ void MainWindow::setupInputBar()
         const QString text = m_input->toPlainText();
         m_sendBtn->setEnabled(!text.trimmed().isEmpty());
         checkEmojiAutocomplete(text);
+        updateLengthIndicator();
         // Auto-resize: 1 to 4 lines
         const int lineH = m_input->fontMetrics().lineSpacing();
         const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
@@ -271,6 +278,16 @@ void MainWindow::repositionSendBtn()
         const int fy = m_input->height() - m_formatIndicator->height() - 3;
         m_formatIndicator->move(4, fy);
     }
+    if (m_lengthIndicator && m_lengthIndicator->isVisible())
+        moveLengthIndicator();
+}
+
+// Bottom-right of the input, clear of the floating send button.
+void MainWindow::moveLengthIndicator()
+{
+    const int lx = m_input->width() - m_lengthIndicator->width() - 40;
+    const int ly = m_input->height() - m_lengthIndicator->height() - 3;
+    m_lengthIndicator->move(lx, ly);
 }
 
 void MainWindow::updateFormatIndicator()
@@ -616,6 +633,54 @@ static QString inputToIrcText(QPlainTextEdit *edit)
     if (curBold || curItalic || curUnder || curStrike || curFg >= 0 || curBg >= 0)
         result += QChar(0x0F);
     return result;
+}
+
+// Byte counter against the wire limit. privmsg() splits any line over
+// 510 - "PRIVMSG target :" bytes into extra messages, so going long is
+// never an error — show bytes once a line passes half the budget, and
+// the resulting message count once it would split. Mirrors the overhead
+// math in IrcClient::privmsg(), including the reply tag when one is
+// pending.
+void MainWindow::updateLengthIndicator()
+{
+    if (!m_lengthIndicator || !m_input) return;
+
+    const BufferId channel = m_model->activeChannel();
+    if (channel.isEmpty() || channel.str() == "(server)") {
+        m_lengthIndicator->hide();
+        return;
+    }
+    int budget = 510 - 10 - static_cast<int>(channel.str().toUtf8().size());
+    if (!m_pendingReplyMsgid.isEmpty())  // "@+draft/reply=<msgid> "
+        budget -= 15 + static_cast<int>(m_pendingReplyMsgid.toUtf8().size());
+    if (budget <= 0) { m_lengthIndicator->hide(); return; }
+
+    int maxLine = 0, msgs = 0;
+    const QStringList lines = inputToIrcText(m_input).split('\n', Qt::SkipEmptyParts);
+    for (const QString &line : lines) {
+        const int bytes = static_cast<int>(line.toUtf8().size());
+        maxLine = qMax(maxLine, bytes);
+        msgs += (bytes + budget - 1) / budget;
+    }
+    if (maxLine <= budget / 2) {
+        m_lengthIndicator->hide();
+        return;
+    }
+
+    const bool over = maxLine > budget;
+    m_lengthIndicator->setText(over ? QString("%1 messages").arg(msgs)
+                                    : QString("%1/%2").arg(maxLine).arg(budget));
+    m_lengthIndicator->setToolTip(over
+        ? "Too long for one IRC message — will be sent as several"
+        : "Message bytes used of the IRC line limit");
+    m_lengthIndicator->setStyleSheet(QString(
+        "color: %1; font-size: 12px; padding: 1px 5px;"
+        "background: rgba(120,120,120,0.25); border-radius: 4px;")
+        .arg(over ? "#e5c07b" : "rgba(200,200,200,1.0)"));
+    m_lengthIndicator->adjustSize();
+    moveLengthIndicator();
+    m_lengthIndicator->raise();
+    m_lengthIndicator->show();
 }
 
 void MainWindow::onInputSubmit()

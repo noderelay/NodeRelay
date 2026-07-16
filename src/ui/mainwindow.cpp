@@ -1591,6 +1591,7 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
 
     setWindowTitle("Uplink — " + channel.str() + " @ " + host.str());
     updateTypingLabel();
+    updateLengthIndicator();
 }
 
 void MainWindow::openChannelList(ServerId host)
@@ -2168,6 +2169,7 @@ void MainWindow::clearReplyBar()
     m_pendingReplyMsgid.clear();
     if (m_replyLabel) m_replyLabel->setText({});
     if (m_replyBar)   m_replyBar->hide();
+    updateLengthIndicator();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
