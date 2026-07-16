@@ -127,6 +127,7 @@
 |---|---|
 | **Event condensation** | Consecutive join, part, quit, nick-change, and kick events with no chat message between them collapse into one compact line: `→ nick1 nick2  ← nick3  ~ old→new`. Net-change filter suppresses nicks that both join and part in the same group. Up to 10 nicks shown; overflow shown as `… X more`. |
 | **Send button** | Paper-plane button to the right of the emoji button sends the current message — same as pressing Enter. |
+| **Byte counter** | A small counter fades in at the input's right edge once a message passes half the IRC line budget (`412/493`). Past the limit it turns amber and shows how many messages the text will be split into — nothing is ever cut off. |
 | **Emoji picker** | Click 😊 to open a searchable grid of 1,900+ emoji (Unicode 16.0). Enable with `show_emoji_button = true`. |
 | **`:shortcode:` autocomplete** | Type `:fire` and a live completion list appears. Navigate with Up/Down, confirm with Enter. |
 | **Emoji auto-substitute** | Typing `:trident:` replaces with 🔱 on the closing colon. Any remaining `:shortcode:` patterns resolve before the message is sent. |
