@@ -374,14 +374,15 @@ void IrcClient::requestHistory(const QString &target, int limit)
     sendRaw(QString("CHATHISTORY LATEST %1 * %2").arg(target).arg(limit));
 }
 
-void IrcClient::requestHistoryBefore(const QString &target, const QDateTime &before, int limit)
+bool IrcClient::requestHistoryBefore(const QString &target, const QDateTime &before, int limit)
 {
     if (!m_ackedCaps.contains("chathistory") && !m_ackedCaps.contains("draft/chathistory"))
-        return;
+        return false;
     // Timestamp bound, not msgid: soju rejects msgid bounds with
     // "Invalid first bound"; every implementation takes timestamps.
     sendRaw(QString("CHATHISTORY BEFORE %1 timestamp=%2 %3")
             .arg(target, before.toUTC().toString(Qt::ISODateWithMs)).arg(limit));
+    return true;
 }
 
 void IrcClient::markRead(const QString &target, const QDateTime &ts)
@@ -1236,6 +1237,11 @@ void IrcClient::deliverBatch(const QString &ref)
                                 btext, bm.serverTime, isHistory, bm.msgid, bm.replyTo);
         }
     }
+
+    // Reply batches to our CHATHISTORY requests only — znc.in/batch/playback
+    // is unsolicited push playback, not a completion of anything we asked for.
+    if (batch.type == "chathistory" || batch.type == "draft/chathistory")
+        emit historyBatchDone(m_serverName, batch.param);
 }
 
 // ---------------------------------------------------------------------------

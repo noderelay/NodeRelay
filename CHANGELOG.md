@@ -1,6 +1,30 @@
 # Changelog
 
 <!--
+Session 2026-07-16 (iv): scroll-to-top history loading fixed (unreleased):
+- CHATHISTORY BEFORE completion was a QTimer::singleShot(0) that fired
+  before any network reply could arrive: the empty result marked the
+  buffer history-exhausted on the FIRST scroll-to-top (disabling
+  further loads all session), and when the server's batch did arrive
+  the pending key was gone, so the old messages fell through to
+  addMessage and appended at the BOTTOM of the buffer. Latent since
+  the feature shipped (a6f7f5d); #97 fixed the soju bound format but
+  not the timing.
+- Fix: completion is now driven by the reply batch actually closing.
+  IrcClient::deliverBatch emits historyBatchDone(server, target) for
+  chathistory/draft/chathistory batches (NOT znc.in/batch/playback —
+  that's unsolicited push playback); SessionModel::onHistoryBatchDone
+  prepends the collected messages and emits olderHistoryLoaded with
+  the real count. An empty reply still closes its batch, so
+  "no more history" is now detected correctly instead of by accident.
+- requestHistoryBefore returns false when the connection has no
+  chathistory cap (caller emits count 0 immediately); a 10s fallback
+  timer covers a server that never answers. Also topic-bar channel
+  name fix (#107) and the plugin build/revert (#105/#106) happened
+  earlier this session — see their entries/commits.
+-->
+
+<!--
 Session 2026-07-16: input byte counter, icon identity fixed for real, equal pane stacks, metadata/chathistory fixes, ZNC login (PRs #92-#98, unreleased):
 - #92 the message input shows a byte counter once a line passes half the
   per-message wire budget (510 minus the PRIVMSG overhead, minus the

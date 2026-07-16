@@ -43,7 +43,8 @@ public:
 
     // Bouncer helpers
     void requestHistory(const QString &target, int limit = 100);
-    void requestHistoryBefore(const QString &target, const QDateTime &before, int limit = 100);
+    // Returns false when the server negotiated no chathistory cap (nothing sent).
+    bool requestHistoryBefore(const QString &target, const QDateTime &before, int limit = 100);
     void markRead(const QString &target, const QDateTime &ts);
 
     // Monitor
@@ -149,6 +150,9 @@ signals:
                                 const QString &netName, bool isConnected);
     void readMarkerReceived(const QString &server, const QString &target,
                             const QDateTime &ts);
+    // A chathistory batch for `target` closed (fires even when it carried
+    // zero messages — that's how "no more history" is detected).
+    void historyBatchDone(const QString &server, const QString &target);
 
 private slots:
     void onConnected();
