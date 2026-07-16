@@ -22,6 +22,12 @@ int main(int argc, char *argv[])
     QPixmapCache::setCacheLimit(2048); // 2 MB
     app.setApplicationName("Uplink");
     app.setApplicationVersion(UPLINK_VERSION_FULL);
+    // Wayland app_id + desktop-entry identity. Without this the app_id is
+    // the binary name "Uplink", and icon themes that ship the Introversion
+    // game's icon under that name (Hatter, FairyWren, ...) shadow ours in
+    // the task manager. "uplink-irc" is the name the runtime icon is
+    // written under (see the hicolor save in MainWindow).
+    app.setDesktopFileName("uplink-irc");
 
 #if defined(Q_OS_WIN)
     // Use native Windows rendering as the base style.
