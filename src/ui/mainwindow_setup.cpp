@@ -33,6 +33,7 @@
 #include "ui/updatechecker.h"
 #include "ui/emojidata.h"
 #include "ui/chromepanel.h"
+#include "ui/splittergrip.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
 #include "ui/fadescrollbar.h"
@@ -981,6 +982,12 @@ void MainWindow::setupChatArea()
     m_mainSplitter->setStretchFactor(1, 1);
     m_mainSplitter->setMinimumSize(1, 1);
     vbox->addWidget(m_mainSplitter, 1);
+
+    // Widen the resize grab areas past the visible gaps. Both grow toward
+    // the chat column so the zones flanking the input box match (see
+    // SplitterGrip).
+    new SplitterGrip(m_mainSplitter, 1, 0, kGripExtra);
+    new SplitterGrip(m_chatSplitter, 1, kGripExtra, 0);
 
     setCentralWidget(m_rightContent);
 }
