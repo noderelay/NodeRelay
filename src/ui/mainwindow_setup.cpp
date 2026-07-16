@@ -236,14 +236,17 @@ void MainWindow::connectPreferences()
         QApplication::setWindowIcon(icon);
         setWindowIcon(icon);
         if (m_tray) m_tray->setBaseIcon(icon);
-        const QString iconDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
-            + QStringLiteral("/icons/hicolor/256x256/apps");
+        const QString hicolorRoot = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+            + QStringLiteral("/icons/hicolor");
+        const QString iconDir = hicolorRoot + QStringLiteral("/256x256/apps");
         QDir().mkpath(iconDir);
         icon.pixmap(256, 256).save(iconDir + QStringLiteral("/uplink-irc.png"));
-        QProcess::startDetached(QStringLiteral("gtk-update-icon-cache"),
-            {QStringLiteral("-f"), QStringLiteral("-t"),
-             QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
-                + QStringLiteral("/icons/hicolor/")});
+        // Overwriting the PNG doesn't bump the directory mtime, so an
+        // icon-theme.cache here stays "fresh" and pins the old pixmap in
+        // panel lookups. Remove the cache rather than regenerating it:
+        // lookups then read the files directly, which is always current,
+        // and gtk-update-icon-cache isn't installed everywhere anyway.
+        QFile::remove(hicolorRoot + QStringLiteral("/icon-theme.cache"));
         QProcess::startDetached(QStringLiteral("dbus-send"),
             {QStringLiteral("--session"), QStringLiteral("--type=signal"),
              QStringLiteral("/KIconLoader"),
