@@ -2051,14 +2051,21 @@ void MainWindow::rebuildPaneLayout()
         m_panesSplitter->addWidget(second);
     }
 
-    // Equalize top-level slices along whichever axis is now the main one
-    const int total = (mainAxis == Qt::Horizontal) ? m_panesSplitter->width()
-                                                    : m_panesSplitter->height();
-    if (total > 0 && m_panesSplitter->count() > 0) {
-        const int each = total / m_panesSplitter->count();
-        QList<int> sizes(m_panesSplitter->count(), each);
-        m_panesSplitter->setSizes(sizes);
-    }
+    // Equalize top-level slices along whichever axis is now the main one,
+    // and split stacked pairs evenly down the middle of their slot.
+    auto equalize = [](QSplitter *s, int total){
+        if (total <= 0 || s->count() == 0) return;
+        QList<int> sizes(s->count(), total / s->count());
+        s->setSizes(sizes);
+    };
+    const int mainTotal  = (mainAxis == Qt::Horizontal) ? m_panesSplitter->width()
+                                                        : m_panesSplitter->height();
+    const int crossTotal = (crossAxis == Qt::Horizontal) ? m_panesSplitter->width()
+                                                         : m_panesSplitter->height();
+    equalize(m_panesSplitter, mainTotal);
+    for (int i = 0; i < m_panesSplitter->count(); ++i)
+        if (auto *s = qobject_cast<QSplitter *>(m_panesSplitter->widget(i)))
+            equalize(s, crossTotal);
 
     // The setParent(nullptr) detach above makes the style engine repolish
     // every pane, which resets programmatic fonts to the app default —
