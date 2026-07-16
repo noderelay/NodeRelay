@@ -272,6 +272,20 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
 
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
         updateInputHeight();
+        // Pin the view to the freshest line; see the matching block in
+        // MainWindow's input (inputbar.cpp) for why this is explicit.
+        if (m_input->textCursor().atEnd()) {
+            auto *vb = m_input->verticalScrollBar();
+            vb->setValue(vb->maximum());
+        }
+    });
+    // The scroll range updates lazily, after textChanged — a pin that ran
+    // against the stale range was clamped to 0 and never retried, leaving
+    // the previous wrapped line on show. Re-pin when the range lands.
+    connect(m_input->verticalScrollBar(), &QAbstractSlider::rangeChanged,
+            this, [this](int, int max){
+        if (m_input->textCursor().atEnd())
+            m_input->verticalScrollBar()->setValue(max);
     });
 }
 

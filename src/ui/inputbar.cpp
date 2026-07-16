@@ -24,6 +24,7 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QScrollBar>
 #include <QTextBlock>
 #include <QTextDocument>
 #include <QTextFrame>
@@ -204,6 +205,14 @@ void MainWindow::setupInputBar()
         const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
         const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
         m_input->setFixedHeight(lines * lineH + margins);
+        // Soft-wrapped typing: pin the view to the freshest line ourselves —
+        // Qt's implicit scroll-to-cursor runs against a stale scroll range
+        // (it updates lazily), gets clamped to "no scrolling", and never
+        // retries, leaving the previous wrapped line on show.
+        if (m_input->textCursor().atEnd()) {
+            auto *vb = m_input->verticalScrollBar();
+            vb->setValue(vb->maximum());
+        }
         if (!m_config.ui.typingIndicator) return;
         const ServerId host = m_model->activeHost();
         const BufferId ch   = m_model->activeChannel();
@@ -221,6 +230,14 @@ void MainWindow::setupInputBar()
                 m_model->sendTyping(host, ch, "done");
             }
         }
+    });
+
+    // The scroll range updates lazily, after textChanged — re-pin when it
+    // lands so the freshest line is what shows (see the pin above).
+    connect(m_input->verticalScrollBar(), &QAbstractSlider::rangeChanged,
+            this, [this](int, int max){
+        if (m_input->textCursor().atEnd())
+            m_input->verticalScrollBar()->setValue(max);
     });
 
     QTimer::singleShot(0, this, [this]{ repositionSendBtn(); });
