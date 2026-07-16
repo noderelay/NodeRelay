@@ -243,11 +243,11 @@ endif()
 
 install(TARGETS Uplink DESTINATION bin)
 install(DIRECTORY themes/ DESTINATION share/uplink/themes)
-install(FILES packaging/uplink-irc.desktop DESTINATION share/applications)
+install(FILES packaging/io.github.noderelay.UplinkIRC.desktop DESTINATION share/applications)
 install(FILES packaging/io.github.noderelay.UplinkIRC.metainfo.xml DESTINATION share/metainfo)
 install(FILES resources/icons/uplink-dark.png
         DESTINATION share/icons/hicolor/256x256/apps
-        RENAME uplink-irc.png)
+        RENAME io.github.noderelay.UplinkIRC.png)
 
 option(UPLINK_BUILD_TESTS "Build unit tests" ON)
 if(UPLINK_BUILD_TESTS)

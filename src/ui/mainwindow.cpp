@@ -194,12 +194,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     const QIcon appIcon = AppIcons::appIcon(m_config.ui.appIcon);
     QApplication::setWindowIcon(appIcon);
     setWindowIcon(appIcon);
-    {
-        const QString iconDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
-            + QStringLiteral("/icons/hicolor/256x256/apps");
-        QDir().mkpath(iconDir);
-        appIcon.pixmap(256, 256).save(iconDir + QStringLiteral("/uplink-irc.png"));
-    }
+    AppIcons::publishSystemIcon(appIcon);
     resize(kDefaultWindowW, kDefaultWindowH);
     setAcceptDrops(true); // pane drags: whole window accepts (see dragEnterEvent)
 

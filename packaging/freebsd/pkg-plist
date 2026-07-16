@@ -1,6 +1,6 @@
 bin/Uplink
-%%DESKTOPDIR%%/uplink-irc.desktop
-share/icons/hicolor/256x256/apps/uplink-irc.png
+%%DESKTOPDIR%%/io.github.noderelay.UplinkIRC.desktop
+share/icons/hicolor/256x256/apps/io.github.noderelay.UplinkIRC.png
 %%DATADIR%%/themes/acton.toml
 %%DATADIR%%/themes/bam.toml
 %%DATADIR%%/themes/base16-atelier-forest-light.toml
