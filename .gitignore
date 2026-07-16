@@ -21,6 +21,12 @@ heaptrack.*
 # AppImage packaging (generated/downloaded, not sources)
 packaging/tools/
 packaging/uplinkirc.png
+
+# makepkg artifacts (AUR test builds)
+packaging/archlinux/src/
+packaging/archlinux/pkg/
+packaging/archlinux/*.tar.gz
+packaging/archlinux/*.pkg.tar.zst
 *.AppImage
 .cmake/
 CMakeCache.txt
