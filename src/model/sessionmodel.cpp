@@ -595,6 +595,11 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
             ch->lastRead = ts;
     });
     connect(cl, &IrcClient::userJoined,      this, &SessionModel::onUserJoined);
+    connect(cl, &IrcClient::metaLookupFailed, this,
+            [this](const QString &host, const QString &nick){
+        if (auto *sess = session(ServerId{host}))
+            sess->metaRequested.remove(nick.toLower());
+    });
     connect(cl, &IrcClient::userParted,      this, &SessionModel::onUserParted);
     connect(cl, &IrcClient::userQuit,        this, &SessionModel::onUserQuit);
     connect(cl, &IrcClient::netsplitDetected, this, &SessionModel::onNetsplitDetected);
@@ -745,17 +750,14 @@ void SessionModel::requestOlderHistory(ServerId host, BufferId channel)
     auto *ch = this->channel(host, channel);
     if (!ch || ch->messages.isEmpty()) return;
 
-    QString oldestMsgid;
-    for (const auto &msg : ch->messages) {
-        if (!msg.msgid.isEmpty()) { oldestMsgid = msg.msgid; break; }
-    }
-    if (oldestMsgid.isEmpty()) return;
+    const QDateTime oldest = ch->messages.first().timestamp;
+    if (!oldest.isValid()) return;
 
     auto *cl = clientFor(host);
     if (!cl) return;
 
     m_pendingHistoryBefore.insert(key);
-    cl->requestHistoryBefore(channel.str(), oldestMsgid, 100);
+    cl->requestHistoryBefore(channel.str(), oldest, 100);
 
     QTimer::singleShot(0, this, [this, host, channel, key]{
         m_pendingHistoryBefore.remove(key);
@@ -914,6 +916,12 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     emit nickAdded(ServerId{host}, BufferId{channel}, nick);
 
     if (!isSelf) {
+        // A rejoining user may have changed metadata while offline (SUB only
+        // pushes while both sides are connected), and a GET that failed while
+        // they were gone must not block retries forever — forget what we had
+        // so the next hover fetches fresh.
+        sess->metaRequested.remove(nick.toLower());
+        sess->nickMeta.remove(nick.toLower());
         auto *cl = clientFor(ServerId{host});
         if (cl) {
             if (cl->supportsWhox())

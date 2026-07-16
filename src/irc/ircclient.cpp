@@ -374,11 +374,14 @@ void IrcClient::requestHistory(const QString &target, int limit)
     sendRaw(QString("CHATHISTORY LATEST %1 * %2").arg(target).arg(limit));
 }
 
-void IrcClient::requestHistoryBefore(const QString &target, const QString &msgid, int limit)
+void IrcClient::requestHistoryBefore(const QString &target, const QDateTime &before, int limit)
 {
     if (!m_ackedCaps.contains("chathistory") && !m_ackedCaps.contains("draft/chathistory"))
         return;
-    sendRaw(QString("CHATHISTORY BEFORE %1 msgid=%2 %3").arg(target, msgid).arg(limit));
+    // Timestamp bound, not msgid: soju rejects msgid bounds with
+    // "Invalid first bound"; every implementation takes timestamps.
+    sendRaw(QString("CHATHISTORY BEFORE %1 timestamp=%2 %3")
+            .arg(target, before.toUTC().toString(Qt::ISODateWithMs)).arg(limit));
 }
 
 void IrcClient::markRead(const QString &target, const QDateTime &ts)
@@ -1099,6 +1102,12 @@ void IrcClient::processLine(const QString &line)
         }
         if (triggeredBy == "METADATA" && code == "KEY_INVALID")
             return;
+        // Background hover-GETs race the target going offline — expected,
+        // not user-facing. Tell the model so it can allow a later retry.
+        if (triggeredBy == "METADATA" && code == "INVALID_TARGET") {
+            emit metaLookupFailed(m_serverName, msg.params.value(2));
+            return;
+        }
         // ACCOUNT_REQUIRED is informational — route to server buffer only, not channels
         if (code == "ACCOUNT_REQUIRED")
             return;
