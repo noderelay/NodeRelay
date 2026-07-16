@@ -530,7 +530,14 @@ void MainWindow::applyFontSizes()
     if (m_nickGroupsIconLabel)
         m_nickGroupsIconLabel->setPixmap(
             MenuIcons::groups(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
-    if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
+    if (m_topicLabel) {
+        // Bold set on the font, not via QSS: ElidedLabel measures with
+        // fontMetrics(), and a stylesheet-only weight paints wider than
+        // the metrics say, clipping the tail of the channel name.
+        QFont cf = makeFont(fs.topicBar);
+        cf.setBold(true);
+        m_topicLabel->setFont(cf);
+    }
     if (m_topicText) {
         const QFont tf = makeFont(fs.topicText);
         m_topicText->setFont(tf);
