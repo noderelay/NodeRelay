@@ -116,7 +116,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("NickServ:",        m_nickservPassword);
 
     m_autoJoin = new QLineEdit;
-    m_autoJoin->setPlaceholderText("#uplink, #linux, #archlinux");
+    m_autoJoin->setPlaceholderText("#uplinkirc, #linux, #archlinux");
 
     m_bouncerGroup = new QButtonGroup(this);
     m_bouncerGroup->setExclusive(true);

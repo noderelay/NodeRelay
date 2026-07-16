@@ -19,7 +19,7 @@
 <p align="center">
   A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.<br/>
   <a href="https://uplinkirc.chat">uplinkirc.chat</a> &nbsp;&mdash;&nbsp;
-  Default network: <strong>irc.linuxdojo.org:6697</strong> &mdash; channel <strong>#uplink</strong>
+  Default network: <strong>irc.libera.chat:6697</strong> &mdash; channel <strong>#uplinkirc</strong>
 </p>
 
 ---
@@ -258,13 +258,13 @@ The config file is created automatically on first launch. You only need to fill 
 
 ```toml
 [[server]]
-host = "irc.linuxdojo.org"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 ```
 
 ### Full annotated example
@@ -317,8 +317,8 @@ font_typing = 9
 # ── Server ───────────────────────────────────────────────────────────────────
 [[server]]
 # Friendly display name shown in the sidebar header
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -342,7 +342,7 @@ realname = "Uplink User"
 # bouncer_network = "libera"   # soju only: which network to attach to
 
 # Channels to auto-join on connect (comma-separated)
-channels = "#uplink, #linux"
+channels = "#uplinkirc, #linux"
 
 # ── Second server (optional) ─────────────────────────────────────────────────
 [[server]]

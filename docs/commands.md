@@ -46,17 +46,17 @@ Type any of these commands in the message input box and press Enter.
 ```
 /join #linux
 /join #private secretkey
-/j #uplink
+/j #uplinkirc
 /part
 /part #linux see you later
 /leave
 /close
 /topic new topic here
-/topic #uplink Welcome to the server
+/topic #uplinkirc Welcome to the server
 /kick baduser spamming
 /invite alice
 /invite alice #linux
-/mode #uplink +m
+/mode #uplinkirc +m
 /op alice
 /deop bob
 /voice alice
@@ -109,8 +109,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 ```
 /ns identify mypassword
 /ns register mypassword email@example.com
-/cs op #uplink
-/cs invite #uplink
+/cs op #uplinkirc
+/cs invite #uplinkirc
 /ms list
 ```
 
@@ -335,13 +335,13 @@ Right-clicking any nick, in the user list or directly on a nick link in the chat
 
 ```
 # Right-click alice → Chan Ops ▶ → Invite
-# Dialog pre-filled: #uplink   → click OK
-# Sends: INVITE alice #uplink
+# Dialog pre-filled: #uplinkirc   → click OK
+# Sends: INVITE alice #uplinkirc
 
 # Right-click spammer → Chan Ops ▶ → Kick & Ban
 # Reason dialog: "flooding"
-# Sends: MODE #uplink +b spammer!*@*
-#         KICK #uplink spammer :flooding
+# Sends: MODE #uplinkirc +b spammer!*@*
+#         KICK #uplinkirc spammer :flooding
 
 # Right-click alice → CTCP ▶ → Ping
 # Buffer: Ping reply from alice: 42ms
@@ -480,8 +480,8 @@ Available environment variables:
 | Variable | Value |
 |---|---|
 | `UPLINK_NICK` | Your current nickname |
-| `UPLINK_SERVER` | Server name (e.g. `LinuxDojo`) |
-| `UPLINK_CHANNEL` | Current channel (e.g. `#uplink`) |
+| `UPLINK_SERVER` | Server name (e.g. `LiberaChat`) |
+| `UPLINK_CHANNEL` | Current channel (e.g. `#uplinkirc`) |
 | `UPLINK_ARGS` | Everything typed after the command |
 
 Arguments are also passed as positional parameters (`$1`, `$2`, etc.).
@@ -501,12 +501,12 @@ Use these when you need to send a command that Uplink does not have a built-in s
 ### Examples
 
 ```
-/raw MODE #uplink +m
-/raw INVITE alice #uplink
+/raw MODE #uplinkirc +m
+/raw INVITE alice #uplinkirc
 /quote JOIN #test
 
 /REHASH
-/SAMODE #uplink +o alice
+/SAMODE #uplinkirc +o alice
 /GLOBOPS Hello opers
 ```
 

@@ -108,10 +108,10 @@ All string values in TOML must be wrapped in double quotes. The `#` character st
 
 ```toml
 # Wrong, causes a parse error
-name = LinuxDojo
+name = LiberaChat
 
 # Correct
-name = "LinuxDojo"
+name = "LiberaChat"
 ```
 
 See [Configuration](configuration.md) for the full format reference.
@@ -122,14 +122,14 @@ Add a `channels` key to the `[[server]]` block, comma-separated, all on one line
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink, #linux"
+channels = "#uplinkirc, #linux"
 ```
 
 You can also set this from **File → Manage Servers → Edit** using the **Auto-join** field.
@@ -161,8 +161,8 @@ Add `quit_message` to the server block:
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -181,8 +181,8 @@ Add `away_message` to the server block:
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -232,14 +232,14 @@ Yes. Add multiple `[[server]]` blocks in your config; each gets its own entry in
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 
 [[server]]
 name = "Libera"
@@ -280,8 +280,8 @@ Add `proxy_host` and `proxy_port` to the server block in `config.toml`:
 
 ```toml
 [[server]]
-name = "LinuxDojo via Tor"
-host = "irc.linuxdojo.org"
+name = "ExampleNet via Tor"
+host = "irc.example.org"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -307,7 +307,7 @@ You have two options:
 
 ```
 /REHASH
-/SAMODE #uplink +o alice
+/SAMODE #uplinkirc +o alice
 /GLOBOPS Heads up, opers
 /OPER myname mypassword
 ```
@@ -315,8 +315,8 @@ You have two options:
 **Option 2: use `/raw` or `/quote`.** Both do the same thing and accept a full IRC protocol line:
 
 ```
-/raw MODE #uplink +m
-/raw INVITE alice #uplink
+/raw MODE #uplinkirc +m
+/raw INVITE alice #uplinkirc
 /quote PRIVMSG #test :hello from raw
 ```
 
@@ -523,8 +523,8 @@ Add `nickserv_password` to your server block in `config.toml`. Uplink will send 
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -607,7 +607,7 @@ Click **File → Manage Servers...** to open the server manager. You do not need
 | **Connection** | Disabled checkbox (keep in config but skip on startup), Name (display name in sidebar), Host, Port, SSL checkbox |
 | **Identity** | Nick, Username, Real Name, Quit Message, Away Message |
 | **Authentication** | Server Password (for bouncers or password-protected servers), SASL User + Password (for SASL PLAIN), SASL EXTERNAL checkbox + Client Cert + Client Key (Browse buttons available), NickServ password |
-| **Channels** | Auto-join, comma-separated list of channels (e.g. `#uplink, #linux`). For password-protected channels, see the note in the dialog and use `config.toml` directly. |
+| **Channels** | Auto-join, comma-separated list of channels (e.g. `#uplinkirc, #linux`). For password-protected channels, see the note in the dialog and use `config.toml` directly. |
 | **Bouncer** | Type (None / ZNC / Soju) and Network name (soju only) |
 
 4. Click **OK**; the server is added immediately and begins connecting.
@@ -668,8 +668,8 @@ Join, quit, part, nick-change, and kick events are automatically collapsed into 
 21:03  ▾
 21:03  ← CrystalDotGay (~crystal@2600:1700:...) has quit (Ping timeout: 252 seconds)
 21:03  ← AJ_Z0 (~AJ@user/aj-z0) has quit (Remote host closed the connection)
-21:03  → halloy2109 (~halloy210@208.59.60.21) has joined #uplink
-21:03  → sumeetj_ (~sumeet@103.145.17.55) has joined #uplink
+21:03  → halloy2109 (~halloy210@208.59.60.21) has joined #uplinkirc
+21:03  → sumeetj_ (~sumeet@103.145.17.55) has joined #uplinkirc
 ```
 
 **Click ▾** to collapse back to the compact view.
@@ -783,7 +783,7 @@ Use the service shortcuts:
 ```
 /ns identify mypassword        # → PRIVMSG NickServ :identify mypassword
 /ns register pass email@x.com  # → PRIVMSG NickServ :register …
-/cs op #uplink                 # → PRIVMSG ChanServ :op #uplink
+/cs op #uplinkirc                 # → PRIVMSG ChanServ :op #uplinkirc
 /bs botlist                    # → PRIVMSG BotServ :botlist
 /ms list                       # → PRIVMSG MemoServ :list
 ```
@@ -896,7 +896,7 @@ Uplink sends a `PING` every 30 seconds and updates the bars automatically from t
 
 ### The server name in the sidebar turned purple: what does that mean?
 
-The server name (e.g. **LINUXDOJO**) in the sidebar highlights purple when there are unread messages in the server window that you have not seen yet. This includes:
+The server name (e.g. **LIBERACHAT**) in the sidebar highlights purple when there are unread messages in the server window that you have not seen yet. This includes:
 
 - **CTCP VERSION replies**: when you do `/version <nick>` or right-click a user and choose **Version**, the reply appears in the server window
 - **NickServ and server auth notices** received during connection
@@ -1004,7 +1004,7 @@ You can also use slash commands:
 ```
 /kick baduser flooding
 /ban baduser!*@*
-/mode #uplink +b baduser!*@*
+/mode #uplinkirc +b baduser!*@*
 ```
 
 ### How do I invite someone to a channel?
@@ -1020,7 +1020,7 @@ You can also use:
 
 ### How do I open the server window?
 
-Click the server name (e.g. **LINUXDOJO**) at the top of the sidebar. It shows connection messages, server notices, CTCP replies, and other server-level output. If the server name is highlighted purple, there are unread messages waiting.
+Click the server name (e.g. **LIBERACHAT**) at the top of the sidebar. It shows connection messages, server notices, CTCP replies, and other server-level output. If the server name is highlighted purple, there are unread messages waiting.
 
 Messages in the server window are color-coded by type:
 
@@ -1274,7 +1274,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 ## Getting help
 
-- Join **#uplink** on `irc.linuxdojo.org`, the Uplink development channel
+- Join **#uplinkirc** on `irc.libera.chat`, the Uplink development channel
 - File bugs and feature requests on the GitHub Issues page
 - Browse the full documentation index at [docs/index.md](index.md)
 

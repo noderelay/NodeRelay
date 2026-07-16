@@ -65,8 +65,8 @@ display_name = "Alice Smith"           # shown in nick list tooltip (draft/metad
 avatar_url = "https://example.com/avatar.png"  # https:// URL or /local/path
 
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -88,7 +88,7 @@ realname = "Uplink User"
 # away_message = "AFK"            # used by /away with no argument (default: sends "Away")
 
 [[server.channel]]
-name = "#uplink"
+name = "#uplinkirc"
 
 [[server.channel]]
 name = "#linux"
@@ -247,8 +247,8 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -256,7 +256,7 @@ user = "uplink"
 realname = "Uplink User"
 
 [[server.channel]]
-name = "#uplink"
+name = "#uplinkirc"
 ```
 
 ### Plain (unencrypted) connections
@@ -333,7 +333,7 @@ Uplink stores all passwords (`password`, `sasl_password`, `nickserv_password`) i
 
 ```toml
 [[server]]
-name = "LinuxDojo"
+name = "LiberaChat"
 ...
 nickserv_password = "<keychain>"   # the actual value is in the OS keychain
 ```
@@ -350,14 +350,14 @@ If the server uses NickServ and does not support SASL, add `nickserv_password`. 
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 nickserv_password = "yourpassword"
 ```
 
@@ -539,7 +539,7 @@ realname = "Uplink User"
 sasl_user = "yournick"
 sasl_password = "yourpassword"
 bouncer = "soju"
-channels = "#uplink"
+channels = "#uplinkirc"
 ```
 
 #### Multi-network soju
@@ -615,14 +615,14 @@ Each server can connect through a SOCKS5 proxy independently. This is useful for
 
 ```toml
 [[server]]
-name = "LinuxDojo via Tor"
-host = "irc.linuxdojo.org"
+name = "ExampleNet via Tor"
+host = "irc.example.org"
 port = 6697
 ssl = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 proxy_host = "127.0.0.1"
 proxy_port = 9050
 ```
@@ -677,7 +677,7 @@ websocket = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 ```
 
 All features work identically over WebSocket: SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog.
@@ -695,7 +695,7 @@ The easiest way to manage this list from inside the app is **File → Manage Ser
 Set `channels` to a comma-separated list of channel names directly in the `[[server]]` block. This format is good for public channels that require no key.
 
 ```toml
-channels = "#uplink, #linux, #dojoirc"
+channels = "#uplinkirc, #linux, #archlinux"
 ```
 
 ### Table format (with keys)
@@ -704,14 +704,14 @@ For password-protected channels, use `[[server.channel]]` sub-tables with a `key
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
 
 [[server.channel]]
-name = "#uplink"
+name = "#uplinkirc"
 
 [[server.channel]]
 name = "#private"
@@ -927,8 +927,8 @@ The message sent to the server when you disconnect, visible to other users in th
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -954,8 +954,8 @@ The message sent to the server when you type `/away` with no argument. Other use
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -982,8 +982,8 @@ You can still pass a one-off message to override it:
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -991,15 +991,15 @@ user = "uplink"
 realname = "Uplink User"
 quit_message = "Later!"
 away_message = "Away from keyboard, back soon"
-channels = "#uplink, #linux"
+channels = "#uplinkirc, #linux"
 ```
 
 Different servers can have different messages:
 
 ```toml
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -1027,8 +1027,8 @@ Add as many `[[server]]` blocks as you need. Each server appears in the sidebar 
 theme = "catppuccin-mocha"
 
 [[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -1036,7 +1036,7 @@ user = "uplink"
 realname = "Uplink User"
 
 [[server.channel]]
-name = "#uplink"
+name = "#uplinkirc"
 
 [[server]]
 name = "Libera"
@@ -1103,10 +1103,10 @@ All string values in TOML must be in double quotes. The `#` character starts a c
 
 ```toml
 # Wrong, parse error
-name = LinuxDojo
+name = LiberaChat
 
 # Correct
-name = "LinuxDojo"
+name = "LiberaChat"
 ```
 
 ### Using single brackets for servers
@@ -1116,11 +1116,11 @@ name = "LinuxDojo"
 ```toml
 # Wrong
 [server]
-name = "LinuxDojo"
+name = "LiberaChat"
 
 # Correct
 [[server]]
-name = "LinuxDojo"
+name = "LiberaChat"
 ```
 
 ### Nick contains spaces or invalid characters

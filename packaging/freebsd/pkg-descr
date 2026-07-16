@@ -1,5 +1,5 @@
-Uplink is a fast, secure IRC client targeting LinuxDojo.org and general
-use. It speaks IRCv3 and connects with TLS by default.
+Uplink is a fast, secure IRC client for everyday use. It speaks IRCv3
+and connects with TLS by default.
 
 Features:
  - IRCv3: message IDs, server-time, echo-message, batch, SASL PLAIN and

@@ -535,7 +535,7 @@
   <ul>
     <li><a href="#config-file">Config file location</a></li>
     <li><a href="#set-nick">Set your nickname</a></li>
-    <li><a href="#connect-linuxdojo">Connect to LinuxDojo</a></li>
+    <li><a href="#connect-libera">Connect to Libera.Chat</a></li>
     <li><a href="#connect-any">Connect to any server</a></li>
     <li><a href="#auto-join">Auto-join channels</a></li>
   </ul>
@@ -650,7 +650,7 @@
     </h1>
 
     <h2>What is Uplink?</h2>
-    <p>Uplink is a fast, secure IRC chat client built with Qt6 and C++20. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 297 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
+    <p>Uplink is a fast, secure IRC chat client built with Qt6 and C++20. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 297 built-in color themes. The default server is <strong>irc.libera.chat:6697</strong>, channel <strong>#uplinkirc</strong>.</p>
     <p>It runs on Linux, macOS, Windows, and FreeBSD.</p>
 
     <figure class="shot">
@@ -801,12 +801,12 @@ cmake --build build</pre>
     <h2>First launch</h2>
     <p>On the very first run, Uplink creates your config file and may show a <strong>nick dialog</strong> asking for your nickname. Type the name you want to use on IRC and click OK.</p>
 
-    <p>The app then connects to <strong>irc.linuxdojo.org</strong> and joins <strong>#uplink</strong> automatically. You'll see the server list on the left, the chat area in the middle, and the user list on the right.</p>
+    <p>The app then connects to <strong>irc.libera.chat</strong> and joins <strong>#uplinkirc</strong> automatically. You'll see the server list on the left, the chat area in the middle, and the user list on the right.</p>
 
     <figure class="shot">
       <img src="shots/first-launch.png" loading="lazy"
-           alt="Uplink immediately after first launch, connected to #uplink">
-      <figcaption>Uplink on first launch, connected to #uplink with the sidebar, chat area, and nick list.</figcaption>
+           alt="Uplink immediately after first launch, connected to #uplinkirc">
+      <figcaption>Uplink on first launch, connected to #uplinkirc with the sidebar, chat area, and nick list.</figcaption>
     </figure>
 
     <p>The menu bar across the top (<strong>File, Edit, View, Settings, Help, Find</strong>) carries the app actions; on KDE it docks into the global menu automatically. Preferences lives under <strong>Settings</strong>, or press <kbd>Ctrl</kbd>+<kbd>,</kbd>.</p>
@@ -839,32 +839,32 @@ cmake --build build</pre>
     <p>Open <code>config.toml</code> and change the <code>nick</code> field in your server block:</p>
 
     <pre>[[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 <span style="color:var(--peach)">nick = "alice"</span>       # ← change this to your nick
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"</pre>
+channels = "#uplinkirc"</pre>
 
     <p>Save, then click <strong>File → Reload Config</strong>. Uplink restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
   </section>
 
-  <!-- CONNECT LINUXDOJO -->
-  <section id="connect-linuxdojo">
-    <h2>Connect to LinuxDojo</h2>
-    <p>LinuxDojo is the default server. You only need to set your nickname; everything else is already configured.</p>
+  <!-- CONNECT LIBERACHAT -->
+  <section id="connect-libera">
+    <h2>Connect to Libera.Chat</h2>
+    <p>Libera.Chat is the default network. You only need to set your nickname; everything else is already configured.</p>
 
     <pre>[[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "alice"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"</pre>
+channels = "#uplinkirc"</pre>
 
     <p>Save the file. Uplink detects the change and the server appears in the sidebar and connects automatically.</p>
   </section>
@@ -903,7 +903,6 @@ channels = "#linux, #archlinux"</pre>
     <p>Common IRC networks and their TLS hostnames:</p>
     <table>
       <tr><th>Network</th><th>Host</th><th>Port</th></tr>
-      <tr><td>LinuxDojo</td><td><code>irc.linuxdojo.org</code></td><td>6697</td></tr>
       <tr><td>Libera.Chat</td><td><code>irc.libera.chat</code></td><td>6697</td></tr>
       <tr><td>OFTC</td><td><code>irc.oftc.net</code></td><td>6697</td></tr>
       <tr><td>EFnet</td><td><code>irc.efnet.org</code></td><td>6697</td></tr>
@@ -955,7 +954,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
         <tr><td><strong>Connection</strong></td><td>Disabled checkbox (keep in config, skip on startup), Name (display name in sidebar, must be unique across all servers), Host, Port, SSL checkbox</td></tr>
         <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name, Quit Message, Away Message</td></tr>
         <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key, each with a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
-        <tr><td><strong>Channels</strong></td><td>Auto-join, comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
+        <tr><td><strong>Channels</strong></td><td>Auto-join, comma-separated (e.g. <code>#uplinkirc, #linux</code>). See note below for password-protected channels.</td></tr>
         <tr><td><strong>Bouncer</strong></td><td>Type: None / ZNC / Soju. Network field (appears for both ZNC and Soju).</td></tr>
         <tr><td><strong>SOCKS5 Proxy</strong></td><td>Host, Port, Username (optional), Password (optional). Leave host blank for direct connection.</td></tr>
       </tbody>
@@ -1012,8 +1011,8 @@ channels = "#linux"</pre>
     <h3>Quit message</h3>
     <p>The quit message is shown to other users when you disconnect: <code>*** yournick has quit (your message)</code>.</p>
     <pre>[[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -1024,8 +1023,8 @@ quit_message = "Later!"</pre>
     <h3>Away message</h3>
     <p>The away message is sent when you type <code>/away</code> with no argument. Users who message you while you are away receive it as an automatic server reply.</p>
     <pre>[[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -1042,8 +1041,8 @@ away_message = "Away from keyboard, back soon"</pre>
 
     <h3>Full example with both</h3>
     <pre>[[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "yournick"
@@ -1051,7 +1050,7 @@ user = "uplink"
 realname ="Uplink User"
 quit_message = "Later!"
 away_message = "Away from keyboard, back soon"
-channels = "#uplink, #linux"</pre>
+channels = "#uplinkirc, #linux"</pre>
   </section>
 
   <hr />
@@ -1102,14 +1101,14 @@ channels = "#uplink, #linux"</pre>
     <p>If you have a registered nick on a server, add <code>nickserv_password</code>. Uplink sends <code>PRIVMSG NickServ :IDENTIFY yourpassword</code> automatically after connecting.</p>
 
     <pre>[[server]]
-name = "LinuxDojo"
-host = "irc.linuxdojo.org"
+name = "LiberaChat"
+host = "irc.libera.chat"
 port = 6697
 ssl = true
 nick = "alice"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 nickserv_password = "mysecretpassword"   # ← add this</pre>
 
     <p>The server buffer shows <code>Sent NickServ IDENTIFY</code> when it fires. For networks that support SASL, use that instead (below); SASL identifies you before you even appear on the network.</p>
@@ -1135,7 +1134,7 @@ sasl_password = "mysecretpassword" # ← your NickServ password</pre>
     <p>The server buffer shows <code>SASL authentication successful</code> on connect. If it fails, the connection continues; you'll just appear without services authentication.</p>
 
     <div class="tip">
-      <strong>SASL or NickServ?</strong> Use SASL if the server supports it (Libera, OFTC). Use <code>nickserv_password</code> for servers that don't (LinuxDojo, older networks).
+      <strong>SASL or NickServ?</strong> Use SASL if the server supports it (Libera, OFTC). Use <code>nickserv_password</code> for servers that don't (older networks).
     </div>
   </section>
 
@@ -1208,7 +1207,7 @@ client_key = "/home/alice/.irc/client.key"</pre>
     <p>Each entry records the host, TLS port, and an expiry timestamp. Uplink checks this file before dialing any server. If a valid policy exists for the host, TLS is used regardless of what <code>ssl</code> is set to in <code>config.toml</code>.</p>
 
     <div class="note">
-      <strong>Nothing to configure.</strong> STS is fully automatic. Set <code>ssl = true</code> in your config as usual; STS provides an additional layer that protects you even if that setting is ever wrong or missing. Most modern networks already support it: Libera.Chat, OFTC, and LinuxDojo all advertise STS policies.
+      <strong>Nothing to configure.</strong> STS is fully automatic. Set <code>ssl = true</code> in your config as usual; STS provides an additional layer that protects you even if that setting is ever wrong or missing. Most modern networks already support it: Libera.Chat and OFTC both advertise STS policies.
     </div>
   </section>
 
@@ -1223,14 +1222,14 @@ client_key = "/home/alice/.irc/client.key"</pre>
 theme = "catppuccin-mocha"
 
 [[server]]
-name ="LinuxDojo"
-host ="irc.linuxdojo.org"
+name ="LiberaChat"
+host ="irc.libera.chat"
 port =6697
 ssl =true
 nick ="alice"
 user ="uplink"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 
 [[server]]
 name = "Libera.Chat"
@@ -1577,17 +1576,17 @@ sudo service soju restart</pre>
     <h3>Connecting to an Ergo server with history</h3>
     <p>No special config is needed on the client side. A normal SSL server entry works:</p>
     <pre>[[server]]
-name ="LinuxDojo"
-host ="irc.linuxdojo.org"
+name ="LiberaChat"
+host ="irc.libera.chat"
 port =6697
 ssl =true
 nick ="yournick"
 user ="uplink"
 realname = "Uplink User"
-channels = "#uplink, #linux"</pre>
+channels = "#uplinkirc, #linux"</pre>
 
     <p>On connect, Uplink negotiates <code>draft/chathistory</code> with Ergo. After you join each channel, it sends:</p>
-    <pre>CHATHISTORY LATEST #uplink * 100</pre>
+    <pre>CHATHISTORY LATEST #uplinkirc * 100</pre>
     <p>Ergo replies with a batch of up to 100 recent messages and Uplink renders them into the chat window automatically.</p>
 
     <div class="tip">
@@ -1614,7 +1613,7 @@ websocket = true
 nick = "alice"
 user = "uplink"
 realname = "Uplink User"
-channels = "#uplink"</pre>
+channels = "#uplinkirc"</pre>
 
     <div class="note">
       <strong>Everything works the same.</strong> SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect, and the ping watchdog all function identically over WebSocket.
@@ -1773,9 +1772,9 @@ channels = "#uplink"</pre>
     <pre style="line-height:1.8">21:03  ▾
 21:03  <span style="color:#f38ba8">← CrystalDotGay (~crystal@2600:1700:...) has quit (Ping timeout: 252 seconds)</span>
 21:03  <span style="color:#f38ba8">← AJ_Z0 (~AJ@user/aj-z0) has quit (Remote host closed the connection)</span>
-21:03  <span style="color:#a6e3a1">→ halloy2109 (~halloy210@208.59.60.21) has joined #uplink</span>
-21:03  <span style="color:#a6e3a1">→ sumeetj_ (~sumeet@103.145.17.55) has joined #uplink</span>
-21:03  <span style="color:#a6e3a1">→ bustacheeze (~bust@user/bustacheeze) has joined #uplink</span></pre>
+21:03  <span style="color:#a6e3a1">→ halloy2109 (~halloy210@208.59.60.21) has joined #uplinkirc</span>
+21:03  <span style="color:#a6e3a1">→ sumeetj_ (~sumeet@103.145.17.55) has joined #uplinkirc</span>
+21:03  <span style="color:#a6e3a1">→ bustacheeze (~bust@user/bustacheeze) has joined #uplinkirc</span></pre>
     <figure class="shot">
       <img src="shots/event-condensation-expanded.png" loading="lazy"
            alt="An expanded event group showing every join and quit as a full line">
@@ -2317,13 +2316,13 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/unignore nick</code></td><td>Remove a nick from the ignore list entirely</td><td><code>/unignore spammer</code></td></tr>
       <tr><td><code>/ignored</code></td><td>List ignored nicks and their active flags</td><td></td></tr>
       <tr><td><code>/ns text</code></td><td>Shortcut for <code>PRIVMSG NickServ</code></td><td><code>/ns identify pass</code></td></tr>
-      <tr><td><code>/cs text</code></td><td>Shortcut for <code>PRIVMSG ChanServ</code></td><td><code>/cs op #uplink</code></td></tr>
+      <tr><td><code>/cs text</code></td><td>Shortcut for <code>PRIVMSG ChanServ</code></td><td><code>/cs op #uplinkirc</code></td></tr>
       <tr><td><code>/away message</code></td><td>Set yourself away</td><td><code>/away at lunch</code></td></tr>
       <tr><td><code>/back</code></td><td>Clear your away status</td><td><code>/back</code></td></tr>
       <tr><td><code>/clear</code></td><td>Clear the chat buffer</td><td><code>/clear</code></td></tr>
-      <tr><td><code>/raw line</code></td><td>Send a raw IRC protocol line to the server</td><td><code>/raw MODE #uplink +m</code></td></tr>
-      <tr><td><code>/quote line</code></td><td>Alias for <code>/raw</code></td><td><code>/quote INVITE alice #uplink</code></td></tr>
-      <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is, no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplink +o alice</code></td></tr>
+      <tr><td><code>/raw line</code></td><td>Send a raw IRC protocol line to the server</td><td><code>/raw MODE #uplinkirc +m</code></td></tr>
+      <tr><td><code>/quote line</code></td><td>Alias for <code>/raw</code></td><td><code>/quote INVITE alice #uplinkirc</code></td></tr>
+      <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is, no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplinkirc +o alice</code></td></tr>
       <tr><td><code>/quit [message]</code></td><td>Disconnect</td><td><code>/quit see ya</code></td></tr>
       <tr><td><code>/sysinfo</code></td><td>Collect OS/CPU/RAM/GPU/uptime info and post to channel; collection runs async with 12s timeout</td><td><code>/sysinfo</code></td></tr>
       <tr><td><code>/help</code></td><td>List all commands</td><td><code>/help</code></td></tr>
@@ -2355,8 +2354,8 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
 
     <p>Example: running <code>/whois alice</code> while in <code>#linux</code>. The entire block appears in <code>#linux</code>:</p>
     <pre>alice is alice@host.example (Alice Smith)
-alice is in channels: #linux #uplink #general
-alice is on irc.linuxdojo.org (LinuxDojo IRC)
+alice is in channels: #linux #uplinkirc #general
+alice is on irc.libera.chat (Libera.Chat)
 alice is identified as account: alice
 alice has been idle 2 minutes, signed on 14:30:01
 alice is using a secure TLS connection</pre>
@@ -2527,7 +2526,7 @@ VERSION reply from bot:   (no reply, most bots block CTCP)</pre>
         <tr><td><code>/ms &lt;text&gt;</code></td><td>MemoServ</td><td><code>/ms list</code></td></tr>
       </tbody>
     </table>
-    <p>Or use the full form: <code>/msg NickServ help</code>, <code>/msg ChanServ op #uplink</code>, etc.</p>
+    <p>Or use the full form: <code>/msg NickServ help</code>, <code>/msg ChanServ op #uplinkirc</code>, etc.</p>
 
     <p><strong>Where do the replies appear?</strong> When you send a message to a service, Uplink opens a PM tab for that service in the sidebar (e.g. a <strong>NickServ</strong> tab or <strong>ChanServ</strong> tab). Replies from that service, including help output, error messages, and confirmations, arrive in that same tab. If you have not messaged the service yet, their replies go to the server buffer instead.</p>
 
@@ -2935,7 +2934,7 @@ nicks = ["alice", "bob"]</pre>
 
     <h3>Log file location</h3>
     <pre>~/.config/uplink/logs/&lt;server&gt;/&lt;channel&gt;.log</pre>
-    <p>For example: <code>~/.config/uplink/logs/irc.linuxdojo.org/#uplink.log</code></p>
+    <p>For example: <code>~/.config/uplink/logs/irc.libera.chat/#uplinkirc.log</code></p>
 
     <h3>Log format</h3>
     <pre>[2026-05-31 15:04:22] &lt;nick&gt; message text
@@ -3080,8 +3079,8 @@ link_previews = true</pre>
     <table>
       <tr><th>Variable</th><th>Value</th></tr>
       <tr><td><code>UPLINK_NICK</code></td><td>Your current nickname</td></tr>
-      <tr><td><code>UPLINK_SERVER</code></td><td>Server name (e.g. <code>LinuxDojo</code>)</td></tr>
-      <tr><td><code>UPLINK_CHANNEL</code></td><td>Current channel (e.g. <code>#uplink</code>)</td></tr>
+      <tr><td><code>UPLINK_SERVER</code></td><td>Server name (e.g. <code>LiberaChat</code>)</td></tr>
+      <tr><td><code>UPLINK_CHANNEL</code></td><td>Current channel (e.g. <code>#uplinkirc</code>)</td></tr>
       <tr><td><code>UPLINK_ARGS</code></td><td>Everything typed after the command</td></tr>
     </table>
 
@@ -3369,19 +3368,19 @@ brew install tomlplusplus</pre>
     <h3>TOML parse error on startup</h3>
     <p>All string values in TOML must be in double quotes. The <code>#</code> character starts a comment if it appears outside a string.</p>
     <pre># Wrong, causes a parse error
-name = LinuxDojo
+name = LiberaChat
 
 # Correct
-name = "LinuxDojo"</pre>
+name = "LiberaChat"</pre>
 
     <h3>Using single brackets for servers</h3>
     <pre># Wrong, defines a single table, not an array
 [server]
-name = "LinuxDojo"
+name = "LiberaChat"
 
 # Correct, double brackets = array entry
 [[server]]
-name = "LinuxDojo"</pre>
+name = "LiberaChat"</pre>
 
     <h3>My config change isn't taking effect</h3>
     <p>Click <strong>File → Reload Config</strong>. Uplink restarts and applies all changes, including server list, channels, theme, and font settings.</p>

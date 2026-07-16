@@ -68,14 +68,14 @@ font_input_nick = 10
 font_input      = 10
 
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
+name     = "LiberaChat"
+host     = "irc.libera.chat"
 port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "yournick"
 realname = "Uplink User"
-channels = "#uplink"
+channels = "#uplinkirc"
 )";
 
 // ---------------------------------------------------------------------------
