@@ -1,6 +1,60 @@
 # Changelog
 
 <!--
+Session 2026-07-15 (v, close): pane-drag cursor, resize grab areas, input wrap, taskbar icon (PRs #86-#90, unreleased):
+- #86 pane drags keep the grab-hand cursor from pickup to drop. On Wayland
+  the compositor picks the dnd cursor from whether the surface under the
+  pointer accepts the drag, and everything except a valid target rejected
+  it, so the hand flipped to the forbidden circle the moment a pane lifted
+  (QDrag::setDragCursor pixmaps never reach the screen there; a drawn
+  grab-hand is still set for X11/macOS, where the client draws the drag
+  cursor). Every surface in our windows now accepts the pane mime: the
+  source pane and popped-out panes accept and no-op, the main window
+  accepts window-wide, the primary panel accepts its own key, and a
+  drag-scoped app filter covers text inputs. Only real targets show the
+  drop frame; releasing anywhere else ends the drag with the pane staying
+  put (howto's pane-drag paragraph updated to match).
+- #87 sidebar/user-list resize grab areas widened from the bare 8px card
+  gap to 11px — IRC users reported not discovering the panes resize. New
+  SplitterGrip (src/ui/splittergrip.h): a transparent strip floating over
+  each splitter handle that forwards mouse events to it, so the visible
+  gap stays 8px and drag semantics stay native. The extra 3px grows
+  toward the chat column on both sides so the hover zones flanking the
+  input box mirror each other (Joe tuned: 14px too big, 11 right); flat
+  mode gets a 3px grab area where it had none. Grips live on the
+  splitter's PARENT — QSplitter adopts direct children as panes.
+- #88 the one-line message input no longer shows the previous wrapped
+  line stacked above what you are typing. Qt's implicit scroll-to-cursor
+  races the input's lazily-updated scroll range; when it loses it is
+  clamped to "no scrolling" and never retried — timing-dependent, which
+  is why only some machines saw it. The input now pins its own view to
+  the freshest line on every text change and again when the range lands,
+  whenever the cursor sits at the end. Box-growth-on-wrap was built and
+  rejected: the box stays one line tall, typing runs to the right edge
+  and continues from the left on a clean line.
+- #89 audit finding (session audit over #86-#88: manual pass + cppcheck
+  + ASan/UBSan, tests 6/6, fuzzing skipped as UI-only): the #86 drag
+  guard was dead for message inputs — dnd events are delivered to a
+  QPlainTextEdit's VIEWPORT, a plain QWidget child, so the guard's cast
+  never matched. It now matches the parent too.
+- #90 Wayland app id set to "uplink-irc" (was the binary name "Uplink").
+  Task managers resolve a window's icon by icon-theme lookup of the app
+  id before consulting desktop entries, and several icon themes (Hatter,
+  FairyWren, Slot) ship the Introversion game's icon under exactly that
+  name — the taskbar showed the game while the tray was correct.
+  "uplink-irc" matches the hicolor icon name the app already writes at
+  runtime and collides with nothing. Packaging still ships Icon=uplink
+  (packaging/Uplink.desktop + build-appimage.sh) — same trap for themed
+  users; rename to uplink-irc offered and parked.
+- Also parked by Joe: an over-length input indicator (messages silently
+  auto-split at the 512-byte IRC line limit today; recommendation on
+  record is a subtle counter/tint, not a red frame).
+- No release, slow-release policy; all five PRs merged to main only.
+  uplinkbot restart owed (howto.html changed; plus the standing #72-#77
+  debt).
+-->
+
+<!--
 Session 2026-07-14/15 (iv, close): testing-phase tooling, modernization, security, input hairline (PRs #76-#84, unreleased):
 - Context for this run: main is now the rolling test build — IRC users on
   #uplink build from source and shake out bugs; releases only when Joe
