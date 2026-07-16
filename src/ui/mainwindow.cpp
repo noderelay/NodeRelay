@@ -201,6 +201,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         appIcon.pixmap(256, 256).save(iconDir + QStringLiteral("/uplink-irc.png"));
     }
     resize(kDefaultWindowW, kDefaultWindowH);
+    setAcceptDrops(true); // pane drags: whole window accepts (see dragEnterEvent)
 
     m_appliedThemeName = effectiveThemeName();
     ThemeLoader::apply(m_appliedThemeName, m_config.ui.panelCards);
@@ -718,12 +719,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
             auto *de = static_cast<QDragMoveEvent *>(event);
             const QByteArray fmt = ChannelPane::mimeType().toUtf8();
-            if (de->mimeData()->hasFormat(fmt)
-                && QString::fromUtf8(de->mimeData()->data(fmt)) != kPrimaryDragKey) {
+            if (de->mimeData()->hasFormat(fmt)) {
+                // Accept even when the primary is dragging itself — rejecting
+                // flips the drag cursor to the forbidden shape (see
+                // ChannelPane::dragEnterEvent). Only a real target gets the
+                // drop frame; the drop handler below no-ops for self.
                 de->acceptProposedAction();
-                if (!m_primaryDropFrame)
-                    m_primaryDropFrame = new DropFrame(m_primaryPanel);
-                m_primaryDropFrame->activate();
+                if (QString::fromUtf8(de->mimeData()->data(fmt)) != kPrimaryDragKey) {
+                    if (!m_primaryDropFrame)
+                        m_primaryDropFrame = new DropFrame(m_primaryPanel);
+                    m_primaryDropFrame->activate();
+                }
             } else {
                 de->ignore();
             }
@@ -2185,6 +2191,28 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
+}
+
+// Accept pane drags over the whole window — sidebar, headers, chrome. Any
+// rejecting surface flips the drag cursor to the forbidden shape, and the
+// grab hand should hold from pickup to drop (see ChannelPane's dnd
+// handlers). A drop outside a real target just ends the drag in place.
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
+        event->acceptProposedAction();
+}
+
+void MainWindow::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
+        event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    if (event->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
+        event->acceptProposedAction();
 }
 
 void MainWindow::changeEvent(QEvent *event)

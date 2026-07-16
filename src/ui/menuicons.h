@@ -3,6 +3,8 @@
 #include <QIcon>
 #include <QPixmap>
 #include <QPainter>
+#include <QPainterPath>
+#include <cmath>
 #include <QApplication>
 #include <QScreen>
 #include <QPalette>
@@ -102,6 +104,39 @@ inline QIcon topicBubble(const QColor &color)
     p.drawLine(QPointF(3.5, 4.0), QPointF(9.5, 4.0));
     p.drawLine(QPointF(3.5, 6.5), QPointF(7.5, 6.5));
     return QIcon(pix);
+}
+
+// Closed-hand "grabbing" cursor pixmap for pane drags. Drawn in code: the
+// icon set has no hand glyph, and a cursor needs the classic white-fill /
+// dark-outline look the single-color tint pass can't produce. DPR is rounded
+// up to an integer — Wayland cursor buffers only take integer scales, so a
+// fractional-scale pixmap would render blurry.
+inline QPixmap grabCursor(int logicalSize = 24)
+{
+    const qreal dpr = (QApplication::primaryScreen())
+                          ? qMax(1.0, std::ceil(QApplication::primaryScreen()->devicePixelRatio()))
+                          : 1.0;
+    const int phys = qRound(logicalSize * dpr);
+    QPixmap pix(phys, phys);
+    pix.fill(Qt::transparent);
+    {
+        QPainter p(&pix);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.scale(phys / 24.0, phys / 24.0);
+        // Back of a closed fist: palm with four knuckle bumps.
+        QPainterPath hand;
+        hand.setFillRule(Qt::WindingFill);
+        hand.addRoundedRect(QRectF(4.5, 9.5, 15.0, 9.0), 4.0, 4.0);
+        hand.addRoundedRect(QRectF(4.9, 7.0, 3.2, 6.0), 1.6, 1.6);
+        hand.addRoundedRect(QRectF(8.5, 6.0, 3.2, 6.0), 1.6, 1.6);
+        hand.addRoundedRect(QRectF(12.1, 6.2, 3.2, 6.0), 1.6, 1.6);
+        hand.addRoundedRect(QRectF(15.7, 7.2, 3.2, 6.0), 1.6, 1.6);
+        p.setPen(QPen(QColor(45, 45, 45), 1.3));
+        p.setBrush(Qt::white);
+        p.drawPath(hand.simplified());
+    }
+    pix.setDevicePixelRatio(dpr);
+    return pix;
 }
 
 // Groups glyph as a QPixmap (for QLabel::setPixmap).

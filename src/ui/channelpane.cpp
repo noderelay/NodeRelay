@@ -8,6 +8,7 @@
 #include "ui/chromepanel.h"
 #include "ui/dropframe.h"
 #include "ui/elidedlabel.h"
+#include "ui/menuicons.h"
 
 #include <QListView>
 #include <QScroller>
@@ -528,26 +529,34 @@ QString ChannelPane::mimeType()
     return QStringLiteral("application/x-uplink-panekey");
 }
 
+// True when a drop here would actually rearrange: this pane is docked in
+// the main window and isn't the pane being dragged. A popped-out pane
+// isn't part of the docked layout, so it can't be a target.
+bool ChannelPane::isPaneDropTarget(const QMimeData *mime) const
+{
+    return qobject_cast<QMainWindow *>(window())
+        && QString::fromUtf8(mime->data(mimeType().toUtf8())) != key();
+}
+
 void ChannelPane::dragEnterEvent(QDragEnterEvent *event)
 {
-    const QByteArray fmt = mimeType().toUtf8();
-    // A popped-out pane isn't part of the docked layout — dropping on it
-    // can't rearrange anything, so don't advertise it as a target.
-    if (qobject_cast<QMainWindow *>(window())
-        && event->mimeData()->hasFormat(fmt)
-        && QString::fromUtf8(event->mimeData()->data(fmt)) != key()) {
-        event->acceptProposedAction();
-        setDragHighlight(true);
-    } else {
+    if (!event->mimeData()->hasFormat(mimeType().toUtf8())) {
         event->ignore();
+        return;
     }
+    // Accept the pane mime even when this pane can't take the drop (itself,
+    // or popped out). On Wayland the compositor picks the drag cursor from
+    // the accept state — any rejecting surface flips it to the forbidden
+    // shape, and the grab hand should hold from pickup to drop. Only real
+    // targets get the drop frame, and only they act on the drop.
+    event->acceptProposedAction();
+    if (isPaneDropTarget(event->mimeData()))
+        setDragHighlight(true);
 }
 
 void ChannelPane::dragMoveEvent(QDragMoveEvent *event)
 {
-    const QByteArray fmt = mimeType().toUtf8();
-    if (event->mimeData()->hasFormat(fmt)
-        && QString::fromUtf8(event->mimeData()->data(fmt)) != key())
+    if (event->mimeData()->hasFormat(mimeType().toUtf8()))
         event->acceptProposedAction();
     else
         event->ignore();
@@ -561,10 +570,10 @@ void ChannelPane::dragLeaveEvent(QDragLeaveEvent *)
 void ChannelPane::dropEvent(QDropEvent *event)
 {
     setDragHighlight(false);
-    const QByteArray fmt = mimeType().toUtf8();
-    const QString sourceKey = QString::fromUtf8(event->mimeData()->data(fmt));
     event->acceptProposedAction();
-    emit dropReceived(sourceKey);
+    const QByteArray fmt = mimeType().toUtf8();
+    if (isPaneDropTarget(event->mimeData()))
+        emit dropReceived(QString::fromUtf8(event->mimeData()->data(fmt)));
 }
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
@@ -701,6 +710,28 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
     return false;
 }
 
+// While a pane drag is in flight, accept-and-swallow the dnd events aimed
+// at text-entry widgets (inputs, filter and search fields). They accept
+// drops natively for text, so they — not their pane — become the dnd target,
+// then reject the pane mime, and every rejection flips the drag cursor to
+// the forbidden shape. Dropping on them is a deliberate no-op.
+class PaneDragEditGuard : public QObject {
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override
+    {
+        const QEvent::Type t = event->type();
+        if (t != QEvent::DragEnter && t != QEvent::DragMove && t != QEvent::Drop)
+            return false;
+        if (!qobject_cast<QLineEdit *>(obj) && !qobject_cast<QPlainTextEdit *>(obj))
+            return false;
+        auto *de = static_cast<QDropEvent *>(event);
+        if (!de->mimeData()->hasFormat(ChannelPane::mimeType().toUtf8()))
+            return false;
+        de->acceptProposedAction();
+        return true;
+    }
+};
+
 // Runs the shared pane-drag gesture: snapshots the pane before the
 // placeholder covers it, lifts the scaled ghost under the cursor, and marks
 // the vacated slot with a DragPlaceholder until the drop lands or the drag
@@ -723,7 +754,19 @@ void ChannelPane::execPaneDrag(QWidget *pane, const QString &key, const QPoint &
     drag->setMimeData(mime);
     drag->setPixmap(ghost);
     drag->setHotSpot(pane->mapFromGlobal(grabbedAtGlobal) * kDragGhostScale);
+    // Grab hand for platforms where the client draws the drag cursor (X11,
+    // macOS) — there it holds even outside our windows. On Wayland the
+    // compositor derives the cursor from the accept state instead; that
+    // path is covered by every widget accepting the pane mime (see
+    // dragEnterEvent and PaneDragEditGuard).
+    const QPixmap hand = MenuIcons::grabCursor();
+    drag->setDragCursor(hand, Qt::MoveAction);
+    drag->setDragCursor(hand, Qt::IgnoreAction);
+
+    PaneDragEditGuard editGuard;
+    qApp->installEventFilter(&editGuard);
     drag->exec(Qt::MoveAction); // blocks until drop or cancel
+    qApp->removeEventFilter(&editGuard);
 
     placeholder->deleteLater();
 }

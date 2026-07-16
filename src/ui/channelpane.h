@@ -19,6 +19,7 @@ class QListView;
 class QPlainTextEdit;
 class QLabel;
 class QToolButton;
+class QMimeData;
 
 class ChannelPane : public QWidget {
     Q_OBJECT
@@ -73,6 +74,7 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 private:
+    bool isPaneDropTarget(const QMimeData *mime) const;
     void positionNickRevealBtn();
     void setTopicRevealInset(bool reserve);
     void updateInputHeight();
