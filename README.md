@@ -29,6 +29,10 @@
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
+  <a href="https://aur.archlinux.org/packages/uplink-irc">
+    <img src="https://img.shields.io/badge/AUR-uplink--irc-1793d1?style=for-the-badge&logo=archlinux&logoColor=white" alt="AUR package" />
+  </a>
+  &nbsp;
   <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v2026.7.5-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
@@ -205,8 +209,16 @@ For distribution packaging, pass `-DUPLINK_VENDOR_DEPS=OFF` to require system-in
 <details>
 <summary><strong>Arch Linux</strong></summary>
 
+Or skip the manual build entirely — Uplink is on the [AUR](https://aur.archlinux.org/packages/uplink-irc):
+
 ```bash
-sudo pacman -S qt6-base qt6-svg cmake tomlplusplus
+yay -S uplink-irc
+```
+
+To build from source instead:
+
+```bash
+sudo pacman -S qt6-base qt6-svg qt6-websockets qtkeychain-qt6 cmake tomlplusplus
 ```
 </details>
 
