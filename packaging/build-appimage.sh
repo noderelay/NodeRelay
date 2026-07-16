@@ -75,7 +75,7 @@ verify_sha256 "$LD_QT"
 # ---------------------------------------------------------------------------
 # Icon
 # ---------------------------------------------------------------------------
-ICON_PNG="$SCRIPT_DIR/uplink.png"
+ICON_PNG="$SCRIPT_DIR/uplink-irc.png"
 
 # ---------------------------------------------------------------------------
 # Build
@@ -180,7 +180,7 @@ export PATH="$WRAPPER_DIR:$TOOLS_DIR:$PATH"
 "$LD_PATCHED" \
     --appdir "$APPDIR" \
     --plugin qt \
-    --desktop-file "$SCRIPT_DIR/Uplink.desktop" \
+    --desktop-file "$SCRIPT_DIR/uplink-irc.desktop" \
     --icon-file "$ICON_PNG"
 
 # Phase 2b: bundle color emoji font as fallback for hosts that don't have one
@@ -197,10 +197,10 @@ else
 fi
 
 # Phase 2c: ensure AppDir root has the required files for appimagetool
-cp -n "$APPDIR/usr/share/applications/Uplink.desktop" "$APPDIR/" 2>/dev/null || true
-cp -n "$APPDIR/usr/share/icons/hicolor/256x256/apps/uplink.png" "$APPDIR/" 2>/dev/null || true
-if [[ -f "$ICON_PNG" ]] && [[ ! -f "$APPDIR/uplink.png" ]]; then
-    cp "$ICON_PNG" "$APPDIR/uplink.png"
+cp -n "$APPDIR/usr/share/applications/uplink-irc.desktop" "$APPDIR/" 2>/dev/null || true
+cp -n "$APPDIR/usr/share/icons/hicolor/256x256/apps/uplink-irc.png" "$APPDIR/" 2>/dev/null || true
+if [[ -f "$ICON_PNG" ]] && [[ ! -f "$APPDIR/uplink-irc.png" ]]; then
+    cp "$ICON_PNG" "$APPDIR/uplink-irc.png"
 fi
 if [[ ! -f "$APPDIR/AppRun" ]]; then
     cat > "$APPDIR/AppRun" << 'APPRUN'
@@ -208,21 +208,22 @@ if [[ ! -f "$APPDIR/AppRun" ]]; then
 HERE="$(dirname "$(readlink -f "$0")")"
 
 # Self-integrate on first run when running as an AppImage
-if [[ -n "${APPIMAGE:-}" && ! -f "${HOME}/.local/share/applications/uplink.desktop" ]]; then
+if [[ -n "${APPIMAGE:-}" && ! -f "${HOME}/.local/share/applications/uplink-irc.desktop" ]]; then
     mkdir -p "${HOME}/.local/share/applications"
     mkdir -p "${HOME}/.local/share/icons/hicolor/256x256/apps"
-    cat > "${HOME}/.local/share/applications/uplink.desktop" << DESKTOP
+    cat > "${HOME}/.local/share/applications/uplink-irc.desktop" << DESKTOP
 [Desktop Entry]
 Name=Uplink
 Exec=${APPIMAGE}
-Icon=uplink
+Icon=uplink-irc
 Type=Application
 Categories=Network;IRCClient;
 Terminal=false
+StartupWMClass=Uplink
 DESKTOP
-    if [[ -f "$HERE/usr/share/icons/hicolor/256x256/apps/uplink.png" ]]; then
-        cp "$HERE/usr/share/icons/hicolor/256x256/apps/uplink.png" \
-           "${HOME}/.local/share/icons/hicolor/256x256/apps/uplink.png"
+    if [[ -f "$HERE/usr/share/icons/hicolor/256x256/apps/uplink-irc.png" ]]; then
+        cp "$HERE/usr/share/icons/hicolor/256x256/apps/uplink-irc.png" \
+           "${HOME}/.local/share/icons/hicolor/256x256/apps/uplink-irc.png"
     fi
     command -v update-desktop-database &>/dev/null && \
         update-desktop-database "${HOME}/.local/share/applications" 2>/dev/null || true
