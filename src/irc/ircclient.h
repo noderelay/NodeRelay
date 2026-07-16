@@ -43,7 +43,7 @@ public:
 
     // Bouncer helpers
     void requestHistory(const QString &target, int limit = 100);
-    void requestHistoryBefore(const QString &target, const QString &msgid, int limit = 100);
+    void requestHistoryBefore(const QString &target, const QDateTime &before, int limit = 100);
     void markRead(const QString &target, const QDateTime &ts);
 
     // Monitor
@@ -133,6 +133,7 @@ signals:
     void monitorOffline(const QString &server, const QStringList &nicks);
     void userMetaChanged    (const QString &server, const QString &nick,
                              const QString &key,    const QString &value);
+    void metaLookupFailed   (const QString &server, const QString &nick);
     void channelListEntry   (const QString &server, const QString &channel, int users, const QString &topic);
     void channelListEnd     (const QString &server, int total);
     void channelListReceived(const QString &server, const QList<QStringList> &entries);
