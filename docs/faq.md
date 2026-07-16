@@ -1208,6 +1208,28 @@ The theme format uses named `{{key}}` placeholders for colors. Look at any of th
 
 ---
 
+## Scripts & plugins
+
+### What's the difference between a script and a plugin?
+
+**Scripts run when you ask; plugins watch and react.** A script is tied to a slash command — type `/music` and it runs once, prints its output, done. A plugin is a program Uplink keeps running the whole session: it receives every message, join, and part as it happens, and can answer on its own. Auto-responders, link loggers, and bots are plugins; "insert my now-playing song" is a script.
+
+Both are configured in Preferences (separate pages), both can be written in any language. Full plugin tutorial: [Plugins guide](plugins.md).
+
+### My plugin isn't responding — what do I check?
+
+In order of likelihood:
+
+1. **Missing stdout flush.** Languages buffer output by default; a plugin that "does nothing" is usually a plugin whose replies are stuck in its own buffer. In Python, use `print(..., flush=True)`.
+2. **It crashed.** Type `/plugins` — if it says `stopped` or `failed`, run the plugin standalone in a terminal and read the error. Test it by piping an event line in (every bundled example has a copy-paste test line in its header comment).
+3. **Your filter never matches.** Print what you receive to stderr and watch it: start Uplink with `QT_LOGGING_RULES="uplink.plugin.debug=true"`.
+
+### My plugin answers itself in a loop
+
+Your own messages (including ones the plugin sends) arrive as events with `"self": true`. Every plugin must skip those — all three bundled examples show the check. If you removed it, put it back.
+
+---
+
 ## Building from source
 
 ### What do I need to build Uplink?

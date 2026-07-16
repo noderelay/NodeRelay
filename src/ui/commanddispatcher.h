@@ -26,6 +26,7 @@ signals:
     void clearChat();
     void replyBarCleared();
     void openChannelList(ServerId host);
+    void pluginsStatusRequested(ServerId host, BufferId channel);
 
 private:
     void executeScript(const ScriptBinding &binding, const QString &args,

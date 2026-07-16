@@ -395,6 +395,8 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 
 Uplink lets you link external scripts to custom slash commands. Any executable (bash, python, ruby, whatever) can become a command. Configure them in **Preferences → Scripts**.
 
+> Scripts run once when you type their command. If you want a script that keeps running and *reacts* to events — auto-responders, loggers, bots — that's a **plugin**: see the [Plugins guide](plugins.md).
+
 Uplink ships with four bundled scripts (`/music`, `/weather`, `/uptime`, `/roll`) that are auto-installed on first launch to `~/.config/uplink/scripts/`. They show up in Preferences → Scripts ready to use.
 
 You can also add your own. Each script row has:
@@ -517,6 +519,7 @@ Use these when you need to send a command that Uplink does not have a built-in s
 | Command | Description |
 |---|---|
 | `/help` | Print a list of all available commands in the current chat buffer |
+| `/plugins` | List configured plugins and whether each is running, stopped, or failed |
 
 ---
 

@@ -29,6 +29,7 @@ class PreferencesDialog;
 class EmojiPicker;
 class DccController;
 class PreviewController;
+class PluginController;
 class ChannelPane;
 class DropFrame;
 class QuickSwitcher;
@@ -337,6 +338,7 @@ private:
     TrayIcon     *m_tray{nullptr};
     SignalBars   *m_signalBars{nullptr};
     PreviewController *m_previews{nullptr};
+    PluginController  *m_plugins{nullptr};
     QString       m_hoveredUrl;
     QPoint        m_hoverGlobalPos;
     DccController *m_dcc{nullptr};

@@ -894,6 +894,34 @@ See the [Slash Commands → User Scripts](commands.md#user-scripts) section for 
 
 ---
 
+## The `[[plugin]]` block
+
+Stores plugins: long-running scripts that react to IRC events (as opposed to scripts, which run once per slash command). The block is written automatically when you use the **Preferences → Plugins** page.
+
+```toml
+[[plugin]]
+name = "pingpong"
+path = "/home/joe/.config/uplink/plugins/pingpong.py"
+enabled = false
+
+[[plugin]]
+name = "linklog"
+path = "/home/joe/.config/uplink/plugins/linklog.py"
+enabled = true
+```
+
+| Key | Type | Description |
+|---|---|---|
+| `name` | string | Display name, shown in `/plugins` and Preferences |
+| `path` | string | Absolute path to the executable plugin |
+| `enabled` | boolean | Whether the plugin runs. Plugins are off by default — you opt in per plugin. |
+
+Three example plugins are installed to `~/.config/uplink/plugins/` on first launch (disabled). Enabled plugins start with Uplink and keep running until you disable them or quit.
+
+See the [Plugins guide](plugins.md) for the full tutorial and protocol reference.
+
+---
+
 ## Disabling a server
 
 Set `disabled = true` in a server block to keep it in your config without connecting to it on startup. The server block is preserved and written back on every save; nothing is lost.

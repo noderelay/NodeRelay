@@ -23,6 +23,7 @@
 #include "ui/themeloader.h"
 #include "ui/linkpreview.h"
 #include "ui/previewcontroller.h"
+#include "ui/plugincontroller.h"
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
@@ -392,6 +393,21 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             this, &MainWindow::clearActiveBuffer);
     connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
+
+    m_plugins = new PluginController(m_model, this);
+    connect(m_plugins, &PluginController::commandRequested, this,
+            [this](ServerId host, BufferId buffer, const QString &line) {
+        // Slash commands go through the dispatcher; anything else is sent
+        // as a message, matching what typing the same line would do.
+        if (!m_dispatcher->dispatch(line, host, buffer, {}))
+            m_model->sendMessage(host, buffer, line);
+    });
+    connect(m_dispatcher, &CommandDispatcher::pluginsStatusRequested, this,
+            [this](ServerId host, BufferId channel) {
+        for (const QString &line : m_plugins->statusLines())
+            m_model->localMessage(host, channel, line);
+    });
+    m_plugins->reconcile(m_config.plugins);
 }
 
 MainWindow::~MainWindow()
