@@ -47,16 +47,18 @@ sed -i -E \
      s|(footer-logo\">Uplink )v[0-9]+\.[0-9]+\.[0-9]+(</div>)|\1${TAG}\2|g" \
     docs/quality.html
 
-# packaging/archlinux/PKGBUILD — pkgver bump, pkgrel reset. The sha256 can
-# only be refreshed once the tag's tarball exists on GitHub, so the AUR
-# update itself stays manual (see packaging/archlinux/README.md).
+# packaging/archlinux — pkgver bumps, pkgrel resets. uplink-irc-git is not
+# bumped (its pkgver comes from git describe at build time). Checksums can
+# only be refreshed once the tag and its release artifacts exist, so the
+# AUR update itself stays manual (see packaging/archlinux/README.md).
 sed -i -E \
-    "s|^pkgver=[0-9]+\.[0-9]+\.[0-9]+|pkgver=${VER}|;
+    "s|^pkgver=[0-9]+\.[0-9]+\.[0-9]+$|pkgver=${VER}|;
      s|^pkgrel=[0-9]+|pkgrel=1|" \
-    packaging/archlinux/PKGBUILD
+    packaging/archlinux/uplink-irc/PKGBUILD packaging/archlinux/uplink-irc-bin/PKGBUILD
 
 echo "Files updated. Staging..."
-git add CMakeLists.txt README.md docs/index.html docs/quality.html packaging/archlinux/PKGBUILD
+git add CMakeLists.txt README.md docs/index.html docs/quality.html \
+    packaging/archlinux/uplink-irc/PKGBUILD packaging/archlinux/uplink-irc-bin/PKGBUILD
 git diff --cached --stat
 
 echo ""

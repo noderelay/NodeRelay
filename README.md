@@ -212,7 +212,9 @@ For distribution packaging, pass `-DUPLINK_VENDOR_DEPS=OFF` to require system-in
 Or skip the manual build entirely — Uplink is on the [AUR](https://aur.archlinux.org/packages/uplink-irc):
 
 ```bash
-yay -S uplink-irc
+yay -S uplink-irc        # latest release, built from source
+yay -S uplink-irc-bin    # prebuilt binary, installs in seconds
+yay -S uplink-irc-git    # development build from main
 ```
 
 To build from source instead:

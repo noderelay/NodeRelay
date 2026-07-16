@@ -23,10 +23,14 @@ packaging/tools/
 packaging/uplinkirc.png
 
 # makepkg artifacts (AUR test builds)
-packaging/archlinux/src/
-packaging/archlinux/pkg/
-packaging/archlinux/*.tar.gz
-packaging/archlinux/*.pkg.tar.zst
+packaging/archlinux/**/src/
+packaging/archlinux/**/pkg/
+packaging/archlinux/**/*.tar.gz
+packaging/archlinux/**/*.pkg.tar.zst
+packaging/archlinux/uplink-irc-bin/*.desktop
+packaging/archlinux/uplink-irc-bin/*.metainfo.xml
+packaging/archlinux/uplink-irc-bin/*.png
+packaging/archlinux/uplink-irc-git/uplink-irc/
 *.AppImage
 .cmake/
 CMakeCache.txt
