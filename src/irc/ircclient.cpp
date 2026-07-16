@@ -788,9 +788,13 @@ void IrcClient::processLine(const QString &line)
             } else {
                 if (!m_ssl)
                     emit serverMessage(m_serverName, "Warning: sending SASL credentials over unencrypted connection");
-                // For soju, the SASL username must be "user/network" to select a network
+                // Bouncers select the network via the SASL username: both soju
+                // and ZNC take "user/network". Without it ZNC authenticates the
+                // user but attaches no network, parking the client in a status
+                // query (the PASS fallback never applies once SASL succeeds).
                 QString saslUser = m_saslUser;
-                if (m_bouncerType == BouncerType::Soju && !m_bouncerNetwork.isEmpty())
+                if ((m_bouncerType == BouncerType::Soju || m_bouncerType == BouncerType::ZNC)
+                        && !m_bouncerNetwork.isEmpty())
                     saslUser += "/" + m_bouncerNetwork;
                 const QByteArray payload =
                     QByteArray("\0", 1) + QString(saslUser).remove(QChar(0)).toUtf8() +
