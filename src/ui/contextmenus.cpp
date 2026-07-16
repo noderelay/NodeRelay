@@ -107,6 +107,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
             if (m_replyLabel) m_replyLabel->setText("↩ " + (origNick.isEmpty() ? msgid : origNick));
             if (m_replyBar) m_replyBar->show();
             if (m_input)    m_input->setFocus();
+            updateLengthIndicator();
         });
         if (cl && cl->hasCap("message-tags")) {
             connect(menu.addAction("React"), &QAction::triggered, this,
