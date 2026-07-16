@@ -8,6 +8,7 @@
 #include <QScopedPointer>
 #include "config/config.h"
 #include "model/sessionmodel.h"
+#include "ui/appicons.h"
 #include "ui/mainwindow.h"
 #include "ui/themeloader.h"
 #include "gitversion.h"
@@ -22,12 +23,12 @@ int main(int argc, char *argv[])
     QPixmapCache::setCacheLimit(2048); // 2 MB
     app.setApplicationName("Uplink");
     app.setApplicationVersion(UPLINK_VERSION_FULL);
-    // Wayland app_id + desktop-entry identity. Without this the app_id is
-    // the binary name "Uplink", and icon themes that ship the Introversion
-    // game's icon under that name (Hatter, FairyWren, ...) shadow ours in
-    // the task manager. "uplink-irc" is the name the runtime icon is
-    // written under (see the hicolor save in MainWindow).
-    app.setDesktopFileName("uplink-irc");
+    // Wayland app_id + desktop-entry identity. Reverse-DNS on purpose:
+    // dash-bearing names ("uplink-irc") fall victim to KIconLoader's
+    // dash-stripping fallback and land on the Introversion game's icon
+    // that themes like Hatter/FairyWren ship as "uplink". Must match the
+    // packaged .desktop filename and AppIcons::kSystemIconName.
+    app.setDesktopFileName(AppIcons::kSystemIconName);
 
 #if defined(Q_OS_WIN)
     // Use native Windows rendering as the base style.
