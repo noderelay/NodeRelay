@@ -13,6 +13,7 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 | Platform | Format | How to run |
 |---|---|---|
 | **Linux x86_64** | AppImage | `chmod +x Uplink-*.AppImage && ./Uplink-*.AppImage` |
+| **Arch Linux** | AUR | `yay -S uplink-irc` (or `uplink-irc-bin` prebuilt, `uplink-irc-git` dev) |
 | **Linux x86_64** | tar.gz | Extract, then `./Uplink` |
 | **Windows x64** | zip | Extract and run `Uplink.exe` |
 | **macOS (Apple Silicon)** | DMG | Open and drag to Applications |
@@ -852,7 +853,7 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme; the update checker handles both.)
 
-Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.5+9dbfe64` — the base version plus the short git hash (with `.dirty` added if the source tree had uncommitted changes). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
+Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.6+9dbfe64` — the base version plus the short git hash (with `.dirty` added if the source tree had uncommitted changes). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
 
 ### How do I get debug logs for a bug report?
 

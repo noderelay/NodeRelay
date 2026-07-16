@@ -3,7 +3,7 @@
 A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.
 Default network: **irc.libera.chat:6697** — channel **#uplinkirc**
 
-Overhauled 2026-07-14. Everything shipped through v2026.7.5 is summarized by area under **Completed**, with notes on how complete each area actually is. The old item-by-item checklist (roughly 450 entries) lives in this file's git history.
+Overhauled 2026-07-14. Everything shipped through v2026.7.6 is summarized by area under **Completed**, with notes on how complete each area actually is. The old item-by-item checklist (roughly 450 entries) lives in this file's git history.
 
 ---
 
@@ -53,11 +53,11 @@ How complete "complete" is, by area. Detail is in git history of this file and i
 
 **Performance & maintainability** — the 2026-06/07 review backlogs are fully cleared: MainWindow split into controllers (~5,300 → ~3,200 lines), ChatView rewritten on QTextLayout with cached layouts, virtualized nick list, memory caps + glibc arena tuning (idle RSS roughly halved), unit tests (parser, chat format, config, ignore) and libFuzzer targets in CI. Builds as C++20 since 2026-07-15. Runtime-switchable protocol logging via QLoggingCategory (`uplink.irc` / `uplink.dcc` / `uplink.preview`) since 2026-07-14.
 
-**Packaging & distribution** — CI and release builds on Linux, Windows, macOS; AppImage with desktop self-integration and in-place auto-update; release automation via scripts/release.sh; CalVer since v2026.7.0. App identity is the reverse-DNS AppStream id `io.github.noderelay.UplinkIRC` since 2026-07-16 — Wayland app id, desktop entry, and hicolor icon all match, so icon themes shipping the Introversion game's `uplink` icon can no longer shadow ours (KIconLoader's dash-stripping fallback made any dashed name collide). Caveat: the FreeBSD port skeleton (`packaging/freebsd/`) was never submitted upstream — it still needs `make makesum` and qt6-keychain port verification.
+**Packaging & distribution** — CI and release builds on Linux, Windows, macOS; AppImage with desktop self-integration and in-place auto-update; release automation via scripts/release.sh; CalVer since v2026.7.0. On the AUR since 2026-07-16: uplink-irc (release, source), uplink-irc-bin (prebuilt), uplink-irc-git (main HEAD); release.sh bumps the first two, checksums are refreshed at AUR push time (packaging/archlinux/README.md). App identity is the reverse-DNS AppStream id `io.github.noderelay.UplinkIRC` since 2026-07-16 — Wayland app id, desktop entry, and hicolor icon all match, so icon themes shipping the Introversion game's `uplink` icon can no longer shadow ours (KIconLoader's dash-stripping fallback made any dashed name collide). Caveat: the FreeBSD port skeleton (`packaging/freebsd/`) was never submitted upstream — it still needs `make makesum` and qt6-keychain port verification.
 
 **Scripting** — user script bindings (Preferences → Scripts) with sandboxed QProcess execution; four bundled scripts (/music, /weather, /uptime, /roll) working on Linux, Windows, macOS. More bundled scripts planned above.
 
-**Docs & site** — full docs (configuration, commands, FAQ, IRCv3, shortcuts, howto), GitHub Pages site with theme cycler, README. Current through v2026.7.5.
+**Docs & site** — full docs (configuration, commands, FAQ, IRCv3, shortcuts, howto), GitHub Pages site with theme cycler, README. Current through v2026.7.6.
 
 ---
 
