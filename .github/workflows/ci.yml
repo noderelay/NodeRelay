@@ -70,16 +70,15 @@ jobs:
 
   clazy:
     runs-on: ubuntu-24.04
+    # Arch container: Ubuntu 24.04's clazy 1.11 embeds clang-15, which cannot
+    # parse the runner's GCC 14 C++20 libstdc++ headers. Arch ships a current
+    # clazy/clang pair — the same combination the codebase is kept clean against.
+    container: archlinux:latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Install toolchain and clazy
+        run: pacman -Syu --noconfirm base-devel git cmake ninja qt6-base qt6-svg qt6-websockets qtkeychain-qt6 tomlplusplus clazy
 
-      - name: Install Qt and clazy (Linux)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            qt6-base-dev qt6-tools-dev libqt6svg6-dev libqt6websockets6-dev \
-            cmake ninja-build \
-            libsecret-1-dev clazy
+      - uses: actions/checkout@v5
 
       - name: Configure
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
