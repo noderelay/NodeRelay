@@ -66,8 +66,8 @@ void TrayIcon::setBaseIcon(const QIcon &icon)
 
 void TrayIcon::updateShowAction()
 {
-    m_showAction->setText(m_window->isVisible() ? "Show" : "Show");
     // Always labelled "Show" — clicking it always brings the window up
+    m_showAction->setText("Show");
 }
 
 void TrayIcon::onActivated(QSystemTrayIcon::ActivationReason reason)

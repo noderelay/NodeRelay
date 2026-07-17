@@ -454,7 +454,7 @@ void ChannelPane::setChatFont(const QFont &f)
 {
     if (!m_chatView) return;
     m_fontGuards[m_chatView] = f;
-    m_chatView->setFont(f); // ChatView's own setFont (also fonts the viewport)
+    m_chatView->setChatFont(f); // also fonts the viewport
     m_chatView->installEventFilter(this);
 }
 
@@ -626,7 +626,7 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
                 || !qFuzzyCompare(cur.pointSizeF(), it->pointSizeF())) {
             // cppcheck-suppress-end derefInvalidIterator
                 m_fontGuardBusy = true;
-                if (w == m_chatView) m_chatView->setFont(it.value());
+                if (w == m_chatView) m_chatView->setChatFont(it.value());
                 else                 w->setFont(it.value());
                 m_fontGuardBusy = false;
                 if (w == m_input) updateInputHeight();
