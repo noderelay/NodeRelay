@@ -240,6 +240,22 @@ Config Config::load(const QString &path)
             }
         }
 
+        // [[notify]] — per-buffer notification level overrides
+        if (auto notifies = tbl["notify"].as_array()) {
+            for (auto &node : *notifies) {
+                auto *n = node.as_table();
+                if (!n) continue;
+                NotifyOverride no;
+                no.server = QString::fromStdString((*n)["server"].value_or<std::string>("")).trimmed();
+                no.buffer = QString::fromStdString((*n)["buffer"].value_or<std::string>("")).trimmed();
+                no.level  = notifyLevelFromString(
+                    QString::fromStdString((*n)["level"].value_or<std::string>("")).trimmed().toLower());
+                if (!no.server.isEmpty() && !no.buffer.isEmpty()
+                        && no.level != NotifyLevel::Mentions)
+                    cfg.notifyLevels.append(no);
+            }
+        }
+
         // [[server]]
         if (auto servers = tbl["server"].as_array()) {
             for (auto &node : *servers) {
@@ -400,6 +416,14 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         out << "command = " << tomlQuote(sb.command) << "\n";
         out << "path = " << tomlQuote(sb.path) << "\n";
         out << "enabled = " << boolStr(sb.enabled) << "\n\n";
+    }
+
+    for (const auto &no : cfg.notifyLevels) {
+        if (no.level == NotifyLevel::Mentions) continue;   // default, not stored
+        out << "[[notify]]\n";
+        out << "server = " << tomlQuote(no.server) << "\n";
+        out << "buffer = " << tomlQuote(no.buffer) << "\n";
+        out << "level = " << tomlQuote(notifyLevelToString(no.level)) << "\n\n";
     }
 
     for (const auto &s : cfg.servers) {

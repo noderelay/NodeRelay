@@ -1,6 +1,7 @@
 #pragma once
 
 #include "channel.h"
+#include "config/config.h"
 #include <QHash>
 #include <QRegularExpression>
 #include <QSet>
@@ -32,6 +33,14 @@ struct ServerSession {
         auto &m = nickMeta[lowerNick];
         if (key == "display-name") m.displayName = value;
         else if (key == "avatar")  m.avatarUrl   = value;
+    }
+
+    // key = buffer name lowercased; absent = NotifyLevel::Mentions (default)
+    QHash<QString, NotifyLevel> notifyLevels;
+
+    NotifyLevel notifyLevel(const QString &buffer) const
+    {
+        return notifyLevels.value(buffer.toLower(), NotifyLevel::Mentions);
     }
 
     // key = channel name lowercased

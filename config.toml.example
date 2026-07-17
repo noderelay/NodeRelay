@@ -75,6 +75,15 @@ away_message = "Away from keyboard"
 # Optional: NickServ IDENTIFY on connect (use SASL if the server supports it)
 # nickserv_password = "yourpassword"
 
+# ─── Per-buffer notification levels ──────────────────────────────────────────
+# Set from the GUI: right-click a channel or PM in the sidebar → Notifications.
+# Written automatically; "mentions" is the default and is never stored.
+
+# [[notify]]
+# server = "LiberaChat"
+# buffer = "#linux"
+# level = "mute"        # "all" | "mentions" | "mute"
+
 # ─── User scripts ────────────────────────────────────────────────────────────
 # Link external scripts to custom slash commands.
 # Set these from the GUI: Settings → Preferences (Ctrl+,) → Scripts → Add Script

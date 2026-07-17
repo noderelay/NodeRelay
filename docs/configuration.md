@@ -894,6 +894,32 @@ See the [Slash Commands → User Scripts](commands.md#user-scripts) section for 
 
 ---
 
+## The `[[notify]]` block
+
+Stores per-buffer notification levels. Written automatically when you right-click a channel or PM in the sidebar and pick a level under **Notifications** — you normally never edit these by hand.
+
+```toml
+[[notify]]
+server = "LiberaChat"
+buffer = "#linux"
+level = "mute"
+
+[[notify]]
+server = "LiberaChat"
+buffer = "#uplinkirc"
+level = "all"
+```
+
+| Key | Type | Description |
+|---|---|---|
+| `server` | string | The server's `name` from its `[[server]]` block |
+| `buffer` | string | Channel name or PM nick |
+| `level` | string | `"all"` (tray dot on every message), `"mentions"` (default), or `"mute"` (no dot, no unread badges) |
+
+Buffers without a block use the default: tray dot on mentions and PMs, normal unread badges. `"mentions"` entries are never written — absence *is* the default. Muted buffers still receive and log all messages; only the attention signals are silenced, and their name renders dimmed in the sidebar.
+
+---
+
 ## Disabling a server
 
 Set `disabled = true` in a server block to keep it in your config without connecting to it on startup. The server block is preserved and written back on every save; nothing is lost.

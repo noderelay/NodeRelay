@@ -122,12 +122,15 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
     if (m_config.ui.notifications && m_tray && !isActiveWindow() && !channelWindowActive
         && (msg.type == MessageType::Privmsg || msg.type == MessageType::Action))
     {
-        const QString myNick = m_model->selfNick(host);
-        const bool isPM = !isChannelName(channel.str());
-        const bool isMention = !isPM && !myNick.isEmpty()
-                               && msg.text.contains(myNick, Qt::CaseInsensitive);
-        if (isPM || isMention)
-            m_tray->setNotify(true);
+        const NotifyLevel level = m_model->notifyLevel(host, channel);
+        if (level != NotifyLevel::Mute) {
+            const bool isPM = !isChannelName(channel.str());
+            // matchesMention covers the nick regex AND highlight words —
+            // the old ad-hoc contains(myNick) ignored the keyword list.
+            const bool isMention = !isPM && m_model->matchesMention(host, msg.text);
+            if (level == NotifyLevel::All || isPM || isMention)
+                m_tray->setNotify(true);
+        }
     }
 }
 

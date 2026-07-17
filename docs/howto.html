@@ -3333,6 +3333,16 @@ notifications = true</pre>
     <pre>[ui]
 highlight_words = "myproject, deploy, lunch"</pre>
     <p>Messages containing one of these words show the word in <strong>red bold</strong> and count as mentions in the sidebar unread badge. Matching is case-insensitive and whole-word only: <code>deploy</code> matches "time to deploy" but not "deployment". Changes apply immediately.</p>
+
+    <h3>Per-channel notification levels</h3>
+    <p>Right-click any channel or PM in the sidebar and open <strong>Notifications</strong> to pick a level for that buffer:</p>
+    <table>
+      <tr><th>Level</th><th>Tray dot</th><th>Unread badges</th></tr>
+      <tr><td><strong>Everything</strong></td><td>every new message</td><td>normal</td></tr>
+      <tr><td><strong>Mentions Only</strong> (default)</td><td>mentions and PMs</td><td>normal</td></tr>
+      <tr><td><strong>Mute</strong></td><td>never</td><td>none — the channel name dims in the sidebar</td></tr>
+    </table>
+    <p>Muted channels still receive and log every message — open the channel and it's all there; it just never demands your attention. Levels persist across restarts as <code>[[notify]]</code> blocks in your config, written automatically when you pick a level.</p>
   </section>
 
   <hr />

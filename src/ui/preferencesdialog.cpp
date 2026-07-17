@@ -410,6 +410,16 @@ QWidget *PreferencesDialog::createNotificationsPage(const Config &cfg)
         vbox->addLayout(row);
     }
 
+    vbox->addSpacing(10);
+    {
+        auto *note = new QLabel(
+            "Per-channel levels: right-click a channel or PM in the sidebar → "
+            "<b>Notifications</b> to choose Everything, Mentions Only, or Mute.");
+        note->setWordWrap(true);
+        note->setStyleSheet("font-size: 9pt;");
+        vbox->addWidget(note);
+    }
+
     vbox->addStretch();
     return page;
 }

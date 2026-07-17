@@ -1,6 +1,33 @@
 # Changelog
 
 <!--
+Session 2026-07-16 (vii): per-channel notification levels (unreleased):
+- Right-click a channel/PM in the sidebar → Notifications → Everything /
+  Mentions Only (default) / Mute, exclusive checkable submenu, current
+  level checked, local feedback line on change (visible-feedback rule).
+- Semantics: All = tray dot on ANY message in the buffer; Mentions =
+  today's behavior; Mute = no dot AND no unread/mention badges (messages
+  still render + log), name dims in the sidebar (UserRole+5 → dimmed
+  text in SidebarDelegate), muting clears already-accrued counters.
+- Storage: [[notify]] blocks (server/buffer/level), NOT in ChannelConfig
+  — that list doubles as the auto-join list, storing levels there would
+  auto-join muted channels. Only non-default levels persist; unknown
+  level strings fall back to mentions. tst_config: 2 new cases (parse +
+  round-trip), 18 total.
+- Runtime: ServerSession::notifyLevels hash seeded in spawnSession from
+  Config::notifyLevels; SessionModel::notifyLevel/setNotifyLevel/
+  matchesMention; postMessage skips unread/mention counting for muted
+  buffers.
+- Unification ride-along: the tray-dot mention check now uses
+  matchesMention() (sess->mentionRe + highlightRe) instead of the old
+  ad-hoc text.contains(myNick) — tray notifications finally honor
+  highlight words, matching the badge counter's behavior.
+- Prefs → Notifications gains a pointer note to the right-click menu.
+  Docs: configuration.md [[notify]] section, faq mute entry, howto
+  levels table, README row, config.toml.example block.
+-->
+
+<!--
 Session 2026-07-16 (iv): scroll-to-top history loading fixed (unreleased):
 - CHATHISTORY BEFORE completion was a QTimer::singleShot(0) that fired
   before any network reply could arrive: the empty result marked the

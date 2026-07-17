@@ -9,6 +9,7 @@
 #include "model/sessionmodel.h"
 #include "config/config.h"
 
+#include <QActionGroup>
 #include <QApplication>
 #include <QClipboard>
 #include <QDateTime>
@@ -274,6 +275,8 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
         menu->addAction("Close", this, [this, host, channel]{
             m_model->closeBuffer(host, channel);
         });
+        menu->addSeparator();
+        addNotificationsMenu(menu, host, channel);
         auto *srvItem = item->parent();
         if (srvItem) {
             const int cidx = srvItem->indexOfChild(item);
@@ -297,6 +300,7 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
         }
     } else if (!channel.isEmpty() && channel.str() != "(server)") {
         // PM / user query
+        addNotificationsMenu(menu, host, channel);
         menu->addAction("Close Query", this, [this, host, channel]{
             m_model->closeBuffer(host, channel);
         });
@@ -306,6 +310,41 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
         menu->popup(m_sidebar->viewport()->mapToGlobal(pos));
     else
         menu->deleteLater();
+}
+
+void MainWindow::addNotificationsMenu(QMenu *menu, ServerId host, BufferId channel)
+{
+    QMenu *sub = menu->addMenu("Notifications");
+    auto *group = new QActionGroup(sub);
+    group->setExclusive(true);
+    const NotifyLevel current = m_model->notifyLevel(host, channel);
+
+    const auto addLevel = [&](const QString &label, NotifyLevel level,
+                              const QString &feedback){
+        QAction *a = sub->addAction(label);
+        a->setCheckable(true);
+        a->setChecked(current == level);
+        group->addAction(a);
+        connect(a, &QAction::triggered, this, [this, host, channel, level, feedback]{
+            m_model->setNotifyLevel(host, channel, level);
+            m_config.notifyLevels.removeIf([&](const NotifyOverride &no){
+                return no.server == host.str()
+                    && no.buffer.compare(channel.str(), Qt::CaseInsensitive) == 0;
+            });
+            if (level != NotifyLevel::Mentions)
+                m_config.notifyLevels.append({host.str(), channel.str(), level});
+            saveConfig();
+            m_model->localMessage(host, channel, feedback);
+        });
+    };
+
+    const QString name = channel.str();
+    addLevel("Everything",    NotifyLevel::All,
+             "Notifications for " + name + ": everything");
+    addLevel("Mentions Only", NotifyLevel::Mentions,
+             "Notifications for " + name + ": mentions only (default)");
+    addLevel("Mute",          NotifyLevel::Mute,
+             "Notifications for " + name + ": muted");
 }
 
 void MainWindow::onNickListContextMenu(const QPoint &pos)

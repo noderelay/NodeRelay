@@ -63,6 +63,9 @@ public:
     void localMessage(ServerId host, BufferId target, const QString &text);
     QString selfNick  (ServerId host);
     bool    hasMention(ServerId host, BufferId channel);
+    bool    matchesMention(ServerId host, const QString &text);
+    NotifyLevel notifyLevel(ServerId host, BufferId buffer);
+    void        setNotifyLevel(ServerId host, BufferId buffer, NotifyLevel level);
     void sendJoin   (ServerId host, BufferId channel, const QString &key = {});
     void sendPart   (ServerId host, BufferId channel, const QString &reason = {});
     void sendNick   (ServerId host, const QString &nick);

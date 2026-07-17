@@ -89,6 +89,7 @@ private slots:
                                 const QString &oldNick, const QString &newNick);
     void onNickListContextMenu  (const QPoint &pos);
     void onSidebarContextMenu   (const QPoint &pos);
+    void addNotificationsMenu   (QMenu *menu, ServerId host, BufferId channel);
     void onUnreadChanged    (ServerId host, BufferId channel, int count);
     void onReactionsChanged (ServerId host, BufferId channel, const QString &msgid);
     void onSelfNickChanged  (ServerId host, const QString &nick);

@@ -37,6 +37,60 @@ nick = "joe"
         QVERIFY(!s.disabled);
     }
 
+    void notifyLevels()
+    {
+        LOAD(cfg, R"(
+[[notify]]
+server = "TestNet"
+buffer = "#loud"
+level = "all"
+
+[[notify]]
+server = "TestNet"
+buffer = "#noisy"
+level = "mute"
+
+[[notify]]
+server = "TestNet"
+buffer = "#weird"
+level = "sometimes"
+
+[[notify]]
+server = ""
+buffer = "#orphan"
+level = "mute"
+)");
+        // "sometimes" falls back to Mentions (the default) and is dropped;
+        // the empty-server entry is invalid and dropped too.
+        QCOMPARE(cfg.notifyLevels.size(), 2);
+        QCOMPARE(cfg.notifyLevels[0].buffer, "#loud");
+        QCOMPARE(cfg.notifyLevels[0].level, NotifyLevel::All);
+        QCOMPARE(cfg.notifyLevels[1].buffer, "#noisy");
+        QCOMPARE(cfg.notifyLevels[1].level, NotifyLevel::Mute);
+    }
+
+    void notifyLevelsRoundTrip()
+    {
+        Config orig;
+        orig.notifyLevels.append({"TestNet", "#loud",  NotifyLevel::All});
+        orig.notifyLevels.append({"TestNet", "#noisy", NotifyLevel::Mute});
+        orig.notifyLevels.append({"TestNet", "#plain", NotifyLevel::Mentions});
+
+        QTemporaryDir tmpDir;
+        QVERIFY(tmpDir.isValid());
+        const QString path = tmpDir.path() + "/notify.toml";
+        Config::save(orig, path, false);
+        const Config loaded = Config::load(path);
+
+        // The Mentions entry is the default and must not survive the trip.
+        QCOMPARE(loaded.notifyLevels.size(), 2);
+        QCOMPARE(loaded.notifyLevels[0].server, "TestNet");
+        QCOMPARE(loaded.notifyLevels[0].buffer, "#loud");
+        QCOMPARE(loaded.notifyLevels[0].level, NotifyLevel::All);
+        QCOMPARE(loaded.notifyLevels[1].buffer, "#noisy");
+        QCOMPARE(loaded.notifyLevels[1].level, NotifyLevel::Mute);
+    }
+
     void loadUiSection()
     {
         LOAD(cfg, R"(

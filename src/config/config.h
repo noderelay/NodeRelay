@@ -39,6 +39,36 @@ struct ChannelConfig {
     QString password;
 };
 
+// Per-buffer notification level. Mentions is the default and is never
+// written to config; only All/Mute overrides are stored ([[notify]] blocks).
+enum class NotifyLevel {
+    Mentions,   // tray dot on mentions/PMs, normal unread badges (default)
+    All,        // tray dot on every message in the buffer
+    Mute,       // no dot, no unread/mention badges (messages still shown/logged)
+};
+
+struct NotifyOverride {
+    QString     server;   // ServerConfig name
+    QString     buffer;   // channel or PM nick
+    NotifyLevel level{NotifyLevel::Mentions};
+};
+
+inline QString notifyLevelToString(NotifyLevel l)
+{
+    switch (l) {
+    case NotifyLevel::All:  return QStringLiteral("all");
+    case NotifyLevel::Mute: return QStringLiteral("mute");
+    default:                return QStringLiteral("mentions");
+    }
+}
+
+inline NotifyLevel notifyLevelFromString(const QString &s)
+{
+    if (s == QLatin1String("all"))  return NotifyLevel::All;
+    if (s == QLatin1String("mute")) return NotifyLevel::Mute;
+    return NotifyLevel::Mentions;   // unknown strings fall back to the default
+}
+
 struct ServerConfig {
     QString            name;
     QString            host;
@@ -134,6 +164,7 @@ struct Config {
     QList<IgnoreEntry>  ignoreList;
     QStringList         monitorList;   // nicks to watch with MONITOR
     QList<ScriptBinding> scripts;
+    QList<NotifyOverride> notifyLevels;   // only non-default levels
     QString             profileDisplayName; // draft/metadata-2 display-name
     QString             profileAvatarUrl;   // draft/metadata-2 avatar URL
 

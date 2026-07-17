@@ -101,6 +101,9 @@ void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
     sess.host        = sc.host;
     sess.nick        = sc.nick;
     sess.highlightRe = buildHighlightRe(m_config.ui.highlightWords);
+    for (const NotifyOverride &no : std::as_const(m_config.notifyLevels))
+        if (no.server == sc.name)
+            sess.notifyLevels.insert(no.buffer.toLower(), no.level);
     m_sessions.append(sess);
     emit serverAdded(ServerId{sc.name});
 
@@ -494,6 +497,53 @@ bool SessionModel::hasMention(ServerId host, BufferId ch)
     return c && c->mentions > 0;
 }
 
+NotifyLevel SessionModel::notifyLevel(ServerId host, BufferId buffer)
+{
+    auto *sess = session(host);
+    return sess ? sess->notifyLevel(buffer.str()) : NotifyLevel::Mentions;
+}
+
+void SessionModel::setNotifyLevel(ServerId host, BufferId buffer, NotifyLevel level)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+
+    const QString key = buffer.str().toLower();
+    if (level == NotifyLevel::Mentions)
+        sess->notifyLevels.remove(key);   // default is never stored
+    else
+        sess->notifyLevels.insert(key, level);
+
+    // Keep the model's config copy in sync (mirrors setHighlightWords).
+    m_config.notifyLevels.removeIf([&](const NotifyOverride &no){
+        return no.server == host.str() && no.buffer.compare(buffer.str(), Qt::CaseInsensitive) == 0;
+    });
+    if (level != NotifyLevel::Mentions)
+        m_config.notifyLevels.append({host.str(), buffer.str(), level});
+
+    // Muting clears whatever was already accrued so the badge vanishes now;
+    // other levels just trigger a repaint with the real count.
+    int count = 0;
+    if (auto *ch = channel(host, buffer)) {
+        if (level == NotifyLevel::Mute) {
+            ch->unread = 0;
+            ch->mentions = 0;
+            ch->firstUnreadIdx = -1;
+        }
+        count = ch->unread;
+    }
+    emit unreadChanged(host, buffer, count);
+}
+
+bool SessionModel::matchesMention(ServerId host, const QString &text)
+{
+    auto *sess = session(host);
+    if (!sess) return false;
+    const bool nickHit    = !sess->mentionRe.pattern().isEmpty() && sess->mentionRe.match(text).hasMatch();
+    const bool keywordHit = !sess->highlightRe.pattern().isEmpty() && sess->highlightRe.match(text).hasMatch();
+    return nickHit || keywordHit;
+}
+
 void SessionModel::sendJoin(ServerId host, BufferId channel, const QString &key)
 {
     auto *cl = clientFor(ServerId{host});
@@ -722,8 +772,9 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
         logMessage(host, target, msg);
 
     const bool isActive = (host == m_activeHost.str() && target.compare(m_activeChannel.str(), Qt::CaseInsensitive) == 0);
-    const bool countsAsUnread = msg.type == MessageType::Privmsg
-        || (msg.type == MessageType::Notice && target == "(server)");
+    const bool muted    = sess->notifyLevel(target) == NotifyLevel::Mute;
+    const bool countsAsUnread = !muted && (msg.type == MessageType::Privmsg
+        || (msg.type == MessageType::Notice && target == "(server)"));
     if (!isActive && !msg.isHistory && countsAsUnread) {
         if (ch.unread == 0)
             ch.firstUnreadIdx = static_cast<int>(ch.messages.size()) - 1;

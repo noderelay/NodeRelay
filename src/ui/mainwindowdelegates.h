@@ -200,6 +200,13 @@ public:
             opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
             opt.palette.setColor(QPalette::All, QPalette::HighlightedText, textCol);
         }
+        // Muted buffers (UserRole+5) render dimmed so the state is visible
+        // at a glance; selection keeps its normal contrast.
+        if (!selected && index.data(Qt::UserRole + 5).toBool()) {
+            QColor dim = opt.palette.color(QPalette::Text);
+            dim.setAlpha(110);
+            opt.palette.setColor(QPalette::All, QPalette::Text, dim);
+        }
         QStyledItemDelegate::paint(painter, opt, index);
 
         int afterTextX = textRect.x() + textMargin + textW;

@@ -1227,6 +1227,8 @@ void MainWindow::onChannelAdded(ServerId host, BufferId channel)
     item->setText(0, channel.str());
     item->setData(0, Qt::UserRole,     host.str());
     item->setData(0, Qt::UserRole + 1, channel.str());
+    if (m_model->notifyLevel(host, channel) == NotifyLevel::Mute)
+        item->setData(0, Qt::UserRole + 5, true);
 
     // Checked out to a floating window: re-mark, but don't select or raise —
     // (re)joins would otherwise steal focus and misplace the sidebar highlight.
@@ -1316,6 +1318,8 @@ void MainWindow::onUnreadChanged(ServerId host, BufferId channel, int count)
         else
             item->setData(0, Qt::UserRole + 2, QVariant());
         item->setData(0, Qt::UserRole + 3, count > 0 ? count : QVariant());
+        item->setData(0, Qt::UserRole + 5,
+                      m_model->notifyLevel(host, channel) == NotifyLevel::Mute ? true : QVariant());
         item->setText(0, label);
     }
 }

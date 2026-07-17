@@ -467,6 +467,12 @@ Click the **close button** in the top-left corner of the sidebar panel. The side
 
 You can also drag the divider between the sidebar and the chat area to resize it; the width is saved and restored on the next launch.
 
+### How do I mute a noisy channel?
+
+Right-click the channel (or PM) in the sidebar → **Notifications** → **Mute**. The channel keeps receiving and logging everything, but it stops demanding attention: no tray dot, no unread badge, no mention icon, and its name dims in the sidebar. Switch back to **Mentions Only** (the default) or **Everything** the same way. Levels persist across restarts (`[[notify]]` blocks in config, written automatically).
+
+**Everything** is the loud opposite: the tray dot lights up for *any* new message in that buffer, not just mentions — useful for a low-traffic channel you never want to miss.
+
 ### How do I hide or show the user list?
 
 Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears at the top-right of the chat area so you can bring it back with one click. Drag the splitter between the chat view and the user list to resize the panel; the width is saved and restored on the next launch.
