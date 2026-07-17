@@ -238,6 +238,10 @@ if(APPLE)
     set_target_properties(Uplink PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_ICON_FILE uplink.icns
+        MACOSX_BUNDLE_BUNDLE_NAME "Uplink"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.noderelay.UplinkIRC"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     )
 endif()
 
