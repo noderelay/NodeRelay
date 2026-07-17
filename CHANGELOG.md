@@ -1,6 +1,40 @@
 # Changelog
 
 <!--
+Session 2026-07-16 (close): the distribution day — v2026.7.6 RELEASED,
+four package channels, three fixes, two features built-then-shelved:
+- Shipped: #100 Libera.Chat default + linuxdojo scrub, #101/#104 three
+  AUR packages (uplink-irc / -bin / -git, live + indexed), #102/#103
+  release prep, v2026.7.6 tagged (all artifacts verified), #107 topic
+  bar fix, #108 history-loading fix, #109 pkg-aware update checker,
+  #110 Homebrew tap (live: brew tap noderelay/uplink) + winget
+  manifests (microsoft/winget-pkgs PR 403545, pending review).
+- #107 detail (had no session note of its own): the channel name in the
+  topic bar could collapse to "#…" at ANY window width. ElidedLabel::
+  setFullText never called updateGeometry(), and QLabel::setText skips
+  it when the SHOWN (elided) text size didn't change — an
+  empty-constructed label's cached 0-width layout hint then never
+  refreshed. Fix: updateGeometry() in setFullText; elide() also shows
+  the full text whenever horizontalAdvance fits (elidedText() can clip
+  the tail at exactly the fitting width); channelLabel bold moved from
+  theme QSS to the widget font so metrics match painting. The
+  "Topic set by" label had always escaped via its hide()/show() cycles
+  forcing layout passes — that's why it sat at full width next to the
+  collapsed name.
+- Built then shelved by owner decision, preserved in git: plugins
+  (#105 merged, #106 reverted — "scripts is enough for this client")
+  and per-channel notification levels (PR #111 closed unmerged, branch
+  notify-levels kept, CI fully green — "keep it on the back burner").
+- Docs: everything shipped is documented in-PR; faq/howto/site macOS
+  Rosetta claim corrected (arm64 dmg does NOT run on Intel);
+  update-checker package-manager behavior documented; AUR/brew install
+  rows everywhere. uplinkbot re-ingest owed for the day's doc changes.
+- Unreleased on main: #107/#108/#109/#110 — next release (2026.7.7)
+  ships them through all four channels; AUR/tap/winget bump recipes in
+  packaging/*/README.md.
+-->
+
+<!--
 Session 2026-07-16 (iv): scroll-to-top history loading fixed (unreleased):
 - CHATHISTORY BEFORE completion was a QTimer::singleShot(0) that fired
   before any network reply could arrive: the empty result marked the
