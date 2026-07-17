@@ -1,6 +1,26 @@
 # Changelog
 
 <!--
+Session 2026-07-16/17 (final addendum): first AUR user report + site
+download grid:
+- gasiyu on the uplink-irc AUR page: tomlplusplus must be depends, not
+  makedepends — Arch packages the COMPILED library flavor, so
+  system-deps builds link libtomlplusplus.so.3 at runtime (verified
+  via objdump NEEDED; the -bin/release binary vendors it header-only
+  and is unaffected). Fixed as pkgrel=2 in uplink-irc AND
+  uplink-irc-git, pushed to AUR within the hour, mirrors synced (#117),
+  Joe acknowledged on the package page. Lesson: an upstream
+  "header-only" library isn't necessarily packaged header-only.
+- #116: site download grid gives package managers proper billing —
+  dedicated Homebrew tap card with the exact commands, AUR card lists
+  all three packages, Windows card notes the winget review. Verified
+  live at uplinkirc.chat/docs/ (the root URL is a redirect stub —
+  poll /docs/ when checking the live site).
+- winget: both PRs (403545 new package, 403562 version bump) passed
+  automated validation, sitting in the volunteer-moderator queue.
+-->
+
+<!--
 Session 2026-07-16 (post-close addendum): v2026.7.7 RELEASED and fully
 propagated — prep #113, tag v2026.7.7, all 5 artifacts, AUR uplink-irc
 + -bin pushed (source pkg test-built from the tarball), Homebrew tap
