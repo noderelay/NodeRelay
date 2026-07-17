@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+Session 2026-07-16 (post-close addendum): v2026.7.7 RELEASED and fully
+propagated — prep #113, tag v2026.7.7, all 5 artifacts, AUR uplink-irc
++ -bin pushed (source pkg test-built from the tarball), Homebrew tap
+bumped, winget version PR microsoft/winget-pkgs 403562 filed (the
+new-package PR 403545 also still pending; CLA recognized on both — a
+stale needsCLA bot email on 403562 self-resolved, check was already
+SUCCESS). Mirror sync #114. First full run of the 4-channel release
+pipeline: ~25 minutes tag-to-everywhere. main == released, no backlog.
+-->
+
+<!--
 Session 2026-07-16 (close): the distribution day — v2026.7.6 RELEASED,
 four package channels, three fixes, two features built-then-shelved:
 - Shipped: #100 Libera.Chat default + linuxdojo scrub, #101/#104 three
