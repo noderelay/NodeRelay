@@ -89,14 +89,18 @@ jobs:
 
       - name: Run clazy
         run: |
+          # clazy-standalone exits 0 even on warnings AND on invalid check
+          # names (it prints "Invalid check to disable:" and keeps going),
+          # so the only reliable failure signal is the output text.
           checks="$(tr -d '\n' < .clazy)"
-          out=$(for f in $(ls src/*/*.cpp | grep -v emojidata); do
-            clazy-standalone -p build/compile_commands.json --checks="$checks" "$f" 2>&1
-          done) || true
-          if echo "$out" | grep 'warning:'; then
-            echo "clazy found warnings"; exit 1
+          : > clazy.log
+          for f in $(ls src/*/*.cpp | grep -v emojidata); do
+            clazy-standalone -p build/compile_commands.json --checks="$checks" "$f" >> clazy.log 2>&1 || true
+          done
+          if grep -E ': (warning|error):|Invalid check' clazy.log; then
+            echo "clazy found problems"; exit 1
           fi
-          echo "clazy clean"
+          echo "clazy clean ($(wc -l < clazy.log) output lines)"
 
   sanitize:
     runs-on: ubuntu-24.04
