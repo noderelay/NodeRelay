@@ -29,6 +29,16 @@ Session 2026-07-16 (iv): scroll-to-top history loading fixed (unreleased):
   instead of offering a self-update that would fight pacman or the
   misleading "rebuild from source" advice. /usr/local and other paths
   keep the source/tarball message; AppImage/Windows/macOS unchanged.
+- Distribution round 2: Homebrew tap LIVE (noderelay/homebrew-uplink,
+  brew tap noderelay/uplink && brew install --cask uplink; arm64-only
+  dmg, not notarized — caveat printed at install). winget manifests
+  submitted upstream (microsoft/winget-pkgs PR #403545, NodeRelay.Uplink,
+  zip + nested portable Uplink.exe; pending their pipeline + moderator).
+  Source-of-truth mirrors live in packaging/homebrew and
+  packaging/winget with per-release update recipes in their READMEs.
+  Also fixed a REVERSED Rosetta claim in faq/howto/site: the arm64 dmg
+  does NOT run on Intel Macs (Rosetta translates Intel→ARM only);
+  Intel users build from source.
 -->
 
 <!--

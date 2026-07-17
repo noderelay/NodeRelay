@@ -16,10 +16,10 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 | **Arch Linux** | AUR | `yay -S uplink-irc` (or `uplink-irc-bin` prebuilt, `uplink-irc-git` dev) |
 | **Linux x86_64** | tar.gz | Extract, then `./Uplink` |
 | **Windows x64** | zip | Extract and run `Uplink.exe` |
-| **macOS (Apple Silicon)** | DMG | Open and drag to Applications |
+| **macOS (Apple Silicon)** | DMG | Open and drag to Applications — or `brew tap noderelay/uplink && brew install --cask uplink` |
 | **FreeBSD** | - | Build from source (see below) |
 
-> **macOS note:** The DMG is built for Apple Silicon (arm64). Intel Mac users can run it under Rosetta 2, which macOS enables automatically. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.
+> **macOS note:** The DMG is built for Apple Silicon (arm64) and does not run on Intel Macs (Rosetta only translates in the other direction — Intel apps on Apple Silicon). Intel users: build from source. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.
 
 The AppImage is the recommended Linux download. It is self-contained, runs on any modern x86_64 Linux with glibc 2.35+, and supports in-place updates (see [How do I update the AppImage?](#how-do-i-update-the-appimage) below).
 
@@ -1152,7 +1152,7 @@ xattr -dr com.apple.quarantine ~/Downloads/Uplink-*.dmg
 
 Then open the DMG normally. The `-d` flag removes the attribute, `-r` applies it recursively (covers the app bundle inside).
 
-> The DMG is built for **Apple Silicon (arm64)**. On an Intel Mac, Rosetta 2 will run it automatically; no action needed on your part.
+> The DMG is built for **Apple Silicon (arm64)** and does not run on Intel Macs — Rosetta 2 translates Intel apps for Apple Silicon, not the reverse. On an Intel Mac, build from source instead.
 
 ---
 

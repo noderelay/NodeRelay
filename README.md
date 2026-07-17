@@ -251,8 +251,17 @@ sudo pkg install cmake qt6-base qt6-svg tomlplusplus
 <details>
 <summary><strong>macOS (Homebrew)</strong></summary>
 
+Skip the build — install the app straight from the tap:
+
 ```bash
-brew install cmake qt tomlplusplus
+brew tap noderelay/uplink
+brew install --cask uplink
+```
+
+To build from source instead:
+
+```bash
+brew install cmake qt qtkeychain tomlplusplus
 ```
 </details>
 
