@@ -118,6 +118,10 @@ private:
     void refreshChatView(ServerId host, BufferId channel, bool resetToLatest = true);
     void loadOlderMessages();
     void onOlderHistoryLoaded(ServerId host, BufferId channel, int count);
+    // Jump-to-search-result: paginate server history until the timestamp is
+    // in memory, then scroll to and flash the closest message.
+    void startHistoryJump(ServerId host, BufferId channel, const QDateTime &ts);
+    void continueHistoryJump();
     void refreshNickList(ServerId host, BufferId channel);
     void updateNickViews(ServerId host, BufferId channel);
     void scheduleNickRefresh(ServerId host, BufferId channel);
@@ -321,6 +325,12 @@ private:
     QHash<QString, int>           m_scrollPositions;   // "host\tchannel" → saved scroll px (non-bottom)
     bool                          m_loadingOlder{false};
     QSet<QString>                 m_historyExhausted;  // channels with no more server history
+
+    // In-flight jump to a search result (m_jumpTs invalid = no jump active)
+    ServerId                      m_jumpHost;
+    BufferId                      m_jumpChannel;
+    QDateTime                     m_jumpTs;
+    int                           m_jumpRounds{0};
 
     // Avatar image cache
     QNetworkAccessManager        *m_avatarNam{nullptr};

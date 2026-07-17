@@ -2758,7 +2758,8 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <h3 id="history-search">Full history search (Ctrl+Shift+F)</h3>
     <p><kbd>Ctrl+F</kbd> only covers the messages currently loaded in the buffer. To search the current channel's <em>entire logged history</em>, press <kbd>Ctrl+Shift+F</kbd>. This opens a separate window that scans the channel's on-disk log file and lists matching lines newest-first. Tick <strong>Regex</strong> to match with a regular expression instead of a plain substring.</p>
     <p>Because it reads the log on disk, full history search only covers messages that were actually logged: enable <strong>message logging</strong> in Preferences to record history. Without it, there is nothing on disk to search beyond the visible buffer.</p>
-    <p>Tick <strong>All buffers</strong> to search every logged channel and PM across all your servers in one pass. Results are grouped per buffer: a bold header shows the channel, server, and match count, followed by that buffer's newest matches. Double-click any result to jump straight to that buffer.</p>
+    <p>Double-click a result (or press <kbd>Enter</kbd> on it) to jump to that message in the channel: Uplink loads older history from the server if it has to, scrolls to the message, and briefly highlights it. On servers without history support the jump lands at the oldest message it can reach.</p>
+    <p>Tick <strong>All buffers</strong> to search every logged channel and PM across all your servers in one pass. Results are grouped per buffer: a bold header shows the channel, server, and match count, followed by that buffer's newest matches. Jumping works the same from here — double-click a result to land on that message in its buffer.</p>
 
     <figure class="shot">
       <img src="shots/history-search.png" loading="lazy"

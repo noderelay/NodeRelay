@@ -464,6 +464,12 @@ void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count
 {
     m_loadingOlder = false;
 
+    // Resume an in-flight search-result jump once this batch is rendered.
+    // Deferred so the prepend below runs first; continueHistoryJump()
+    // cancels itself if the buffer is no longer active.
+    if (m_jumpTs.isValid() && host == m_jumpHost && channel == m_jumpChannel)
+        QTimer::singleShot(0, this, &MainWindow::continueHistoryJump);
+
     if (host != m_model->activeHost() || channel != m_model->activeChannel())
         return;
 
@@ -521,6 +527,85 @@ void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count
 
     m_chatView->removeLine("status:older");
     m_chatView->prependLines(std::move(older));
+}
+
+void MainWindow::startHistoryJump(ServerId host, BufferId channel, const QDateTime &ts)
+{
+    if (!ts.isValid()) return;
+    m_jumpHost    = host;
+    m_jumpChannel = channel;
+    m_jumpTs      = ts;
+    m_jumpRounds  = 0;
+    continueHistoryJump();
+}
+
+void MainWindow::continueHistoryJump()
+{
+    if (!m_jumpTs.isValid()) return;
+    const ServerId  host    = m_jumpHost;
+    const BufferId  channel = m_jumpChannel;
+    // The user moved on to another buffer — drop the jump silently.
+    if (host != m_model->activeHost() || channel != m_model->activeChannel()) {
+        m_jumpTs = {};
+        return;
+    }
+    auto *ch = m_model->channel(host, channel);
+    if (!ch || ch->messages.isEmpty()) {
+        m_jumpTs = {};
+        return;
+    }
+
+    const QString key = host.str() + '\t' + channel.str();
+
+    // Target older than everything in memory → pull another server batch.
+    // onOlderHistoryLoaded() calls back here after each one. Bounded so a
+    // very old result can't fetch unbounded history; without chathistory
+    // the first request marks the buffer exhausted and we land at the
+    // oldest message we have.
+    static constexpr int kMaxJumpRounds = 10;
+    if (ch->messages.first().timestamp.toLocalTime() > m_jumpTs
+        && !m_historyExhausted.contains(key)
+        && m_jumpRounds < kMaxJumpRounds) {
+        ++m_jumpRounds;
+        m_model->requestOlderHistory(host, channel);
+        return;
+    }
+
+    const QDateTime ts = m_jumpTs;
+    m_jumpTs = {};
+
+    // First message at/after the log line's timestamp (list is time-ordered).
+    const auto &msgs = ch->messages;
+    int idx = 0;
+    while (idx < msgs.size() - 1 && msgs[idx].timestamp.toLocalTime() < ts)
+        ++idx;
+
+    // Render still-lazy in-memory chunks until the target line exists.
+    int guard = 0;
+    while (m_renderStart.value(key, 0) > idx && ++guard < 1000) {
+        m_loadingOlder = false;
+        loadOlderMessages();
+    }
+    m_loadingOlder = false;
+
+    // The exact message may have no view line of its own (grouped events,
+    // missing msgid) — walk outward until a nearby message has one.
+    int lineIdx = -1;
+    for (int off = 0; lineIdx < 0 && off < 50; ++off) {
+        for (int sign = 0; sign < 2 && lineIdx < 0; ++sign) {
+            const qsizetype i = sign ? idx - off : idx + off;
+            if (i < 0 || i >= msgs.size()) continue;
+            lineIdx = m_chatView->findLine(msgs[i].msgid);
+            if (lineIdx < 0)  // group lines are keyed on their first member
+                lineIdx = m_chatView->findLine(
+                    "evgrp:" + QString::number(msgs[i].timestamp.toMSecsSinceEpoch()));
+        }
+    }
+    if (lineIdx < 0)
+        lineIdx = 0;  // best effort: top of the loaded history
+
+    m_chatView->highlightLine(lineIdx);
+    QTimer::singleShot(2500, m_chatView, &ChatView::clearFind);
 }
 
 void MainWindow::appendMessage(const Message &msg, bool autoPreview)

@@ -22,6 +22,16 @@ namespace {
 constexpr int kMaxResults   = 1000;  // newest N matches retained (single buffer)
 constexpr int kMaxPerBuffer = 200;   // newest N matches per buffer (all buffers)
 constexpr int kDebounceMs   = 180;   // wait after a keystroke before scanning
+
+// "[yyyy-MM-dd hh:mm:ss] …" log line → local QDateTime (invalid if the line
+// doesn't start with a timestamp, e.g. a buffer-header row).
+QDateTime lineTimestamp(const QString &raw)
+{
+    const QString line = raw.trimmed();
+    if (line.size() < 21 || !line.startsWith('['))
+        return {};
+    return QDateTime::fromString(line.mid(1, 19), QStringLiteral("yyyy-MM-dd hh:mm:ss"));
+}
 }
 
 LogSearchDialog::LogSearchDialog(const QString &bufferLabel, const QString &logPath,
@@ -67,11 +77,14 @@ LogSearchDialog::LogSearchDialog(const QString &bufferLabel, const QString &logP
     connect(m_regex,      &QCheckBox::toggled,     this, [this]{ m_debounce->start(); });
     connect(m_allBuffers, &QCheckBox::toggled,     this, [this]{ m_debounce->start(); });
 
-    // Double-click or Enter on a result opens that buffer (all-buffers mode —
-    // single-buffer results are for the buffer the user is already in).
+    // Double-click or Enter on a result jumps to that message in its buffer.
     connect(m_results, &QListWidget::itemActivated, this, [this](QListWidgetItem *it){
+        const QDateTime ts = lineTimestamp(it->text());
         const QStringList parts = it->data(Qt::UserRole).toStringList();
-        if (parts.size() == 2) emit jumpRequested(parts[0], parts[1]);
+        if (parts.size() == 2)
+            emit jumpRequested(parts[0], parts[1], ts);
+        else if (ts.isValid())
+            emit jumpInBufferRequested(ts);
     });
 
     if (!m_hasLog) {
@@ -249,7 +262,7 @@ void LogSearchDialog::showAllBufferResults(const QList<BufferHits> &hits)
         }
     }
 
-    QString status = tr("%1 matches across %2 buffers — double-click a result to open that buffer.")
+    QString status = tr("%1 matches across %2 buffers — double-click a result to jump to it.")
                          .arg(total).arg(hits.size());
     if (truncated)
         status += tr(" Newest %1 shown per buffer.").arg(kMaxPerBuffer);
