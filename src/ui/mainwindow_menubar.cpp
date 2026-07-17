@@ -306,7 +306,7 @@ void MainWindow::openManageServers()
     ManageServersDialog dlg(m_config.servers, this);
     if (dlg.exec() != QDialog::Accepted) return;
     const QList<ServerConfig> updated = dlg.servers();
-    for (const ServerConfig &old : m_config.servers) {
+    for (const ServerConfig &old : std::as_const(m_config.servers)) {
         const bool stillPresent = std::any_of(updated.begin(), updated.end(),
             [&](const ServerConfig &s){ return s.name == old.name; });
         if (!stillPresent)
@@ -314,7 +314,7 @@ void MainWindow::openManageServers()
     }
     for (const ServerConfig &sc : updated) {
         const ServerConfig *existing = nullptr;
-        for (const ServerConfig &old : m_config.servers)
+        for (const ServerConfig &old : std::as_const(m_config.servers))
             if (old.name == sc.name) { existing = &old; break; }
         if (!existing) {
             m_model->addServer(sc);

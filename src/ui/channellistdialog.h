@@ -13,7 +13,7 @@ class QSortFilterProxyModel;
 class ChannelListDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit ChannelListDialog(ServerId host, QWidget *parent = nullptr);
+    explicit ChannelListDialog(const ServerId &host, QWidget *parent = nullptr);
 
     const ServerId &host() const { return m_host; }
     bool    isFetching() const { return m_fetching; }
@@ -25,8 +25,8 @@ public slots:
     void onListEnd(int total);
 
 signals:
-    void joinRequested(ServerId host, BufferId channel);
-    void refreshRequested(ServerId host);
+    void joinRequested(const ServerId &host, const BufferId &channel);
+    void refreshRequested(const ServerId &host);
 
 private:
     void joinSelected();

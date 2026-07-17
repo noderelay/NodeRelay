@@ -24,10 +24,10 @@ public:
 
     LinkPreview *linkPreview() const { return m_linkPreview; }
 
-    void enqueue(const QUrl &url, ServerId host, BufferId channel, const QString &msgid);
+    void enqueue(const QUrl &url, const ServerId &host, const BufferId &channel, const QString &msgid);
 
 signals:
-    void cardStored(ServerId host, BufferId channel, const QString &msgid,
+    void cardStored(const ServerId &host, const BufferId &channel, const QString &msgid,
                     const QString &url, const QPixmap &thumb);
 
 private:

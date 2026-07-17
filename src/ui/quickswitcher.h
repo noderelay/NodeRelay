@@ -16,7 +16,7 @@ public:
     void showCentered();
 
 signals:
-    void channelSelected(ServerId host, BufferId channel);
+    void channelSelected(const ServerId &host, const BufferId &channel);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

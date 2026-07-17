@@ -83,17 +83,17 @@ void TrayIcon::onActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void TrayIcon::onServerConnected(ServerId)
+void TrayIcon::onServerConnected(const ServerId &)
 {
     updateTooltip();
 }
 
-void TrayIcon::onServerDisconnected(ServerId)
+void TrayIcon::onServerDisconnected(const ServerId &)
 {
     updateTooltip();
 }
 
-void TrayIcon::onUnreadChanged(ServerId, BufferId, int)
+void TrayIcon::onUnreadChanged(const ServerId &, const BufferId &, int)
 {
     m_totalUnread = 0;
     for (const auto &sess : m_model->sessions())

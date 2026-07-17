@@ -51,7 +51,7 @@ QRegularExpression MainWindow::selfNickReFor(const ServerId &host) const
     return SessionModel::buildHighlightRe(m_model->selfNick(host));
 }
 
-void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &msg)
+void MainWindow::onMessageAdded(const ServerId &host, const BufferId &channel, const Message &msg)
 {
     const QString selfNick = m_model->selfNick(host);
 
@@ -131,7 +131,7 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
     }
 }
 
-void MainWindow::onReactionsChanged(ServerId host, BufferId channel, const QString &msgid)
+void MainWindow::onReactionsChanged(const ServerId &host, const BufferId &channel, const QString &msgid)
 {
     auto updateView = [&](ChatView *view, Channel *ch) {
         if (view->findLine(msgid) < 0) {
@@ -165,7 +165,7 @@ void MainWindow::onReactionsChanged(ServerId host, BufferId channel, const QStri
     }
 }
 
-void MainWindow::onMessageRedacted(ServerId host, BufferId channel, const QString &msgid)
+void MainWindow::onMessageRedacted(const ServerId &host, const BufferId &channel, const QString &msgid)
 {
     auto makeCtx = [&](Channel *ch) {
         ChatRenderer::Context ctx;
@@ -272,7 +272,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     pane->chatView()->scrollToBottom();
 }
 
-void MainWindow::refreshChatView(ServerId host, BufferId channel, bool resetToLatest)
+void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, bool resetToLatest)
 {
     m_chatView->clear();
     auto *ch = m_model->channel(host, channel);
@@ -460,7 +460,7 @@ void MainWindow::loadOlderMessages()
     QTimer::singleShot(0, this, [this]{ m_loadingOlder = false; });
 }
 
-void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count)
+void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &channel, int count)
 {
     m_loadingOlder = false;
 
@@ -529,7 +529,7 @@ void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count
     m_chatView->prependLines(std::move(older));
 }
 
-void MainWindow::startHistoryJump(ServerId host, BufferId channel, const QDateTime &ts)
+void MainWindow::startHistoryJump(const ServerId &host, const BufferId &channel, const QDateTime &ts)
 {
     if (!ts.isValid()) return;
     m_jumpHost    = host;

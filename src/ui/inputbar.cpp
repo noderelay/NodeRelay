@@ -384,7 +384,7 @@ void MainWindow::applyInputColor(int fg, int bg)
     updateFormatIndicator();
 }
 
-void MainWindow::handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel)
+void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel)
 {
     const QTextCursor tc = input->textCursor();
     const QString text = tc.block().text();

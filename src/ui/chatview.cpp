@@ -545,7 +545,7 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
 
     const int charPos = tl.xToCursor(static_cast<qreal>(vpPos.x()), QTextLine::CursorBetweenCharacters);
 
-    for (const auto &seg : line.segments) {
+    for (const auto &seg : std::as_const(line.segments)) {
         if (!seg.anchor.isEmpty()
             && charPos >= seg.start
             && charPos < seg.start + seg.length)
@@ -691,7 +691,7 @@ void ChatView::layoutLine(ChatLine &line) const
         pl.setFont(m_font);
         pl.setText(line.text.left(line.hangIndentChars));
         QList<QTextLayout::FormatRange> pfmts;
-        for (const auto &seg : line.segments) {
+        for (const auto &seg : std::as_const(line.segments)) {
             if (seg.start >= line.hangIndentChars) break;
             QTextLayout::FormatRange fr;
             fr.start  = seg.start;
@@ -825,7 +825,7 @@ QList<QTextLayout::FormatRange> ChatView::buildFormatRanges(const ChatLine &line
 {
     QList<QTextLayout::FormatRange> result;
     result.reserve(line.segments.size());
-    for (const auto &seg : line.segments) {
+    for (const auto &seg : std::as_const(line.segments)) {
         if (seg.length <= 0) continue;
         QTextLayout::FormatRange fr;
         fr.start  = seg.start;

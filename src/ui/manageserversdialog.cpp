@@ -295,7 +295,7 @@ void ManageServersDialog::refreshList()
 {
     const int prev = m_serverList->currentRow();
     m_serverList->clear();
-    for (const ServerConfig &sc : m_servers) {
+    for (const ServerConfig &sc : std::as_const(m_servers)) {
         const QString label = sc.name.isEmpty() ? sc.host : sc.name;
         auto *item = new QListWidgetItem(MenuIcons::connectedServer(), label);
         item->setSizeHint(QSize(0, 32));

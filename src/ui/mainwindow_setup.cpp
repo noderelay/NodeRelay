@@ -793,7 +793,7 @@ void MainWindow::setupChatArea()
     });
 
     connect(m_previews, &PreviewController::cardStored, this,
-            [this](ServerId host, BufferId channel, const QString &msgid,
+            [this](const ServerId &host, const BufferId &channel, const QString &msgid,
                    const QString &urlStr, const QPixmap &thumb){
         auto *ch = m_model->channel(host, channel);
         if (!ch) return;
@@ -995,12 +995,12 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::channelRemoved,    this, &MainWindow::onChannelRemoved);
     connect(m_model, &SessionModel::messageAdded,      this, &MainWindow::onMessageAdded);
     connect(m_model, &SessionModel::topicChanged,      this, &MainWindow::onTopicChanged);
-    connect(m_model, &SessionModel::modesChanged, this, [this](ServerId h, BufferId ch){
+    connect(m_model, &SessionModel::modesChanged, this, [this](const ServerId &h, const BufferId &ch){
         if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
             refreshTopicBar(h, ch);
     });
     connect(m_model, &SessionModel::topicSetByChanged, this,
-            [this](ServerId h, BufferId ch, const QString &setter, quint64 ts){
+            [this](const ServerId &h, const BufferId &ch, const QString &setter, quint64 ts){
         if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
             if (m_topicSetByLabel) {
                 m_topicSetByLabel->setFullText("Topic set by " + setter.section('!', 0, 0) + " · " + topicAgeStr(ts));
@@ -1008,7 +1008,7 @@ void MainWindow::connectModel()
             }
     });
     connect(m_model, &SessionModel::awayStatusChanged, this,
-            [this](ServerId h, bool away){
+            [this](const ServerId &h, bool away){
         if (auto *srv = findServerItem(h)) {
             if (away)
                 srv->setData(0, Qt::UserRole + 4, QVariant::fromValue(
@@ -1034,12 +1034,12 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
     connect(m_model, &SessionModel::olderHistoryLoaded, this, &MainWindow::onOlderHistoryLoaded);
     connect(m_model, &SessionModel::userMetaChanged, this,
-            [this](ServerId, const QString &, const QString &key, const QString &value) {
+            [this](const ServerId &, const QString &, const QString &key, const QString &value) {
         if (key == QLatin1String("avatar")) fetchAvatar(value);
     });
 
     connect(m_model, &SessionModel::sslFingerprintPrompt, this,
-            [this](ServerId host, const QString &fp)
+            [this](const ServerId &host, const QString &fp)
     {
         QMessageBox box(this);
         box.setWindowTitle("Untrusted Certificate");
@@ -1059,11 +1059,11 @@ void MainWindow::connectModel()
 
     m_dcc = new DccController(m_model, this);
 
-    connect(m_model, &SessionModel::pingRtt, this, [this](ServerId host, int ms){
+    connect(m_model, &SessionModel::pingRtt, this, [this](const ServerId &host, int ms){
         if (m_signalBars && host == m_model->activeHost())
             m_signalBars->setLatency(ms);
     });
-    connect(m_model, &SessionModel::serverReconnecting, this, [this](ServerId host){
+    connect(m_model, &SessionModel::serverReconnecting, this, [this](const ServerId &host){
         if (m_signalBars && host == m_model->activeHost())
             m_signalBars->setState(SignalBars::State::Reconnecting);
     });

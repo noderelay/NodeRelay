@@ -25,30 +25,30 @@ public:
     // Create a client for each server in config and start connecting
     void loadConfig(const Config &cfg);
     void addServer(const ServerConfig &sc);
-    void removeServer(ServerId host);
-    void closeServer(ServerId host);
-    bool connectServer(ServerId host);
-    void updateServer(ServerId oldHost, const ServerConfig &sc);
-    void closeBuffer(ServerId host, BufferId target);
+    void removeServer(const ServerId &host);
+    void closeServer(const ServerId &host);
+    bool connectServer(const ServerId &host);
+    void updateServer(const ServerId &oldHost, const ServerConfig &sc);
+    void closeBuffer(const ServerId &host, const BufferId &target);
 
     // Read access for UI
     const QList<ServerSession> &sessions() const { return m_sessions; }
-    ServerSession *session(ServerId host);
-    Channel       *channel(ServerId host, BufferId name);
+    ServerSession *session(const ServerId &host);
+    Channel       *channel(const ServerId &host, const BufferId &name);
 
     // Active selection — UI drives this
-    void    setActive      (ServerId host, BufferId channel);
+    void    setActive      (const ServerId &host, const BufferId &channel);
     // Clear unread state without changing the active buffer — used for
     // channels the user is already watching in a docked pane or pop-out
     // window, which never become active.
-    void    markRead       (ServerId host, BufferId channel);
+    void    markRead       (const ServerId &host, const BufferId &channel);
     ServerId activeHost()    const { return m_activeHost; }
     BufferId activeChannel() const { return m_activeChannel; }
 
     // Log-file location for a buffer. The path is computed even when logging
     // is currently off, so previously written logs stay searchable. Empty if
     // either id is blank.
-    QString logFilePath(ServerId host, BufferId target) const;
+    QString logFilePath(const ServerId &host, const BufferId &target) const;
     static QString logsRootPath();
     // Reverse of logFilePath: sanitized "<server>/<buffer>" path components →
     // live buffer. False when no open buffer matches (e.g. logs of a closed one).
@@ -57,19 +57,19 @@ public:
     bool    messageLoggingEnabled() const { return m_config.ui.logMessages; }
 
     // Send on behalf of a session
-    void sendMessage(ServerId host, BufferId target, const QString &text,
+    void sendMessage(const ServerId &host, const BufferId &target, const QString &text,
                      const QString &replyToMsgid = {});
-    void sendRaw    (ServerId host, const QString &line);
-    void localMessage(ServerId host, BufferId target, const QString &text);
-    QString selfNick  (ServerId host);
-    bool    hasMention(ServerId host, BufferId channel);
-    void sendJoin   (ServerId host, BufferId channel, const QString &key = {});
-    void sendPart   (ServerId host, BufferId channel, const QString &reason = {});
-    void sendNick   (ServerId host, const QString &nick);
-    void sendAction (ServerId host, BufferId target, const QString &text);
-    void sendTyping (ServerId host, BufferId channel, const QString &state);
-    void openPM     (ServerId host, const QString &nick);
-    IrcClient *clientFor(ServerId host);
+    void sendRaw    (const ServerId &host, const QString &line);
+    void localMessage(const ServerId &host, const BufferId &target, const QString &text);
+    QString selfNick  (const ServerId &host);
+    bool    hasMention(const ServerId &host, const BufferId &channel);
+    void sendJoin   (const ServerId &host, const BufferId &channel, const QString &key = {});
+    void sendPart   (const ServerId &host, const BufferId &channel, const QString &reason = {});
+    void sendNick   (const ServerId &host, const QString &nick);
+    void sendAction (const ServerId &host, const BufferId &target, const QString &text);
+    void sendTyping (const ServerId &host, const BufferId &channel, const QString &state);
+    void openPM     (const ServerId &host, const QString &nick);
+    IrcClient *clientFor(const ServerId &host);
 
     void setIgnore         (const QString &nick, IgnoreTypes flags = kIgnoreAll);
     void clearIgnore       (const QString &nick);
@@ -92,79 +92,79 @@ public:
     bool isIgnoredFor(const QString &nick, IgnoreType type) const;
     IgnoreTypes ignoreFlags(const QString &nick) const;
 
-    void requestOlderHistory(ServerId host, BufferId channel);
+    void requestOlderHistory(const ServerId &host, const BufferId &channel);
 
-    void sendReact (ServerId host, BufferId target,
+    void sendReact (const ServerId &host, const BufferId &target,
                     const QString &msgid, const QString &emoji);
-    void sendRedact(ServerId host, BufferId target,
+    void sendRedact(const ServerId &host, const BufferId &target,
                     const QString &msgid, const QString &reason = {});
 
-    void requestNickMeta(ServerId host, const QString &nick); // on-demand, deduped
+    void requestNickMeta(const ServerId &host, const QString &nick); // on-demand, deduped
 
-    void monitorAdd   (ServerId host, const QString &nick);
-    void monitorRemove(ServerId host, const QString &nick);
-    void monitorClear (ServerId host);
-    void monitorStatus(ServerId host);
-    void pinCertificate      (ServerId host, const QString &fingerprint);
-    void acceptCertificateOnce(ServerId host, const QString &fingerprint);
-    void onUserMetaChanged   (ServerId host, const QString &nick,
+    void monitorAdd   (const ServerId &host, const QString &nick);
+    void monitorRemove(const ServerId &host, const QString &nick);
+    void monitorClear (const ServerId &host);
+    void monitorStatus(const ServerId &host);
+    void pinCertificate      (const ServerId &host, const QString &fingerprint);
+    void acceptCertificateOnce(const ServerId &host, const QString &fingerprint);
+    void onUserMetaChanged   (const ServerId &host, const QString &nick,
                               const QString &key, const QString &value);
 
 signals:
     // Structural changes — sidebar needs a repaint
-    void serverAdded       (ServerId host);
-    void serverConnected   (ServerId host);
-    void serverDisconnected(ServerId host);
-    void serverClosed      (ServerId host);
-    void channelAdded  (ServerId host, BufferId channel);
-    void channelRemoved(ServerId host, BufferId channel);
+    void serverAdded       (const ServerId &host);
+    void serverConnected   (const ServerId &host);
+    void serverDisconnected(const ServerId &host);
+    void serverClosed      (const ServerId &host);
+    void channelAdded  (const ServerId &host, const BufferId &channel);
+    void channelRemoved(const ServerId &host, const BufferId &channel);
 
     // Content changes — chat view needs updating
-    void messageAdded   (ServerId host, BufferId channel, const Message &msg);
-    void topicChanged      (ServerId host, BufferId channel, const QString &topic);
-    void topicSetByChanged (ServerId host, BufferId channel,
+    void messageAdded   (const ServerId &host, const BufferId &channel, const Message &msg);
+    void topicChanged      (const ServerId &host, const BufferId &channel, const QString &topic);
+    void topicSetByChanged (const ServerId &host, const BufferId &channel,
                             const QString &setter, quint64 ts);
-    void awayStatusChanged (ServerId host, bool away);
-    void modesChanged   (ServerId host, BufferId channel);
-    void nickListChanged(ServerId host, BufferId channel);
-    void nickAdded      (ServerId host, BufferId channel, const QString &nick);
-    void nickRemoved    (ServerId host, BufferId channel, const QString &nick);
-    void nickRenamed    (ServerId host, BufferId channel,
+    void awayStatusChanged (const ServerId &host, bool away);
+    void modesChanged   (const ServerId &host, const BufferId &channel);
+    void nickListChanged(const ServerId &host, const BufferId &channel);
+    void nickAdded      (const ServerId &host, const BufferId &channel, const QString &nick);
+    void nickRemoved    (const ServerId &host, const BufferId &channel, const QString &nick);
+    void nickRenamed    (const ServerId &host, const BufferId &channel,
                          const QString &oldNick, const QString &newNick);
-    void unreadChanged   (ServerId host, BufferId channel, int count);
-    void reactionsChanged(ServerId host, BufferId channel, const QString &msgid);
-    void messageRedacted (ServerId host, BufferId channel, const QString &msgid);
-    void olderHistoryLoaded(ServerId host, BufferId channel, int count);
+    void unreadChanged   (const ServerId &host, const BufferId &channel, int count);
+    void reactionsChanged(const ServerId &host, const BufferId &channel, const QString &msgid);
+    void messageRedacted (const ServerId &host, const BufferId &channel, const QString &msgid);
+    void olderHistoryLoaded(const ServerId &host, const BufferId &channel, int count);
 
     // Self
-    void selfNickChanged(ServerId host, const QString &nick);
+    void selfNickChanged(const ServerId &host, const QString &nick);
 
     // Connection quality
-    void pingRtt          (ServerId host, int ms);
-    void serverReconnecting(ServerId host);
+    void pingRtt          (const ServerId &host, int ms);
+    void serverReconnecting(const ServerId &host);
 
     // Typing
-    void typingReceived(ServerId host, BufferId channel,
+    void typingReceived(const ServerId &host, const BufferId &channel,
                         const QString &nick, const QString &state);
 
     // Channel list
-    void channelListEntry(ServerId host, BufferId channel, int users, const QString &topic);
-    void channelListEnd  (ServerId host, int total);
+    void channelListEntry(const ServerId &host, const BufferId &channel, int users, const QString &topic);
+    void channelListEnd  (const ServerId &host, int total);
 
     // User metadata
-    void userMetaChanged(ServerId host, const QString &nick,
+    void userMetaChanged(const ServerId &host, const QString &nick,
                          const QString &key, const QString &value);
 
     // TLS cert pin
-    void sslFingerprintPrompt(ServerId host, const QString &fingerprint);
+    void sslFingerprintPrompt(const ServerId &host, const QString &fingerprint);
 
     // DCC
-    void dccSendReceived(ServerId server, const QString &fromNick,
+    void dccSendReceived(const ServerId &server, const QString &fromNick,
                          const QString &filename, quint32 ip, quint16 port, qint64 filesize);
-    void dccPassiveOfferReceived(ServerId server, const QString &fromNick,
+    void dccPassiveOfferReceived(const ServerId &server, const QString &fromNick,
                                   const QString &filename, quint32 ip,
                                   qint64 filesize, const QString &token);
-    void dccPassiveSendReply(ServerId server, const QString &fromNick,
+    void dccPassiveSendReply(const ServerId &server, const QString &fromNick,
                               const QString &filename, quint32 ip, quint16 port,
                               qint64 filesize, const QString &token);
 
@@ -226,11 +226,11 @@ private:
     void onMonitorOnline  (const QString &host, const QStringList &nicks);
     void onMonitorOffline (const QString &host, const QStringList &nicks);
 
-    void postMessage(ServerId host, BufferId target, const Message &msg);
-    void logMessage (ServerId host, BufferId target, const Message &msg);
+    void postMessage(const ServerId &host, const BufferId &target, const Message &msg);
+    void logMessage (const ServerId &host, const BufferId &target, const Message &msg);
     // Route unaddressed replies: active buffer if this server is focused,
     // else the "(server)" buffer.
-    BufferId activeOrServer(ServerId host) const;
+    BufferId activeOrServer(const ServerId &host) const;
 
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;

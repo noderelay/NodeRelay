@@ -24,7 +24,7 @@ class QMimeData;
 class ChannelPane : public QWidget {
     Q_OBJECT
 public:
-    explicit ChannelPane(ServerId host, BufferId channel, QWidget *parent = nullptr);
+    explicit ChannelPane(const ServerId &host, const BufferId &channel, QWidget *parent = nullptr);
     const ServerId &host()    const { return m_host; }
     const BufferId &channel() const { return m_channel; }
     QString         key()     const { return paneKey(m_host, m_channel); }

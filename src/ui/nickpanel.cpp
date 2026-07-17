@@ -75,7 +75,7 @@ QString MainWindow::nickTooltip(const QString &nick, const ServerId &host) const
     return tips.join('\n');
 }
 
-void MainWindow::updateNickViews(ServerId host, BufferId channel)
+void MainWindow::updateNickViews(const ServerId &host, const BufferId &channel)
 {
     auto *ch = m_model->channel(host, channel);
 
@@ -96,12 +96,12 @@ void MainWindow::updateNickViews(ServerId host, BufferId channel)
     }
 }
 
-void MainWindow::onNickAdded(ServerId host, BufferId channel, const QString &)
+void MainWindow::onNickAdded(const ServerId &host, const BufferId &channel, const QString &)
 {
     updateNickViews(host, channel);
 }
 
-void MainWindow::onNickRemoved(ServerId host, BufferId channel, const QString &nick)
+void MainWindow::onNickRemoved(const ServerId &host, const BufferId &channel, const QString &nick)
 {
     updateNickViews(host, channel);
 
@@ -116,13 +116,13 @@ void MainWindow::onNickRemoved(ServerId host, BufferId channel, const QString &n
     }
 }
 
-void MainWindow::onNickRenamed(ServerId host, BufferId channel,
+void MainWindow::onNickRenamed(const ServerId &host, const BufferId &channel,
                                 const QString &, const QString &)
 {
     updateNickViews(host, channel);
 }
 
-void MainWindow::refreshNickList(ServerId host, BufferId channel)
+void MainWindow::refreshNickList(const ServerId &host, const BufferId &channel)
 {
     if (m_nickFilter) m_nickFilter->clear();
     m_nickModel->setBuffer(host, channel);

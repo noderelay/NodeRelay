@@ -30,7 +30,7 @@ public:
     explicit NickListModel(SessionModel *model, const NickListStyle *style,
                            QObject *parent = nullptr);
 
-    void setBuffer(ServerId host, BufferId channel); // retarget + snapshot
+    void setBuffer(const ServerId &host, const BufferId &channel); // retarget + snapshot
     void refresh();                                  // re-snapshot from the model
     void setFilter(const QString &prefix);           // case-insensitive startsWith
 

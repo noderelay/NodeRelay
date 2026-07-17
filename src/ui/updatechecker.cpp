@@ -42,7 +42,7 @@ void UpdateChecker::check()
         const QByteArray body = reply->readAll();
         const QJsonDocument doc = QJsonDocument::fromJson(body);
         const QString tag = doc.object().value("tag_name").toString();
-        const QRegularExpression re(R"(^v?(\d+)\.(\d+)\.(\d+)$)");
+        static const QRegularExpression re(R"(^v?(\d+)\.(\d+)\.(\d+)$)");
         const auto m = re.match(tag);
         if (!m.hasMatch()) {
             QMessageBox::warning(m_window, "Update Check", "Could not parse release info.");

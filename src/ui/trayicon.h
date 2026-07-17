@@ -21,9 +21,9 @@ public:
 
 private slots:
     void onActivated(QSystemTrayIcon::ActivationReason reason);
-    void onServerConnected(ServerId host);
-    void onServerDisconnected(ServerId host);
-    void onUnreadChanged(ServerId host, BufferId channel, int count);
+    void onServerConnected(const ServerId &host);
+    void onServerDisconnected(const ServerId &host);
+    void onUnreadChanged(const ServerId &host, const BufferId &channel, int count);
 
 private:
     void buildMenu();

@@ -41,8 +41,8 @@
 // Scale of the pane snapshot that follows the cursor during a header drag.
 static constexpr qreal kDragGhostScale = 0.5;
 
-ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
-    : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
+ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget *parent)
+    : QWidget(parent), m_host(host), m_channel(channel)
 {
     // Paint a themed background (bufferBg) so the compose strip — typing
     // indicator + input bar — sits on the chat colour like the main window.
