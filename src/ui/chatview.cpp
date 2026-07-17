@@ -174,7 +174,7 @@ void ChatView::clear()
     viewport()->update();
 }
 
-void ChatView::setFont(const QFont &f)
+void ChatView::setChatFont(const QFont &f)
 {
     m_font = f;
     QWidget::setFont(f);

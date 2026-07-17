@@ -500,7 +500,7 @@ void MainWindow::applyFontSizes()
             srv->setFont(0, f);
         }
     }
-    if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
+    if (m_chatView)       m_chatView->setChatFont(makeFont(fs.chat));
     if (m_nickList)       m_nickList->setFont(makeFont(fs.nickList));
     if (m_nickPanel)      m_nickPanel->setFont(makeFont(fs.nickDock));
     if (m_nickCountLabel) m_nickCountLabel->setFont(makeFont(fs.nickDock));

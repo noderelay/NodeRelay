@@ -1147,8 +1147,7 @@ void SessionModel::onModesReceived(const QString &hostStr, const QString &channe
             parseBotModes(modes, ch->botNicks);
 
             // Update per-nick prefixes for privilege mode changes (+o/-o etc.)
-            static const QString prefixModes = QStringLiteral("qaohv");
-            static const QString argModes    = QStringLiteral("ovhaqBe");
+            static const QString argModes = QStringLiteral("ovhaqBe");
             const QStringList parts = modes.split(' ', Qt::SkipEmptyParts);
             bool adding = true;
             int  argIdx = 1;

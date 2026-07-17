@@ -22,7 +22,7 @@ public:
     void removeLine(const QString &id);
     void clear();
 
-    void setFont(const QFont &f);
+    void setChatFont(const QFont &f);
     void setColors(const QColor &text, const QColor &bg,
                    const QColor &link, const QColor &cardBg, const QColor &cardBorder);
 
