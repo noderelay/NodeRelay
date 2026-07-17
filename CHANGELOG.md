@@ -22,6 +22,13 @@ Session 2026-07-16 (iv): scroll-to-top history loading fixed (unreleased):
   timer covers a server that never answers. Also topic-bar channel
   name fix (#107) and the plugin build/revert (#105/#106) happened
   earlier this session — see their entries/commits.
+- Update checker is package-manager aware: a Linux binary under /usr
+  (but not /usr/local) was installed by the system package manager
+  (the new AUR packages land in /usr/bin), so Check for Updates now
+  says "update through your package manager (yay -Syu uplink-irc)"
+  instead of offering a self-update that would fight pacman or the
+  misleading "rebuild from source" advice. /usr/local and other paths
+  keep the source/tarball message; AppImage/Windows/macOS unchanged.
 -->
 
 <!--

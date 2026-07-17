@@ -105,11 +105,24 @@ void UpdateChecker::check()
         // Non-downloadable platforms: just inform
 #if defined(Q_OS_LINUX)
         if (!qEnvironmentVariableIsSet("APPIMAGE")) {
-            QMessageBox::information(m_window, "Update Available",
-                QString("Uplink %1 is available (you are on v" UPLINK_VERSION ").\n\n"
-                        "You appear to be running from source or a tarball.\n"
-                        "Rebuild from source or download the AppImage from the releases page.")
-                    .arg(newVer));
+            // A binary under /usr (but not /usr/local) was put there by the
+            // system package manager (e.g. the AUR packages) — self-updating
+            // would fight it. /usr/local and everywhere else = manual builds.
+            const QString exe = QCoreApplication::applicationFilePath();
+            const bool pkgInstall = exe.startsWith("/usr/") && !exe.startsWith("/usr/local/");
+            if (pkgInstall) {
+                QMessageBox::information(m_window, "Update Available",
+                    QString("Uplink %1 is available (you are on v" UPLINK_VERSION ").\n\n"
+                            "This copy was installed by your package manager, so update it there.\n"
+                            "On Arch: yay -Syu uplink-irc (or uplink-irc-bin).")
+                        .arg(newVer));
+            } else {
+                QMessageBox::information(m_window, "Update Available",
+                    QString("Uplink %1 is available (you are on v" UPLINK_VERSION ").\n\n"
+                            "You appear to be running from source or a tarball.\n"
+                            "Rebuild from source or download the AppImage from the releases page.")
+                        .arg(newVer));
+            }
             return;
         }
 #elif defined(Q_OS_FREEBSD)
