@@ -255,8 +255,12 @@ Skip the build — install the app straight from the tap:
 
 ```bash
 brew tap noderelay/uplink
+brew trust noderelay/uplink
 brew install --cask uplink
 ```
+
+The `brew trust` step is required on current Homebrew, which refuses to
+load casks from third-party taps until you mark the tap as trusted.
 
 To build from source instead:
 

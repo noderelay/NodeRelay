@@ -16,7 +16,7 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 | **Arch Linux** | AUR | `yay -S uplink-irc` (or `uplink-irc-bin` prebuilt, `uplink-irc-git` dev) |
 | **Linux x86_64** | tar.gz | Extract, then `./Uplink` |
 | **Windows x64** | zip | Extract and run `Uplink.exe` |
-| **macOS (Apple Silicon)** | DMG | Open and drag to Applications — or `brew tap noderelay/uplink && brew install --cask uplink` |
+| **macOS (Apple Silicon)** | DMG | Open and drag to Applications — or `brew tap noderelay/uplink && brew trust noderelay/uplink && brew install --cask uplink` |
 | **FreeBSD** | - | Build from source (see below) |
 
 > **macOS note:** The DMG is built for Apple Silicon (arm64) and does not run on Intel Macs (Rosetta only translates in the other direction — Intel apps on Apple Silicon). Intel users: build from source. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.

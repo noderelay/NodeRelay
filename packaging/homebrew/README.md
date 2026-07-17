@@ -7,8 +7,12 @@ Users install with:
 
 ```
 brew tap noderelay/uplink
+brew trust noderelay/uplink
 brew install --cask uplink
 ```
+
+The trust step is a one-time thing: current Homebrew refuses to load
+casks from third-party taps until the tap is marked trusted.
 
 After each release: bump version, update sha256
 (`sha256sum Uplink-v<ver>-macos-arm64.dmg` from the release assets),
