@@ -68,6 +68,36 @@ jobs:
         timeout-minutes: 5
         run: ctest --test-dir build --output-on-failure -C Release --timeout 60
 
+  clazy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Qt and clazy (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt6-base-dev qt6-tools-dev libqt6svg6-dev libqt6websockets6-dev \
+            cmake ninja-build \
+            libsecret-1-dev clazy
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Build (generates autogen headers)
+        run: cmake --build build
+
+      - name: Run clazy
+        run: |
+          checks="$(tr -d '\n' < .clazy)"
+          out=$(for f in $(ls src/*/*.cpp | grep -v emojidata); do
+            clazy-standalone -p build/compile_commands.json --checks="$checks" "$f" 2>&1
+          done) || true
+          if echo "$out" | grep 'warning:'; then
+            echo "clazy found warnings"; exit 1
+          fi
+          echo "clazy clean"
+
   sanitize:
     runs-on: ubuntu-24.04
     steps:

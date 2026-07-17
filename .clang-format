@@ -1,0 +1,16 @@
+# Advisory — matches the existing hand-kept style. The tree is not
+# format-enforced; use this for new code, don't reformat old code wholesale.
+BasedOnStyle: LLVM
+Standard: c++20
+IndentWidth: 4
+ColumnLimit: 100
+BreakBeforeBraces: Linux
+PointerAlignment: Right
+ReferenceAlignment: Right
+AlignConsecutiveAssignments: Consecutive
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: All
+SortIncludes: Never
+KeepEmptyLinesAtTheStartOfBlocks: false
+SpaceAfterTemplateKeyword: false
