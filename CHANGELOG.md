@@ -1268,6 +1268,14 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.7 — 2026-07-16
+
+- **New ways to install**: Arch users have three AUR packages — `uplink-irc` (builds the release), `uplink-irc-bin` (prebuilt, installs in seconds), `uplink-irc-git` (development builds). macOS has a Homebrew tap: `brew tap noderelay/uplink && brew install --cask uplink`. A winget package for Windows is in review
+- Fix: the channel name in the topic bar could shrink to "#…" and stay that way regardless of window size — a layout bug present since v2026.7.4, dependent on startup timing. The full name now always shows when there's room
+- Fix: loading older history by scrolling to the top of a channel now actually works — previously the first attempt silently gave up and any history the server sent could end up at the *bottom* of the buffer. Now older messages prepend properly, again and again, until the history truly runs out
+- **Check for Updates** now recognizes package-manager installs: if Uplink came from the AUR, it points you at `yay -Syu uplink-irc` instead of suggesting a rebuild from source
+- Docs correction: the macOS build is Apple Silicon only — the previous claim that Intel Macs run it via Rosetta 2 was backwards. Intel users should build from source
+
 ## v2026.7.6 — 2026-07-16
 
 - **New home: Libera.Chat.** First launch now connects to **irc.libera.chat** and joins **#uplinkirc**, the project's support channel. Existing configs are not touched. Docs and examples all point at the new network
