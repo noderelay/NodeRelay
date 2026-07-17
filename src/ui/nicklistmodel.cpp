@@ -11,7 +11,7 @@ NickListModel::NickListModel(SessionModel *model, const NickListStyle *style,
     : QAbstractListModel(parent), m_model(model), m_style(style)
 {}
 
-void NickListModel::setBuffer(ServerId host, BufferId channel)
+void NickListModel::setBuffer(const ServerId &host, const BufferId &channel)
 {
     m_host    = host;
     m_channel = channel;

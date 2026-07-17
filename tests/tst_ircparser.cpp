@@ -96,11 +96,15 @@ void TstIrcParser::ircv3Tags()
 void TstIrcParser::tagUnescape()
 {
     // Tag value: a\:b\sc\\d\re\nf\z
-    // Expected:  a ; b   c \ d CR e LF f \ z  (unknown \z preserves backslash per current behaviour)
+    // Expected:  a ; b   c \ d CR e LF f z  (invalid \z drops the backslash per spec)
     const auto m = IrcParser::parse("@k=a\\:b\\sc\\\\d\\re\\nf\\z :s PING");
     QVERIFY(m.isValid());
-    const QString expected = QStringLiteral("a;b c\\d\re\nf\\z");
+    const QString expected = QStringLiteral("a;b c\\d\re\nfz");
     QCOMPARE(m.tags.value(QStringLiteral("k")), expected);
+
+    // Lone trailing backslash produces no output character per spec
+    const auto t = IrcParser::parse("@k=ab\\ :s PING");
+    QCOMPARE(t.tags.value(QStringLiteral("k")), QStringLiteral("ab"));
 }
 
 void TstIrcParser::serverTimeTag()

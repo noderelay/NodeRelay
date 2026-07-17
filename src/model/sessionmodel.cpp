@@ -168,7 +168,7 @@ IgnoreTypes SessionModel::ignoreFlags(const QString &nick) const
     return m_ignoredNicks.value(nick.toLower());
 }
 
-void SessionModel::sendReact(ServerId host, BufferId target,
+void SessionModel::sendReact(const ServerId &host, const BufferId &target,
                               const QString &msgid, const QString &emoji)
 {
     auto *cl = clientFor(host);
@@ -183,32 +183,32 @@ void SessionModel::sendReact(ServerId host, BufferId target,
         onReactReceived(host.str(), target.str(), nick, msgid, emoji);
 }
 
-void SessionModel::sendRedact(ServerId host, BufferId target,
+void SessionModel::sendRedact(const ServerId &host, const BufferId &target,
                                const QString &msgid, const QString &reason)
 {
     if (auto *cl = clientFor(host))
         cl->sendRedact(target.str(), msgid, reason);
 }
 
-void SessionModel::monitorAdd(ServerId host, const QString &nick)
+void SessionModel::monitorAdd(const ServerId &host, const QString &nick)
 {
     if (auto *cl = clientFor(host))
         cl->monitorAdd(nick);
 }
 
-void SessionModel::monitorRemove(ServerId host, const QString &nick)
+void SessionModel::monitorRemove(const ServerId &host, const QString &nick)
 {
     if (auto *cl = clientFor(host))
         cl->monitorRemove(nick);
 }
 
-void SessionModel::monitorClear(ServerId host)
+void SessionModel::monitorClear(const ServerId &host)
 {
     if (auto *cl = clientFor(host))
         cl->monitorClear();
 }
 
-void SessionModel::monitorStatus(ServerId host)
+void SessionModel::monitorStatus(const ServerId &host)
 {
     if (auto *cl = clientFor(host))
         cl->monitorStatus();
@@ -220,7 +220,7 @@ void SessionModel::monitorStatus(ServerId host)
 
 
 
-void SessionModel::logMessage(ServerId host, BufferId target, const Message &msg)
+void SessionModel::logMessage(const ServerId &host, const BufferId &target, const Message &msg)
 {
     if (msg.isHistory) return;
 
@@ -269,7 +269,7 @@ void SessionModel::logMessage(ServerId host, BufferId target, const Message &msg
     f->write(line.toUtf8());
 }
 
-QString SessionModel::logFilePath(ServerId host, BufferId target) const
+QString SessionModel::logFilePath(const ServerId &host, const BufferId &target) const
 {
     if (host.str().isEmpty() || target.str().isEmpty())
         return {};
@@ -312,7 +312,7 @@ void SessionModel::addServer(const ServerConfig &sc)
     spawnSession(sc, true);
 }
 
-void SessionModel::removeServer(ServerId host)
+void SessionModel::removeServer(const ServerId &host)
 {
     for (int i = 0; i < m_clients.size(); ++i) {
         if (m_clients[i]->serverName() == host.str()) {
@@ -341,7 +341,7 @@ void SessionModel::removeServer(ServerId host)
     }
 }
 
-void SessionModel::closeServer(ServerId host)
+void SessionModel::closeServer(const ServerId &host)
 {
     for (int i = 0; i < m_clients.size(); ++i) {
         if (m_clients[i]->serverName() == host.str()) {
@@ -370,7 +370,7 @@ void SessionModel::closeServer(ServerId host)
     emit serverClosed(host);
 }
 
-bool SessionModel::connectServer(ServerId host)
+bool SessionModel::connectServer(const ServerId &host)
 {
     if (session(host)) return true;
     for (const auto &sc : std::as_const(m_config.servers)) {
@@ -382,19 +382,19 @@ bool SessionModel::connectServer(ServerId host)
     return false;
 }
 
-void SessionModel::updateServer(ServerId oldHost, const ServerConfig &sc)
+void SessionModel::updateServer(const ServerId &oldHost, const ServerConfig &sc)
 {
     removeServer(oldHost);
     addServer(sc);
 }
 
-void SessionModel::closeBuffer(ServerId host, BufferId target)
+void SessionModel::closeBuffer(const ServerId &host, const BufferId &target)
 {
     auto *sess = session(host);
     if (!sess) return;
 
     if (isChannelName(target.str())) {
-        for (IrcClient *cl : m_clients)
+        for (IrcClient *cl : std::as_const(m_clients))
             if (cl->serverName() == host.str()) { cl->part(target.str()); break; }
     }
 
@@ -412,27 +412,27 @@ void SessionModel::closeBuffer(ServerId host, BufferId target)
     emit channelRemoved(host, target);
 }
 
-ServerSession *SessionModel::session(ServerId host)
+ServerSession *SessionModel::session(const ServerId &host)
 {
     for (auto &s : m_sessions)
         if (s.name == host.str()) return &s;
     return nullptr;
 }
 
-Channel *SessionModel::channel(ServerId host, BufferId name)
+Channel *SessionModel::channel(const ServerId &host, const BufferId &name)
 {
     auto *s = session(host);
     return s ? s->get(name.str()) : nullptr;
 }
 
-IrcClient *SessionModel::clientFor(ServerId host)
+IrcClient *SessionModel::clientFor(const ServerId &host)
 {
-    for (IrcClient *cl : m_clients)
+    for (IrcClient *cl : std::as_const(m_clients))
         if (cl->serverName() == host.str()) return cl;
     return nullptr;
 }
 
-void SessionModel::openPM(ServerId host, const QString &nick)
+void SessionModel::openPM(const ServerId &host, const QString &nick)
 {
     auto *sess = session(host);
     if (!sess || nick.isEmpty() || isChannelName(nick)) return;
@@ -442,7 +442,7 @@ void SessionModel::openPM(ServerId host, const QString &nick)
         emit channelAdded(host, BufferId{nick});
 }
 
-void SessionModel::sendMessage(ServerId host, BufferId target, const QString &text,
+void SessionModel::sendMessage(const ServerId &host, const BufferId &target, const QString &text,
                                const QString &replyToMsgid)
 {
     auto *cl = clientFor(host);
@@ -474,48 +474,48 @@ void SessionModel::sendMessage(ServerId host, BufferId target, const QString &te
     }
 }
 
-void SessionModel::sendRaw(ServerId host, const QString &line)
+void SessionModel::sendRaw(const ServerId &host, const QString &line)
 {
     auto *cl = clientFor(host);
     if (cl) cl->sendRaw(line);
 }
 
-void SessionModel::localMessage(ServerId host, BufferId target, const QString &text)
+void SessionModel::localMessage(const ServerId &host, const BufferId &target, const QString &text)
 {
     postMessage(host, target, Message::make(MessageType::Server, "", text));
 }
 
-QString SessionModel::selfNick(ServerId host)
+QString SessionModel::selfNick(const ServerId &host)
 {
     auto *sess = session(host);
     return sess ? sess->nick : QString{};
 }
 
-bool SessionModel::hasMention(ServerId host, BufferId ch)
+bool SessionModel::hasMention(const ServerId &host, const BufferId &ch)
 {
     auto *c = channel(host, ch);
     return c && c->mentions > 0;
 }
 
-void SessionModel::sendJoin(ServerId host, BufferId channel, const QString &key)
+void SessionModel::sendJoin(const ServerId &host, const BufferId &channel, const QString &key)
 {
     auto *cl = clientFor(host);
     if (cl) cl->join(channel.str(), key);
 }
 
-void SessionModel::sendPart(ServerId host, BufferId channel, const QString &reason)
+void SessionModel::sendPart(const ServerId &host, const BufferId &channel, const QString &reason)
 {
     auto *cl = clientFor(host);
     if (cl) cl->part(channel.str(), reason);
 }
 
-void SessionModel::sendNick(ServerId host, const QString &nick)
+void SessionModel::sendNick(const ServerId &host, const QString &nick)
 {
     auto *cl = clientFor(host);
     if (cl) cl->setNick(nick);
 }
 
-void SessionModel::sendAction(ServerId host, BufferId target, const QString &text)
+void SessionModel::sendAction(const ServerId &host, const BufferId &target, const QString &text)
 {
     auto *cl = clientFor(host);
     if (!cl) return;
@@ -526,13 +526,13 @@ void SessionModel::sendAction(ServerId host, BufferId target, const QString &tex
     }
 }
 
-void SessionModel::sendTyping(ServerId host, BufferId channel, const QString &state)
+void SessionModel::sendTyping(const ServerId &host, const BufferId &channel, const QString &state)
 {
     if (auto *cl = clientFor(host))
         cl->sendTyping(channel.str(), state);
 }
 
-void SessionModel::setActive(ServerId host, BufferId ch)
+void SessionModel::setActive(const ServerId &host, const BufferId &ch)
 {
     m_activeHost    = host;
     m_activeChannel = ch;
@@ -545,7 +545,7 @@ void SessionModel::setActive(ServerId host, BufferId ch)
     }
 }
 
-void SessionModel::markRead(ServerId host, BufferId ch)
+void SessionModel::markRead(const ServerId &host, const BufferId &ch)
 {
     auto *c = channel(host, ch);
     if (!c || (c->unread == 0 && c->mentions == 0)) return;
@@ -706,7 +706,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
 // Helpers
 // ---------------------------------------------------------------------------
 
-void SessionModel::postMessage(ServerId host, BufferId target, const Message &msg)
+void SessionModel::postMessage(const ServerId &host, const BufferId &target, const Message &msg)
 {
     auto *sess = session(host);
     if (!sess) return;
@@ -746,13 +746,13 @@ void SessionModel::postMessage(ServerId host, BufferId target, const Message &ms
         emit unreadChanged(host, target, unread);
 }
 
-BufferId SessionModel::activeOrServer(ServerId host) const
+BufferId SessionModel::activeOrServer(const ServerId &host) const
 {
     return (host == m_activeHost && !m_activeChannel.isEmpty())
         ? m_activeChannel : serverBufferId();
 }
 
-void SessionModel::requestOlderHistory(ServerId host, BufferId channel)
+void SessionModel::requestOlderHistory(const ServerId &host, const BufferId &channel)
 {
     const QString key = host.str() + '\t' + channel.str().toLower();
     if (m_pendingHistoryBefore.contains(key)) return;
@@ -813,7 +813,7 @@ void SessionModel::onConnected(const QString &hostStr)
 
     // Join configured channels (with keys)
     QSet<QString> configChans;
-    for (const ServerConfig &sc : m_config.servers) {
+    for (const ServerConfig &sc : std::as_const(m_config.servers)) {
         if (sc.name != hostStr) continue;
         for (const ChannelConfig &cc : sc.channels) {
             cl->join(cc.name, cc.password);
@@ -1348,7 +1348,7 @@ void SessionModel::onAccountChanged(const QString &hostStr, const QString &nick,
 // nick on every join, and Ergo's fakelag drains such a burst at ~2 commands/s,
 // queueing real traffic behind minutes of metadata chatter. SUB (sent at
 // registration) still pushes changes for nicks we've fetched once.
-void SessionModel::requestNickMeta(ServerId host, const QString &nick)
+void SessionModel::requestNickMeta(const ServerId &host, const QString &nick)
 {
     auto *sess = session(host);
     if (!sess || nick.isEmpty()) return;
@@ -1361,7 +1361,7 @@ void SessionModel::requestNickMeta(ServerId host, const QString &nick)
     sendRaw(host, "METADATA " + nick + " GET avatar display-name");
 }
 
-void SessionModel::onUserMetaChanged(ServerId host, const QString &nick,
+void SessionModel::onUserMetaChanged(const ServerId &host, const QString &nick,
                                       const QString &key,  const QString &value)
 {
     auto *sess = session(host);
@@ -1438,7 +1438,7 @@ void SessionModel::onMonitorOffline(const QString &host, const QStringList &nick
         "Now offline: " + nicks.join(", ")));
 }
 
-void SessionModel::pinCertificate(ServerId host, const QString &fingerprint)
+void SessionModel::pinCertificate(const ServerId &host, const QString &fingerprint)
 {
     for (auto &sc : m_config.servers) {
         if (sc.name == host.str()) {
@@ -1453,7 +1453,7 @@ void SessionModel::pinCertificate(ServerId host, const QString &fingerprint)
     }
 }
 
-void SessionModel::acceptCertificateOnce(ServerId host, const QString &fingerprint)
+void SessionModel::acceptCertificateOnce(const ServerId &host, const QString &fingerprint)
 {
     if (auto *cl = clientFor(host)) {
         cl->setPinnedFingerprint(fingerprint);

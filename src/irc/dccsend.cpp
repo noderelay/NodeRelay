@@ -108,7 +108,8 @@ QString DccSend::filename() const
 {
     QString name = QFileInfo(m_file).fileName();
     name.replace(' ', '_');
-    name.remove(QRegularExpression(QStringLiteral("[\\x00-\\x1f\\x7f]")));
+    static const QRegularExpression kCtrlChars(QStringLiteral("[\\x00-\\x1f\\x7f]"));
+    name.remove(kCtrlChars);
     if (name.isEmpty()) name = QStringLiteral("file");
     return name.left(180);
 }

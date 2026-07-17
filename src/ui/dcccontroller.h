@@ -18,16 +18,16 @@ class DccController : public QObject
 public:
     DccController(SessionModel *model, QWidget *parentWindow);
 
-    void sendFile(ServerId host, const QString &nick);
-    void sendFilePassive(ServerId host, const QString &nick);
+    void sendFile(const ServerId &host, const QString &nick);
+    void sendFilePassive(const ServerId &host, const QString &nick);
 
 private:
-    void onSendReceived(ServerId server, const QString &fromNick,
+    void onSendReceived(const ServerId &server, const QString &fromNick,
                         const QString &filename, quint32 ip, quint16 port, qint64 filesize);
-    void onPassiveOfferReceived(ServerId server, const QString &fromNick,
+    void onPassiveOfferReceived(const ServerId &server, const QString &fromNick,
                                 const QString &filename, quint32 senderIp,
                                 qint64 filesize, const QString &token);
-    void onPassiveSendReply(ServerId server, const QString &fromNick, const QString &filename,
+    void onPassiveSendReply(const ServerId &server, const QString &fromNick, const QString &filename,
                             quint32 ip, quint16 port, qint64 filesize, const QString &token);
 
     SessionModel *m_model;

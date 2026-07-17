@@ -29,7 +29,7 @@ PreviewController::PreviewController(SessionModel *model, QObject *parent)
             this, &PreviewController::onCardReady);
 }
 
-void PreviewController::enqueue(const QUrl &url, ServerId host, BufferId channel, const QString &msgid)
+void PreviewController::enqueue(const QUrl &url, const ServerId &host, const BufferId &channel, const QString &msgid)
 {
     const QString key = url.toString();
     if (key.isEmpty()) return;

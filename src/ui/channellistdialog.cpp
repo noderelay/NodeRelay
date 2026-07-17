@@ -10,9 +10,9 @@
 #include <QTableView>
 #include <QVBoxLayout>
 
-ChannelListDialog::ChannelListDialog(ServerId host, QWidget *parent)
+ChannelListDialog::ChannelListDialog(const ServerId &host, QWidget *parent)
     : QDialog(parent)
-    , m_host(std::move(host))
+    , m_host(host)
 {
     setWindowTitle(tr("Channel List — %1").arg(m_host.str()));
     resize(700, 480);

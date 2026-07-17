@@ -322,7 +322,7 @@ CommandDispatcher::~CommandDispatcher()
     // Join worker threads before this object goes away — their lambdas capture
     // `this` and invokeMethod it. Every worker self-terminates (all its QProcess
     // waits carry timeouts), so these waits cannot hang.
-    for (const auto &t : m_workers)
+    for (const auto &t : std::as_const(m_workers))
         if (t) t->wait();
 }
 
@@ -332,8 +332,8 @@ void CommandDispatcher::trackWorker(QThread *thread)
     m_workers.append(thread);
 }
 
-bool CommandDispatcher::dispatch(const QString &text, ServerId host,
-                                  BufferId channel, const QString &replyMsgid)
+bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
+                                  const BufferId &channel, const QString &replyMsgid)
 {
     if (!text.startsWith('/')) return false;
 
@@ -660,7 +660,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             m_model->localMessage(host, channel, "Ignore list is empty.");
         } else {
             QStringList items;
-            for (const auto &entry : m_config->ignoreList) {
+            for (const auto &entry : std::as_const(m_config->ignoreList)) {
                 QStringList flagNames;
                 if (entry.flags & IgnoreType::PM)     flagNames << "pm";
                 if (entry.flags & IgnoreType::Notice) flagNames << "notice";
@@ -792,7 +792,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
 
 void CommandDispatcher::executeScript(const ScriptBinding &binding,
                                        const QString &args,
-                                       ServerId host, BufferId channel)
+                                       const ServerId &host, const BufferId &channel)
 {
     const QString scriptPath = binding.path;
 

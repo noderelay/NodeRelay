@@ -29,7 +29,7 @@ DccController::DccController(SessionModel *model, QWidget *parentWindow)
             this, &DccController::onPassiveSendReply, Qt::QueuedConnection);
 }
 
-void DccController::onSendReceived(ServerId, const QString &fromNick,
+void DccController::onSendReceived(const ServerId &, const QString &fromNick,
                                    const QString &filename, quint32 ip, quint16 port, qint64 filesize)
 {
     const QString sizeStr = filesize >= 1024*1024
@@ -83,7 +83,7 @@ void DccController::onSendReceived(ServerId, const QString &fromNick,
     dcc->start();
 }
 
-void DccController::onPassiveOfferReceived(ServerId server, const QString &fromNick,
+void DccController::onPassiveOfferReceived(const ServerId &server, const QString &fromNick,
                                            const QString &filename, quint32 senderIp,
                                            qint64 filesize, const QString &token)
 {
@@ -114,7 +114,8 @@ void DccController::onPassiveOfferReceived(ServerId server, const QString &fromN
     const quint32 ourIp   = client ? client->localIpv4() : 0;
     const quint16 ourPort = dcc->listenPort();
     QString fn = QFileInfo(filename).fileName().replace(' ', '_');
-    fn.remove(QRegularExpression("[\\x00-\\x1f\\x7f]"));
+    static const QRegularExpression kCtrlChars(QStringLiteral("[\\x00-\\x1f\\x7f]"));
+    fn.remove(kCtrlChars);
     if (fn.isEmpty()) fn = QStringLiteral("file");
     fn = fn.left(180);
 
@@ -150,7 +151,7 @@ void DccController::onPassiveOfferReceived(ServerId server, const QString &fromN
     prog->show();
 }
 
-void DccController::onPassiveSendReply(ServerId, const QString &, const QString &,
+void DccController::onPassiveSendReply(const ServerId &, const QString &, const QString &,
                                        quint32 ip, quint16 port, qint64, const QString &token)
 {
     DccSend *dcc = m_pendingPassiveSends.take(token);
@@ -164,7 +165,7 @@ void DccController::onPassiveSendReply(ServerId, const QString &, const QString 
     }
 }
 
-void DccController::sendFile(ServerId host, const QString &nick)
+void DccController::sendFile(const ServerId &host, const QString &nick)
 {
     const QString path = QFileDialog::getOpenFileName(m_window, "Send File to " + nick);
     if (path.isEmpty()) return;
@@ -215,7 +216,7 @@ void DccController::sendFile(ServerId host, const QString &nick)
     prog->show();
 }
 
-void DccController::sendFilePassive(ServerId host, const QString &nick)
+void DccController::sendFilePassive(const ServerId &host, const QString &nick)
 {
     const QString path = QFileDialog::getOpenFileName(m_window, "Send File to " + nick + " (Passive)");
     if (path.isEmpty()) return;

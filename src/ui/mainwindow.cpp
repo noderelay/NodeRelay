@@ -246,7 +246,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     m_quickSwitcher = new QuickSwitcher(model, this);
-    connect(m_quickSwitcher, &QuickSwitcher::channelSelected, this, [this](ServerId host, BufferId channel){
+    connect(m_quickSwitcher, &QuickSwitcher::channelSelected, this, [this](const ServerId &host, const BufferId &channel){
         auto *item = findChannelItem(host, channel);
         if (item) {
             m_sidebar->setCurrentItem(item);
@@ -1092,7 +1092,7 @@ static QString shortNetworkName(const QString &host)
     return h;
 }
 
-void MainWindow::onServerAdded(ServerId host)
+void MainWindow::onServerAdded(const ServerId &host)
 {
     if (findServerItem(host)) return;
     QString label;
@@ -1116,7 +1116,7 @@ void MainWindow::onServerAdded(ServerId host)
         m_signalBars->setState(SignalBars::State::Connecting);
 }
 
-void MainWindow::onServerConnected(ServerId host)
+void MainWindow::onServerConnected(const ServerId &host)
 {
     auto *item = findServerItem(host);
     if (item)
@@ -1146,7 +1146,7 @@ void MainWindow::onServerConnected(ServerId host)
     }
 }
 
-void MainWindow::onServerDisconnected(ServerId host)
+void MainWindow::onServerDisconnected(const ServerId &host)
 {
     auto *item = findServerItem(host);
     if (item)
@@ -1172,7 +1172,7 @@ void MainWindow::onServerDisconnected(ServerId host)
         for (const auto &ch : std::as_const(sess->channels))
             for (const QString &bn : ch.botNicks)
                 m_botIconIdx.remove(bn);
-        for (const QString &bn : sess->botNicks)
+        for (const QString &bn : std::as_const(sess->botNicks))
             m_botIconIdx.remove(bn);
     } else {
         // No session left → the server was removed (Manage Servers), not just
@@ -1183,7 +1183,7 @@ void MainWindow::onServerDisconnected(ServerId host)
 }
 
 // Closes every docked pane and floating window belonging to a server.
-void MainWindow::closePanesForHost(ServerId host)
+void MainWindow::closePanesForHost(const ServerId &host)
 {
     const QString prefix = host.str() + "|";
     const QStringList keys = m_panes.keys();
@@ -1194,7 +1194,7 @@ void MainWindow::closePanesForHost(ServerId host)
     }
 }
 
-void MainWindow::onServerClosed(ServerId host)
+void MainWindow::onServerClosed(const ServerId &host)
 {
     auto *srv = findServerItem(host);
     if (!srv) return;
@@ -1218,7 +1218,7 @@ void MainWindow::onServerClosed(ServerId host)
     onSidebarSelectionChanged();
 }
 
-void MainWindow::onChannelAdded(ServerId host, BufferId channel)
+void MainWindow::onChannelAdded(const ServerId &host, const BufferId &channel)
 {
     if (findChannelItem(host, channel)) return;
     auto *srv = findServerItem(host);
@@ -1239,7 +1239,7 @@ void MainWindow::onChannelAdded(ServerId host, BufferId channel)
     switchToChannel(host, channel);
 }
 
-void MainWindow::onChannelRemoved(ServerId host, BufferId channel)
+void MainWindow::onChannelRemoved(const ServerId &host, const BufferId &channel)
 {
     auto *item = findChannelItem(host, channel);
     if (item) delete item;
@@ -1253,7 +1253,7 @@ void MainWindow::onChannelRemoved(ServerId host, BufferId channel)
 }
 
 
-void MainWindow::onTopicChanged(ServerId host, BufferId channel, const QString &topic)
+void MainWindow::onTopicChanged(const ServerId &host, const BufferId &channel, const QString &topic)
 {
     if (host == m_model->activeHost() &&
         channel.str().toLower() == m_model->activeChannel().str().toLower())
@@ -1264,12 +1264,12 @@ void MainWindow::onTopicChanged(ServerId host, BufferId channel, const QString &
         pane->setTopic(ChatRenderer::linkifyTopic(topic));
 }
 
-void MainWindow::onNickListChanged(ServerId host, BufferId channel)
+void MainWindow::onNickListChanged(const ServerId &host, const BufferId &channel)
 {
     scheduleNickRefresh(host, channel);
 }
 
-void MainWindow::scheduleNickRefresh(ServerId host, BufferId channel)
+void MainWindow::scheduleNickRefresh(const ServerId &host, const BufferId &channel)
 {
     const QString key = paneKey(host, channel);
     if (m_nickRefreshPending.contains(key)) return;
@@ -1287,7 +1287,7 @@ void MainWindow::scheduleNickRefresh(ServerId host, BufferId channel)
     });
 }
 
-void MainWindow::onUnreadChanged(ServerId host, BufferId channel, int count)
+void MainWindow::onUnreadChanged(const ServerId &host, const BufferId &channel, int count)
 {
     auto *item = findChannelItem(host, channel);
     if (!item) return;
@@ -1320,7 +1320,7 @@ void MainWindow::onUnreadChanged(ServerId host, BufferId channel, int count)
     }
 }
 
-void MainWindow::onSelfNickChanged(ServerId host, const QString &nick)
+void MainWindow::onSelfNickChanged(const ServerId &host, const QString &nick)
 {
     if (host == m_model->activeHost()) {
         m_nickPrefix->setText(nick);
@@ -1332,7 +1332,7 @@ void MainWindow::onSelfNickChanged(ServerId host, const QString &nick)
             pane->setNick(nick);
 }
 
-void MainWindow::onTypingReceived(ServerId host, BufferId channel,
+void MainWindow::onTypingReceived(const ServerId &host, const BufferId &channel,
                                    const QString &nick, const QString &state)
 {
     if (!m_config.ui.typingIndicator) return;
@@ -1375,7 +1375,7 @@ void MainWindow::onTypingReceived(ServerId host, BufferId channel,
 
 
 // Builds the "X is typing..." string for a buffer, or empty if nobody is.
-QString MainWindow::typingText(ServerId host, BufferId channel) const
+QString MainWindow::typingText(const ServerId &host, const BufferId &channel) const
 {
     if (!m_config.ui.typingIndicator) return {};
     const QString key = paneKey(host, channel);
@@ -1477,7 +1477,7 @@ void MainWindow::navigatePane(int direction)
 // Input dispatch
 // ---------------------------------------------------------------------------
 
-void MainWindow::dispatchInput(const QString &text, ServerId host, BufferId channel)
+void MainWindow::dispatchInput(const QString &text, const ServerId &host, const BufferId &channel)
 {
     if (text.startsWith('/')) {
         m_dispatcher->dispatch(text, host, channel, m_pendingReplyMsgid);
@@ -1510,7 +1510,7 @@ void MainWindow::dispatchInput(const QString &text, ServerId host, BufferId chan
 // View helpers
 // ---------------------------------------------------------------------------
 
-void MainWindow::switchToChannel(ServerId host, BufferId channel)
+void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
 {
     // Checked out to a floating window — raise it instead of loading in main,
     // and keep the sidebar highlight on what the main view is actually showing.
@@ -1596,7 +1596,7 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
     updateLengthIndicator();
 }
 
-void MainWindow::openChannelList(ServerId host)
+void MainWindow::openChannelList(const ServerId &host)
 {
     if (m_channelListDialog && m_channelListDialog->host() == host) {
         m_channelListDialog->show();
@@ -1611,21 +1611,21 @@ void MainWindow::openChannelList(ServerId host)
     m_channelListDialog = new ChannelListDialog(host, this);
 
     connect(m_model, &SessionModel::channelListEntry,
-            m_channelListDialog, [this, host](ServerId h, BufferId ch, int u, const QString &t) {
+            m_channelListDialog, [this, host](const ServerId &h, const BufferId &ch, int u, const QString &t) {
         if (h == host)
             m_channelListDialog->addEntry(ch.str(), u, t);
     });
     connect(m_model, &SessionModel::channelListEnd,
-            m_channelListDialog, [this, host](ServerId h, int total) {
+            m_channelListDialog, [this, host](const ServerId &h, int total) {
         if (h == host)
             m_channelListDialog->onListEnd(total);
     });
     connect(m_channelListDialog, &ChannelListDialog::joinRequested,
-            this, [this](ServerId h, BufferId channel) {
+            this, [this](const ServerId &h, const BufferId &channel) {
         m_model->sendRaw(h, "JOIN " + channel.str());
     });
     connect(m_channelListDialog, &ChannelListDialog::refreshRequested,
-            this, [this](ServerId h) {
+            this, [this](const ServerId &h) {
         m_channelListDialog->reset();
         m_model->sendRaw(h, "LIST");
     });
@@ -1640,7 +1640,7 @@ void MainWindow::openChannelList(ServerId host)
 
 // Creates and fully wires a ChannelPane, registering it in m_panes. The caller
 // decides where it lives — docked (openChannelPane) or floating (popOutChannel).
-ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
+ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channel)
 {
     const QString key = paneKey(host, channel);
     if (m_panes.contains(key)) return nullptr;
@@ -1789,10 +1789,10 @@ ChannelPane *MainWindow::createPane(ServerId host, BufferId channel)
 }
 
 // Docks a channel as a tiled pane in the main window.
-void MainWindow::openChannelPane(ServerId host, BufferId channel)
+void MainWindow::openChannelPane(const ServerId &host, const BufferId &channel)
 {
     if (m_orderedPanes.size() >= kMaxExtraPanes) return;
-    auto *pane = createPane(std::move(host), std::move(channel));
+    auto *pane = createPane(host, channel);
     if (!pane) return;
 
     m_orderedPanes.append(pane);
@@ -1807,7 +1807,7 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
 
 // Opens a channel in its own floating top-level window. Closing the window
 // (or the pane's ✕) drops it back to the server list without leaving the buffer.
-void MainWindow::popOutChannel(ServerId host, BufferId channel)
+void MainWindow::popOutChannel(const ServerId &host, const BufferId &channel)
 {
     const QString key = paneKey(host, channel);
     // Already a window → just raise it. Already a docked pane → float that one.
@@ -1818,7 +1818,7 @@ void MainWindow::popOutChannel(ServerId host, BufferId channel)
     if (m_paneWindows.size() >= kMaxPaneWindows) return;
     if (auto *existing = m_panes.value(key)) { floatPane(existing); return; }
 
-    if (auto *pane = createPane(std::move(host), std::move(channel)))
+    if (auto *pane = createPane(host, channel))
         floatPane(pane);
 }
 
@@ -1903,7 +1903,7 @@ void MainWindow::floatPane(ChannelPane *pane)
 
 // Italicises/dims a channel's sidebar row while it's checked out to a floating
 // window, or restores it to normal.
-void MainWindow::setChannelCheckedOut(ServerId host, BufferId channel, bool out)
+void MainWindow::setChannelCheckedOut(const ServerId &host, const BufferId &channel, bool out)
 {
     auto *item = findChannelItem(host, channel);
     if (!item) return;
@@ -1919,7 +1919,7 @@ void MainWindow::setChannelCheckedOut(ServerId host, BufferId channel, bool out)
 
 // Moves the main view off host/channel to another available (non-popped) buffer,
 // falling back to the server buffer if that channel was the only one.
-void MainWindow::switchAwayFromChannel(ServerId host, BufferId channel)
+void MainWindow::switchAwayFromChannel(const ServerId &host, const BufferId &channel)
 {
     const QString skipKey = paneKey(host, channel);
     for (int s = 0; s < m_sidebar->topLevelItemCount(); ++s) {
@@ -1940,7 +1940,7 @@ void MainWindow::switchAwayFromChannel(ServerId host, BufferId channel)
     }
 }
 
-void MainWindow::closeChannelPane(ServerId host, BufferId channel)
+void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
 {
     const QString key = paneKey(host, channel);
     auto *pane = m_panes.take(key);
@@ -2100,7 +2100,7 @@ QString MainWindow::topicAgeStr(quint64 ts)
     return QObject::tr("%1w ago").arg(secs / 604800);
 }
 
-void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
+void MainWindow::refreshTopicBar(const ServerId &host, const BufferId &channel)
 {
     auto *ch = m_model->channel(host, channel);
 
@@ -2297,7 +2297,7 @@ void MainWindow::onConfigFileChanged()
         // Diff server lists — add new, remove deleted
         QSet<QString> freshNames, currentNames;
         for (const auto &s : fresh.servers)    freshNames.insert(s.name);
-        for (const auto &s : m_config.servers) currentNames.insert(s.name);
+        for (const auto &s : std::as_const(m_config.servers)) currentNames.insert(s.name);
 
         for (const auto &s : fresh.servers) {
             if (!currentNames.contains(s.name)) {

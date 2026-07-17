@@ -74,33 +74,33 @@ protected:
 
 private slots:
     // Model → UI
-    void onServerAdded      (ServerId host);
-    void onServerConnected  (ServerId host);
-    void onServerDisconnected(ServerId host);
-    void onServerClosed     (ServerId host);
-    void onChannelAdded     (ServerId host, BufferId channel);
-    void onChannelRemoved   (ServerId host, BufferId channel);
-    void onMessageAdded     (ServerId host, BufferId channel, const Message &msg);
-    void onTopicChanged     (ServerId host, BufferId channel, const QString &topic);
-    void onNickListChanged     (ServerId host, BufferId channel);
-    void onNickAdded           (ServerId host, BufferId channel, const QString &nick);
-    void onNickRemoved         (ServerId host, BufferId channel, const QString &nick);
-    void onNickRenamed         (ServerId host, BufferId channel,
+    void onServerAdded      (const ServerId &host);
+    void onServerConnected  (const ServerId &host);
+    void onServerDisconnected(const ServerId &host);
+    void onServerClosed     (const ServerId &host);
+    void onChannelAdded     (const ServerId &host, const BufferId &channel);
+    void onChannelRemoved   (const ServerId &host, const BufferId &channel);
+    void onMessageAdded     (const ServerId &host, const BufferId &channel, const Message &msg);
+    void onTopicChanged     (const ServerId &host, const BufferId &channel, const QString &topic);
+    void onNickListChanged     (const ServerId &host, const BufferId &channel);
+    void onNickAdded           (const ServerId &host, const BufferId &channel, const QString &nick);
+    void onNickRemoved         (const ServerId &host, const BufferId &channel, const QString &nick);
+    void onNickRenamed         (const ServerId &host, const BufferId &channel,
                                 const QString &oldNick, const QString &newNick);
     void onNickListContextMenu  (const QPoint &pos);
     void onSidebarContextMenu   (const QPoint &pos);
-    void onUnreadChanged    (ServerId host, BufferId channel, int count);
-    void onReactionsChanged (ServerId host, BufferId channel, const QString &msgid);
-    void onSelfNickChanged  (ServerId host, const QString &nick);
-    void onMessageRedacted   (ServerId host, BufferId channel, const QString &msgid);
+    void onUnreadChanged    (const ServerId &host, const BufferId &channel, int count);
+    void onReactionsChanged (const ServerId &host, const BufferId &channel, const QString &msgid);
+    void onSelfNickChanged  (const ServerId &host, const QString &nick);
+    void onMessageRedacted   (const ServerId &host, const BufferId &channel, const QString &msgid);
 
     // UI → Model
     void onSidebarSelectionChanged();
     void onInputSubmit();
-    void dispatchInput(const QString &text, ServerId host, BufferId channel);
+    void dispatchInput(const QString &text, const ServerId &host, const BufferId &channel);
 
     // Typing
-    void onTypingReceived(ServerId host, BufferId channel,
+    void onTypingReceived(const ServerId &host, const BufferId &channel,
                           const QString &nick, const QString &state);
 
 private:
@@ -113,19 +113,19 @@ private:
     void connectModel();
     void connectPreferences();
 
-    void switchToChannel(ServerId host, BufferId channel);
-    void openChannelList(ServerId host);
-    void refreshChatView(ServerId host, BufferId channel, bool resetToLatest = true);
+    void switchToChannel(const ServerId &host, const BufferId &channel);
+    void openChannelList(const ServerId &host);
+    void refreshChatView(const ServerId &host, const BufferId &channel, bool resetToLatest = true);
     void loadOlderMessages();
-    void onOlderHistoryLoaded(ServerId host, BufferId channel, int count);
+    void onOlderHistoryLoaded(const ServerId &host, const BufferId &channel, int count);
     // Jump-to-search-result: paginate server history until the timestamp is
     // in memory, then scroll to and flash the closest message.
-    void startHistoryJump(ServerId host, BufferId channel, const QDateTime &ts);
+    void startHistoryJump(const ServerId &host, const BufferId &channel, const QDateTime &ts);
     void continueHistoryJump();
-    void refreshNickList(ServerId host, BufferId channel);
-    void updateNickViews(ServerId host, BufferId channel);
-    void scheduleNickRefresh(ServerId host, BufferId channel);
-    void refreshTopicBar(ServerId host, BufferId channel);
+    void refreshNickList(const ServerId &host, const BufferId &channel);
+    void updateNickViews(const ServerId &host, const BufferId &channel);
+    void scheduleNickRefresh(const ServerId &host, const BufferId &channel);
+    void refreshTopicBar(const ServerId &host, const BufferId &channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void appendPreviewCards(ChatView *view, const Message &msg,
                             const ServerId &host, const BufferId &channel);
@@ -136,15 +136,15 @@ private:
     QString effectiveThemeName() const;          // auto pair when enabled, else ui.theme
     void setTopicRevealInset(bool reserve);
     void updateTypingLabel();
-    QString typingText(ServerId host, BufferId channel) const;
-    void openChannelPane (ServerId host, BufferId channel);
-    void popOutChannel   (ServerId host, BufferId channel);
+    QString typingText(const ServerId &host, const BufferId &channel) const;
+    void openChannelPane (const ServerId &host, const BufferId &channel);
+    void popOutChannel   (const ServerId &host, const BufferId &channel);
     void floatPane       (ChannelPane *pane);
-    void closeChannelPane(ServerId host, BufferId channel);
-    void closePanesForHost(ServerId host);
-    ChannelPane *createPane(ServerId host, BufferId channel);
-    void setChannelCheckedOut(ServerId host, BufferId channel, bool out);
-    void switchAwayFromChannel(ServerId host, BufferId channel);
+    void closeChannelPane(const ServerId &host, const BufferId &channel);
+    void closePanesForHost(const ServerId &host);
+    ChannelPane *createPane(const ServerId &host, const BufferId &channel);
+    void setChannelCheckedOut(const ServerId &host, const BufferId &channel, bool out);
+    void switchAwayFromChannel(const ServerId &host, const BufferId &channel);
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
     void rebuildPaneLayout();
@@ -172,10 +172,10 @@ private:
 
     QString    formatMessage(const Message &msg) const;
     void       toggleEventGroupInView(ChatView *view, const QString &groupId,
-                                      ServerId host, BufferId channel);
+                                      const ServerId &host, const BufferId &channel);
     void       handleChatViewContextMenu(ChatView *view, const QString &anchor,
                                          const QPoint &globalPos,
-                                         ServerId host, BufferId channel);
+                                         const ServerId &host, const BufferId &channel);
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
     QString    msgidAtViewPos(const QPoint &viewPos) const;
     void       openLogSearch();
@@ -190,7 +190,7 @@ private:
     bool zoomFont(QObject *target, double delta, const QPoint &pos = {});
 
     // Tab completion
-    void handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel);
+    void handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel);
     void repositionSendBtn();
     void updateInputViewportFill();
     void updateFormatIndicator();

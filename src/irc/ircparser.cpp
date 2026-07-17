@@ -11,14 +11,15 @@ static QHash<QString,QString> parseTags(const QString &raw)
         QString unescaped;
         unescaped.reserve(val.size());
         for (int i = 0; i < val.size(); ++i) {
-            if (val[i] == '\\' && i + 1 < val.size()) {
+            if (val[i] == '\\') {
+                if (i + 1 >= val.size()) break; // lone trailing backslash: dropped per spec
                 const QChar next = val[++i];
                 if      (next == ':')  unescaped += ';';
                 else if (next == 's')  unescaped += ' ';
                 else if (next == '\\') unescaped += '\\';
                 else if (next == 'r')  unescaped += '\r';
                 else if (next == 'n')  unescaped += '\n';
-                else                   { unescaped += '\\'; unescaped += next; }
+                else                   unescaped += next; // invalid escape: drop the backslash
             } else {
                 unescaped += val[i];
             }

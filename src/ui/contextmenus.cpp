@@ -25,7 +25,7 @@
 #include <QTreeWidget>
 
 void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
-                                         ServerId host, BufferId channel)
+                                         const ServerId &host, const BufferId &channel)
 {
     auto *ch = m_model->channel(host, channel);
     if (!ch) return;
@@ -80,7 +80,7 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
 
 void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor,
                                             const QPoint &globalPos,
-                                            ServerId host, BufferId channel)
+                                            const ServerId &host, const BufferId &channel)
 {
     if (anchor.startsWith("nick:")) {
         showNickContextMenu(anchor.mid(5), globalPos);

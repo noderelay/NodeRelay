@@ -923,7 +923,8 @@ void IrcClient::processLine(const QString &line)
                         fn = afterSend.section(' ', 0, 0);
                         remainder = afterSend.section(' ', 1).trimmed();
                     }
-                    fn.remove(QRegularExpression(QStringLiteral("[\\x00-\\x1f\\x7f]")));
+                    static const QRegularExpression kCtrlChars(QStringLiteral("[\\x00-\\x1f\\x7f]"));
+                    fn.remove(kCtrlChars);
                     bool ok1, ok2, ok3;
                     const quint32 ip       = remainder.section(' ', 0, 0).toUInt(&ok1);
                     const quint16 port     = remainder.section(' ', 1, 1).toUShort(&ok2);
@@ -1381,7 +1382,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             desired << "sasl";
 
         QStringList want;
-        for (const QString &cap : desired)
+        for (const QString &cap : std::as_const(desired))
             if (hasAvailable(cap))
                 want << cap;
 

@@ -17,19 +17,19 @@ public:
 
     // Returns true if a slash command was handled.
     // replyMsgid is the pending reply target (may be empty).
-    bool dispatch(const QString &text, ServerId host, BufferId channel,
+    bool dispatch(const QString &text, const ServerId &host, const BufferId &channel,
                   const QString &replyMsgid);
 
 signals:
-    void switchChannel(ServerId host, BufferId channel);
+    void switchChannel(const ServerId &host, const BufferId &channel);
     void focusInput();
     void clearChat();
     void replyBarCleared();
-    void openChannelList(ServerId host);
+    void openChannelList(const ServerId &host);
 
 private:
     void executeScript(const ScriptBinding &binding, const QString &args,
-                       ServerId host, BufferId channel);
+                       const ServerId &host, const BufferId &channel);
 
     void trackWorker(QThread *thread);
 
