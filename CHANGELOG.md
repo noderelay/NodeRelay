@@ -1,6 +1,31 @@
 # Changelog
 
 <!--
+Session 2026-07-17 (second session): brew trust + MacBook LAN debugging.
+- #121: Homebrew now refuses casks from untrusted third-party taps, so
+  all install docs (README, faq, site card, packaging/homebrew) gained
+  the one-time `brew trust noderelay/uplink` step; tap repo README
+  updated directly on GitHub too.
+- #122: the DMG shipped as com.yourcompany.Uplink (macdeployqt
+  placeholder) — bundle id now io.github.noderelay.UplinkIRC matching
+  the AppStream id, plus bundle name/version. Unreleased; next release
+  picks it up.
+- MacBook "won't connect to linuxdojo" root cause: macOS Local Network
+  permission (macOS 15+) gates LAN addresses per app; the brew binary
+  had no grant and ad-hoc signing makes grants attach flakily (a
+  half-attached grant even let sessions register then starved them into
+  Ergo's 150s idle ping-timeout). Resolved via the Privacy & Security →
+  Local Network pane; FAQ + howto now document it. Diagnosis note: ssh
+  CLI tests bypass the permission, only the GUI app is subject to it.
+- Server side find (fix pending Joe): ZNC user joe's LinuxDojoNet
+  network has Ident "(_)_):::::D"; Ergo 468s it (Malformed username),
+  ZNC hangs silently until the 60s registration timeout and reconnects
+  — 1440 failed connects/day since at least 07-10. Fix = sane Ident via
+  controlpanel/webadmin, or disable that network.
+No release. uplinkbot re-ingest owed (faq/howto changed).
+-->
+
+<!--
 Session 2026-07-17:
 - SessionModel ids cleanup (#119): postMessage/logMessage and all internal
   call sites now use ServerId/BufferId; slots convert the raw host once at

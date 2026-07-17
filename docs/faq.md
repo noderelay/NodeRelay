@@ -1156,6 +1156,14 @@ Then open the DMG normally. The `-d` flag removes the attribute, `-r` applies it
 
 ---
 
+### macOS: "Host unreachable" when connecting to a server on my local network
+
+If Uplink connects to internet networks fine but a server on your own LAN (a home bouncer, or an ircd on a local machine) fails with `Host unreachable`, macOS is blocking it. Since macOS 15, every app needs the **Local Network** privacy permission to reach local addresses like `192.168.x.x`. Internet servers are unaffected, which is why only the LAN connection fails.
+
+Grant it under **System Settings → Privacy & Security → Local Network**: find Uplink in the list and switch it on. If Uplink is not listed yet, launch it and try connecting once, then check the list again. Because Uplink is not certificate-signed, macOS can be slow to attach the permission; if the toggle is already on and the connection still fails, quit Uplink, toggle the entry off and on, and relaunch. Old builds may have left several Uplink entries in the list; the current one is the newest entry.
+
+---
+
 ### How do I connect to a server with a self-signed certificate?
 
 Uplink shows a dialog on first connect:
