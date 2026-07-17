@@ -226,8 +226,11 @@ private:
     void onMonitorOnline  (const QString &host, const QStringList &nicks);
     void onMonitorOffline (const QString &host, const QStringList &nicks);
 
-    void postMessage(const QString &host, const QString &target, const Message &msg);
-    void logMessage (const QString &host, const QString &target, const Message &msg);
+    void postMessage(ServerId host, BufferId target, const Message &msg);
+    void logMessage (ServerId host, BufferId target, const Message &msg);
+    // Route unaddressed replies: active buffer if this server is focused,
+    // else the "(server)" buffer.
+    BufferId activeOrServer(ServerId host) const;
 
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;
