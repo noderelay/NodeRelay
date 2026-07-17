@@ -68,6 +68,39 @@ jobs:
         timeout-minutes: 5
         run: ctest --test-dir build --output-on-failure -C Release --timeout 60
 
+  clazy:
+    runs-on: ubuntu-24.04
+    # Arch container: Ubuntu 24.04's clazy 1.11 embeds clang-15, which cannot
+    # parse the runner's GCC 14 C++20 libstdc++ headers. Arch ships a current
+    # clazy/clang pair — the same combination the codebase is kept clean against.
+    container: archlinux:latest
+    steps:
+      - name: Install toolchain and clazy
+        run: pacman -Syu --noconfirm base-devel git cmake ninja qt6-base qt6-svg qt6-websockets qtkeychain-qt6 tomlplusplus clazy
+
+      - uses: actions/checkout@v5
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Build (generates autogen headers)
+        run: cmake --build build
+
+      - name: Run clazy
+        run: |
+          # clazy-standalone exits 0 even on warnings AND on invalid check
+          # names (it prints "Invalid check to disable:" and keeps going),
+          # so the only reliable failure signal is the output text.
+          checks="$(tr -d '\n' < .clazy)"
+          : > clazy.log
+          for f in $(ls src/*/*.cpp | grep -v emojidata); do
+            clazy-standalone -p build/compile_commands.json --checks="$checks" "$f" >> clazy.log 2>&1 || true
+          done
+          if grep -E ': (warning|error):|Invalid check' clazy.log; then
+            echo "clazy found problems"; exit 1
+          fi
+          echo "clazy clean ($(wc -l < clazy.log) output lines)"
+
   sanitize:
     runs-on: ubuntu-24.04
     steps:
