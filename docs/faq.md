@@ -845,6 +845,7 @@ Uplink enforces two receive limits before accepting a transfer:
 Open **Help → Check for Updates** from the menu bar. Uplink connects to the GitHub releases API, reads the latest version tag, and compares it to the version you have installed.
 
 - If a newer version is available, a dialog offers to download and install it automatically. Linux AppImage users get an in-place replace and relaunch. Windows downloads the ZIP to your Downloads folder. macOS downloads and opens the DMG in Finder. Source builds see an informational message instead.
+- Installed from the AUR (or another system package)? Uplink notices and points you at your package manager instead of self-updating — `yay -Syu uplink-irc` keeps it current like everything else on your system.
 - If you're already on the latest version, a dialog confirms that.
 
 The check requires an internet connection. It sends one small HTTPS request to `api.github.com` and nothing else.

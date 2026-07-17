@@ -742,6 +742,7 @@
 
     <h3>Auto-update from inside Uplink</h3>
     <p>Click <strong>Help → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches. No terminal, no package manager, no sudo required.</p>
+    <p>Installed through the AUR or another system package? The checker notices and points you at your package manager instead — <code>yay -Syu uplink-irc</code> keeps it current with the rest of your system, and Uplink never fights pacman over the binary.</p>
 
     <div class="tip">
       <strong>Optional:</strong> place the AppImage in <code>~/bin/</code> or <code>~/.local/bin/</code> and it will appear in your application launcher if your desktop environment supports AppImage integration (most do with <code>libappindicator</code> installed).
