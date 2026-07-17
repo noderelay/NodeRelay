@@ -1,6 +1,26 @@
 # Changelog
 
 <!--
+Session 2026-07-17:
+- SessionModel ids cleanup (#119): postMessage/logMessage and all internal
+  call sites now use ServerId/BufferId; slots convert the raw host once at
+  entry; ~50 redundant re-wraps removed; new activeOrServer() helper
+  replaces five duplicated routing blocks. No behavior change.
+- Search v3 — jump to results in context: double-clicking a history-search
+  result now lands on that message in the live buffer, not just the buffer.
+  The log line's timestamp drives it: if the message isn't in memory the
+  jump auto-paginates CHATHISTORY BEFORE (max 10 batches of 100) until the
+  timestamp is reached, renders any lazy chunks, scrolls there and flashes
+  the line via the find highlight (cleared after 2.5s). Works from both
+  single-buffer and all-buffers results (single-buffer rows were previously
+  not clickable at all). Without chathistory support it lands at the oldest
+  loaded message. New: ChatView::highlightLine, LogSearchDialog ts-carrying
+  signals, MainWindow::startHistoryJump/continueHistoryJump. Docs: howto
+  updated.
+No release; both merged to main.
+-->
+
+<!--
 Session 2026-07-16/17 (final addendum): first AUR user report + site
 download grid:
 - gasiyu on the uplink-irc AUR page: tomlplusplus must be depends, not

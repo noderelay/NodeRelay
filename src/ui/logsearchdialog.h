@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDateTime>
 #include <QDialog>
 #include <QPointer>
 #include <atomic>
@@ -14,9 +15,10 @@ class QTimer;
 
 // Full-history search over on-disk log files. Searches the current buffer's
 // log by default; the "All buffers" toggle scans every log under the logs
-// root, grouping results per buffer with jump-to-buffer on activate. Scans
-// run on a worker thread with bounded memory (only the newest N matches are
-// kept per buffer) and are cancellable, so typing stays responsive even on
+// root, grouping results per buffer. Activating a result jumps to that
+// message in its buffer (via the log line's timestamp). Scans run on a
+// worker thread with bounded memory (only the newest N matches are kept
+// per buffer) and are cancellable, so typing stays responsive even on
 // very large logs.
 class LogSearchDialog : public QDialog
 {
@@ -30,8 +32,13 @@ public:
 
 signals:
     // Sanitized "<server>/<buffer>" log-path components of the activated
-    // result; the receiver maps them back to a live buffer.
-    void jumpRequested(const QString &serverPart, const QString &bufferPart);
+    // result; the receiver maps them back to a live buffer. ts is the
+    // result line's timestamp (invalid on buffer-header rows).
+    void jumpRequested(const QString &serverPart, const QString &bufferPart,
+                       const QDateTime &ts);
+    // Activated result in single-buffer mode: jump within the buffer the
+    // dialog was opened for.
+    void jumpInBufferRequested(const QDateTime &ts);
 
 private:
     struct BufferHits {

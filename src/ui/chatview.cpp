@@ -229,6 +229,13 @@ void ChatView::scrollToLine(int lineIdx)
     m_atBottom = false;
 }
 
+void ChatView::highlightLine(int lineIdx)
+{
+    if (lineIdx < 0 || lineIdx >= m_lines.size()) return;
+    if (m_cumH.size() != m_lines.size()) rebuildCumH();
+    setFind(lineIdx, 0, static_cast<int>(m_lines[lineIdx].text.size()));
+}
+
 int ChatView::findLine(const QString &id) const
 {
     if (id.isEmpty()) return -1;

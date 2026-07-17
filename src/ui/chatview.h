@@ -29,6 +29,9 @@ public:
     bool isAtBottom() const;
     void scrollToBottom();
     void scrollToLine(int lineIdx);
+    // Scroll lineIdx into view and highlight the whole line using the find
+    // marker; cleared by clearFind() or the next findText().
+    void highlightLine(int lineIdx);
     int  findLine(const QString &id) const; // -1 if not found
 
     bool findText(const QString &text, bool backward = false);

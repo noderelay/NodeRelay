@@ -2160,7 +2160,7 @@ void MainWindow::openLogSearch()
                                     m_model->messageLoggingEnabled(), this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     connect(dlg, &LogSearchDialog::jumpRequested, this,
-            [this](const QString &serverPart, const QString &bufferPart){
+            [this](const QString &serverPart, const QString &bufferPart, const QDateTime &ts){
         ServerId jumpHost;
         BufferId jumpChannel;
         if (!m_model->resolveLogBuffer(serverPart, bufferPart, jumpHost, jumpChannel))
@@ -2169,6 +2169,17 @@ void MainWindow::openLogSearch()
             m_sidebar->setCurrentItem(item);
             onSidebarSelectionChanged();
         }
+        startHistoryJump(jumpHost, jumpChannel, ts);
+    });
+    connect(dlg, &LogSearchDialog::jumpInBufferRequested, this,
+            [this, host, target](const QDateTime &ts){
+        if (host != m_model->activeHost() || target != m_model->activeChannel()) {
+            auto *item = findChannelItem(host, target);
+            if (!item) return; // buffer closed since the dialog was opened
+            m_sidebar->setCurrentItem(item);
+            onSidebarSelectionChanged();
+        }
+        startHistoryJump(host, target, ts);
     });
     dlg->show();
 }
