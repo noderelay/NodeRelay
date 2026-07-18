@@ -606,6 +606,21 @@
 <span class="t-ok">0 real bugs found · current build is clean</span></div>
     </div>
 
+    <!-- clazy -->
+    <div class="terminal" style="margin-top:1.25rem">
+      <div class="terminal-bar">
+        <span class="dot dot-r"></span>
+        <span class="dot dot-y"></span>
+        <span class="dot dot-g"></span>
+        <span class="terminal-label">clazy - Qt-aware static analysis</span>
+      </div>
+      <div class="terminal-body"><span class="t-dim">$ clazy-standalone --checks="$(tr -d '\n' &lt; .clazy)" src/**/*.cpp</span>
+<span class="t-dim">Level 0 + 1 checks: container detach in loops, QString allocation churn,</span>
+<span class="t-dim">signal/slot misuse, unneeded heap allocations of QObjects</span>
+
+<span class="t-ok">0 warnings · enforced in CI, any warning fails the pull request</span></div>
+    </div>
+
     <!-- CodeQL -->
     <div class="terminal" style="margin-top:1.25rem">
       <div class="terminal-bar">
@@ -721,6 +736,10 @@
       <div class="flag-card f-purple">
         <div class="flag-name">CodeQL analysis</div>
         <div class="flag-desc">GitHub's semantic code scanner runs on every push, every PR, and weekly. Uses the security-and-quality query suite for deep data-flow and taint analysis.</div>
+      </div>
+      <div class="flag-card f-blue">
+        <div class="flag-name">Qt static analysis</div>
+        <div class="flag-desc">clazy, KDE's Qt-aware clang plugin, checks the full source tree on every push and PR for Qt-specific mistakes: container detaches, string allocation churn, signal/slot misuse. Any warning fails the job.</div>
       </div>
       <div class="flag-card f-yellow">
         <div class="flag-name">Release workflow</div>

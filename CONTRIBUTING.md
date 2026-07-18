@@ -63,9 +63,24 @@ with that file as the only argument to reproduce it:
 If your change touches parsing or rendering, a short fuzz run before submitting
 is appreciated but not required — CI replays the corpus on every PR.
 
+### Static analysis
+
+CI runs [clazy](https://invent.kde.org/sdk/clazy) (the Qt-aware clang plugin)
+over `src/` on every PR, using the check set in `.clazy` (level 0 and 1 with a
+few noisy checks disabled). Any warning fails the job. To run it locally:
+
+```bash
+cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON && cmake --build build
+for f in src/*/*.cpp; do
+  clazy-standalone -p build/compile_commands.json --checks="$(tr -d '\n' < .clazy)" "$f"
+done
+```
+
 ## Code style
 
 - Read the existing code before submitting changes. Match the style exactly.
+  A `.clang-format` describing the house style ships in the repo root for new
+  code; the tree is not format-enforced, so don't reformat existing files.
 - Minimal comments. Don't add block descriptions above simple functions.
 - Keep changes small and focused. One fix or feature per PR.
 - Don't add dependencies unless absolutely necessary.
