@@ -1168,13 +1168,7 @@ void MainWindow::onServerDisconnected(const ServerId &host)
     for (auto it = m_typingNicks.begin(); it != m_typingNicks.end(); )
         it = it.key().startsWith(prefix) ? m_typingNicks.erase(it) : ++it;
 
-    if (auto *sess = m_model->session(host)) {
-        for (const auto &ch : std::as_const(sess->channels))
-            for (const QString &bn : ch.botNicks)
-                m_botIconIdx.remove(bn);
-        for (const QString &bn : std::as_const(sess->botNicks))
-            m_botIconIdx.remove(bn);
-    } else {
+    if (!m_model->session(host)) {
         // No session left → the server was removed (Manage Servers), not just
         // dropped. Tear down its panes and floating windows or they linger
         // as zombies pointing at the removed session.

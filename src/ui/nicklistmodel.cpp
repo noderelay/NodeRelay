@@ -4,7 +4,6 @@
 #include "model/sessionmodel.h"
 
 #include <QBuffer>
-#include <QRandomGenerator>
 
 NickListModel::NickListModel(SessionModel *model, const NickListStyle *style,
                              QObject *parent)
@@ -78,16 +77,8 @@ QVariant NickListModel::data(const QModelIndex &idx, int role) const
         const bool isBot = (ch && ch->botNicks.contains(lower))
                         || (sess && sess->botNicks.contains(lower));
         if (!isBot) return {};
-        auto &iconIdx = *m_style->botIconIdx;
-        if (!iconIdx.contains(lower)) {
-            if (iconIdx.size() >= 500)
-                iconIdx.erase(iconIdx.begin());
-            iconIdx[lower] = QRandomGenerator::global()->bounded(2);
-        }
-        const QString svgPath = iconIdx[lower] == 0
-            ? QStringLiteral(":/icons/mi-smart-toy.svg")
-            : QStringLiteral(":/icons/mi-alien.svg");
-        return QVariant::fromValue(MenuIcons::fromSvg(svgPath, m_style->accent));
+        return QVariant::fromValue(
+            MenuIcons::fromSvg(QStringLiteral(":/icons/mi-smart-toy.svg"), m_style->accent));
     }
     case Qt::ToolTipRole:
         return tooltipFor(e);

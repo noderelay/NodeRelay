@@ -14,7 +14,6 @@ class SessionModel;
 struct NickListStyle {
     QColor accent{QStringLiteral("#5588ff")};
     bool   coloredNicks{true};
-    QHash<QString, int>     *botIconIdx{nullptr};  // lowercased nick → 0 (robot) or 1 (alien)
     QHash<QString, QPixmap> *avatarCache{nullptr}; // avatar URL → scaled pixmap
 };
 

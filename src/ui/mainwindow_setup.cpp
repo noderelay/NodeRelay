@@ -472,7 +472,6 @@ void MainWindow::setupSidebar()
 
 void MainWindow::setupNickPanel()
 {
-    m_nickStyle.botIconIdx  = &m_botIconIdx;
     m_nickStyle.avatarCache = &m_avatarCache;
     m_nickStyle.coloredNicks = m_config.ui.coloredNicks;
     if (m_theme.valid)
