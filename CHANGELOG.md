@@ -1,6 +1,37 @@
 # Changelog
 
 <!--
+Session 2026-07-17 (third session): deep review pass + CI guards.
+- Full-codebase review: clang-tidy, cppcheck, clazy, sanitizer test
+  runs, both fuzzers (477k parser / 133k renderer executions, zero
+  crashes), plus manual security, memory, and stability audits. No
+  critical findings; the fix batches below fell out of it.
+- #124: dead prefixModes constant removed; ChatView::setFont renamed
+  to setChatFont (it shadowed the non-virtual QWidget::setFont); tray
+  Show-action ternary with identical branches simplified.
+- #125: ServerId/BufferId parameters are const references everywhere
+  now; std::as_const added on the remaining lvalue Qt container
+  loops (loops over temporaries left alone on purpose); four
+  QRegularExpression temporaries made static; IRCv3 tag unescaping
+  now matches the spec for invalid escapes (drop the backslash, keep
+  the character) and lone trailing backslashes (dropped). Parser test
+  updated and extended.
+- #126: clazy static-analysis job in CI, gated on the check set in
+  .clazy (level0+1 minus known-noise checks; tree is warning-clean).
+  Runs in an Arch container because Ubuntu 24.04's clazy 1.11 embeds
+  clang-15, which cannot parse GCC 14's C++20 libstdc++ headers.
+  clazy-standalone exits 0 on warnings AND on invalid check names, so
+  the job greps output text instead of trusting exit codes. Plus an
+  advisory .clang-format (tree is not format-enforced).
+- 31-minute heaptrack soak against the LAN Ergo under ~16 msg/s flood
+  with join/part churn and nick cycling: RSS flat (+144 KB total),
+  file descriptors pinned at 13, no leaks in app code (the live-at-
+  exit "leak" total is Qt/FreeType caches under SIGTERM).
+No release. quality.html + CONTRIBUTING gained clazy notes. uplinkbot
+re-ingest still owed from the earlier session (faq/howto changed).
+-->
+
+<!--
 Session 2026-07-17 (second session): brew trust + MacBook LAN debugging.
 - #121: Homebrew now refuses casks from untrusted third-party taps, so
   all install docs (README, faq, site card, packaging/homebrew) gained
