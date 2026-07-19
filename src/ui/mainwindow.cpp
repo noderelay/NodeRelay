@@ -1202,6 +1202,8 @@ void MainWindow::onServerClosed(const ServerId &host)
         it = it.key().startsWith(prefix) ? m_scrollPositions.erase(it) : ++it;
     for (auto it = m_renderStart.begin(); it != m_renderStart.end(); )
         it = it.key().startsWith(prefix) ? m_renderStart.erase(it) : ++it;
+    for (auto it = m_inputDrafts.begin(); it != m_inputDrafts.end(); )
+        it = it.key().startsWith(prefix) ? m_inputDrafts.erase(it) : ++it;
 
     const int idx = m_sidebar->indexOfTopLevelItem(srv);
     delete m_sidebar->takeTopLevelItem(idx);
@@ -1242,6 +1244,7 @@ void MainWindow::onChannelRemoved(const ServerId &host, const BufferId &channel)
     const QString key = host.str() + '\t' + channel.str();
     m_scrollPositions.remove(key);
     m_renderStart.remove(key);
+    m_inputDrafts.remove(key);
 
     onSidebarSelectionChanged();
 }
@@ -1530,15 +1533,32 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         return;
     }
 
+    const QString prevKey = m_model->activeHost().str() + '\t' + m_model->activeChannel().str();
+
     // Save scroll position for the channel we're leaving (only if not at bottom)
-    if (m_chatView) {
-        const QString prevKey = m_model->activeHost().str() + '\t' + m_model->activeChannel().str();
-        if (!prevKey.startsWith('\t')) {
-            if (!m_chatView->isAtBottom())
-                m_scrollPositions[prevKey] = m_chatView->verticalScrollBar()->value();
-            else
-                m_scrollPositions.remove(prevKey);
+    if (m_chatView && !prevKey.startsWith('\t')) {
+        if (!m_chatView->isAtBottom())
+            m_scrollPositions[prevKey] = m_chatView->verticalScrollBar()->value();
+        else
+            m_scrollPositions.remove(prevKey);
+    }
+
+    // Stash the unsent draft for the buffer we're leaving; restored below.
+    if (m_input && !prevKey.startsWith('\t')) {
+        const QString draft = m_input->toPlainText();
+        if (draft.isEmpty())
+            m_inputDrafts.remove(prevKey);
+        else
+            m_inputDrafts[prevKey] = draft;
+        // End the typing indicator on the old buffer — the inactivity timer
+        // would otherwise fire "paused" at whatever buffer is active by then.
+        m_typingOutTimer->stop();
+        const BufferId prevCh = m_model->activeChannel();
+        if (m_typingActive && m_config.ui.typingIndicator && prevCh.str() != "(server)") {
+            m_typingActive = false;
+            m_model->sendTyping(m_model->activeHost(), prevCh, "done");
         }
+        m_typingActive = false;
     }
 
     m_primaryPanel->setVisible(true);
@@ -1567,6 +1587,14 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
     refreshChatView(host, channel);
     refreshNickList(host, channel);
     refreshTopicBar(host, channel);
+
+    // Restore this buffer's unsent draft (empty if none)
+    if (m_input) {
+        m_restoringDraft = true;
+        m_input->setPlainText(m_inputDrafts.value(host.str() + '\t' + channel.str()));
+        m_input->moveCursor(QTextCursor::End);
+        m_restoringDraft = false;
+    }
 
     if (auto *sess = m_model->session(host)) {
         m_nickPrefix->setText(sess->nick);

@@ -317,11 +317,13 @@ private:
     // Typing indicator state
     QTimer                      *m_typingOutTimer{nullptr};
     bool                         m_typingActive{false};
+    bool                         m_restoringDraft{false};   // suppress typing TAGMSG on draft restore
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     NickListStyle                 m_nickStyle;         // shared by main + pane nick models
     QHash<QString, int>           m_renderStart;        // "host\tchannel" → first rendered msg index
     QHash<QString, int>           m_scrollPositions;   // "host\tchannel" → saved scroll px (non-bottom)
+    QHash<QString, QString>       m_inputDrafts;       // "host\tchannel" → unsent input text
     bool                          m_loadingOlder{false};
     QSet<QString>                 m_historyExhausted;  // channels with no more server history
 
