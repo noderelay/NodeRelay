@@ -10,8 +10,11 @@ truth; the AUR repos mirror them.
 | uplink-irc-git | main HEAD, built from source         | ssh://aur@aur.archlinux.org/uplink-irc-git.git |
 
 scripts/release.sh bumps pkgver and resets pkgrel for uplink-irc and
-uplink-irc-bin. uplink-irc-git never needs a bump, its pkgver comes from
-git describe at build time.
+uplink-irc-bin. uplink-irc-git gets its real pkgver from git describe at
+build time, but the version shown on its AUR page is only the .SRCINFO
+snapshot — refresh it after each release so the listing doesn't look
+stale (`makepkg -o -C` updates pkgver, then the usual .SRCINFO + mirror
+push below).
 
 Checksums can't be updated until the tag (and for -bin, the release
 artifacts from release.yml) exist on GitHub. So after each release, for
