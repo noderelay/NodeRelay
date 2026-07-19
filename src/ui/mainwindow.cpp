@@ -23,6 +23,7 @@
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
+#include "ui/typingcontroller.h"
 #include "ui/emojidata.h"
 #include "ui/chromepanel.h"
 #include "ui/menuicons.h"
@@ -1152,18 +1153,7 @@ void MainWindow::onServerDisconnected(const ServerId &host)
         m_signalBars->setState(SignalBars::State::Disconnected);
 
     // Prune typing state for all channels on this host
-    const QString prefix = host.str() + "|";
-    for (auto it = m_typingNickTimers.begin(); it != m_typingNickTimers.end(); ) {
-        if (it.key().startsWith(prefix)) {
-            it.value()->stop();
-            it.value()->deleteLater();
-            it = m_typingNickTimers.erase(it);
-        } else {
-            ++it;
-        }
-    }
-    for (auto it = m_typingNicks.begin(); it != m_typingNicks.end(); )
-        it = it.key().startsWith(prefix) ? m_typingNicks.erase(it) : ++it;
+    m_typing->forgetHost(host);
 
     if (!m_model->session(host)) {
         // No session left → the server was removed (Manage Servers), not just
@@ -1326,72 +1316,16 @@ void MainWindow::onSelfNickChanged(const ServerId &host, const QString &nick)
             pane->setNick(nick);
 }
 
-void MainWindow::onTypingReceived(const ServerId &host, const BufferId &channel,
-                                   const QString &nick, const QString &state)
-{
-    if (!m_config.ui.typingIndicator) return;
-
-    // Lowercase the channel so lookups match regardless of source case
-    // (restored panes carry lowercased names; the server sends its own case).
-    const QString key      = paneKey(host, channel);
-    const QString timerKey = key + "|" + nick;
-
-    if (state == "active" || state == "paused") {
-        m_typingNicks[key].insert(nick);
-
-        if (m_typingNickTimers.contains(timerKey)) {
-            m_typingNickTimers[timerKey]->start(6000);
-        } else {
-            auto *t = new QTimer(this);
-            t->setSingleShot(true);
-            connect(t, &QTimer::timeout, this, [this, key, timerKey, nick]{
-                m_typingNicks[key].remove(nick);
-                if (auto *timer = m_typingNickTimers.value(timerKey)) {
-                    m_typingNickTimers.remove(timerKey);
-                    timer->deleteLater();
-                }
-                updateTypingLabel();
-            });
-            m_typingNickTimers.insert(timerKey, t);
-            t->start(6000);
-        }
-    } else {
-        m_typingNicks[key].remove(nick);
-        if (auto *t = m_typingNickTimers.value(timerKey)) {
-            t->stop();
-            t->deleteLater();
-            m_typingNickTimers.remove(timerKey);
-        }
-    }
-
-    updateTypingLabel();
-}
-
-
-// Builds the "X is typing..." string for a buffer, or empty if nobody is.
-QString MainWindow::typingText(const ServerId &host, const BufferId &channel) const
-{
-    if (!m_config.ui.typingIndicator) return {};
-    const QString key = paneKey(host, channel);
-    const QSet<QString> &typers = m_typingNicks.value(key);
-    if (typers.isEmpty()) return {};
-
-    QStringList names(typers.begin(), typers.end());
-    if (names.size() == 1) return names[0] + " is typing...";
-    if (names.size() == 2) return names[0] + " and " + names[1] + " are typing...";
-    return QString::number(names.size()) + " people are typing...";
-}
-
 void MainWindow::updateTypingLabel()
 {
     if (!m_config.ui.typingIndicator)
         m_typingLabel->setVisible(false);
     else
-        m_typingLabel->setText(typingText(m_model->activeHost(), m_model->activeChannel()));
+        m_typingLabel->setText(m_typing->typingText(m_model->activeHost(), m_model->activeChannel()));
 
     // Panes (docked and popped-out) carry their own typing indicator.
     for (auto *pane : std::as_const(m_panes))
-        pane->setTyping(typingText(pane->host(), pane->channel()));
+        pane->setTyping(m_typing->typingText(pane->host(), pane->channel()));
 }
 
 // ---------------------------------------------------------------------------
@@ -1549,13 +1483,7 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
             m_inputDrafts[prevKey] = draft;
         // End the typing indicator on the old buffer — the inactivity timer
         // would otherwise fire "paused" at whatever buffer is active by then.
-        m_typingOutTimer->stop();
-        const BufferId prevCh = m_model->activeChannel();
-        if (m_typingActive && m_config.ui.typingIndicator && prevCh.str() != "(server)") {
-            m_typingActive = false;
-            m_model->sendTyping(m_model->activeHost(), prevCh, "done");
-        }
-        m_typingActive = false;
+        m_typing->noteBufferLeft(m_model->activeHost(), m_model->activeChannel());
     }
 
     m_primaryPanel->setVisible(true);
@@ -1676,7 +1604,7 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
 
     pane->input()->installEventFilter(this);
     pane->setTypingEnabled(m_config.ui.typingIndicator);
-    pane->setTyping(typingText(pane->host(), pane->channel())); // seed current typers
+    pane->setTyping(m_typing->typingText(pane->host(), pane->channel())); // seed current typers
     {
         const QColor ic(m_theme.valid ? m_theme.text : QStringLiteral("#e3e3e3"));
         pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));

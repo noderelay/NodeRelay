@@ -31,6 +31,7 @@
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
+#include "ui/typingcontroller.h"
 #include "ui/chromepanel.h"
 #include "ui/splittergrip.h"
 #include "ui/menuicons.h"
@@ -272,12 +273,8 @@ void MainWindow::connectPreferences()
     connect(m_prefsDialog, &PreferencesDialog::typingIndicatorToggled, this, [this](bool on){
         m_config.ui.typingIndicator = on;
         saveConfig();
+        m_typing->setEnabled(on);
         if (!on) {
-            m_typingOutTimer->stop();
-            m_typingActive = false;
-            m_typingNicks.clear();
-            for (auto *t : std::as_const(m_typingNickTimers)) { t->stop(); t->deleteLater(); }
-            m_typingNickTimers.clear();
             m_typingLabel->setVisible(false);
         } else {
             m_typingLabel->setText("");
@@ -1028,7 +1025,6 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
-    connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
     connect(m_model, &SessionModel::olderHistoryLoaded, this, &MainWindow::onOlderHistoryLoaded);
     connect(m_model, &SessionModel::userMetaChanged, this,

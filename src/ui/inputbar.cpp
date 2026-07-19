@@ -9,6 +9,7 @@
 #include "ui/menuicons.h"
 #include "ui/chatrenderer.h"
 #include "ui/searchbar.h"
+#include "ui/typingcontroller.h"
 #include "model/sessionmodel.h"
 #include "config/config.h"
 
@@ -186,18 +187,11 @@ void MainWindow::setupInputBar()
         commitEmojiAutocomplete(m_emojiCompleter->row(item));
     });
 
-    // Inactivity timer: sends typing=paused after 5s with no keypresses
-    m_typingOutTimer = new QTimer(this);
-    m_typingOutTimer->setSingleShot(true);
-    m_typingOutTimer->setInterval(5000);
-    connect(m_typingOutTimer, &QTimer::timeout, this, [this]{
-        if (!m_config.ui.typingIndicator) return;
-        const ServerId host = m_model->activeHost();
-        const BufferId ch   = m_model->activeChannel();
-        if (ch.isEmpty() || ch.str() == "(server)") return;
-        m_typingActive = false;
-        m_model->sendTyping(host, ch, "paused");
-    });
+    // Typing-indicator state, both directions (TAGMSGs out, peer expiry in)
+    m_typing = new TypingController(m_model, this);
+    m_typing->setEnabled(m_config.ui.typingIndicator);
+    connect(m_typing, &TypingController::typersChanged,
+            this, &MainWindow::updateTypingLabel);
 
     connect(m_input, &QPlainTextEdit::cursorPositionChanged,
             this, &MainWindow::updateFormatIndicator);
@@ -221,23 +215,7 @@ void MainWindow::setupInputBar()
             vb->setValue(vb->maximum());
         }
         if (m_restoringDraft) return; // buffer switch, not the user typing
-        if (!m_config.ui.typingIndicator) return;
-        const ServerId host = m_model->activeHost();
-        const BufferId ch   = m_model->activeChannel();
-        if (ch.isEmpty() || ch.str() == "(server)") return;
-        if (!text.isEmpty()) {
-            if (!m_typingActive) {
-                m_typingActive = true;
-                m_model->sendTyping(host, ch, "active");
-            }
-            m_typingOutTimer->start();
-        } else {
-            m_typingOutTimer->stop();
-            if (m_typingActive) {
-                m_typingActive = false;
-                m_model->sendTyping(host, ch, "done");
-            }
-        }
+        m_typing->noteInputChanged(!text.isEmpty());
     });
 
     // The scroll range updates lazily, after textChanged — re-pin when it
@@ -709,11 +687,7 @@ void MainWindow::onInputSubmit()
     if (host.isEmpty() || channel.isEmpty()) return;
 
     // Stop typing notification on send
-    m_typingOutTimer->stop();
-    if (m_typingActive && m_config.ui.typingIndicator && channel.str() != "(server)") {
-        m_typingActive = false;
-        m_model->sendTyping(host, channel, "done");
-    }
+    m_typing->noteMessageSent(host, channel);
 
     const QStringList lines = raw.split('\n', Qt::SkipEmptyParts);
     if (lines.size() > 1) {
