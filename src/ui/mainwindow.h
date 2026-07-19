@@ -29,6 +29,7 @@ class PreferencesDialog;
 class EmojiPicker;
 class DccController;
 class PreviewController;
+class TypingController;
 class ChannelPane;
 class DropFrame;
 class QuickSwitcher;
@@ -99,10 +100,6 @@ private slots:
     void onInputSubmit();
     void dispatchInput(const QString &text, const ServerId &host, const BufferId &channel);
 
-    // Typing
-    void onTypingReceived(const ServerId &host, const BufferId &channel,
-                          const QString &nick, const QString &state);
-
 private:
     void setupSidebar();
     void setupChatArea();
@@ -136,7 +133,6 @@ private:
     QString effectiveThemeName() const;          // auto pair when enabled, else ui.theme
     void setTopicRevealInset(bool reserve);
     void updateTypingLabel();
-    QString typingText(const ServerId &host, const BufferId &channel) const;
     void openChannelPane (const ServerId &host, const BufferId &channel);
     void popOutChannel   (const ServerId &host, const BufferId &channel);
     void floatPane       (ChannelPane *pane);
@@ -315,11 +311,8 @@ private:
     QAction  *m_actViewCards{nullptr};
 
     // Typing indicator state
-    QTimer                      *m_typingOutTimer{nullptr};
-    bool                         m_typingActive{false};
+    TypingController            *m_typing{nullptr};
     bool                         m_restoringDraft{false};   // suppress typing TAGMSG on draft restore
-    QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
-    QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     NickListStyle                 m_nickStyle;         // shared by main + pane nick models
     QHash<QString, int>           m_renderStart;        // "host\tchannel" → first rendered msg index
     QHash<QString, int>           m_scrollPositions;   // "host\tchannel" → saved scroll px (non-bottom)

@@ -138,6 +138,8 @@ qt_add_executable(Uplink WIN32
     src/ui/dcccontroller.h
     src/ui/previewcontroller.cpp
     src/ui/previewcontroller.h
+    src/ui/typingcontroller.cpp
+    src/ui/typingcontroller.h
     src/ui/inputbar.cpp
     src/ui/chatupdates.cpp
     src/ui/themeloader.cpp

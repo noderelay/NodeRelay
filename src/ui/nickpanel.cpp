@@ -2,6 +2,7 @@
 #include "ui/channelpane.h"
 #include "ui/nickfilteredit.h"
 #include "ui/nicklistmodel.h"
+#include "ui/typingcontroller.h"
 #include "model/sessionmodel.h"
 #include "net/addresscheck.h"
 #include "net/networkmonitor.h"
@@ -105,15 +106,7 @@ void MainWindow::onNickRemoved(const ServerId &host, const BufferId &channel, co
 {
     updateNickViews(host, channel);
 
-    const QString key = paneKey(host, channel);
-    const QString timerKey = key + "|" + nick;
-    if (auto *t = m_typingNickTimers.value(timerKey)) {
-        t->stop();
-        t->deleteLater();
-        m_typingNickTimers.remove(timerKey);
-        m_typingNicks[key].remove(nick);
-        updateTypingLabel();
-    }
+    m_typing->forgetNick(host, channel, nick);
 }
 
 void MainWindow::onNickRenamed(const ServerId &host, const BufferId &channel,
