@@ -526,7 +526,10 @@ void MainWindow::setupNickPanel()
 
     m_nickPanel = new ChromePanel;
     m_nickPanel->setObjectName("nickPanel");
-    m_nickPanel->setMinimumWidth(24);
+    // Same drag floor as the sidebar tree: the splitter handle stops here,
+    // so hiding the list is only possible via the collapse toggle (which
+    // shows the reveal button) — never by dragging it to a sliver.
+    m_nickPanel->setMinimumWidth(112);
     auto *vbox = new QVBoxLayout(m_nickPanel);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
