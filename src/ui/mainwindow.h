@@ -269,6 +269,7 @@ private:
     bool          m_primaryDragging{false};    // primary pane drag in flight
     QPoint        m_primaryDragStart;          // global press position of the pending drag
     bool          m_nickExpanded{true};
+    int           m_nickExpandedWidth{180};
     ElidedLabel  *m_topicLabel{nullptr};    // #channel (modes)
     QLabel       *m_userInfoLabel{nullptr}; // * network (in nick panel header)
     QWidget      *m_topicDisplay{nullptr};  // topic text — shown when showTopic

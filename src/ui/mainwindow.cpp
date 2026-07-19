@@ -279,21 +279,28 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     setMaximumWidth(width() + 20);
 #endif
 
-    if (settings.contains("nickSplitter")) {
+    // User list width persists as a plain int, same as sidebarWidth below —
+    // never via QSplitter::saveState(), whose blob also restores flags like
+    // childrenCollapsible and resurrected drag-collapse from old configs.
+    int nickW = settings.value("nickWidth", 0).toInt();
+    if (nickW <= 0 && settings.contains("nickSplitter")) {
+        // Legacy config: pull the width out of the old state blob, then
+        // re-assert non-collapsible (restoreState smuggles it back on).
+        // The blob itself is dropped on next save.
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
-        // restoreState() restores childrenCollapsible too — a state saved by
-        // a pre-#134 build re-enables collapsing and silently undoes the
-        // setChildrenCollapsible(false) from setup. Re-assert after restoring.
         m_chatSplitter->setChildrenCollapsible(false);
+        nickW = m_chatSplitter->sizes().value(1);
+        if (nickW <= 0)  // blob saved while drag-collapsed to 0 — rescue
+            nickW = 180;
     }
-    // Heal states saved while the user list was drag-collapsed to 0 (the
-    // splitter was collapsible before 2026-07-18): a 0-width panel has no
-    // grab area left, so bring it back at a usable width instead.
-    if (auto sizes = m_chatSplitter->sizes(); sizes.size() == 2 && sizes[1] == 0) {
-        constexpr int kRescueWidth = 180;
-        sizes[1] = kRescueWidth;
-        sizes[0] = qMax(1, sizes[0] - kRescueWidth);
-        m_chatSplitter->setSizes(sizes);
+    if (nickW > 0) {
+        // Also heals legacy drag-collapsed widths (0 or sliver) to the floor.
+        nickW = qMax(m_nickPanel->minimumWidth(), nickW);
+        if (auto sizes = m_chatSplitter->sizes(); sizes.size() == 2) {
+            const int total = sizes[0] + sizes[1];
+            m_chatSplitter->setSizes({qMax(1, total - nickW), nickW});
+        }
+        m_nickExpandedWidth = nickW;
     }
     if (settings.contains("sidebarWidth"))
         m_sidebarExpandedWidth = settings.value("sidebarWidth").toInt();
@@ -368,11 +375,18 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             m_sidebarExpandedWidth = w;
     });
 
+    connect(m_chatSplitter, &QSplitter::splitterMoved, this, [this](int, int){
+        const int w = m_chatSplitter->sizes().value(1);
+        if (m_nickExpanded && w > 0)
+            m_nickExpandedWidth = w;
+    });
+
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
         QSettings s("uplink", "uplink");
         s.setValue("geometry", saveGeometry());
         s.setValue("windowState", saveState());
-        s.setValue("nickSplitter", m_chatSplitter->saveState());
+        s.setValue("nickWidth", m_nickExpandedWidth);
+        s.remove("nickSplitter"); // legacy state blob, replaced by nickWidth
         s.setValue("sidebarWidth", m_sidebarExpandedWidth);
         // Persist original-case host|channel (not the lowercased pane key):
         // the restore path rebuilds BufferIds from these strings, and a
