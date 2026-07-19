@@ -835,6 +835,10 @@ void MainWindow::setupChatArea()
     // Backdrop behind the nick panel's rounded top corners.
     m_chatSplitter->setAttribute(Qt::WA_StyledBackground, true);
     m_chatSplitter->setHandleWidth(0);
+    // Never let a drag snap the user list from its minimum straight to 0 —
+    // a 0-width panel leaves no grab area to reopen it, and the collapsed
+    // state persists via saveState. Collapse/reveal has its own buttons.
+    m_chatSplitter->setChildrenCollapsible(false);
     m_chatSplitter->addWidget(chatLeft);
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
@@ -954,6 +958,7 @@ void MainWindow::setupChatArea()
     m_mainSplitter = new QSplitter(Qt::Horizontal);
     m_mainSplitter->setObjectName("mainSplitter");
     m_mainSplitter->setHandleWidth(0);
+    m_mainSplitter->setChildrenCollapsible(false); // same reason as chatSplitter
     m_mainSplitter->addWidget(m_sidebarPanel);
     m_mainSplitter->addWidget(chatWrapper);
     m_mainSplitter->setStretchFactor(0, 0);
