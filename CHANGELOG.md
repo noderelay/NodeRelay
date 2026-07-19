@@ -30,6 +30,16 @@ extractions.
   badges self-connected to the model, connection icons, checked-out
   markers). Selection/navigation/ordering stayed in MainWindow;
   viewport filter-then-QScroller install order preserved exactly.
+- #134 (post-close, from a field report via Joe): the user list could
+  be drag-collapsed to 0 width with no way to reopen it — the
+  chat/userlist splitter kept Qt's default childrenCollapsible, which
+  snaps past the 24px minimum to 0; no grab area remains, the reveal
+  button doesn't show (panel still logically expanded), and saveState
+  persists the stuck state. Fix: chatSplitter + mainSplitter are
+  non-collapsible now, and startup heals a restored 0-width userlist
+  back to 180px. Release-worthy when Joe says so — affected users on
+  2026.7.7 can meanwhile delete the nickSplitter line from
+  ~/.config/uplink/uplink.conf.
 No release. No regressions; 6/6 tests pass throughout. winget PRs
 403545/403562 still in the MS queue. ZNC ident fix deferred by Joe;
 bundled scripts back-burnered by Joe. Next: per-buffer cache bundle
