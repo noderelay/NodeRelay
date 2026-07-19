@@ -470,14 +470,6 @@ void MainWindow::applyPanelChrome()
         pane->setNickChrome(fill.name(), cards);
 }
 
-// Right inset on the topic bar so its text wraps a little before the
-// floating show-user-list button instead of running underneath it.
-void MainWindow::setTopicRevealInset(bool reserve)
-{
-    if (auto *l = m_topicDisplay ? m_topicDisplay->layout() : nullptr)
-        l->setContentsMargins(8, 3, reserve ? 44 : 8, 3);
-}
-
 void MainWindow::applyFontSizes()
 {
     const QString &fam = m_config.ui.fontFamily;
@@ -824,15 +816,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
 
-
-    if (obj == m_chatSection && event->type() == QEvent::Resize &&
-        m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
-        auto *re = static_cast<QResizeEvent *>(event);
-        // Same line the collapse button occupied — keep in sync with
-        // positionRevealBtn in setupNickPanel.
-        const int topY = m_primaryHeader->height();
-        m_nickRevealBtn->move(re->size().width() - m_nickRevealBtn->width() - 4, topY);
-    }
 
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_sidebarRevealBtn && m_sidebarRevealBtn->isVisible()) {
@@ -1414,7 +1397,6 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         m_nickPanel->setVisible(show);
         if (m_nickRevealBtn)
             m_nickRevealBtn->setVisible(isChannel && !m_nickExpanded);
-        setTopicRevealInset(isChannel && !m_nickExpanded);
     }
 
     // Topic button + topic bar: only meaningful in channels
