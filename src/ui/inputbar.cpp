@@ -220,6 +220,7 @@ void MainWindow::setupInputBar()
             auto *vb = m_input->verticalScrollBar();
             vb->setValue(vb->maximum());
         }
+        if (m_restoringDraft) return; // buffer switch, not the user typing
         if (!m_config.ui.typingIndicator) return;
         const ServerId host = m_model->activeHost();
         const BufferId ch   = m_model->activeChannel();
