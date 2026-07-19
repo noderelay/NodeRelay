@@ -29,6 +29,7 @@ class PreferencesDialog;
 class EmojiPicker;
 class DccController;
 class PreviewController;
+class SidebarController;
 class TypingController;
 class ChannelPane;
 class DropFrame;
@@ -90,7 +91,6 @@ private slots:
                                 const QString &oldNick, const QString &newNick);
     void onNickListContextMenu  (const QPoint &pos);
     void onSidebarContextMenu   (const QPoint &pos);
-    void onUnreadChanged    (const ServerId &host, const BufferId &channel, int count);
     void onReactionsChanged (const ServerId &host, const BufferId &channel, const QString &msgid);
     void onSelfNickChanged  (const ServerId &host, const QString &nick);
     void onMessageRedacted   (const ServerId &host, const BufferId &channel, const QString &msgid);
@@ -139,7 +139,6 @@ private:
     void closeChannelPane(const ServerId &host, const BufferId &channel);
     void closePanesForHost(const ServerId &host);
     ChannelPane *createPane(const ServerId &host, const BufferId &channel);
-    void setChannelCheckedOut(const ServerId &host, const BufferId &channel, bool out);
     void switchAwayFromChannel(const ServerId &host, const BufferId &channel);
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
@@ -218,11 +217,10 @@ private:
     void syncSidebarOrderToConfig();
     void syncSidebarOrderFromConfig();
     void syncChannelOrderToConfig(const ServerId &host);
-    QTreeWidgetItem *findServerItem (const ServerId &host) const;
-    QTreeWidgetItem *findChannelItem(const ServerId &host, const BufferId &channel) const;
 
     // Widgets
     QTreeWidget      *m_sidebar;
+    SidebarController *m_sidebarCtl{nullptr};
     SidebarDelegate  *m_sidebarDelegate{nullptr};
     NickDelegate     *m_nickDelegate{nullptr};
     ChatView *m_chatView;
