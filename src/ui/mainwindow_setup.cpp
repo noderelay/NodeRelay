@@ -31,7 +31,6 @@
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
-#include "ui/emojidata.h"
 #include "ui/chromepanel.h"
 #include "ui/splittergrip.h"
 #include "ui/menuicons.h"
