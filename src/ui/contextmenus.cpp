@@ -113,8 +113,8 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
             connect(menu.addAction("React"), &QAction::triggered, this,
                     [this, msgid, host, channel, globalPos]{
                 m_pendingReactMsgid    = msgid;
-                m_pendingReactHost     = host.str();
-                m_pendingReactChannel  = channel.str();
+                m_pendingReactHost     = host;
+                m_pendingReactChannel  = channel;
                 ensureEmojiPicker();
                 m_emojiPicker->showAt(globalPos);
             });

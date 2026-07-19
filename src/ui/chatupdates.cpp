@@ -278,7 +278,7 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
     auto *ch = m_model->channel(host, channel);
     if (!ch) return;
 
-    const QString   key   = host.str() + '\t' + channel.str();
+    const QString   key   = bufferKey(host, channel);
     const qsizetype total = ch->messages.size();
 
     if (resetToLatest || !m_renderStart.contains(key))
@@ -389,7 +389,7 @@ void MainWindow::loadOlderMessages()
     const BufferId chName  = m_model->activeChannel();
     if (host.isEmpty() || chName.isEmpty()) return;
 
-    const QString key = host.str() + '\t' + chName.str();
+    const QString key = bufferKey(host, chName);
     if (!m_renderStart.contains(key) || m_renderStart[key] == 0) {
         if (m_historyExhausted.contains(key)) return;
         m_loadingOlder = true;
@@ -473,7 +473,7 @@ void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &chan
     if (host != m_model->activeHost() || channel != m_model->activeChannel())
         return;
 
-    const QString key = host.str() + '\t' + channel.str();
+    const QString key = bufferKey(host, channel);
     if (count <= 0) {
         m_historyExhausted.insert(key);
         return;
@@ -555,7 +555,7 @@ void MainWindow::continueHistoryJump()
         return;
     }
 
-    const QString key = host.str() + '\t' + channel.str();
+    const QString key = bufferKey(host, channel);
 
     // Target older than everything in memory → pull another server batch.
     // onOlderHistoryLoaded() calls back here after each one. Bounded so a

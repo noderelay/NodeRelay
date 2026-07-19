@@ -51,6 +51,12 @@ inline QString paneKey(const ServerId &host, const BufferId &channel) {
     return paneKey(host.str(), channel.str());
 }
 
+// Composite key for per-buffer UI caches (scroll positions, drafts, render
+// starts). Case-preserving — distinct from paneKey's lower-cased channel.
+inline QString bufferKey(const ServerId &host, const BufferId &channel) {
+    return host.str() + '\t' + channel.str();
+}
+
 // RFC 2811 channel name prefixes: '#' (standard), '&' (local-only),
 // '+' (modeless), '!' (safe). Networks that advertise a narrower
 // ISUPPORT CHANTYPES simply never issue the others, so checking all

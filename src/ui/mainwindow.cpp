@@ -1241,7 +1241,7 @@ void MainWindow::onChannelRemoved(const ServerId &host, const BufferId &channel)
     if (item) delete item;
     closeChannelPane(host, channel);
 
-    const QString key = host.str() + '\t' + channel.str();
+    const QString key = bufferKey(host, channel);
     m_scrollPositions.remove(key);
     m_renderStart.remove(key);
     m_inputDrafts.remove(key);
@@ -1533,7 +1533,7 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         return;
     }
 
-    const QString prevKey = m_model->activeHost().str() + '\t' + m_model->activeChannel().str();
+    const QString prevKey = bufferKey(m_model->activeHost(), m_model->activeChannel());
 
     // Save scroll position for the channel we're leaving (only if not at bottom)
     if (m_chatView && !prevKey.startsWith('\t')) {
@@ -1591,7 +1591,7 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
     // Restore this buffer's unsent draft (empty if none)
     if (m_input) {
         m_restoringDraft = true;
-        m_input->setPlainText(m_inputDrafts.value(host.str() + '\t' + channel.str()));
+        m_input->setPlainText(m_inputDrafts.value(bufferKey(host, channel)));
         m_input->moveCursor(QTextCursor::End);
         m_restoringDraft = false;
     }
