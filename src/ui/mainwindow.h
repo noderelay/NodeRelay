@@ -289,8 +289,8 @@ private:
     QLabel       *m_replyLabel{nullptr};
     QString       m_pendingReplyMsgid;
     QString       m_pendingReactMsgid;
-    QString       m_pendingReactHost;
-    QString       m_pendingReactChannel;
+    ServerId      m_pendingReactHost;
+    BufferId      m_pendingReactChannel;
     AboutDialog        *m_aboutDialog{nullptr};
     ChannelListDialog  *m_channelListDialog{nullptr};
     DocsDialog         *m_docsDialog{nullptr};

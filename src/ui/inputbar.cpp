@@ -40,11 +40,11 @@ void MainWindow::ensureEmojiPicker()
     m_emojiPicker = new EmojiPicker(this);
     connect(m_emojiPicker, &EmojiPicker::emojiSelected, this, [this](const QString &emoji){
         if (!m_pendingReactMsgid.isEmpty()) {
-            m_model->sendReact(ServerId{m_pendingReactHost}, BufferId{m_pendingReactChannel},
+            m_model->sendReact(m_pendingReactHost, m_pendingReactChannel,
                                m_pendingReactMsgid, emoji);
             m_pendingReactMsgid.clear();
-            m_pendingReactHost.clear();
-            m_pendingReactChannel.clear();
+            m_pendingReactHost    = {};
+            m_pendingReactChannel = {};
             return;
         }
         QTextCursor tc = m_input->textCursor();
