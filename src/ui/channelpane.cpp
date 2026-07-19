@@ -227,6 +227,10 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     // Backdrop behind the nick panel's rounded top corners.
     bodySplitter->setAttribute(Qt::WA_StyledBackground, true);
     bodySplitter->setHandleWidth(0);
+    // Collapsing would snap past the nick panel's minimum to 0 — same trap
+    // #134 closed on the main window's splitters. Hide/show is the collapse
+    // toggle's job.
+    bodySplitter->setChildrenCollapsible(false);
     bodySplitter->addWidget(chatCol);
     bodySplitter->addWidget(m_nickWrapper);
     bodySplitter->setStretchFactor(0, 1);
