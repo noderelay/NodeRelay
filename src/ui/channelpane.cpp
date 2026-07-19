@@ -90,6 +90,16 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     m_searchBtn->setToolTip(QStringLiteral("Search (Ctrl+F)"));
     connect(m_searchBtn, &QToolButton::clicked, this, &ChannelPane::toggleSearch);
 
+    // Reveal button — header row, right of the search glass; shown only
+    // while the user list is collapsed.
+    m_nickRevealBtn = new QToolButton;
+    m_nickRevealBtn->setFixedSize(28, 28);
+    m_nickRevealBtn->setIconSize(QSize(20, 20));
+    m_nickRevealBtn->setAutoRaise(true);
+    m_nickRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
+    m_nickRevealBtn->setToolTip(QStringLiteral("Show user list"));
+    m_nickRevealBtn->hide();
+
     m_closeBtn = new QToolButton;
     m_closeBtn->setText(QStringLiteral("✕"));
     m_closeBtn->setFixedSize(16, 16);
@@ -103,6 +113,7 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     hbox->addWidget(nameLabel, 1);
     hbox->addWidget(m_popOutBtn);
     hbox->addWidget(m_searchBtn);
+    hbox->addWidget(m_nickRevealBtn);
     hbox->addWidget(m_closeBtn);
     vbox->addWidget(m_header);
 
@@ -137,8 +148,6 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
-        if (m_nickRevealBtn && m_nickRevealBtn->isVisible())
-            positionNickRevealBtn();
     });
 
     // Chat view
@@ -194,24 +203,13 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     // No trailing stretch — see the main window's nick panel for why.
     nwvbox->addWidget(m_nickList, 1);
 
-    // Floating reveal button — shown over the chat when the list is hidden
-    m_nickRevealBtn = new QToolButton(this);
-    m_nickRevealBtn->setFixedSize(28, 28);
-    m_nickRevealBtn->setIconSize(QSize(20, 20));
-    m_nickRevealBtn->setAutoRaise(true);
-    m_nickRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
-    m_nickRevealBtn->setToolTip(QStringLiteral("Show user list"));
-    m_nickRevealBtn->hide();
     connect(m_nickToggleBtn, &QToolButton::clicked, this, [this]{
         m_nickWrapper->hide();
-        positionNickRevealBtn();
         m_nickRevealBtn->show();
-        setTopicRevealInset(true);
     });
     connect(m_nickRevealBtn, &QToolButton::clicked, this, [this]{
         m_nickRevealBtn->hide();
         m_nickWrapper->show();
-        setTopicRevealInset(false);
     });
 
     // Chat column: everything except the user list, so the list runs the
@@ -351,31 +349,6 @@ void ChannelPane::setNickModel(NickListModel *model)
 void ChannelPane::clearNickFilter()
 {
     if (m_nickFilter) m_nickFilter->clear();
-}
-
-// Right inset on the topic bar so its text wraps a little before the
-// floating show-user-list button instead of running underneath it.
-void ChannelPane::setTopicRevealInset(bool reserve)
-{
-    if (m_topicBar && m_topicBar->layout())
-        m_topicBar->layout()->setContentsMargins(8, 4, reserve ? 44 : 8, 4);
-}
-
-void ChannelPane::positionNickRevealBtn()
-{
-    if (!m_nickRevealBtn) return;
-    // Same line the collapse button sat on (top of the nick panel) — see
-    // the main window's positionRevealBtn.
-    const int topY = m_header->height();
-    m_nickRevealBtn->move(width() - m_nickRevealBtn->width() - 4, topY);
-    m_nickRevealBtn->raise();
-}
-
-void ChannelPane::resizeEvent(QResizeEvent *event)
-{
-    QWidget::resizeEvent(event);
-    if (m_nickRevealBtn && m_nickRevealBtn->isVisible())
-        positionNickRevealBtn();
 }
 
 void ChannelPane::setCloseIcon(const QIcon &icon)

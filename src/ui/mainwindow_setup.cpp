@@ -624,6 +624,22 @@ void MainWindow::setupChatArea()
             else m_searchBar->open();
         });
 
+        // Reveal button — lives in the header row right of the search glass,
+        // shown only while the user list is collapsed.
+        m_nickRevealBtn = new QToolButton;
+        m_nickRevealBtn->setFixedSize(28, 28);
+        m_nickRevealBtn->setIconSize(QSize(20, 20));
+        m_nickRevealBtn->setAutoRaise(true);
+        m_nickRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
+        m_nickRevealBtn->setToolTip(tr("Show user list"));
+        m_nickRevealBtn->setIcon(MenuIcons::fromSvg(
+            QStringLiteral(":/icons/mi-left-panel-close.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
+        m_nickRevealBtn->setVisible(false);
+        connect(m_nickRevealBtn, &QToolButton::clicked, this, [this]{
+            setNickPanelVisible(true);
+        });
+
         m_popOutBtn = new QToolButton;
         m_popOutBtn->setFixedSize(28, 28);
         m_popOutBtn->setIconSize(QSize(24, 24));
@@ -660,6 +676,7 @@ void MainWindow::setupChatArea()
         hbox->addStretch(1);
         hbox->addWidget(m_popOutBtn);
         hbox->addWidget(m_searchBtn);
+        hbox->addWidget(m_nickRevealBtn);
         hbox->addWidget(m_primaryCloseBtn);
     }
     // Topic display — shown below header when Show Topic is on
@@ -849,25 +866,6 @@ void MainWindow::setupChatArea()
 
     chatVbox->addWidget(m_chatSplitter, 1);
 
-    // Floating reveal button — child of chatSection (plain QWidget, not splitter)
-    // so Qt doesn't treat it as a splitter pane.
-    m_nickRevealBtn = new QToolButton(m_chatSection);
-    m_nickRevealBtn->setFixedSize(28, 28);
-    m_nickRevealBtn->setIconSize(QSize(20, 20));
-    m_nickRevealBtn->setAutoRaise(true);
-    m_nickRevealBtn->setStyleSheet(UiStyle::headerButtonStyle());
-    m_nickRevealBtn->setToolTip(tr("Show user list"));
-    m_nickRevealBtn->setIcon(MenuIcons::fromSvg(
-        QStringLiteral(":/icons/mi-left-panel-close.svg"),
-        QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
-    m_nickRevealBtn->setVisible(false);
-    m_nickRevealBtn->raise();
-    connect(m_nickRevealBtn, &QToolButton::clicked, this, [this]{
-        m_nickExpanded = true;
-        m_nickPanel->setVisible(true);
-        m_nickRevealBtn->setVisible(false);
-        setTopicRevealInset(false);
-    });
     m_scrollBottomBtn = new QToolButton(m_chatView->viewport());
     m_scrollBottomBtn->setFixedSize(32, 32);
     m_scrollBottomBtn->setIconSize(QSize(22, 22));

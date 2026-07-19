@@ -131,7 +131,6 @@ private:
     void applyPanelChrome();
     void applyThemeByName(const QString &name);  // visuals only; no config write
     QString effectiveThemeName() const;          // auto pair when enabled, else ui.theme
-    void setTopicRevealInset(bool reserve);
     void updateTypingLabel();
     void openChannelPane (const ServerId &host, const BufferId &channel);
     void popOutChannel   (const ServerId &host, const BufferId &channel);

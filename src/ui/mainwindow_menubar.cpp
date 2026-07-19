@@ -454,17 +454,7 @@ void MainWindow::setNickPanelVisible(bool on)
 {
     m_nickExpanded = on;
     m_nickPanel->setVisible(on);
-    if (m_nickRevealBtn) {
-        if (!on && m_chatSection) {
-            // Same line the collapse button sat on (top of the nick panel,
-            // right below the header row) — not below the topic bar, which
-            // made the button visually "jump down" on collapse.
-            m_nickRevealBtn->move(m_chatSection->width() - m_nickRevealBtn->width() - 4,
-                                  m_primaryHeader->height());
-            m_nickRevealBtn->raise();
-        }
+    if (m_nickRevealBtn)
         m_nickRevealBtn->setVisible(!on);
-    }
-    setTopicRevealInset(!on);
     if (m_actViewUserList) m_actViewUserList->setChecked(on);
 }

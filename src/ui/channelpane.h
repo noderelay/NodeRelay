@@ -68,15 +68,12 @@ signals:
     void dropReceived(const QString &sourceKey);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 private:
     bool isPaneDropTarget(const QMimeData *mime) const;
-    void positionNickRevealBtn();
-    void setTopicRevealInset(bool reserve);
     void updateInputHeight();
     void guardFont(QWidget *w, const QFont &f);
 private:
