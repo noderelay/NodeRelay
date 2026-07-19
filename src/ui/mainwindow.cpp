@@ -23,6 +23,7 @@
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
+#include "ui/sidebarcontroller.h"
 #include "ui/typingcontroller.h"
 #include "ui/emojidata.h"
 #include "ui/chromepanel.h"
@@ -245,7 +246,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     m_quickSwitcher = new QuickSwitcher(model, this);
     connect(m_quickSwitcher, &QuickSwitcher::channelSelected, this, [this](const ServerId &host, const BufferId &channel){
-        auto *item = findChannelItem(host, channel);
+        auto *item = m_sidebarCtl->channelItem(host, channel);
         if (item) {
             m_sidebar->setCurrentItem(item);
             onSidebarSelectionChanged();
@@ -1029,7 +1030,7 @@ void MainWindow::syncSidebarOrderFromConfig()
 
 void MainWindow::syncChannelOrderToConfig(const ServerId &host)
 {
-    auto *srvItem = findServerItem(host);
+    auto *srvItem = m_sidebarCtl->serverItem(host);
     if (!srvItem) return;
     for (auto &sc : m_config.servers) {
         if (sc.name != host.str()) continue;
@@ -1052,63 +1053,14 @@ void MainWindow::syncChannelOrderToConfig(const ServerId &host)
     saveConfig();
 }
 
-QTreeWidgetItem *MainWindow::findServerItem(const ServerId &host) const
-{
-    for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
-        auto *item = m_sidebar->topLevelItem(i);
-        if (item->data(0, Qt::UserRole).toString() == host.str())
-            return item;
-    }
-    return nullptr;
-}
-
-QTreeWidgetItem *MainWindow::findChannelItem(const ServerId &host, const BufferId &channel) const
-{
-    auto *srv = findServerItem(host);
-    if (!srv) return nullptr;
-    if (channel.str() == "(server)") return srv;
-    for (int i = 0; i < srv->childCount(); ++i) {
-        auto *item = srv->child(i);
-        if (item->data(0, Qt::UserRole + 1).toString().toLower() == channel.str().toLower())
-            return item;
-    }
-    return nullptr;
-}
-
 // ---------------------------------------------------------------------------
 // Model → UI slots
 // ---------------------------------------------------------------------------
 
-static QString shortNetworkName(const QString &host)
-{
-    QString h = host;
-    if (h.startsWith("irc.", Qt::CaseInsensitive))
-        h = h.mid(4);
-    const auto dot = h.lastIndexOf('.');
-    if (dot > 0)
-        h = h.left(dot);
-    return h;
-}
-
 void MainWindow::onServerAdded(const ServerId &host)
 {
-    if (findServerItem(host)) return;
-    QString label;
-    for (const auto &sc : std::as_const(m_config.servers))
-        if (sc.name == host.str() && !sc.name.isEmpty()) { label = sc.name; break; }
-    if (label.isEmpty())
-        label = shortNetworkName(host.str());
-    auto *item = new QTreeWidgetItem(m_sidebar);
-    item->setText(0, label.toUpper());
-    item->setData(0, Qt::UserRole,     host.str());
-    item->setData(0, Qt::UserRole + 1, QString("(server)"));
-    item->setExpanded(true);
-    item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QFont f(m_config.ui.fontFamily);
-    f.setPointSizeF(m_config.ui.fontSizes.serverHeader);
-    f.setBold(true);
-    item->setFont(0, f);
-    item->setForeground(0, QColor("#6c7086"));
+    if (m_sidebarCtl->serverItem(host)) return;
+    m_sidebarCtl->addServerItem(host);
 
     if (m_signalBars && (m_model->activeHost().isEmpty() || host == m_model->activeHost()))
         m_signalBars->setState(SignalBars::State::Connecting);
@@ -1116,9 +1068,7 @@ void MainWindow::onServerAdded(const ServerId &host)
 
 void MainWindow::onServerConnected(const ServerId &host)
 {
-    auto *item = findServerItem(host);
-    if (item)
-        item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::connectedServer()));
+    m_sidebarCtl->markConnected(host);
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Connected);
 
@@ -1146,9 +1096,7 @@ void MainWindow::onServerConnected(const ServerId &host)
 
 void MainWindow::onServerDisconnected(const ServerId &host)
 {
-    auto *item = findServerItem(host);
-    if (item)
-        item->setData(0, Qt::UserRole + 2, QVariant());
+    m_sidebarCtl->clearConnectionIcon(host);
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Disconnected);
 
@@ -1177,8 +1125,7 @@ void MainWindow::closePanesForHost(const ServerId &host)
 
 void MainWindow::onServerClosed(const ServerId &host)
 {
-    auto *srv = findServerItem(host);
-    if (!srv) return;
+    if (!m_sidebarCtl->serverItem(host)) return;
 
     // Close any open panes/windows for channels on this server
     closePanesForHost(host);
@@ -1192,8 +1139,7 @@ void MainWindow::onServerClosed(const ServerId &host)
     for (auto it = m_inputDrafts.begin(); it != m_inputDrafts.end(); )
         it = it.key().startsWith(prefix) ? m_inputDrafts.erase(it) : ++it;
 
-    const int idx = m_sidebar->indexOfTopLevelItem(srv);
-    delete m_sidebar->takeTopLevelItem(idx);
+    m_sidebarCtl->removeServerItem(host);
 
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Disconnected);
@@ -1203,18 +1149,14 @@ void MainWindow::onServerClosed(const ServerId &host)
 
 void MainWindow::onChannelAdded(const ServerId &host, const BufferId &channel)
 {
-    if (findChannelItem(host, channel)) return;
-    auto *srv = findServerItem(host);
-    if (!srv) return;
-    auto *item = new QTreeWidgetItem(srv);
-    item->setText(0, channel.str());
-    item->setData(0, Qt::UserRole,     host.str());
-    item->setData(0, Qt::UserRole + 1, channel.str());
+    if (m_sidebarCtl->channelItem(host, channel)) return;
+    auto *item = m_sidebarCtl->addChannelItem(host, channel);
+    if (!item) return;
 
     // Checked out to a floating window: re-mark, but don't select or raise —
     // (re)joins would otherwise steal focus and misplace the sidebar highlight.
     if (m_paneWindows.contains(paneKey(host, channel))) {
-        setChannelCheckedOut(host, channel, true);
+        m_sidebarCtl->setCheckedOut(host, channel, true);
         return;
     }
 
@@ -1224,7 +1166,7 @@ void MainWindow::onChannelAdded(const ServerId &host, const BufferId &channel)
 
 void MainWindow::onChannelRemoved(const ServerId &host, const BufferId &channel)
 {
-    auto *item = findChannelItem(host, channel);
+    auto *item = m_sidebarCtl->channelItem(host, channel);
     if (item) delete item;
     closeChannelPane(host, channel);
 
@@ -1269,39 +1211,6 @@ void MainWindow::scheduleNickRefresh(const ServerId &host, const BufferId &chann
         if (auto *pane = m_panes.value(key))
             refreshPaneNickList(pane);
     });
-}
-
-void MainWindow::onUnreadChanged(const ServerId &host, const BufferId &channel, int count)
-{
-    auto *item = findChannelItem(host, channel);
-    if (!item) return;
-    QString label = channel.str();
-    if (channel.str() == "(server)") {
-        label = QString();
-        for (const auto &sc : std::as_const(m_config.servers))
-            if (sc.name == host.str() && !sc.name.isEmpty()) { label = sc.name; break; }
-        if (label.isEmpty())
-            label = shortNetworkName(host.str());
-    }
-    if (channel.str() == "(server)") {
-        const bool connected = [&]{
-            auto *s = m_model->session(host); return s && s->connected;
-        }();
-        if (connected) {
-            const QColor col = count > 0 ? QColor("#e06c75") : QColor();
-            item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::connectedServer(col)));
-        }
-        item->setText(0, label.toUpper());
-    } else {
-        if (count > 0 && m_model->hasMention(host, channel))
-            item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::mention(QColor("#FFD700"))));
-        else if (count > 0)
-            item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::unread()));
-        else
-            item->setData(0, Qt::UserRole + 2, QVariant());
-        item->setData(0, Qt::UserRole + 3, count > 0 ? count : QVariant());
-        item->setText(0, label);
-    }
 }
 
 void MainWindow::onSelfNickChanged(const ServerId &host, const QString &nick)
@@ -1447,7 +1356,7 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         win->show();
         win->raise();
         win->activateWindow();
-        if (auto *active = findChannelItem(m_model->activeHost(), m_model->activeChannel()))
+        if (auto *active = m_sidebarCtl->channelItem(m_model->activeHost(), m_model->activeChannel()))
             m_sidebar->setCurrentItem(active);
         else
             m_sidebar->clearSelection(); // don't leave the checked-out row highlighted
@@ -1457,7 +1366,7 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
     // Already docked in a visible pane — don't also load it into the primary
     // view. Same reasoning as the floating-window case above.
     if (m_panes.contains(key)) {
-        if (auto *active = findChannelItem(m_model->activeHost(), m_model->activeChannel()))
+        if (auto *active = m_sidebarCtl->channelItem(m_model->activeHost(), m_model->activeChannel()))
             m_sidebar->setCurrentItem(active);
         else
             m_sidebar->clearSelection();
@@ -1837,7 +1746,7 @@ void MainWindow::floatPane(ChannelPane *pane)
     if (host == m_model->activeHost() &&
         channel.str().toLower() == m_model->activeChannel().str().toLower())
         switchAwayFromChannel(host, channel);
-    setChannelCheckedOut(host, channel, true);
+    m_sidebarCtl->setCheckedOut(host, channel, true);
     m_model->markRead(host, channel);
 
     // A previously docked pane is already rendered; reparenting keeps its
@@ -1850,20 +1759,6 @@ void MainWindow::floatPane(ChannelPane *pane)
 
 // Italicises/dims a channel's sidebar row while it's checked out to a floating
 // window, or restores it to normal.
-void MainWindow::setChannelCheckedOut(const ServerId &host, const BufferId &channel, bool out)
-{
-    auto *item = findChannelItem(host, channel);
-    if (!item) return;
-    QFont f = item->font(0);
-    f.setItalic(out);
-    item->setFont(0, f);
-    if (out)
-        item->setForeground(0, QColor(m_theme.valid ? m_theme.placeholder
-                                                    : QStringLiteral("#6c7086")));
-    else
-        item->setData(0, Qt::ForegroundRole, QVariant()); // reset to default
-}
-
 // Moves the main view off host/channel to another available (non-popped) buffer,
 // falling back to the server buffer if that channel was the only one.
 void MainWindow::switchAwayFromChannel(const ServerId &host, const BufferId &channel)
@@ -1881,7 +1776,7 @@ void MainWindow::switchAwayFromChannel(const ServerId &host, const BufferId &cha
             return;
         }
     }
-    if (auto *srv = findServerItem(host)) {
+    if (auto *srv = m_sidebarCtl->serverItem(host)) {
         m_sidebar->setCurrentItem(srv);
         onSidebarSelectionChanged();
     }
@@ -1899,11 +1794,11 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
         settings.setValue("paneWinGeom/" + key, win->saveGeometry());
         win->removeEventFilter(this);
         win->deleteLater(); // deletes the pane it owns
-        setChannelCheckedOut(host, channel, false);
+        m_sidebarCtl->setCheckedOut(host, channel, false);
         // Skip the reselect while the server itself is being torn down —
         // no point churning the main view through dying buffers.
         if (m_model->session(host)) {
-            if (auto *item = findChannelItem(host, channel)) {
+            if (auto *item = m_sidebarCtl->channelItem(host, channel)) {
                 m_sidebar->setCurrentItem(item);
                 switchToChannel(host, channel); // available again → show in main
             }
@@ -2112,7 +2007,7 @@ void MainWindow::openLogSearch()
         BufferId jumpChannel;
         if (!m_model->resolveLogBuffer(serverPart, bufferPart, jumpHost, jumpChannel))
             return; // logs of a buffer that isn't open — nowhere to jump
-        if (auto *item = findChannelItem(jumpHost, jumpChannel)) {
+        if (auto *item = m_sidebarCtl->channelItem(jumpHost, jumpChannel)) {
             m_sidebar->setCurrentItem(item);
             onSidebarSelectionChanged();
         }
@@ -2121,7 +2016,7 @@ void MainWindow::openLogSearch()
     connect(dlg, &LogSearchDialog::jumpInBufferRequested, this,
             [this, host, target](const QDateTime &ts){
         if (host != m_model->activeHost() || target != m_model->activeChannel()) {
-            auto *item = findChannelItem(host, target);
+            auto *item = m_sidebarCtl->channelItem(host, target);
             if (!item) return; // buffer closed since the dialog was opened
             m_sidebar->setCurrentItem(item);
             onSidebarSelectionChanged();

@@ -31,6 +31,7 @@
 #include "ui/emojipicker.h"
 #include "ui/quickswitcher.h"
 #include "ui/updatechecker.h"
+#include "ui/sidebarcontroller.h"
 #include "ui/typingcontroller.h"
 #include "ui/chromepanel.h"
 #include "ui/splittergrip.h"
@@ -415,23 +416,12 @@ void MainWindow::connectPreferences()
 
 void MainWindow::setupSidebar()
 {
-    m_sidebar = new QTreeWidget;
-    m_sidebar->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_sidebar));
-    m_sidebar->setHeaderHidden(true);
-    m_sidebar->setRootIsDecorated(false);
-    m_sidebar->setItemsExpandable(false);
-    m_sidebar->setIndentation(8);
-    m_sidebar->setMinimumWidth(112);
-    m_sidebar->setObjectName("sidebar");
+    m_sidebarCtl = new SidebarController(m_model, m_config, m_theme, this);
+    m_sidebar = m_sidebarCtl->tree();
+    m_sidebarDelegate = m_sidebarCtl->delegate();
+    // Filter first, scroller second — QScroller's own viewport filter must
+    // run before ours (last installed wins), matching the original order.
     m_sidebar->viewport()->installEventFilter(this);
-    m_sidebarDelegate = new SidebarDelegate(m_sidebar);
-    m_sidebarDelegate->setShowCounts(m_config.ui.showUnreadCounts);
-    if (m_theme.valid)
-        m_sidebarDelegate->setColors(QColor(m_theme.accent),
-                                     QColor(m_theme.border),
-                                     QColor(m_theme.text),
-                                     QColor(m_theme.sidebarUnread));
-    m_sidebar->setItemDelegate(m_sidebarDelegate);
     QScroller::grabGesture(m_sidebar->viewport(), QScroller::LeftMouseButtonGesture);
 
     connect(m_sidebar, &QTreeWidget::itemClicked,
@@ -1004,7 +994,7 @@ void MainWindow::connectModel()
     });
     connect(m_model, &SessionModel::awayStatusChanged, this,
             [this](const ServerId &h, bool away){
-        if (auto *srv = findServerItem(h)) {
+        if (auto *srv = m_sidebarCtl->serverItem(h)) {
             if (away)
                 srv->setData(0, Qt::UserRole + 4, QVariant::fromValue(
                     MenuIcons::fromSvg(QStringLiteral(":/icons/mi-do-not-disturb.svg"),
@@ -1022,7 +1012,6 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::nickAdded,         this, &MainWindow::onNickAdded);
     connect(m_model, &SessionModel::nickRemoved,       this, &MainWindow::onNickRemoved);
     connect(m_model, &SessionModel::nickRenamed,       this, &MainWindow::onNickRenamed);
-    connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
