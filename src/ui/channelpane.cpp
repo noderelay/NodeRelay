@@ -184,7 +184,8 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
 
     m_nickWrapper = new ChromePanel;
     m_nickWrapper->setObjectName("nickPanel");
-    m_nickWrapper->setMinimumWidth(24);
+    // Same drag floor as the main window's nick panel (see mainwindow_setup).
+    m_nickWrapper->setMinimumWidth(112);
     auto *nwvbox = new QVBoxLayout(m_nickWrapper);
     nwvbox->setContentsMargins(0, 0, 0, 0);
     nwvbox->setSpacing(0);
