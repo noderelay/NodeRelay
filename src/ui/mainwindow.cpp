@@ -281,6 +281,15 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
+    // Heal states saved while the user list was drag-collapsed to 0 (the
+    // splitter was collapsible before 2026-07-18): a 0-width panel has no
+    // grab area left, so bring it back at a usable width instead.
+    if (auto sizes = m_chatSplitter->sizes(); sizes.size() == 2 && sizes[1] == 0) {
+        constexpr int kRescueWidth = 180;
+        sizes[1] = kRescueWidth;
+        sizes[0] = qMax(1, sizes[0] - kRescueWidth);
+        m_chatSplitter->setSizes(sizes);
+    }
     if (settings.contains("sidebarWidth"))
         m_sidebarExpandedWidth = settings.value("sidebarWidth").toInt();
 
