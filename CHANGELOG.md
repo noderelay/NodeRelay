@@ -1428,6 +1428,14 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.7.8 — 2026-07-19
+
+- Fix: the user list could be dragged shut to zero width with no way to reopen it, and the collapsed state survived restarts. The splitters no longer collapse below the minimum, and a user list stuck at zero width from an earlier version is restored to its normal size on startup
+- **Unsent input stays with its channel**: switching buffers mid-sentence stashes the draft and restores it when you come back, instead of carrying the text into the new channel
+- **Search results jump into context**: a full-history search hit now opens at its place in the scrollback instead of only showing the matching line
+- Bot accounts always get the robot icon in the user list — no more random robot-or-alien pick per session
+- macOS: the app bundle now carries its proper bundle identifier (`io.github.noderelay.UplinkIRC`)
+
 ## v2026.7.7 — 2026-07-16
 
 - **New ways to install**: Arch users have three AUR packages — `uplink-irc` (builds the release), `uplink-irc-bin` (prebuilt, installs in seconds), `uplink-irc-git` (development builds). macOS has a Homebrew tap: `brew tap noderelay/uplink && brew install --cask uplink`. A winget package for Windows is in review
