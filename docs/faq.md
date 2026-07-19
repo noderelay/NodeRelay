@@ -471,6 +471,13 @@ You can also drag the divider between the sidebar and the chat area to resize it
 
 Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears at the top-right of the chat area so you can bring it back with one click. Drag the splitter between the chat view and the user list to resize the panel; the width is saved and restored on the next launch.
 
+### My user list vanished and dragging won't bring it back
+
+Two different things can look like a missing user list:
+
+- **You're not in a channel.** The user list only exists in channels — the server window and private messages never show one. Join a channel and check again.
+- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab — and the stuck state was remembered across restarts. This is fixed in the next release, which also repairs stuck configs automatically. Until then: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux) — on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit — then relaunch.
+
 ### How do I show the channel topic?
 
 The channel header row at the top of the chat area shows `#channel (+modes)`. The connected network name appears inline in the nick panel header (`* NetworkName`). To see the actual channel topic text:

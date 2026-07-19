@@ -39,7 +39,14 @@ extractions.
   non-collapsible now, and startup heals a restored 0-width userlist
   back to 180px. Release-worthy when Joe says so — affected users on
   2026.7.7 can meanwhile delete the nickSplitter line from
-  ~/.config/uplink/uplink.conf.
+  ~/.config/uplink/uplink.conf. FAQ entry added.
+- Post-close triage of the same field report's "can't connect" half:
+  Uplink exonerated — the dojo's cert only covers irc.linuxdojo.org
+  (no SAN for the bare domain), so entries using linuxdojo.org fail
+  Uplink's strict TLS while permissive clients connect anyway. Correct
+  server entry: irc.linuxdojo.org:6697. Public DNS verified correct
+  via DoH (the LAN router intercepts port-53 queries, which had faked
+  an earlier "broken public DNS" result — infra notes in memory).
 No release. No regressions; 6/6 tests pass throughout. winget PRs
 403545/403562 still in the MS queue. ZNC ident fix deferred by Joe;
 bundled scripts back-burnered by Joe. Next: per-buffer cache bundle
