@@ -693,6 +693,12 @@ It depends on your state when you left:
 - **You were reading back through history** (scrolled up) → Uplink restores your exact scroll position so you can pick up where you left off.
 - **New messages arrived while you were away** → Uplink scrolls to the **unread separator** (see above), regardless of where you were scrolled. This always takes priority so you never miss the unread boundary.
 
+### I was halfway through typing a message and switched channels — where did it go?
+
+Nowhere: it's waiting in the channel you were typing it in. Each channel and PM buffer keeps its own draft of unsent input text. Switch away mid-sentence, reply to something else, switch back — your half-typed message is restored with the cursor at the end.
+
+Drafts are per-session: they are not saved to disk, and quitting Uplink discards them. Closing a channel discards its draft too.
+
 ### How do I filter the nick list to find someone in a big channel?
 
 The nick list panel has a filter box directly above the list (below the header). Click it and start typing; the list immediately narrows to only show nicks that **start with** your input.

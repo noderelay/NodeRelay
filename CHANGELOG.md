@@ -1,6 +1,42 @@
 # Changelog
 
 <!--
+Session 2026-07-18: per-buffer input drafts + two MainWindow controller
+extractions.
+- #128: bot nicks in the nick list always get the robot icon now; the
+  random robot-or-alien pick per session is gone and mi-alien.svg was
+  removed from the repo and resources.qrc.
+- #129: per-buffer input drafts — switching channels stashes the
+  unsent input text for the buffer being left and restores it on
+  return (cursor at end). Session-only, pruned on channel close and
+  server removal. Restoring a draft is guarded so it never fires a
+  typing TAGMSG at the newly-entered channel, and switching away
+  mid-draft sends typing "done" to the buffer being left.
+  Fix: the 5s typing-inactivity timer used to send "paused" to
+  whatever buffer was active when it fired, not the one typed in.
+- #130: strong-id migration wrapped up — pendingReact host/channel
+  members are ServerId/BufferId now; new bufferKey() helper in ids.h
+  replaces the hand-built host+'\t'+channel keys at 7 call sites. Raw
+  strings remain only at the IrcClient→SessionModel boundary and Qt
+  item-data roles, by design.
+- #131: four dead includes dropped (three in mainwindow.cpp, one in
+  mainwindow_setup.cpp).
+- #132: TypingController extracted from MainWindow (PreviewController
+  pattern): outbound active/paused/done state machine + 5s timer,
+  inbound per-buffer typer sets with 6s per-nick expiry. Logic moved
+  verbatim; MainWindow lost four members and two methods.
+- #133: SidebarController extracted: owns the sidebar tree's
+  construction and item bookkeeping (rows, lookup, labels, unread
+  badges self-connected to the model, connection icons, checked-out
+  markers). Selection/navigation/ordering stayed in MainWindow;
+  viewport filter-then-QScroller install order preserved exactly.
+No release. No regressions; 6/6 tests pass throughout. winget PRs
+403545/403562 still in the MS queue. ZNC ident fix deferred by Joe;
+bundled scripts back-burnered by Joe. Next: per-buffer cache bundle
+or first-run pass; Joe polling on back-burner features.
+-->
+
+<!--
 Session 2026-07-17 (third session): deep review pass + CI guards.
 - Full-codebase review: clang-tidy, cppcheck, clazy, sanitizer test
   runs, both fuzzers (477k parser / 133k renderer executions, zero

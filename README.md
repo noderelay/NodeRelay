@@ -160,7 +160,7 @@
 |---|---|
 | **Embedded nick panel** | User list floats as its own rounded card on the right side of the chat view, framed by an even backdrop gap on every side. The list is virtualized — it stays smooth and light even in channels with thousands of users. Click the close button in the panel header to collapse it; a reveal button appears at the top-right of the chat area to restore it. Panel width persists across sessions. |
 | **Embedded sidebar** | Server/channel list floats as its own rounded card, framed by the same even backdrop gap as the user list — the two side cards and the message box share one uniform gutter. A close button in the sidebar panel collapses it (chat fills the space); a reveal button at the bottom-left restores it. Width is drag-resizable and persists across sessions. |
-| **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
+| **Bot indicators** | Nicks with `+B` mode display a robot icon, tinted to the active theme's accent color. |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **Settings → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
 | **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Send File (Passive)**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick**, **Ignore / Unignore** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |

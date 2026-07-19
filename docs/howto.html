@@ -600,6 +600,7 @@
     <li><a href="#multiline">Multi-line messages</a></li>
     <li><a href="#tab">Tab completion</a></li>
     <li><a href="#history">Input history</a></li>
+    <li><a href="#drafts">Per-channel drafts</a></li>
     <li><a href="#search">Message search</a></li>
     <li><a href="#history-search">Full history search</a></li>
     <li><a href="#reply">Reply to messages</a></li>
@@ -1967,7 +1968,7 @@ typing_indicator = true   # set to false to disable completely</pre>
       <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears at the top-right of the chat area; click it to expand the panel again.</li>
       <li>Drag the divider between the chat and the nick panel to resize it; width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
-      <li>Nicks with <code>+B</code> (bot mode) show a small icon drawn inline to the right of their name: either a robot or an alien, randomly assigned per nick for the session. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
+      <li>Nicks with <code>+B</code> (bot mode) show a small robot icon drawn inline to the right of their name. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
       <li><strong>Hover</strong> over any nick to see their NickServ account name as a tooltip (shown as <code>account: name</code> when the server has reported it).</li>
       <li>Selected and hovered nicks are highlighted with a pill-shaped background in your theme's accent colour, the same style used in the server/channel sidebar.</li>
       <li>Right-click any nick for a full action menu; see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
@@ -2729,6 +2730,19 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <section id="history">
     <h2>Input history</h2>
     <p>Press <kbd>↑</kbd> in the input box to scroll back through messages you've sent in this session. Press <kbd>↓</kbd> to go forward again. The history is per-session and is not saved to disk.</p>
+  </section>
+
+  <!-- PER-CHANNEL DRAFTS -->
+  <section id="drafts">
+    <h2>Per-channel drafts</h2>
+    <p>Half-typed messages stay with their channel. If you're writing something in <code>#linux</code> and switch to another channel to check a mention, the unsent text is stashed; when you come back to <code>#linux</code>, it's right where you left it, with the cursor at the end. Every channel and PM buffer keeps its own draft, so switching around never mixes them up or carries text into the wrong channel.</p>
+    <p>There's nothing to configure — it's just how the input box behaves.</p>
+    <ul>
+      <li>Drafts are per-session and not saved to disk. Quitting Uplink discards them.</li>
+      <li>Sending or clearing the message discards that buffer's draft, as you'd expect.</li>
+      <li>Closing a channel or removing a server discards its drafts.</li>
+      <li>Switching away while a draft is pending also ends your "is typing…" indicator in that channel — you won't appear to be typing in a channel you've left open in the background.</li>
+    </ul>
   </section>
 
   <!-- MESSAGE SEARCH -->

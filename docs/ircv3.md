@@ -73,7 +73,7 @@ Server → 903 :SASL authentication successful
 
 ### `draft/typing`
 
-When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input, it sends `+typing=done`.
+When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input — or switch to another buffer with text still in the box — it sends `+typing=done` to the channel you were typing in.
 
 Incoming typing notifications from other users appear as "nick is typing…" above the input bar and time out automatically. The feature can be toggled from the **Preferences** dialog (**Settings → Preferences**, or **Ctrl+,**).
 
