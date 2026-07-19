@@ -1,6 +1,45 @@
 # Changelog
 
 <!--
+Session 2026-07-19: v2026.7.8 RELEASE DAY + userlist collapse/reveal rework.
+Release: v2026.7.8 tagged and shipped (userlist 0-width fix, per-buffer
+drafts, search context jump, macOS bundle id, robot icon). All CI green,
+5 artifacts published. Mirrors updated same hour: AUR uplink-irc +
+uplink-irc-bin (updpkgsums, test builds, pushed), uplink-irc-git pkgver
+snapshot refreshed to 2026.7.8.r0 (new post-release step, now in
+packaging/archlinux/README.md — AUR listing otherwise looks stale),
+Homebrew cask bumped (Joe confirmed 2026.7.8+24b6c6f on the MacBook via
+brew upgrade). winget PRs still in the MS queue. AUR RPC search caches
+~5-10 min behind pushes; the package page is the truth.
+Joe now daily-drives the uplink-irc-git package (/usr/bin/Uplink) instead
+of build/Uplink, for clean separation from the repo tree.
+Post-release userlist train, all Joe-driven UX, unreleased (#135-#139):
+- #135: userlist drag floor 112px (sidebar's), main window + panes.
+- #136: reveal/expand button moved off its floating overlay into the
+  header row right of the search glass (main + panes). Deleted the
+  move()/raise() geometry, both setTopicRevealInset() workarounds, and
+  ChannelPane's resizeEvent override. Reveal click now goes through
+  setNickPanelVisible() so the View menu checkbox stays synced.
+- #137: pane bodySplitter was still childrenCollapsible — same trap
+  #134 closed on the main window, missed in the ChannelPane copy.
+- #138: THE BIG ONE — QSplitter::restoreState() restores
+  childrenCollapsible along with sizes (proved with a standalone
+  offscreen repro before shipping). Old nickSplitter blobs re-enabled
+  drag-collapse on every launch and re-saved it: #134's protection
+  never actually reached existing configs. Joe caught it live.
+- #139: root-cause cleanup, Joe's design — persist the userlist width
+  as a plain int (nickWidth) exactly like sidebarWidth; legacy blob
+  migrated once (width extracted, 0-width rescued to 180) and the
+  nickSplitter key removed on next save. #134 heal + #138 re-assert
+  both subsumed. LESSON: never persist UI via QSplitter::saveState();
+  the blob carries behavior flags, not just sizes.
+FAQ updated: 0-width entry now points at v2026.7.8, reveal-button
+location notes the upcoming header-row change. Docs surfaces done.
+6/6 tests pass throughout; all five merges green on CI + CodeQL.
+Next release carries #135-#139. zam nudged to update to .8.
+-->
+
+<!--
 Session 2026-07-18: per-buffer input drafts + two MainWindow controller
 extractions.
 - #128: bot nicks in the nick list always get the robot icon now; the
