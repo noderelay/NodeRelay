@@ -66,7 +66,7 @@ void QuickSwitcher::populate()
     for (const auto &sess : m_model->sessions()) {
         for (auto it = sess.channels.cbegin(); it != sess.channels.cend(); ++it) {
             if (it.value().name == "(server)") continue;
-            m_entries.append({ServerId{sess.host}, BufferId{it.value().name}, sess.name});
+            m_entries.append({ServerId{sess.name}, BufferId{it.value().name}, sess.name});
         }
     }
     std::sort(m_entries.begin(), m_entries.end(), [](const Entry &a, const Entry &b){
