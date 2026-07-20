@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "ui/mainwindowdelegates.h"
 #include "ui/commanddispatcher.h"
+#include "ui/uistyle.h"
 #include "irc/ircclient.h"
 #include "ui/aboutdialog.h"
 #include "ui/docsdialog.h"
@@ -334,7 +335,7 @@ void MainWindow::openFontConfig()
     m_config.ui.fontFamily = dlg.selectedFamily();
     m_config.ui.fontSizes  = dlg.selectedSizes();
     saveConfig();
-    QFont appFont(m_config.ui.fontFamily);
+    QFont appFont(UiStyle::effectiveFontFamily(m_config.ui.fontFamily));
     appFont.setStyleHint(QFont::Monospace);
     QApplication::setFont(appFont);
     applyFontSizes();

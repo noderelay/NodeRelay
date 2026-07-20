@@ -3,6 +3,7 @@
 #endif
 #include "mainwindow.h"
 #include "ui/mainwindowdelegates.h"
+#include "ui/uistyle.h"
 #include "ui/elidedlabel.h"
 #include "ui/commanddispatcher.h"
 #include "ui/searchbar.h"
@@ -491,7 +492,7 @@ void MainWindow::applyPanelChrome()
 
 void MainWindow::applyFontSizes()
 {
-    const QString &fam = m_config.ui.fontFamily;
+    const QString fam = UiStyle::effectiveFontFamily(m_config.ui.fontFamily);
     const FontSizes &fs = m_config.ui.fontSizes;
 
     auto makeFont = [&](double pt) {
@@ -1575,7 +1576,7 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     pane->setNickVisible(m_showNickPrefix);
     {
         const FontSizes &fs = m_config.ui.fontSizes;
-        const QString   &fam = m_config.ui.fontFamily;
+        const QString    fam = UiStyle::effectiveFontFamily(m_config.ui.fontFamily);
         auto makeFont = [&](double pt){
             QFont f;
             f.setFamilies({fam,

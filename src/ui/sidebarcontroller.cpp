@@ -1,6 +1,7 @@
 #include "sidebarcontroller.h"
 
 #include "config/config.h"
+#include "ui/uistyle.h"
 #include "model/sessionmodel.h"
 #include "ui/fadescrollbar.h"
 #include "ui/mainwindowdelegates.h"
@@ -85,7 +86,7 @@ QTreeWidgetItem *SidebarController::addServerItem(const ServerId &host)
     item->setData(0, Qt::UserRole + 1, QString("(server)"));
     item->setExpanded(true);
     item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QFont f(m_config.ui.fontFamily);
+    QFont f(UiStyle::effectiveFontFamily(m_config.ui.fontFamily));
     f.setPointSizeF(m_config.ui.fontSizes.serverHeader);
     f.setBold(true);
     item->setFont(0, f);
