@@ -1,6 +1,30 @@
 # Changelog
 
 <!--
+Session 2026-07-20: quick switcher never actually switched channels.
+Joe found it live-testing the latest build on FreeBSD: Ctrl+K opens the
+popup, filtering works, Escape closes it — but selecting any channel
+(Enter or double-click) silently did nothing. Root cause: populate()
+built entries keyed by ServerId{sess.host} (the raw network address),
+but every other lookup in the app (sidebar tree rows, activeHost())
+keys ServerId off sess.name (the config-assigned connection label).
+channelItem() reverse-lookup always missed, so channelSelected fired
+into a no-op for every network and every channel — not a corner case,
+the switcher never worked at all once wired to real multi-server data.
+Fix: one-line change to key entries by sess.name. Build clean, commit
+30120b3, pushed.
+Also chased down a separate visual report from the same FreeBSD test:
+a stray line running down inside the window's right edge, not curving
+into the bottom-right corner like the real border. Confirmed via
+`grep -r setWindowFlags` that Uplink never sets FramelessWindowHint or
+WA_TranslucentBackground anywhere — the traffic-light buttons, rounded
+corners, and drop shadow in the screenshots are entirely window-
+manager-drawn, not app chrome. Joe confirmed: it was a KDE Plasma
+window decoration bug, fixed by switching decorations on his end.
+Not an Uplink issue, no code change, closed.
+-->
+
+<!--
 Session 2026-07-19 (addendum, late night): support night confirmed a
 real bug behind zam's "invisible input text" report. Fonts are built as
 a ranked list {configured family, emoji fonts...}; without the
