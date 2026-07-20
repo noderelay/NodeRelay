@@ -476,7 +476,7 @@ Click the **close panel button** (▦) in the **nick panel header** (top-right c
 Two different things can look like a missing user list:
 
 - **You're not in a channel.** The user list only exists in channels — the server window and private messages never show one. Join a channel and check again.
-- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab — and the stuck state was remembered across restarts. **Fixed in v2026.7.8**: update and relaunch, stuck configs are repaired automatically on startup. If you can't update: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux) — on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit — then relaunch.
+- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab — and the stuck state was remembered across restarts. **v2026.7.8** brings a stuck list back automatically on startup, but if your config predates the fix the panel can still snap shut when you drag the divider — the old saved layout carries the bad behavior with it. One-time cleanup makes it permanent: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux) — on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit — then relaunch. The next release retires that config entry entirely and migrates old configs on its own.
 
 ### How do I show the channel topic?
 
