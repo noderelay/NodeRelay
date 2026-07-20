@@ -1,6 +1,29 @@
 # Changelog
 
 <!--
+Session 2026-07-19 (addendum, late night): support night confirmed a
+real bug behind zam's "invisible input text" report. Fonts are built as
+a ranked list {configured family, emoji fonts...}; without the
+configured family installed (IBM Plex Mono isn't a package dependency),
+Qt promotes the next installed name to primary — on zam's box that was
+Noto Color Emoji, a bitmap font with no Latin glyphs, so typed text
+rendered nowhere. Proved offscreen before AND after the fix (first
+attempt was a silent no-op: QFontDatabase::systemFont() returns the
+fontconfig alias "monospace", which never matches inside a
+setFamilies() list — resolved through QFontInfo instead). New
+UiStyle::effectiveFontFamily() at all four font-construction sites,
+config value never rewritten, qInfo logs the substitution. Merged #140.
+zam confirmed live: installing ttf-ibm-plex fixed his input box.
+OWED, NOT YET APPROVED: zam suggested ttf-ibm-plex become a package
+dependency (all 3 AUR PKGBUILDs) — protects current -bin/-git users
+before #140 ships in a release; Joe hasn't said go.
+Also from zam tonight: userlist divider reportedly only became
+draggable AFTER his first message sent (log file creation coincides).
+Correlation only, mechanism unconfirmed — SplitterGrip suspected (grip
+positioning may not run until the first appendLine forces a layout
+pass). Repro recipe: scratch HOME, fresh config, empty channel, probe
+grip geometry before/after first message. QUEUED for next session, not
+started.
 Session 2026-07-19: v2026.7.8 RELEASE DAY + userlist collapse/reveal rework.
 Release: v2026.7.8 tagged and shipped (userlist 0-width fix, per-buffer
 drafts, search context jump, macOS bundle id, robot icon). All CI green,
