@@ -364,16 +364,31 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
     if (resetToLatest) {
         QTimer::singleShot(0, this, [this, key, firstUnread, startIdx] {
             // Scroll to unread separator when present in the render window
+            bool scrolledToUnread = false;
             if (firstUnread >= startIdx) {
                 const int li = m_chatView->findLine(QStringLiteral("sep:unread"));
-                if (li >= 0) { m_chatView->scrollToLine(li); return; }
+                if (li >= 0) { m_chatView->scrollToLine(li); scrolledToUnread = true; }
             }
             // Restore saved scroll position if user was reading history and nothing new arrived
-            const int saved = m_scrollPositions.take(key);
-            if (saved > 0)
-                m_chatView->verticalScrollBar()->setValue(saved);
-            else
-                m_chatView->scrollToBottom();
+            if (!scrolledToUnread) {
+                const int saved = m_scrollPositions.take(key);
+                if (saved > 0)
+                    m_chatView->verticalScrollBar()->setValue(saved);
+                else
+                    m_chatView->scrollToBottom();
+            }
+
+            // A heavily condensed backlog (e.g. an overnight netsplit/reconnect
+            // storm) can collapse the render window down to fewer visual lines
+            // than the viewport holds, even though startIdx > 0 means there's
+            // genuinely more (still-unread) history sitting just above it.
+            // loadOlderRequested() only fires on a scrollbar value transition
+            // to 0 — but with no scroll range at all, the user can never
+            // produce that transition, so the rest of the backlog would never
+            // load. Pull it in directly instead of waiting for an unreachable
+            // scroll event.
+            if (startIdx > 0 && m_chatView->verticalScrollBar()->maximum() == 0)
+                loadOlderMessages();
         });
     }
 
@@ -457,7 +472,15 @@ void MainWindow::loadOlderMessages()
     m_chatView->removeLine("status:older");
     m_chatView->prependLines(std::move(older));
 
-    QTimer::singleShot(0, this, [this]{ m_loadingOlder = false; });
+    QTimer::singleShot(0, this, [this]{
+        m_loadingOlder = false;
+        // If this chunk was itself heavily condensed (e.g. the netsplit storm
+        // spans more than one kRenderChunk), there may still be no scroll
+        // range to reach the rest — keep pulling older history until there
+        // is, or until loadOlderMessages() hits the exhausted/empty case.
+        if (m_chatView->verticalScrollBar()->maximum() == 0)
+            loadOlderMessages();
+    });
 }
 
 void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &channel, int count)
