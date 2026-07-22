@@ -1,6 +1,40 @@
 # Changelog
 
 <!--
+Session 2026-07-21: theme coherence pass for the chat view.
+Chat colors were painted from hard-coded literals, so themes never fully
+applied to the message area. Three shipped changes:
+1. Timestamps, self-mention, and keyword highlights now pull from the
+   theme (timestamp / mention_text / keyword keys, which every theme
+   already defines). Also made a theme switch re-render the active buffer:
+   ChatLine segments bake their colors at append time, so without a
+   refresh only new messages got the new colors, leaving scrollback stale.
+   Commit 2d722e5.
+2. App Icon section in Preferences: tried moving the 3x5 icon grid to a
+   dropdown for a cleaner look. It crashed KWin 6.7.3 on Wayland every
+   time an icon was picked (ext_background_effect_surface_v1: "set blur
+   region on destroyed surface" -> fatal protocol error -> Wayland
+   connection dies). Cause: a combo popup is its own top-level surface,
+   and KWin's blur effect races its teardown on selection; plain in-window
+   buttons have no such surface. We don't request blur, KWin does it.
+   Reverted to a compact grid instead (40px tiles vs 80px, ~140px tall vs
+   ~260px). Note: the theme dropdowns in the same dialog carry the same
+   latent risk, just haven't been hit. Commit 6ec0104.
+3. Event/status lines (join/part/quit/nick/topic/notice/error/reply/
+   wallops) now colored from the theme via a new optional [events]
+   section. FIRST attempt defaulted the keys to the old literals = zero
+   visual change = pointless; Joe rightly called it out. Fixed to derive
+   from the theme's own palette (leave/error from mention_text, join from
+   nick_self, nick/reply from accent, notice/wallops from keyword), so
+   switching themes now recolors status lines to match. Explicit [events]
+   keys override; missing palette keys fall back to the historic literals.
+   Documented in docs/howto.html. Commit 718edbf.
+Considered a border-radius consolidation pass (the QSS mixes 4/6/8/10/12/
+20px) but dropped it: real but subtle, and not worth the churn.
+Watch-item logged in memory: draft/metadata-3 (IRCv3 metadata spec
+revision, PR #613). No new capability, doesn't fix the bouncer cap-strip;
+do not build until Ergo or soju actually ship it.
+
 Session 2026-07-20: quick switcher never actually switched channels.
 Joe found it live-testing the latest build on FreeBSD: Ctrl+K opens the
 popup, filtering works, Escape closes it — but selecting any channel
