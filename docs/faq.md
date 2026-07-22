@@ -1435,7 +1435,7 @@ Then relaunch. The window will clamp itself to the available screen area.
 
 Uplink renders only the most recent 150 messages when you switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even before you type or receive anything; this is intentional, not a bug.
 
-Scroll to the very top to load the previous 50 messages. Keep scrolling up to go further back. Past the in-memory buffer, older messages load from the server (on networks with `chathistory`) or from your local log files (when message logging is enabled), so scrollback keeps going as far as your history reaches.
+Scroll to the very top to load the previous 50 messages. Keep scrolling up to go further back. Past the in-memory buffer, older messages load from the server (on networks with `chathistory`) or from your local log files (when message logging is enabled), so scrollback keeps going as far as your history reaches. If neither source is available, a status line at the top of the buffer points you at the logging setting.
 
 Quiet channels with fewer than 150 messages show no scrollbar until content fills the view.
 

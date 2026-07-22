@@ -17,8 +17,13 @@ DO reappear when paged in from disk (accepted — logs carry no msgid,
 consistent with redaction never purging logs). Event lines ("--") come
 back as plain status text (original type is lost in the log format).
 Tests: tst_logreader (parse shapes, boundary/ties, limit, tiny-block
-UTF-8, CRLF, garbage, exhaustion). Follow-up queued: "history ends
-here" nudge when logging is off, first-run logging prompt.
+UTF-8, CRLF, garbage, exhaustion). Same session, second PR: when
+scrollback bottoms out with logging off and no chathistory, a status
+line ("no older history · turn on Log Messages to Disk in Preferences")
+appears at the top. Shown only after the user actually hits the end,
+never on quiet buffers; toggling logging on clears it and resets
+historyExhausted so paging can retry. First-run logging prompt still
+queued for the first-run pass.
 -->
 
 <!--

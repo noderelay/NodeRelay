@@ -10,6 +10,7 @@
 #include "ui/channelpane.h"
 #include "ui/chatrenderer.h"
 #include "ui/chatview.h"
+#include "irc/ircclient.h"
 #include "ui/previewcontroller.h"
 #include "ui/trayicon.h"
 #include "model/sessionmodel.h"
@@ -40,6 +41,25 @@ static QList<Message> collectEventGroup(const Channel *ch, const QString &selfNi
         group.prepend(m);
     }
     return group;
+}
+
+// The "no older history" tip is only useful where logging would actually
+// extend scrollback: logging off and no server-side chathistory to lean on.
+static bool loggingNudgeWanted(SessionModel *model, const Config &config, const ServerId &host)
+{
+    if (config.ui.logMessages) return false;
+    auto *cl = model->clientFor(host);
+    return !cl || !(cl->hasCap(QStringLiteral("chathistory"))
+                    || cl->hasCap(QStringLiteral("draft/chathistory")));
+}
+
+static ChatLine loggingNudgeLine(const QString &color)
+{
+    ChatLine l = ChatRenderer::makeStatusLine(
+        QStringLiteral("── no older history · turn on Log Messages to Disk in Preferences ──"),
+        color);
+    l.id = QStringLiteral("status:logtip");
+    return l;
 }
 
 // Highlight regex for a host's own nick. m_selfNickRe tracks the active
@@ -323,6 +343,9 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
             QString("── %1 older messages ──").arg(startIdx), m_theme.separator);
         status.id = "status:older";
         m_chatView->appendLine(status);
+    } else if (m_historyExhausted.contains(key)
+               && loggingNudgeWanted(m_model, m_config, host)) {
+        m_chatView->appendLine(loggingNudgeLine(m_theme.separator));
     }
 
     const QString selfNick   = m_model->selfNick(host);
@@ -515,6 +538,9 @@ void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &chan
     const QString key = bufferKey(host, channel);
     if (count <= 0) {
         m_historyExhausted.insert(key);
+        if (loggingNudgeWanted(m_model, m_config, host)
+            && m_chatView->findLine(QStringLiteral("status:logtip")) < 0)
+            m_chatView->prependLines({loggingNudgeLine(m_theme.separator)});
         return;
     }
 
