@@ -12,6 +12,8 @@ struct Theme {
     QString bufferBg, timestamp, serverLine, action, nickSelf, separator;
     // [highlights]
     QString mentionBg, mentionText, keyword;
+    // [events] — coloured status lines (join/leave/nick/topic/notice/…)
+    QString evtJoin, evtLeave, evtNick, evtNotice, evtError, evtReply, evtWallops;
     // [nicklist]
     QString nicklistBg, nicklistText, op, halfop, voice, away;
     // [input]

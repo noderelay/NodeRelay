@@ -567,6 +567,12 @@ static void addSelfNickHighlight(TextBuilder &tb, int textStart,
     }
 }
 
+// Themed color if the theme supplied one, else the renderer's built-in default.
+static QColor pick(const QString &themed, const char *fallback)
+{
+    return themed.isEmpty() ? QColor(fallback) : QColor(themed);
+}
+
 ChatLine formatMessageLine(const Message &msg, const Context &ctx)
 {
     const QDateTime local = msg.timestamp.toLocalTime();
@@ -615,7 +621,7 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
             for (const auto &orig : std::as_const(ctx.channel->messages))
                 if (orig.msgid == msg.replyTo) { origNick = orig.nick; break; }
             QTextCharFormat f;
-            f.setForeground(QColor("#6c7086"));
+            f.setForeground(pick(ctx.timestampColor, "#6c7086"));
             tb.append(" ↩" + (origNick.isEmpty() ? " " : " " + origNick + " "), f);
         } else {
             tb.append(" ", plainFmt);
@@ -676,7 +682,7 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         break;
     }
     case MessageType::Notice: {
-        const QColor col = isHistory ? dimColor : QColor("#cc8800");
+        const QColor col = isHistory ? dimColor : pick(ctx.events.notice, "#cc8800");
         tb.append(" ", plainFmt);
         QTextCharFormat f;
         f.setForeground(col);
@@ -690,55 +696,55 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     }
     case MessageType::Join: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("seagreen"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.join, "seagreen"));
         tb.append(" → " + msg.text, f);
         break;
     }
     case MessageType::Part: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("#e06b6b"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.leave, "#e06b6b"));
         tb.append(" ← " + msg.text, f);
         break;
     }
     case MessageType::Quit: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("#e06b6b"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.leave, "#e06b6b"));
         tb.append(" ✕ " + msg.text, f);
         break;
     }
     case MessageType::Nick: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("steelblue"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.nick, "steelblue"));
         tb.append(" ~ " + msg.text, f);
         break;
     }
     case MessageType::Kick: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("#e06b6b"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.leave, "#e06b6b"));
         tb.append(" ✕ " + msg.text, f);
         break;
     }
     case MessageType::Topic: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("steelblue"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.nick, "steelblue"));
         tb.append(" ⦁ Topic: " + msg.text, f);
         break;
     }
     case MessageType::Error: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor(Qt::red));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.error, "red"));
         tb.append(" !! " + msg.text, f);
         break;
     }
     case MessageType::Reply: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("#6090c0"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.reply, "#6090c0"));
         tb.append(" * " + msg.text, f);
         break;
     }
     case MessageType::Wallops: {
         QTextCharFormat f;
-        f.setForeground(isHistory ? dimColor : QColor("#e09030"));
+        f.setForeground(isHistory ? dimColor : pick(ctx.events.wallops, "#e09030"));
         tb.append(" [W] " + msg.text, f);
         break;
     }
@@ -792,11 +798,11 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
             QColor col;
             QString sym;
             switch (msg.type) {
-            case MessageType::Join: col = QColor("seagreen");   sym = "→"; break;
+            case MessageType::Join: col = pick(ctx.events.join,  "seagreen"); sym = "→"; break;
             case MessageType::Part:
-            case MessageType::Quit: col = QColor("#e06b6b");   sym = "←"; break;
-            case MessageType::Nick: col = QColor("steelblue"); sym = "~";  break;
-            case MessageType::Kick: col = QColor("#e06b6b");   sym = "✕"; break;
+            case MessageType::Quit: col = pick(ctx.events.leave, "#e06b6b");  sym = "←"; break;
+            case MessageType::Nick: col = pick(ctx.events.nick,  "steelblue"); sym = "~"; break;
+            case MessageType::Kick: col = pick(ctx.events.leave, "#e06b6b");  sym = "✕"; break;
             default: continue;
             }
             QTextCharFormat f;
@@ -855,13 +861,13 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
             firstSec = false;
         };
 
-        addSection(QColor("seagreen"),  "→", joins);
-        addSection(QColor("#e06b6b"),   "←", parts);
+        addSection(pick(ctx.events.join,  "seagreen"), "→", joins);
+        addSection(pick(ctx.events.leave, "#e06b6b"),  "←", parts);
 
         if (!nickChanges.isEmpty()) {
             if (!firstSec) tb.append("  ", plainFmt);
             QTextCharFormat f;
-            f.setForeground(QColor("steelblue"));
+            f.setForeground(pick(ctx.events.nick, "steelblue"));
             QString text = "~ ";
             for (const auto &p : std::as_const(nickChanges)) {
                 if (shown >= maxNicks) break;
@@ -873,7 +879,7 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
             firstSec = false;
         }
 
-        addSection(QColor("#e06b6b"), "✕", kicks);
+        addSection(pick(ctx.events.leave, "#e06b6b"), "✕", kicks);
 
         const qsizetype overflow = total - shown;
         if (overflow > 0) {

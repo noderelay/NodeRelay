@@ -101,6 +101,28 @@ Theme ThemeLoader::load(const QString &name)
             t.mentionText = str(*h, "mention_text",  "#f38ba8");
             t.keyword     = str(*h, "keyword",       "#fab387");
         }
+        // Event-line colors default to the theme's own palette (its red, green,
+        // blue, amber) so status lines match the active theme without every
+        // theme file having to spell them out. An explicit [events] key wins;
+        // the buffer/highlights sections above are already parsed here.
+        {
+            auto *e = get("events");
+            const toml::table empty;
+            const toml::table &et = e ? *e : empty;
+            auto ev = [&](std::string_view key, const QString &fallback) -> QString {
+                auto n = et[key];
+                return n.is_string()
+                    ? QString::fromStdString(*n.value<std::string>())
+                    : fallback;
+            };
+            t.evtJoin    = ev("join",    t.nickSelf);      // theme green
+            t.evtLeave   = ev("leave",   t.mentionText);   // theme red — part/quit/kick
+            t.evtNick    = ev("nick",    t.accent);        // theme blue — nick/topic
+            t.evtNotice  = ev("notice",  t.keyword);       // theme amber
+            t.evtError   = ev("error",   t.mentionText);   // theme red
+            t.evtReply   = ev("reply",   t.accent);        // theme blue
+            t.evtWallops = ev("wallops", t.keyword);       // theme amber
+        }
         if (auto *n = get("nicklist")) {
             t.nicklistBg   = str(*n, "background", "#181825");
             t.nicklistText = str(*n, "text",       "#6c7086");

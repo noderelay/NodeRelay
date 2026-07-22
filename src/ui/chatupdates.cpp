@@ -62,6 +62,13 @@ void MainWindow::applyThemeColors(ChatRenderer::Context &ctx) const
         ctx.timestampColor = m_theme.timestamp;
         ctx.mentionColor   = m_theme.mentionText;
         ctx.keywordColor   = m_theme.keyword;
+        ctx.events.join    = m_theme.evtJoin;
+        ctx.events.leave   = m_theme.evtLeave;
+        ctx.events.nick    = m_theme.evtNick;
+        ctx.events.notice  = m_theme.evtNotice;
+        ctx.events.error   = m_theme.evtError;
+        ctx.events.reply   = m_theme.evtReply;
+        ctx.events.wallops = m_theme.evtWallops;
     }
 }
 

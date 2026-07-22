@@ -13,6 +13,12 @@ struct Channel;
 
 namespace ChatRenderer {
 
+// Per-theme colors for status/event lines. Empty = renderer uses its built-in
+// default (an invalid theme leaves these unset).
+struct EventColors {
+    QString join, leave, nick, notice, error, reply, wallops;
+};
+
 struct Context {
     bool              coloredNicks{false};
     QString           nickBrackets;
@@ -23,6 +29,7 @@ struct Context {
     QString           timestampColor; // themed timestamp; empty = default dim gray
     QString           mentionColor;   // themed self-mention highlight; empty = red
     QString           keywordColor;   // themed keyword highlight; empty = red
+    EventColors       events;         // themed status-line colors; empty = defaults
     QRegularExpression selfNickRe;   // pre-compiled; invalid = no highlight
     QRegularExpression highlightRe;  // extra keyword highlights; invalid = none
     bool               showTimestamps{true};

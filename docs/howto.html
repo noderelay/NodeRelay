@@ -3161,6 +3161,16 @@ theme = "catppuccin-mocha"</pre>
 
     <p>Each section of a theme colors its own region of the window: <code>[sidebar]&nbsp;background</code> fills the server/channel list, <code>[nicklist]&nbsp;background</code> the user list, <code>[buffer]&nbsp;background</code> the chat area, and <code>[general]&nbsp;background</code> the window backdrop that shows around the rounded panel cards. Both side panels float as fully rounded cards with an even backdrop gap on all sides; themes that define distinct backgrounds per section get a layered, multi-tone look, while themes that reuse one color stay flat.</p>
     <p>Prefer the old uniform look? Untick <strong>Preferences → Interface → Panel Cards</strong> (config key <code>panel_cards</code>) and every theme renders flat on the buffer color, exactly as before: no rounded corners, no per-panel tones.</p>
+
+    <p>The status lines in chat — joins, leaves, nick and topic changes, notices — are colored from the theme's own palette by default, so they match whatever theme is active: leaves and errors take the theme's mention/red, joins its self-nick/green, nick and topic changes its accent/blue, notices and wallops its keyword/amber. To override any of them, add an optional <code>[events]</code> section. It takes seven keys: <code>join</code>, <code>leave</code> (part/quit/kick), <code>nick</code> (nick and topic changes), <code>notice</code>, <code>error</code>, <code>reply</code>, and <code>wallops</code> — each optional, falling back to the palette default when omitted.</p>
+    <pre>[events]
+join    = "#2e8b57"
+leave   = "#e06b6b"
+nick    = "#4682b4"
+notice  = "#cc8800"
+error   = "#ff0000"
+reply   = "#6090c0"
+wallops = "#e09030"</pre>
   </section>
 
   <!-- FONTS -->
