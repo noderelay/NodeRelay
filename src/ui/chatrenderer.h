@@ -20,6 +20,9 @@ struct Context {
     double            chatPt{10};
     bool              validTheme{false};
     QString           themeText;
+    QString           timestampColor; // themed timestamp; empty = default dim gray
+    QString           mentionColor;   // themed self-mention highlight; empty = red
+    QString           keywordColor;   // themed keyword highlight; empty = red
     QRegularExpression selfNickRe;   // pre-compiled; invalid = no highlight
     QRegularExpression highlightRe;  // extra keyword highlights; invalid = none
     bool               showTimestamps{true};

@@ -176,6 +176,10 @@ void MainWindow::applyThemeByName(const QString &name)
         m_menuBarWidget = nullptr;
         buildMenuBar();
     }
+    // Chat lines bake their per-segment colors (timestamp, text, mentions) at
+    // append time, so re-render the active buffer to pick up the new theme live.
+    if (m_chatView)
+        refreshChatView(m_model->activeHost(), m_model->activeChannel());
 }
 
 QString MainWindow::effectiveThemeName() const

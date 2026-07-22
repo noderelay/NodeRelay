@@ -51,6 +51,20 @@ QRegularExpression MainWindow::selfNickReFor(const ServerId &host) const
     return SessionModel::buildHighlightRe(m_model->selfNick(host));
 }
 
+// Fill a render context's theme-derived colors. The renderer falls back to its
+// built-in dim/red defaults for any field left empty, so an invalid theme keeps
+// the classic look.
+void MainWindow::applyThemeColors(ChatRenderer::Context &ctx) const
+{
+    ctx.validTheme = m_theme.valid;
+    ctx.themeText  = m_theme.text;
+    if (m_theme.valid) {
+        ctx.timestampColor = m_theme.timestamp;
+        ctx.mentionColor   = m_theme.mentionText;
+        ctx.keywordColor   = m_theme.keyword;
+    }
+}
+
 void MainWindow::onMessageAdded(const ServerId &host, const BufferId &channel, const Message &msg)
 {
     const QString selfNick = m_model->selfNick(host);
@@ -61,8 +75,7 @@ void MainWindow::onMessageAdded(const ServerId &host, const BufferId &channel, c
         ctx.nickBrackets = m_config.ui.nickBrackets;
         ctx.emojiPt      = m_config.ui.fontSizes.emoji;
         ctx.chatPt       = m_config.ui.fontSizes.chat;
-        ctx.validTheme   = m_theme.valid;
-        ctx.themeText    = m_theme.text;
+        applyThemeColors(ctx);
         ctx.selfNickRe   = selfNickReFor(host);
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -173,8 +186,7 @@ void MainWindow::onMessageRedacted(const ServerId &host, const BufferId &channel
         ctx.nickBrackets = m_config.ui.nickBrackets;
         ctx.emojiPt      = m_config.ui.fontSizes.emoji;
         ctx.chatPt       = m_config.ui.fontSizes.chat;
-        ctx.validTheme   = m_theme.valid;
-        ctx.themeText    = m_theme.text;
+        applyThemeColors(ctx);
         ctx.selfNickRe   = selfNickReFor(host);
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -216,8 +228,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     ctx.nickBrackets = m_config.ui.nickBrackets;
     ctx.emojiPt      = m_config.ui.fontSizes.emoji;
     ctx.chatPt       = m_config.ui.fontSizes.chat;
-    ctx.validTheme   = m_theme.valid;
-    ctx.themeText    = m_theme.text;
+    applyThemeColors(ctx);
     ctx.selfNickRe   = selfNickReFor(pane->host());
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -294,8 +305,7 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
     ctx.nickBrackets = m_config.ui.nickBrackets;
     ctx.emojiPt      = m_config.ui.fontSizes.emoji;
     ctx.chatPt       = m_config.ui.fontSizes.chat;
-    ctx.validTheme   = m_theme.valid;
-    ctx.themeText    = m_theme.text;
+    applyThemeColors(ctx);
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -426,8 +436,7 @@ void MainWindow::loadOlderMessages()
     ctx.nickBrackets = m_config.ui.nickBrackets;
     ctx.emojiPt      = m_config.ui.fontSizes.emoji;
     ctx.chatPt       = m_config.ui.fontSizes.chat;
-    ctx.validTheme   = m_theme.valid;
-    ctx.themeText    = m_theme.text;
+    applyThemeColors(ctx);
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -512,8 +521,7 @@ void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &chan
     ctx.nickBrackets   = m_config.ui.nickBrackets;
     ctx.emojiPt        = m_config.ui.fontSizes.emoji;
     ctx.chatPt         = m_config.ui.fontSizes.chat;
-    ctx.validTheme     = m_theme.valid;
-    ctx.themeText      = m_theme.text;
+    applyThemeColors(ctx);
     ctx.selfNickRe     = m_selfNickRe;
     ctx.highlightRe    = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -642,8 +650,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
     ctx.nickBrackets = m_config.ui.nickBrackets;
     ctx.emojiPt      = m_config.ui.fontSizes.emoji;
     ctx.chatPt       = m_config.ui.fontSizes.chat;
-    ctx.validTheme   = m_theme.valid;
-    ctx.themeText    = m_theme.text;
+    applyThemeColors(ctx);
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -696,8 +703,7 @@ QString MainWindow::formatMessage(const Message &msg) const
     ctx.nickBrackets = m_config.ui.nickBrackets;
     ctx.emojiPt      = m_config.ui.fontSizes.emoji;
     ctx.chatPt       = m_config.ui.fontSizes.chat;
-    ctx.validTheme   = m_theme.valid;
-    ctx.themeText    = m_theme.text;
+    applyThemeColors(ctx);
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;

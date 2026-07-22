@@ -549,11 +549,12 @@ static void applyEmojiSize(TextBuilder &tb, int textStart, double emojiPt)
     }
 }
 
-static void addSelfNickHighlight(TextBuilder &tb, int textStart, const QRegularExpression &re)
+static void addSelfNickHighlight(TextBuilder &tb, int textStart,
+                                 const QRegularExpression &re, const QColor &color)
 {
     if (!re.isValid()) return;
     QTextCharFormat fmt;
-    fmt.setForeground(QColor(Qt::red));
+    fmt.setForeground(color);
     fmt.setFontWeight(QFont::Bold);
     auto it = re.globalMatch(tb.text, textStart);
     while (it.hasNext()) {
@@ -578,7 +579,7 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     const QTextCharFormat plainFmt;
 
     QTextCharFormat tsFmt;
-    tsFmt.setForeground(dimColor);
+    tsFmt.setForeground(ctx.timestampColor.isEmpty() ? dimColor : QColor(ctx.timestampColor));
     const QString tsAnchor = msg.msgid.isEmpty() ? QString() : ("msgid:" + msg.msgid);
     if (ctx.showTimestamps)
         tb.append(ts, tsFmt, tsAnchor);
@@ -645,9 +646,11 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         if (!isHistory) {
             linkifySegments(tb, prefixEnd);
             if (!ctx.selfNickRe.pattern().isEmpty())
-                addSelfNickHighlight(tb, prefixEnd, ctx.selfNickRe);
+                addSelfNickHighlight(tb, prefixEnd, ctx.selfNickRe,
+                                     ctx.mentionColor.isEmpty() ? QColor(Qt::red) : QColor(ctx.mentionColor));
             if (!ctx.highlightRe.pattern().isEmpty())
-                addSelfNickHighlight(tb, prefixEnd, ctx.highlightRe);
+                addSelfNickHighlight(tb, prefixEnd, ctx.highlightRe,
+                                     ctx.keywordColor.isEmpty() ? QColor(Qt::red) : QColor(ctx.keywordColor));
         }
         break;
     }
@@ -760,13 +763,15 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     return line;
 }
 
-ChatLine formatEventGroupLine(const QList<Message> &msgs, [[maybe_unused]] const Context &ctx,
+ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
                                const QString &groupId, bool expanded)
 {
     if (msgs.isEmpty()) return {};
 
     TextBuilder tb;
     const QTextCharFormat plainFmt;
+    const QColor tsColor = ctx.timestampColor.isEmpty() ? QColor(Qt::gray)
+                                                        : QColor(ctx.timestampColor);
 
     if (expanded) {
         if (!groupId.isEmpty()) {
@@ -781,7 +786,7 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, [[maybe_unused]] const
             const QString mTs = mLocal.date() == QDate::currentDate()
                 ? mLocal.toString("hh:mm") : mLocal.toString("MM/dd hh:mm");
             QTextCharFormat tsFmt;
-            tsFmt.setForeground(QColor(Qt::gray));
+            tsFmt.setForeground(tsColor);
             tb.append(mTs + " ", tsFmt);
 
             QColor col;
@@ -810,7 +815,7 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, [[maybe_unused]] const
             tb.append("▸ ", f, "evgrp:" + groupId);
         }
         QTextCharFormat tsFmt;
-        tsFmt.setForeground(QColor(Qt::gray));
+        tsFmt.setForeground(tsColor);
         tb.append(ts + "  ", tsFmt);
 
         QStringList joins, parts, kicks;

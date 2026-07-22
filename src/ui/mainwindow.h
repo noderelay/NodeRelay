@@ -15,6 +15,8 @@
 #include "ui/nicklistmodel.h"
 #include "ui/themeloader.h"
 
+namespace ChatRenderer { struct Context; }
+
 class CommandDispatcher;
 class SidebarDelegate;
 class NickDelegate;
@@ -165,6 +167,7 @@ private:
     static QString   topicAgeStr (quint64 ts);
 
     QString    formatMessage(const Message &msg) const;
+    void       applyThemeColors(ChatRenderer::Context &ctx) const;
     void       toggleEventGroupInView(ChatView *view, const QString &groupId,
                                       const ServerId &host, const BufferId &channel);
     void       handleChatViewContextMenu(ChatView *view, const QString &anchor,
