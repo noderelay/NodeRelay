@@ -29,6 +29,12 @@ uplink_test(tst_config
     LIBS tomlplusplus::tomlplusplus
 )
 
+uplink_test(tst_logreader
+    SOURCES
+        tst_logreader.cpp
+        ${CMAKE_SOURCE_DIR}/src/model/logreader.cpp
+)
+
 uplink_test(tst_ignoretypes
     SOURCES
         tst_ignoretypes.cpp

@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+Session 2026-07-22: log-backed infinite scrollback.
+Scrolling to the top of a buffer on a connection without chathistory
+used to dead-end at the 500-message in-memory cap. Now that branch of
+SessionModel::requestOlderHistory() pages older messages out of the
+per-buffer log file instead (new src/model/logreader.{h,cpp}: reverse
+block reader + line parser for logMessage()'s format), delivered through
+the same prependMessages()/olderHistoryLoaded() path chathistory uses,
+so the UI needed no changes. Log timestamps are second-resolution, so
+same-second boundary ties are resolved by skip-count against the
+in-memory messages sharing that second. Decisions: logs only kick in
+when the connection lacks chathistory (chathistory-network logs are
+gappy by design since history replay isn't logged); redacted messages
+DO reappear when paged in from disk (accepted — logs carry no msgid,
+consistent with redaction never purging logs). Event lines ("--") come
+back as plain status text (original type is lost in the log format).
+Tests: tst_logreader (parse shapes, boundary/ties, limit, tiny-block
+UTF-8, CRLF, garbage, exhaustion). Follow-up queued: "history ends
+here" nudge when logging is off, first-run logging prompt.
+-->
+
+<!--
 Session 2026-07-21: theme coherence pass for the chat view.
 Chat colors were painted from hard-coded literals, so themes never fully
 applied to the message area. Three shipped changes:

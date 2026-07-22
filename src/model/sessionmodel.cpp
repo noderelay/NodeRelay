@@ -1,4 +1,5 @@
 #include "sessionmodel.h"
+#include "logreader.h"
 #include "irc/ircclient.h"
 #include "config/keychainhelper.h"
 #include "net/networkmonitor.h"
@@ -767,8 +768,21 @@ void SessionModel::requestOlderHistory(const ServerId &host, const BufferId &cha
     if (!cl) return;
 
     if (!cl->requestHistoryBefore(channel.str(), oldest, 100)) {
-        // No chathistory cap on this connection — nothing will ever arrive.
-        emit olderHistoryLoaded(host, channel, 0);
+        // No chathistory cap on this connection — page from the local log
+        // instead. Log timestamps have second resolution, so tell the reader
+        // how many in-memory messages share the boundary second; it skips
+        // that many trailing same-second lines as already loaded.
+        const qint64 oldestSec = oldest.toSecsSinceEpoch();
+        int sameSecond = 0;
+        for (const auto &m : ch->messages) {
+            if (m.timestamp.toSecsSinceEpoch() != oldestSec) break;
+            ++sameSecond;
+        }
+        const QList<Message> older =
+            LogReader::readBefore(logFilePath(host, channel), oldest, sameSecond, 100);
+        if (!older.isEmpty())
+            ch->prependMessages(older);
+        emit olderHistoryLoaded(host, channel, static_cast<int>(older.size()));
         return;
     }
 
