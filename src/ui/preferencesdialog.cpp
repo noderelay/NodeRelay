@@ -222,7 +222,7 @@ QWidget *PreferencesDialog::createAppearancePage(const Config &cfg, const QColor
     vbox->addWidget(sectionLabel("App Icon"));
     {
         auto *grid = new QGridLayout;
-        grid->setSpacing(6);
+        grid->setSpacing(4);
         auto *iconGroup = new QButtonGroup(this);
         iconGroup->setExclusive(true);
         const int cols = 5;
@@ -231,8 +231,8 @@ QWidget *PreferencesDialog::createAppearancePage(const Config &cfg, const QColor
             const QString &name = s_iconChoices[i].second;
             auto *btn = new QToolButton;
             btn->setIcon(QIcon(QStringLiteral(":/icons/%1.png").arg(key)));
-            btn->setIconSize(QSize(80, 80));
-            btn->setFixedSize(88, 88);
+            btn->setIconSize(QSize(40, 40));
+            btn->setFixedSize(46, 46);
             btn->setCheckable(true);
             btn->setAutoRaise(true);
             btn->setToolTip(name);
@@ -247,7 +247,10 @@ QWidget *PreferencesDialog::createAppearancePage(const Config &cfg, const QColor
             if (id >= 0 && id < s_iconChoices.size())
                 emit appIconChanged(s_iconChoices[id].first);
         });
-        vbox->addLayout(grid);
+        auto *gridWrap = new QHBoxLayout;
+        gridWrap->addLayout(grid);
+        gridWrap->addStretch();   // keep tiles left-aligned, not stretched
+        vbox->addLayout(gridWrap);
     }
 
     vbox->addStretch();
