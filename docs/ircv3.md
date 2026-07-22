@@ -56,6 +56,8 @@ When the user scrolls to the top of a channel buffer and all loaded messages hav
 
 This works on any server or bouncer that supports either cap name, including Ergo, soju, and modern ZNC.
 
+On connections without chathistory support, scrolling to the top pages older messages out of Uplink's own log files instead (when message logging is enabled in Preferences), so scrollback still reaches back as far as your local logs go.
+
 ### `sasl` (PLAIN and EXTERNAL)
 
 Authenticates your account during the CAP handshake, before you appear on the network. Uplink holds `CAP END` until the server confirms success (`903`) or failure (`904`/`906`). On failure the connection continues without authentication.

@@ -73,6 +73,8 @@ qt_add_executable(Uplink WIN32
     src/config/config.h
     src/config/keychainhelper.cpp
     src/config/keychainhelper.h
+    src/model/logreader.cpp
+    src/model/logreader.h
     src/model/sessionmodel.cpp
     src/model/sessionmodel.h
     src/model/serversession.h
