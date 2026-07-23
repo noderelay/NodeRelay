@@ -1,6 +1,24 @@
 # Changelog
 
 <!--
+Session 2026-07-22 (evening): input box soft-wrap sliver, the repeat
+offender. Root cause found this time: both auto-resize paths (main
+input in inputbar.cpp textChanged, ChannelPane::updateInputHeight)
+counted lines as text.count('\n') + 1, so a soft-WRAPPED sentence never
+grew the box. Height stayed one line, the scroll-pin hack scrolled the
+one-line viewport to the newest line, and the bottom few pixels of the
+previous wrapped line showed above it. Every earlier fix in this area
+(viewport fill, seam guard, scroll re-pin on rangeChanged) treated
+symptoms of that mis-measure. Fix: measure document()->size().height(),
+which QPlainTextDocumentLayout reports in VISUAL lines (wraps included),
+qBound 1..4; re-measure in the existing rangeChanged handlers since the
+wrap count is only final when the lazy layout lands. Both inputs share
+the fix; initial-height singleShot now calls the same helper. Joe still
+owes a visual check on his 1.45x-scale KDE (headless repro lies there,
+per the Wayland debugging notes).
+-->
+
+<!--
 Session 2026-07-22 (later): full documentation audit.
 Seven parallel cross-checks of every doc surface (README, faq,
 configuration, commands, ircv3, keyboard-shortcuts, howto/index/quality

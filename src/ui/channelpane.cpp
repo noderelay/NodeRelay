@@ -13,6 +13,7 @@
 
 #include <QListView>
 #include <QScroller>
+#include <QtMath>
 #include <QPlainTextEdit>
 #include <QKeyEvent>
 #include <QLabel>
@@ -284,9 +285,11 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     });
     // The scroll range updates lazily, after textChanged — a pin that ran
     // against the stale range was clamped to 0 and never retried, leaving
-    // the previous wrapped line on show. Re-pin when the range lands.
+    // the previous wrapped line on show. When the range lands, re-measure
+    // the height (the wrap count may only be known now) and re-pin.
     connect(m_input->verticalScrollBar(), &QAbstractSlider::rangeChanged,
             this, [this](int, int max){
+        updateInputHeight();
         if (m_input->textCursor().atEnd())
             m_input->verticalScrollBar()->setValue(max);
     });
@@ -441,16 +444,19 @@ void ChannelPane::setNickListFont(const QFont &f)
     guardFont(m_nickList, f);
 }
 
-// Auto-resize: 1 to 4 lines. Polish first — the stylesheet's input padding
-// only lands in contentsMargins() once the widget is polished, and measuring
-// before that undersizes the box.
+// Auto-resize: 1 to 4 visual lines. Polish first — the stylesheet's input
+// padding only lands in contentsMargins() once the widget is polished, and
+// measuring before that undersizes the box. The document layout reports its
+// height in lines, so soft-wrapped text counts too — sizing from '\n' alone
+// left a wrapped sentence in a one-line-tall box, with the bottom of the
+// previous line peeking above the current one.
 void ChannelPane::updateInputHeight()
 {
     if (!m_input) return;
     m_input->ensurePolished();
     const int lineH   = m_input->fontMetrics().lineSpacing();
     const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-    const int lines   = qMin(4, static_cast<int>(m_input->toPlainText().count('\n')) + 1);
+    const int lines   = qBound(1, qCeil(m_input->document()->size().height()), 4);
     m_input->setFixedHeight(lines * lineH + margins);
 }
 

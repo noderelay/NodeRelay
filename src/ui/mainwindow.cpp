@@ -227,11 +227,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     connect(&m_configWatcher, &QFileSystemWatcher::fileChanged,
             this, &MainWindow::onConfigFileChanged);
     QTimer::singleShot(0, this, [this]{
-        if (m_input) {
-            const int lineH   = m_input->fontMetrics().lineSpacing();
-            const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-            m_input->setFixedHeight(lineH + margins);
-        }
+        if (m_input)
+            updateInputHeight();
     });
 
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
