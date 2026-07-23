@@ -189,7 +189,6 @@ private:
     // Tab completion
     void handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel,
                            bool backward = false);
-    void updateInputHeight();
     void repositionSendBtn();
     void updateInputViewportFill();
     void updateFormatIndicator();
