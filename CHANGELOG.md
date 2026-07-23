@@ -1,6 +1,33 @@
 # Changelog
 
 <!--
+Session 2026-07-23 (evening): Ergo 2.19.0 cap refresh. Joe upgraded
+LinuxDojo to Ergo v2.19.0 (ships draft/metadata-3, draft/read-marker,
+and the ratified no-implicit-names; fixes channel-metadata visibility
+for non-members). Wire-probed the server first (raw TLS, CAP LS 302 +
+a two-connection metadata SUB/SET exchange): both metadata revisions
+advertised side by side, -3 pushes arrive as numeric 761 in metadata
+batches instead of the METADATA verb, FAIL code renamed
+KEY_INVALID -> INVALID_KEY, MARKREAD works pre-auth. Changes:
+- request draft/metadata-3, preferring it over -2 when both offered
+  (CAP LS and CAP NEW paths); hasMetadataCap() helper replaces the six
+  scattered hasCap("draft/metadata-2") checks in UI/model
+- request draft/read-marker everywhere (was soju.im/read, soju-only);
+  markRead() gates on either cap, same MARKREAD wire format
+- request ratified no-implicit-names alongside soju.im/ form; JOIN
+  explicit-NAMES refetch accepts both
+- FAIL/WARN/NOTE handling moved ahead of batch buffering: metadata-3
+  sends FAIL METADATA inside a metadata batch, where the old order
+  buffered and dropped it (killing the INVALID_TARGET hover-retry
+  signal); standard replies are command responses, never batch content
+- accept INVALID_KEY alongside KEY_INVALID in the benign-probe filter
+Docs: README cap table + command rows, ROADMAP IRCv3 paragraph,
+docs/ircv3.md (read-marker/no-implicit-names/metadata sections),
+docs/commands.md, docs/configuration.md, docs/quality.html cap table.
+All 7 test suites pass.
+-->
+
+<!--
 Session 2026-07-23: log seed on join (PR #149). Joe field-tested #141
 and found the gap immediately: after a restart every buffer starts
 empty, so there is nothing to scroll and the log-paging path can never

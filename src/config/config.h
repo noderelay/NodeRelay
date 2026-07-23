@@ -134,8 +134,8 @@ struct Config {
     QList<IgnoreEntry>  ignoreList;
     QStringList         monitorList;   // nicks to watch with MONITOR
     QList<ScriptBinding> scripts;
-    QString             profileDisplayName; // draft/metadata-2 display-name
-    QString             profileAvatarUrl;   // draft/metadata-2 avatar URL
+    QString             profileDisplayName; // draft/metadata display-name
+    QString             profileAvatarUrl;   // draft/metadata avatar URL
 
     bool needsNickSetup() const;
 

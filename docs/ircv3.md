@@ -286,17 +286,17 @@ After CAP negotiation, Uplink sends `BOUNCER LISTNETWORKS`. soju responds with a
 
 Negotiated to receive real-time notifications when a network's connection state changes (e.g. a network goes offline or reconnects). Used to keep the network list current without polling.
 
-### `soju.im/read` (soju only)
+### `draft/read-marker` / `soju.im/read`
 
-Synchronizes your read position across all clients connected to the same soju instance. When you read messages in Uplink, it sends `MARKREAD <target> timestamp=<iso8601>` to record your position. When another client advances the read marker, soju forwards the updated marker to Uplink.
+Synchronizes your read position across all clients connected to the same server or bouncer. When you read messages in Uplink, it sends `MARKREAD <target> timestamp=<iso8601>` to record your position. When another client advances the read marker, the server forwards the updated marker to Uplink. `draft/read-marker` is the standard capability (supported by Ergo and others); `soju.im/read` is soju's earlier vendor form of the same mechanism — both use the same `MARKREAD` wire format.
 
-### `soju.im/no-implicit-names` (soju only)
+### `no-implicit-names` / `soju.im/no-implicit-names`
 
-Tells soju not to send a NAMES list automatically on JOIN. This prevents duplicate nick list entries when soju is already managing channel state.
+Tells the server not to send a NAMES list automatically on JOIN; Uplink requests names explicitly instead. This avoids redundant NAMES floods and duplicate nick list entries when a bouncer is already managing channel state. Uplink requests both the ratified `no-implicit-names` form and soju's older `soju.im/` prefixed form.
 
-### `draft/metadata-2`
+### `draft/metadata-2` / `draft/metadata-3`
 
-Associates key-value metadata with users: display names and avatar URLs stored server-side and synced to clients in real time.
+Associates key-value metadata with users: display names and avatar URLs stored server-side and synced to clients in real time. `metadata-3` is a revision of the same spec (new standard-reply codes, pushes delivered as numerics); when a server offers both, Uplink requests only `metadata-3`. Everything below applies to either revision.
 
 Uplink subscribes to `display-name` and `avatar` changes at registration (`METADATA * SUB`), and fetches a user's keys on demand the first time you hover their nick; a channel-wide fetch on join would flood rate-limited servers. When a subscribed user changes a key, the server pushes a `METADATA` notification and Uplink updates immediately. Data is stored per-nick, the avatar image is fetched in the background, and everything shows in the **nick list tooltip**:
 
@@ -340,13 +340,13 @@ display_name = "Alice Smith"
 avatar_url = "https://example.com/avatar.png"
 ```
 
-No additional configuration is required; metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2`.
+No additional configuration is required; metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2` or `draft/metadata-3`.
 
 #### Fetch semantics and bouncers
 
 The on-demand fetch is retried sensibly: a lookup that fails because the user just went offline no longer blocks that nick for the rest of the session, and a user rejoining clears their cached metadata so the next hover fetches fresh values (the server only pushes changes while both sides are online). The first hover on a nick requests the data; the tooltip fills in on the next hover.
 
-**Bouncers:** neither soju nor ZNC passes `draft/metadata-2` through to clients, so metadata works on direct connections only; behind a bouncer Uplink never sees the capability and skips metadata entirely. Use `/caps` in a server buffer to check what your bouncer forwards.
+**Bouncers:** neither soju nor ZNC passes the metadata capability through to clients, so metadata works on direct connections only; behind a bouncer Uplink never sees the capability and skips metadata entirely. Use `/caps` in a server buffer to check what your bouncer forwards.
 
 ### WebSocket transport
 

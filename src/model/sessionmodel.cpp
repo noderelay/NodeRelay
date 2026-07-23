@@ -1403,7 +1403,7 @@ void SessionModel::requestNickMeta(const ServerId &host, const QString &nick)
     if (sess->metaRequested.contains(lower) || sess->nickMeta.contains(lower))
         return;
     auto *cl = clientFor(host);
-    if (!cl || !cl->hasCap("draft/metadata-2")) return;
+    if (!cl || !cl->hasMetadataCap()) return;
     sess->metaRequested.insert(lower);
     sendRaw(host, "METADATA " + nick + " GET avatar display-name");
 }

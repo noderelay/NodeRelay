@@ -59,6 +59,8 @@ public:
     QString host()        const { return m_host; }
     bool    isConnected() const;
     bool    hasCap(const QString &cap) const { return m_ackedCaps.contains(cap); }
+    bool    hasMetadataCap() const { return m_ackedCaps.contains("draft/metadata-3")
+                                         || m_ackedCaps.contains("draft/metadata-2"); }
     bool    supportsWhox() const { return m_supportsWhox; }
     QStringList ackedCaps() const { auto l = m_ackedCaps.values(); l.sort(); return l; }
     quint32 localIpv4()  const;

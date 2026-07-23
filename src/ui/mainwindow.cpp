@@ -1088,7 +1088,7 @@ void MainWindow::onServerConnected(const ServerId &host)
 
     if (!m_config.profileDisplayName.isEmpty() || !m_config.profileAvatarUrl.isEmpty()) {
         auto *cl = m_model->clientFor(host);
-        if (cl && cl->hasCap("draft/metadata-2")) {
+        if (cl && cl->hasMetadataCap()) {
             m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
             const bool localPath = m_config.profileAvatarUrl.startsWith('/')
                                    || QUrl(m_config.profileAvatarUrl).isLocalFile();

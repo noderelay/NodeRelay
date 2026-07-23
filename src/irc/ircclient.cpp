@@ -387,7 +387,8 @@ bool IrcClient::requestHistoryBefore(const QString &target, const QDateTime &bef
 
 void IrcClient::markRead(const QString &target, const QDateTime &ts)
 {
-    if (!m_ackedCaps.contains("soju.im/read")) return;
+    if (!m_ackedCaps.contains("soju.im/read") &&
+        !m_ackedCaps.contains("draft/read-marker")) return;
     sendRaw("MARKREAD " + target + " timestamp=" + ts.toUTC().toString(Qt::ISODateWithMs));
 }
 
@@ -826,6 +827,51 @@ void IrcClient::processLine(const QString &line)
         return;
     }
 
+    // Standard replies are command responses — handle immediately, never
+    // buffer them into batches (metadata-3 sends FAIL METADATA inside one)
+    if (cmd == "FAIL" || cmd == "WARN" || cmd == "NOTE") {
+        // params: [0]=command [1]=code [2..n-1]=context  trailing=description
+        const QString triggeredBy = msg.params.value(0);
+        const QString code        = msg.params.value(1);
+        // Silently drop benign probe failures — these are expected on servers that
+        // advertise the capability but don't support our specific keys/subcommands
+        if (triggeredBy == "BOUNCER" && code == "UNKNOWN_COMMAND") {
+            m_bouncerListingUnsupported = true;
+            return;
+        }
+        // KEY_INVALID renamed to INVALID_KEY in metadata-3
+        if (triggeredBy == "METADATA" && (code == "KEY_INVALID" || code == "INVALID_KEY"))
+            return;
+        // Background hover-GETs race the target going offline — expected,
+        // not user-facing. Tell the model so it can allow a later retry.
+        if (triggeredBy == "METADATA" && code == "INVALID_TARGET") {
+            emit metaLookupFailed(m_serverName, msg.params.value(2));
+            return;
+        }
+        // ACCOUNT_REQUIRED is informational — route to server buffer only, not channels
+        if (code == "ACCOUNT_REQUIRED")
+            return;
+        const QString desc        = msg.trailing.isEmpty() ? msg.params.value(msg.params.size() - 1)
+                                                           : msg.trailing;
+        // Look for a channel name in the context parameters
+        QString channel;
+        for (int i = 2; i < msg.params.size(); ++i) {
+            const QString &p = msg.params[i];
+            if (!p.isEmpty() && QString("&#!+").contains(p[0])) { channel = p; break; }
+        }
+        const QString prefix = "[" + cmd + "] ";
+        const QString text   = triggeredBy.isEmpty() || triggeredBy == "*"
+            ? prefix + code + ": " + desc
+            : prefix + triggeredBy + " " + code + ": " + desc;
+        if (!channel.isEmpty())
+            emit standardReply(m_serverName, channel, cmd, text);
+        else if (cmd == "FAIL")
+            emit errorMessage(m_serverName, text);
+        else
+            emit serverMessage(m_serverName, text);
+        return;
+    }
+
     bool isNumeric = false;
     cmd.toInt(&isNumeric);
     if (isNumeric) {
@@ -1007,6 +1053,7 @@ void IrcClient::processLine(const QString &line)
     }
 
     // draft/metadata-2 — server-push notification: METADATA <target> <key> <visibility> :<value>
+    // (metadata-3 drops this verb; its pushes arrive as numeric 761 instead)
     // ircmsg only adds trailing colon when value has spaces — plain URLs land in params[3]
     if (cmd == "METADATA" && msg.params.size() >= 2) {
         QString target     = msg.params[0];
@@ -1040,7 +1087,8 @@ void IrcClient::processLine(const QString &line)
         const QString channel = msg.params.isEmpty() ? msg.trailing : msg.params[0];
         if (msg.nick == m_nick) {
             emit serverMessage(m_serverName, "Joined " + channel);
-            if (m_ackedCaps.contains("soju.im/no-implicit-names"))
+            if (m_ackedCaps.contains("no-implicit-names") ||
+                m_ackedCaps.contains("soju.im/no-implicit-names"))
                 sendRaw("NAMES " + channel);
         }
         emit userJoined(m_serverName, channel, msg.nick, msg.user, msg.host);
@@ -1096,47 +1144,6 @@ void IrcClient::processLine(const QString &line)
         return;
     }
 
-    if (cmd == "FAIL" || cmd == "WARN" || cmd == "NOTE") {
-        // params: [0]=command [1]=code [2..n-1]=context  trailing=description
-        const QString triggeredBy = msg.params.value(0);
-        const QString code        = msg.params.value(1);
-        // Silently drop benign probe failures — these are expected on servers that
-        // advertise the capability but don't support our specific keys/subcommands
-        if (triggeredBy == "BOUNCER" && code == "UNKNOWN_COMMAND") {
-            m_bouncerListingUnsupported = true;
-            return;
-        }
-        if (triggeredBy == "METADATA" && code == "KEY_INVALID")
-            return;
-        // Background hover-GETs race the target going offline — expected,
-        // not user-facing. Tell the model so it can allow a later retry.
-        if (triggeredBy == "METADATA" && code == "INVALID_TARGET") {
-            emit metaLookupFailed(m_serverName, msg.params.value(2));
-            return;
-        }
-        // ACCOUNT_REQUIRED is informational — route to server buffer only, not channels
-        if (code == "ACCOUNT_REQUIRED")
-            return;
-        const QString desc        = msg.trailing.isEmpty() ? msg.params.value(msg.params.size() - 1)
-                                                           : msg.trailing;
-        // Look for a channel name in the context parameters
-        QString channel;
-        for (int i = 2; i < msg.params.size(); ++i) {
-            const QString &p = msg.params[i];
-            if (!p.isEmpty() && QString("&#!+").contains(p[0])) { channel = p; break; }
-        }
-        const QString prefix = "[" + cmd + "] ";
-        const QString text   = triggeredBy.isEmpty() || triggeredBy == "*"
-            ? prefix + code + ": " + desc
-            : prefix + triggeredBy + " " + code + ": " + desc;
-        if (!channel.isEmpty())
-            emit standardReply(m_serverName, channel, cmd, text);
-        else if (cmd == "FAIL")
-            emit errorMessage(m_serverName, text);
-        else
-            emit serverMessage(m_serverName, text);
-        return;
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1360,7 +1367,8 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "chathistory", "draft/chathistory", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2", "cap-notify", "standard-replies",
+            "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
+            "no-implicit-names", "cap-notify", "standard-replies",
         };
 
         // ZNC-specific caps
@@ -1382,9 +1390,13 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             desired << "sasl";
 
         QStringList want;
-        for (const QString &cap : std::as_const(desired))
+        for (const QString &cap : std::as_const(desired)) {
+            // metadata-3 supersedes metadata-2 — request only the newer revision
+            if (cap == "draft/metadata-2" && hasAvailable("draft/metadata-3"))
+                continue;
             if (hasAvailable(cap))
                 want << cap;
+        }
 
         if (!want.isEmpty()) {
             m_requestedCaps = QSet<QString>(want.begin(), want.end());
@@ -1439,7 +1451,8 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "chathistory", "draft/chathistory", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2", "cap-notify", "standard-replies",
+            "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
+            "no-implicit-names", "cap-notify", "standard-replies",
         };
         if (m_bouncerType == BouncerType::ZNC)
             desired << "znc.in/playback" << "znc.in/self-message" << "znc.in/batch";
@@ -1452,6 +1465,8 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList want;
         for (const QString &cap : newCaps) {
             const QString name = cap.section('=', 0, 0);
+            if (name == "draft/metadata-2" && m_ackedCaps.contains("draft/metadata-3"))
+                continue;
             if (desired.contains(name) && !m_ackedCaps.contains(name))
                 want << name;
         }
@@ -1496,7 +1511,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         }
         if (!m_monitorList.isEmpty())
             sendRaw("MONITOR + " + m_monitorList.join(','));
-        if (m_ackedCaps.contains("draft/metadata-2"))
+        if (hasMetadataCap())
             sendRaw("METADATA * SUB display-name avatar");
         break;
 
