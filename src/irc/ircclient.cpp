@@ -1817,6 +1817,16 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 768: // ERR_KEYNOTSET
         break;
 
+    case 770: // RPL_METADATASUBOK — subscription confirmed, silent
+    case 771: // RPL_METADATAUNSUBOK
+        break;
+
+    case 774: // RPL_METADATASYNCLATER — sync deferred. Ergo 2.19 sends this
+              // after every SUB yet rejects the METADATA SYNC subcommand
+              // (FAIL INVALID_PARAMS), so retrying is useless; the on-demand
+              // hover fetch covers anything a missed push would have carried
+        break;
+
     default:
         if (!trailing.isEmpty()) {
             if (n >= 400)
