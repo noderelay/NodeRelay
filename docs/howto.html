@@ -1392,7 +1392,7 @@ channels = "#linux"</pre>
     <table>
       <tr><th>Capability</th><th>What it does</th></tr>
       <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect as a formatted summary: network name and connection state for each.</td></tr>
-      <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, Uplink on your desktop already knows.</td></tr>
+      <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, Uplink on your desktop already knows. (On direct connections, servers like Ergo offer the same sync via the standard <code>draft/read-marker</code> capability.)</td></tr>
       <tr><td><code>chathistory</code> / <code>draft/chathistory</code></td><td>Requests missed messages on each channel join. Supported by soju, ZNC, and Ergo IRCd. History arrives with original timestamps.</td></tr>
     </table>
 
@@ -2079,9 +2079,9 @@ typing_indicator = true   # set to false to disable completely</pre>
 
     <p>The tooltip shows whatever the server has reported for that user:</p>
     <ul>
-      <li><strong>Display name</strong>: their friendly name set via <code>draft/metadata-2</code> (e.g. <em>Alice Smith</em>).</li>
+      <li><strong>Display name</strong>: their friendly name set via <code>draft/metadata</code> (e.g. <em>Alice Smith</em>).</li>
       <li><strong>Account</strong>: their NickServ account name (e.g. <code>alice_libera</code>), reported via <code>account-tag</code>, <code>account-notify</code>, or <code>extended-join</code>.</li>
-      <li><strong>Avatar</strong>: a 32×32 thumbnail if they have set an avatar URL via <code>draft/metadata-2</code> and Uplink has fetched it.</li>
+      <li><strong>Avatar</strong>: a 32×32 thumbnail if they have set an avatar URL via <code>draft/metadata</code> and Uplink has fetched it.</li>
     </ul>
 
     <p>If the tooltip is absent, the server has not reported any of those values for that nick: either they are not authenticated or the server does not support the relevant capabilities.</p>
@@ -2124,15 +2124,15 @@ typing_indicator = true   # set to false to disable completely</pre>
   <section id="user-metadata">
     <h2>User metadata: display names &amp; avatars</h2>
     <p>
-      On servers that support the IRCv3 <code>draft/metadata-2</code> capability, every user can publish a <strong>display name</strong> and an <strong>avatar image</strong> that other clients automatically receive and display. Think of it as a lightweight profile attached to your IRC nick, stored on the server and synced in real time.
+      On servers that support the IRCv3 <code>draft/metadata</code> capability (Uplink speaks both the <code>-2</code> and <code>-3</code> revisions), every user can publish a <strong>display name</strong> and an <strong>avatar image</strong> that other clients automatically receive and display. Think of it as a lightweight profile attached to your IRC nick, stored on the server and synced in real time.
     </p>
 
     <div class="note">
-      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> supports it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability: no errors, it just does nothing.
+      <strong>Server support required.</strong> <code>draft/metadata</code> is an in-development IRCv3 extension; Uplink negotiates <code>draft/metadata-3</code> when offered and falls back to <code>draft/metadata-2</code>. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> supports it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability: no errors, it just does nothing.
     </div>
 
     <div class="note">
-      <strong>Bouncers block metadata.</strong> Neither soju nor ZNC passes <code>draft/metadata-2</code> through to clients, so behind a bouncer you will not see anyone's avatar and your own profile will not publish, even when the network itself supports metadata. Connect to the network directly for the full experience. Run <code>/caps</code> in a server buffer to see which capabilities survived your bouncer.
+      <strong>Bouncers block metadata.</strong> Neither soju nor ZNC passes the metadata capability through to clients, so behind a bouncer you will not see anyone's avatar and your own profile will not publish, even when the network itself supports metadata. Connect to the network directly for the full experience. Run <code>/caps</code> in a server buffer to see which capabilities survived your bouncer.
     </div>
 
     <h3>Where it displays</h3>
@@ -2145,7 +2145,7 @@ typing_indicator = true   # set to false to disable completely</pre>
     <figure class="shot">
       <img src="shots/user-metadata.png" loading="lazy"
            alt="A nick tooltip showing a display name and avatar thumbnail">
-      <figcaption>With draft/metadata-2, a nick tooltip shows the user's display name and avatar.</figcaption>
+      <figcaption>With user metadata, a nick tooltip shows the user's display name and avatar.</figcaption>
     </figure>
     <p>
       Both locations show identical information. Uplink fetches the avatar image in the background as soon as the metadata arrives and caches it for the session; subsequent hovers are instant. Avatars are displayed at 32×32 with no upscaling, so small icons like favicons stay crisp.
@@ -2168,7 +2168,7 @@ typing_indicator = true   # set to false to disable completely</pre>
           <li><strong>Local file path</strong> (e.g. <code>/home/alice/avatar.png</code>): displayed only in your own client; never sent to the server, so other users will not see it.</li>
         </ul>
       </li>
-      <li>Click <strong>Apply to connected servers</strong>. Uplink saves the values, sends them to every currently-connected server that supports <code>draft/metadata-2</code>, and updates your own nick tooltip immediately; no reconnect needed.</li>
+      <li>Click <strong>Apply to connected servers</strong>. Uplink saves the values, sends them to every currently-connected server that supports metadata, and updates your own nick tooltip immediately; no reconnect needed.</li>
     </ol>
     <p>From then on, Uplink automatically publishes your profile each time you connect; no need to re-enter anything.</p>
 
@@ -2180,7 +2180,7 @@ typing_indicator = true   # set to false to disable completely</pre>
     <p>To <strong>clear</strong> a value (remove it from the server), run the command with no argument:</p>
     <pre>/displayname
 /avatar</pre>
-    <p>Both commands print a confirmation in the current buffer. If the server does not support <code>draft/metadata-2</code>, the command tells you instead of silently failing.</p>
+    <p>Both commands print a confirmation in the current buffer. If the server does not support metadata, the command tells you instead of silently failing.</p>
 
     <table>
       <tr><th>Command</th><th>Effect</th></tr>
@@ -2200,7 +2200,7 @@ avatar_url = "https://example.com/avatar.png"</pre>
 
     <h3>How it works under the hood</h3>
     <p>
-      When Uplink connects to a server that advertises <code>draft/metadata-2</code>, the capability is negotiated during the normal CAP handshake. The server then pushes <code>METADATA</code> notifications whenever a user's <code>display-name</code> or <code>avatar</code> key changes; no polling needed.
+      When Uplink connects to a server that advertises <code>draft/metadata-2</code> or <code>-3</code>, the capability is negotiated during the normal CAP handshake. The server then pushes a change notification whenever a user's <code>display-name</code> or <code>avatar</code> key changes; no polling needed.
     </p>
     <p>
       Setting your profile sends a <code>METADATA * SET</code> command to the server:

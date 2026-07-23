@@ -526,7 +526,7 @@ channels = "#debian"
 
 ### Connecting to soju
 
-Set `bouncer = "soju"` to activate soju-specific IRCv3 capabilities. `soju.im/read` is negotiated automatically, keeping your read position in sync across all clients connected to the same soju instance.
+Set `bouncer = "soju"` to activate soju-specific IRCv3 capabilities. `soju.im/read` is negotiated automatically, keeping your read position in sync across all clients connected to the same soju instance. (No bouncer needed for this on servers that offer the standard `draft/read-marker` capability, such as Ergo — Uplink negotiates that everywhere.)
 
 soju supports two authentication approaches: SASL PLAIN (preferred) or a `username:password` string in `PASS`. The examples below use SASL, which is the recommended method.
 
