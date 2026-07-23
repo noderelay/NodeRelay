@@ -15,6 +15,7 @@
 
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QtMath>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -201,11 +202,7 @@ void MainWindow::setupInputBar()
         m_sendBtn->setEnabled(!text.trimmed().isEmpty());
         checkEmojiAutocomplete(text);
         updateLengthIndicator();
-        // Auto-resize: 1 to 4 lines
-        const int lineH = m_input->fontMetrics().lineSpacing();
-        const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-        const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
-        m_input->setFixedHeight(lines * lineH + margins);
+        updateInputHeight();
         // Soft-wrapped typing: pin the view to the freshest line ourselves —
         // Qt's implicit scroll-to-cursor runs against a stale scroll range
         // (it updates lazily), gets clamped to "no scrolling", and never
@@ -218,10 +215,12 @@ void MainWindow::setupInputBar()
         m_typing->noteInputChanged(!text.isEmpty());
     });
 
-    // The scroll range updates lazily, after textChanged — re-pin when it
-    // lands so the freshest line is what shows (see the pin above).
+    // The scroll range updates lazily, after textChanged — when it lands,
+    // re-measure the height (the wrap count may only be known now) and
+    // re-pin so the freshest line is what shows (see the pin above).
     connect(m_input->verticalScrollBar(), &QAbstractSlider::rangeChanged,
             this, [this](int, int max){
+        updateInputHeight();
         if (m_input->textCursor().atEnd())
             m_input->verticalScrollBar()->setValue(max);
     });
@@ -361,6 +360,18 @@ void MainWindow::applyInputColor(int fg, int bg)
     m_input->textCursor().setCharFormat(cf);
     m_input->setCurrentCharFormat(cf);
     updateFormatIndicator();
+}
+
+// Auto-resize: 1 to 4 visual lines. QPlainTextEdit's document layout reports
+// its height in lines, so soft-wrapped text counts too — sizing from '\n'
+// alone left a wrapped sentence in a one-line-tall box, with the bottom of
+// the previous line peeking above the current one.
+void MainWindow::updateInputHeight()
+{
+    const int lineH   = m_input->fontMetrics().lineSpacing();
+    const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
+    const int lines   = qBound(1, qCeil(m_input->document()->size().height()), 4);
+    m_input->setFixedHeight(lines * lineH + margins);
 }
 
 void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel,
