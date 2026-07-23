@@ -392,7 +392,7 @@ void MainWindow::connectPreferences()
             if (!avatarUrl.isEmpty())
                 m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "avatar", avatarUrl);
             auto *cl = m_model->clientFor(ServerId{sess.name});
-            if (!cl || !cl->hasCap("draft/metadata-2")) {
+            if (!cl || !cl->hasMetadataCap()) {
                 skipped << sess.name;
                 continue;
             }
@@ -410,7 +410,7 @@ void MainWindow::connectPreferences()
                 "Profile sent to: " + sent.join(", "));
         if (!skipped.isEmpty())
             m_model->localMessage(activeHost, activeChan,
-                "Skipped (no draft/metadata-2 support): " + skipped.join(", "));
+                "Skipped (no metadata support): " + skipped.join(", "));
         if (sent.isEmpty() && skipped.isEmpty())
             m_model->localMessage(activeHost, activeChan,
                 "No connected servers to send profile to.");

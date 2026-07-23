@@ -452,9 +452,9 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             m_model->sendRaw(host, "SETNAME :" + args.trimmed());
     } else if (cmd == "/displayname") {
         auto *cl = m_model->clientFor(host);
-        if (!cl || !cl->hasCap("draft/metadata-2")) {
+        if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
-                "Server does not support draft/metadata-2 — cannot set display name");
+                "Server does not support metadata — cannot set display name");
         } else {
             const QString val = args.trimmed();
             m_model->sendRaw(host, "METADATA * SET display-name :" + val);
@@ -465,9 +465,9 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         }
     } else if (cmd == "/avatar") {
         auto *cl = m_model->clientFor(host);
-        if (!cl || !cl->hasCap("draft/metadata-2")) {
+        if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
-                "Server does not support draft/metadata-2 — cannot set avatar");
+                "Server does not support metadata — cannot set avatar");
         } else {
             const QString val = args.trimmed();
             m_model->sendRaw(host, "METADATA * SET avatar :" + val);
@@ -737,8 +737,8 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             "  /stats <query>              — server stats (u=uptime, o=opers, m=commands…)",
             "  /whowas <nick>              — request WHOWAS info for a departed nick",
             "  /setname <realname>         — change your realname (IRCv3 setname)",
-            "  /displayname [text]         — set your display name (draft/metadata-2; leave blank to clear)",
-            "  /avatar [url]               — set your avatar URL (draft/metadata-2; leave blank to clear)",
+            "  /displayname [text]         — set your display name (draft/metadata; leave blank to clear)",
+            "  /avatar [url]               — set your avatar URL (draft/metadata; leave blank to clear)",
             "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",
             "  /version [nick]             — request VERSION (nick optional)",

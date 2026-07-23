@@ -452,7 +452,7 @@ QWidget *PreferencesDialog::createProfilePage(const Config &cfg, const QColor &a
         auto *note = new QLabel(
             "Your display name and avatar URL are published to the server when you connect. "
             "Other users can see them in the nick list tooltip. "
-            "Requires <b>draft/metadata-2</b> support (Ergo, soju, and others).");
+            "Requires <b>draft/metadata</b> support (Ergo and others).");
         note->setWordWrap(true);
         note->setStyleSheet("font-size: 9pt;");
         vbox->addWidget(note);

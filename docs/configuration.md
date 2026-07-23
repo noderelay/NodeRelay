@@ -66,7 +66,7 @@ font_emoji = 16   # emoji size in chat messages (independent of font_chat)
 link_previews = false              # set to true to enable URL preview cards in chat
 
 [profile]
-display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata-2)
+display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata)
 avatar_url = "https://example.com/avatar.png"  # https:// URL or /local/path
 
 [[server]]
@@ -819,7 +819,7 @@ The list is sent to all connected servers on every connect and reconnect.
 
 ## The `[profile]` block
 
-Stores your IRCv3 `draft/metadata-2` display name and avatar. Values are published to every server you connect to that advertises the capability; other users see them in the nick list tooltip.
+Stores your IRCv3 `draft/metadata` display name and avatar. Values are published to every server you connect to that advertises the capability; other users see them in the nick list tooltip.
 
 ```toml
 [profile]
@@ -851,7 +851,7 @@ Leave the argument blank to clear a value:
 /avatar
 ```
 
-Both commands save the value to config automatically. On the next connect to a server that supports `draft/metadata-2`, the profile is re-published automatically; no need to re-enter anything.
+Both commands save the value to config automatically. On the next connect to a server that supports metadata, the profile is re-published automatically; no need to re-enter anything.
 
 **Example with both keys:**
 
@@ -869,7 +869,7 @@ display_name = "Alice"
 avatar_url = "/home/alice/Pictures/avatar.png"
 ```
 
-> **Note:** `draft/metadata-2` is supported by [Ergo](https://ergo.chat/) and [soju](https://soju.im/). Most traditional networks (Libera, OFTC) do not support it. Uplink silently skips publishing if the server does not advertise the capability.
+> **Note:** `draft/metadata-2`/`-3` is supported by [Ergo](https://ergo.chat/) and [soju](https://soju.im/). Most traditional networks (Libera, OFTC) do not support it. Uplink silently skips publishing if the server does not advertise the capability.
 
 ---
 

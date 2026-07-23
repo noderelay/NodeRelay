@@ -126,8 +126,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/whois <nick>` | Look up info about a user; reply appears in the active channel |
 | `/whowas <nick>` | Query history for a departed nick; shows last known user@host and realname |
 | `/setname <realname>` | Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname) |
-| `/displayname <text>` | Set your display name via IRCv3 `draft/metadata-2`; shown in nick list tooltips. Leave blank to clear. Requires server support. |
-| `/avatar <url>` | Set your avatar via IRCv3 `draft/metadata-2`. Accepts an `https://` URL or a local file path. Leave blank to clear. Requires server support. |
+| `/displayname <text>` | Set your display name via IRCv3 `draft/metadata`; shown in nick list tooltips. Leave blank to clear. Requires server support. |
+| `/avatar <url>` | Set your avatar via IRCv3 `draft/metadata`. Accepts an `https://` URL or a local file path. Leave blank to clear. Requires server support. |
 | `/caps` | List all IRCv3 capabilities currently negotiated with the server |
 
 ### Examples
