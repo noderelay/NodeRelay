@@ -187,7 +187,8 @@ private:
     bool zoomFont(QObject *target, double delta, const QPoint &pos = {});
 
     // Tab completion
-    void handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel);
+    void handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel,
+                           bool backward = false);
     void repositionSendBtn();
     void updateInputViewportFill();
     void updateFormatIndicator();

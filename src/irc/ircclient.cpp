@@ -1360,7 +1360,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "chathistory", "draft/chathistory", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2", "cap-notify",
+            "draft/metadata-2", "cap-notify", "standard-replies",
         };
 
         // ZNC-specific caps
@@ -1439,7 +1439,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "chathistory", "draft/chathistory", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2", "cap-notify",
+            "draft/metadata-2", "cap-notify", "standard-replies",
         };
         if (m_bouncerType == BouncerType::ZNC)
             desired << "znc.in/playback" << "znc.in/self-message" << "znc.in/batch";

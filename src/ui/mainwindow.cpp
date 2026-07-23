@@ -861,8 +861,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         for (auto *pane : std::as_const(m_panes)) {
             if (obj == pane->input()) {
                 auto *ke = static_cast<QKeyEvent *>(event);
-                if (ke->key() == Qt::Key_Tab) {
-                    handleTabComplete(pane->input(), pane->host(), pane->channel());
+                if (ke->key() == Qt::Key_Tab || ke->key() == Qt::Key_Backtab) {
+                    handleTabComplete(pane->input(), pane->host(), pane->channel(),
+                                      ke->key() == Qt::Key_Backtab);
                     return true;
                 }
                 // Non-Tab resets the completion cycle
@@ -920,8 +921,9 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
-    if (ke->key() == Qt::Key_Tab) {
-        handleTabComplete(m_input, m_model->activeHost(), m_model->activeChannel());
+    if (ke->key() == Qt::Key_Tab || ke->key() == Qt::Key_Backtab) {
+        handleTabComplete(m_input, m_model->activeHost(), m_model->activeChannel(),
+                          ke->key() == Qt::Key_Backtab);
         return true;
     }
 
