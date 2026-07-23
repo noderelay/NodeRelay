@@ -314,6 +314,12 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::loggingToggled, this, [this](bool on){
         m_config.ui.logMessages = on;
+        if (on) {
+            // The nudge no longer applies, and exhausted buffers may page
+            // again as the logs start accumulating.
+            m_historyExhausted.clear();
+            m_chatView->removeLine(QStringLiteral("status:logtip"));
+        }
         saveConfig();
     });
 
