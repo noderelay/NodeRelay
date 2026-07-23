@@ -316,7 +316,7 @@
 <div class="wrap">
   <div class="stat-grid">
     <div class="stat-cell">
-      <div class="stat-num c-green">28</div>
+      <div class="stat-num c-green">74</div>
       <div class="stat-label">Tests passing</div>
     </div>
     <div class="stat-cell">
@@ -364,7 +364,8 @@
     <span class="section-tag c-green">Test suite</span>
     <h2>All tests pass</h2>
     <p class="section-sub">
-      Two Qt Test suites cover the IRC protocol parser and the mIRC chat renderer.
+      Five Qt Test suites cover the IRC protocol parser, the mIRC chat renderer,
+      the TOML config loader, the history log reader, and the ignore-list types.
       Below is the live output from the last run.
     </p>
 
@@ -469,6 +470,9 @@
       <code style="color:var(--gb-aqua)">cmake -B build -DUPLINK_BUILD_TESTS=ON</code> build.
       Source: <code style="color:var(--gb-fg2)">tests/tst_ircparser.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/tst_chatformat.cpp</code>,
+      <code style="color:var(--gb-fg2)">tests/tst_config.cpp</code>,
+      <code style="color:var(--gb-fg2)">tests/tst_logreader.cpp</code>,
+      <code style="color:var(--gb-fg2)">tests/tst_ignoretypes.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/fuzz_ircparser.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/fuzz_chatformat.cpp</code>.
     </p>

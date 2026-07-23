@@ -1,6 +1,46 @@
 # Changelog
 
 <!--
+Session 2026-07-22 (later): full documentation audit.
+Seven parallel cross-checks of every doc surface (README, faq,
+configuration, commands, ircv3, keyboard-shortcuts, howto/index/quality
+html) against the code as ground truth. Fixed in the docs-audit PR:
+- commands: /part takes only a reason (no channel arg); unrecognized
+  slash commands are NOT auto-forwarded to the server (docs claimed they
+  were, in commands.md and howto); /list opens the channel browser
+  dialog; /connect host+ forces SSL now documented.
+- configuration: show_timestamps and font_topic_text were undocumented;
+  theme_auto keys added to the sample block; theme search path was wrong
+  (only ~/.config/uplink/themes is read, seeded on first run); NEW full
+  theme file format reference incl. the [events] section and its
+  palette-derived fallbacks.
+- faq: "click gear for Preferences" x7 (no gear exists; Settings menu or
+  Ctrl+comma), inverted Show Nick in Input instruction, ~400 emoji ->
+  ~1,900, App Icon answer rewritten for the 15-tile grid, reveal-button
+  and signal-bars locations corrected, theme {{key}} claim was wrong
+  (themes are plain TOML sections). NEW entries: scrollback depth, quick
+  switcher, missing-font fallback, event line colors.
+- README: stale app_icon values, radio-buttons claim, /ignore scope
+  (PM/notice/invite, never channel messages), ignore submenu, signal
+  bars, reveal button, red-bold wording -> theme colors, missing
+  commands added to the table, typing + draft/multiline added to cap
+  row. NEW rows: theme-colored chat, per-buffer drafts.
+- ircv3: echo-message section was missing entirely; typing documents
+  both cap names; msgid/standard-replies precision.
+- site: quality page said 2 test suites / 28 tests (now 5 suites / 74),
+  index cap chips completed, "37 caps" -> "30+", Rose Pine typo, auto
+  theme mentioned in themes copy.
+- em-dash sweep across README/faq/howto/index/ircv3/commands per the
+  no-em-dash rule.
+Deliberately NOT touched: 23 howto screenshot references that point at
+not-yet-shot files; they are tracked in docs/shots-checklist.md as Joe's
+shot list. Paired code PR (tab-backtab branch): Shift+Tab backward
+completion cycling implemented (docs promised it, code canceled the
+cycle instead) and standard-replies added to the CAP REQ lists (docs
+and README presented it as negotiated).
+-->
+
+<!--
 Session 2026-07-22: log-backed infinite scrollback.
 Scrolling to the top of a buffer on a connection without chathistory
 used to dead-end at the 500-message in-memory cap. Now that branch of

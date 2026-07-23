@@ -11,8 +11,8 @@ Type any of these commands in the message input box and press Enter.
 | `/join #channel` | Join a channel |
 | `/join #channel [key]` | Join a key-protected channel |
 | `/j #channel` | Short alias for `/join` |
-| `/part [#channel]` | Leave a channel. Defaults to the current channel if omitted |
-| `/part #channel reason` | Leave with a part message |
+| `/part` | Leave the current channel |
+| `/part reason` | Leave the current channel with a part message. Everything after `/part` is the reason |
 | `/leave` | Alias for `/part`; leaves the current channel |
 | `/close` | Alias for `/part`; leaves the current channel (or closes a PM buffer) |
 | `/topic` | Show the current channel topic |
@@ -48,7 +48,7 @@ Type any of these commands in the message input box and press Enter.
 /join #private secretkey
 /j #uplinkirc
 /part
-/part #linux see you later
+/part see you later
 /leave
 /close
 /topic new topic here
@@ -154,7 +154,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 
 | Command | Description |
 |---|---|
-| `/connect [host[:port]]` | Reconnect to the current server, or connect to a new server. If the host is already in your config, uses that entry; otherwise creates an ad-hoc connection with auto-detected SSL (port 6667 = plain, everything else = SSL). |
+| `/connect [host[:port]]` | Reconnect to the current server, or connect to a new server. If the host is already in your config, uses that entry; otherwise creates an ad-hoc connection with auto-detected SSL (port 6667 = plain, everything else = SSL). Append `+` to the host (e.g. `/connect irc.example.org+:6667`) to force SSL regardless of port. |
 | `/server [host[:port]]` | Alias for `/connect` |
 | `/disconnect` | Close the current server and all its channels from the sidebar. The server remains in your config and will reconnect on next launch. |
 | `/quit [message]` | Disconnect from the current server. If no message is given, uses the server's configured `quit_message` (default: `"Uplink"`) |
@@ -494,9 +494,8 @@ Arguments are also passed as positional parameters (`$1`, `$2`, etc.).
 |---|---|
 | `/raw <line>` | Send a raw IRC protocol line directly to the server |
 | `/quote <line>` | Alias for `/raw` |
-| `/<ANY>` | Any unrecognized slash command is sent as a raw IRC line automatically |
 
-Use these when you need to send a command that Uplink does not have a built-in shortcut for yet. You can also just type the command directly; unrecognized `/CMD` inputs are passed through to the server as-is.
+Use these when you need to send a command that Uplink does not have a built-in shortcut for. Unrecognized slash commands are NOT forwarded to the server: typing `/REHASH` prints `Unknown command: REHASH (use /raw or /quote to send raw IRC)` and sends nothing. Prefix server-specific commands with `/raw` instead. (The one exception: commands you have bound with a user script run as usual.)
 
 ### Examples
 
@@ -505,9 +504,9 @@ Use these when you need to send a command that Uplink does not have a built-in s
 /raw INVITE alice #uplinkirc
 /quote JOIN #test
 
-/REHASH
-/SAMODE #uplinkirc +o alice
-/GLOBOPS Hello opers
+/raw REHASH
+/raw SAMODE #uplinkirc +o alice
+/raw GLOBOPS Hello opers
 ```
 
 ---

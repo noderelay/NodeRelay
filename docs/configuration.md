@@ -28,8 +28,12 @@ This is a complete config file showing every available option.
 ```toml
 [ui]
 theme = "catppuccin-mocha"  # omit or set "default" for native look on Windows
+theme_auto = false          # follow the OS light/dark scheme (uses theme_light/theme_dark)
+theme_light = "light"       # theme while the OS scheme is light (only with theme_auto)
+theme_dark = "dark"         # theme while the OS scheme is dark (only with theme_auto)
 show_nick_prefix = true
 show_topic = true
+show_timestamps = true
 show_emoji_button = true               # shows 😊 button next to input bar
 show_send_button = true               # shows paper-plane send button in the input box
 colored_nicks = true
@@ -51,6 +55,7 @@ font_chat = 10
 font_nick_list = 10
 font_nick_dock = 9     # nick panel header font size (macOS default: 13)
 font_topic_bar = 10
+font_topic_text = 10   # the topic text itself, independent of the bar chrome
 font_input_nick = 10
 font_input = 10
 font_typing = 9
@@ -113,6 +118,7 @@ Controls the look and feel of the interface. All keys are optional; missing keys
 | `theme_dark` | string | `"dark"` | Theme applied while the OS scheme is dark (only with `theme_auto`). On Windows, `"default"` gives the native look. |
 | `show_nick_prefix` | bool | `true` | Show your nickname label next to the message input box |
 | `show_topic` | bool | `true` | Show the channel topic bar below the channel header row |
+| `show_timestamps` | bool | `true` | Show the `HH:MM` timestamp column in front of each chat message. Timestamps take their color from the active theme. |
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
 | `show_send_button` | bool | `true` | Show the paper-plane send button inside the input box. Equivalent to pressing Enter. Disable if you prefer a cleaner input area. Toggle live from **Preferences → Interface → Show Send Button**. |
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
@@ -121,19 +127,20 @@ Controls the look and feel of the interface. All keys are optional; missing keys
 | `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in, off by default. Toggle from **Preferences → Logging → Log Messages to Disk**. Logs also feed infinite scrollback on servers without chathistory. |
 | `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Interface → Show Unread Message Counts**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Notifications → Tray Notifications**. |
-| `highlight_words` | string | `""` | Extra words that get treated like a mention of your nick: they render **red bold** in chat and count as mentions for unread indicators. Comma-separated, case-insensitive, whole words only: `highlight_words = "myproject, deploy, lunch"` highlights "deploy" but not "deployment". Leave empty to only highlight your own nick. Change live from **Preferences → Notifications → Highlight Words**. |
+| `highlight_words` | string | `""` | Extra words that get treated like a mention of your nick: they render bold in the active theme's keyword highlight color and count as mentions for unread indicators. Comma-separated, case-insensitive, whole words only: `highlight_words = "myproject, deploy, lunch"` highlights "deploy" but not "deployment". Leave empty to only highlight your own nick. Change live from **Preferences → Notifications → Highlight Words**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `pane_stack_rows` | bool | `false` | When you have 2+ [detachable channel panes](howto.html#channel-panes) open, `false` stacks them in columns (side by side), `true` stacks them in horizontal rows. Toggle live from **Preferences → Interface → Stack Panes in Rows**. |
 | `panel_cards` | bool | `true` | The server/channel list and user list use their own `[sidebar]`/`[nicklist]` theme backgrounds and float as fully rounded cards, framed by an even `[general] background` gap on all sides. Set `false` for the classic flat look where the whole window sits on the buffer color. Toggle live from **Preferences → Interface → Panel Cards**. |
 | `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the **File / Edit / View / Settings / Help / Find** menu bar; on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
 | `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
-| `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
+| `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones. If the configured font is not installed, Uplink silently falls back to your system's default monospace font, so a missing font never leaves the UI unreadable. |
 | `font_toolbar` | integer | `10` | Legacy top-bar font size, kept for config compatibility |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
 | `font_chat` | integer | `10` | Font size (pt) for the message area |
 | `font_nick_list` | integer | `10` | Font size (pt) for the user list |
 | `font_nick_dock` | integer | `9` (macOS: `13`) | Font size (pt) for the nick panel header (close button, groups icon, and user count) |
 | `font_topic_bar` | integer | `10` | Font size (pt) for the channel header and topic bar |
+| `font_topic_text` | integer | `10` | Font size (pt) for the topic text itself, independent of the header chrome |
 | `font_input_nick` | integer | `10` | Font size (pt) for your nick label next to the input |
 | `font_input` | integer | `10` | Font size (pt) for the message input box |
 | `font_typing` | integer | `9` | Font size (pt) for the "nick is typing…" indicator |
@@ -1083,15 +1090,71 @@ Popular picks:
 | `mactahoe26-light` | macOS Tahoe light variant |
 | `default` | Built-in fallback theme |
 
-Themes can be switched live from the **Preferences → Appearance** page (click **⚙** in the channel header) without restarting.
+Themes can be switched live from **Settings → Preferences → Appearance** (or press **Ctrl+,**) without restarting.
 
-### Theme search path
+### Where theme files live
 
-1. `~/.config/uplink/themes/<name>.toml`, personal themes
-2. `<exe directory>/themes/<name>.toml`, shipped themes next to the binary
-3. `themes/<name>.toml`, relative to the current working directory
+Themes are loaded from one place: `~/.config/uplink/themes/<name>.toml`. On first launch Uplink copies its bundled themes (shipped next to the binary) into that folder, so after the first run everything, including the built-in themes, is right there and editable.
 
-To add a custom theme, drop a `.toml` file into `~/.config/uplink/themes/`. It appears in the Preferences theme list on the next launch.
+To add a custom theme, drop a `.toml` file into `~/.config/uplink/themes/`. It appears in the Preferences theme list on the next launch. Editing an existing file there changes that theme for you alone; your copies are never overwritten by updates.
+
+### Theme file format
+
+A theme is a small TOML file of color sections. Every key is optional; anything you leave out falls back to a sensible default, so a minimal theme can be just a `[general]` block. Colors are ordinary `"#rrggbb"` strings.
+
+```toml
+[general]
+background = "#1e1e2e"   # window backdrop
+text       = "#cdd6f4"   # default text
+border     = "#313244"   # separators and outlines
+accent     = "#89b4fa"   # selection and accent color
+
+[sidebar]                # server/channel tree
+background = "#181825"
+text       = "#6c7086"
+active     = "#cdd6f4"   # the selected buffer
+unread     = "#89b4fa"   # buffers with unread messages
+mention    = "#f38ba8"   # buffers where you were mentioned
+server     = "#585b70"   # server header rows
+
+[buffer]                 # the chat area
+background  = "#1e1e2e"
+timestamp   = "#6c7086"  # the HH:MM column
+server_line = "#585b70"  # server/status text
+action      = "#cba6f7"  # /me lines
+nick_self   = "#a6e3a1"  # your own nick
+separator   = "#313244"  # unread/date separator lines; falls back to [general] border
+
+[highlights]
+mention_bg   = "#2a1a2e" # background behind lines that mention you
+mention_text = "#f38ba8" # your nick when someone says it
+keyword      = "#fab387" # highlight_words matches
+
+[events]                 # join/part/quit and friends; see below
+join    = "#a6e3a1"
+leave   = "#f38ba8"      # part, quit, and kick lines
+nick    = "#89b4fa"      # nick and topic changes
+notice  = "#fab387"
+error   = "#f38ba8"
+reply   = "#89b4fa"      # numeric server replies (WHOIS output etc.)
+wallops = "#fab387"
+
+[nicklist]               # the user list
+background = "#181825"
+text       = "#6c7086"
+op         = "#89b4fa"   # @ operators
+halfop     = "#cba6f7"   # % half-ops
+voice      = "#a6e3a1"   # + voiced users
+away       = "#45475a"   # users marked away
+
+[input]                  # the message box
+background = "#313244"
+text       = "#cdd6f4"
+placeholder= "#6c7086"
+nick_color = "#a6e3a1"   # your nick label next to the input
+```
+
+The `[events]` section is special: if you leave it out entirely, event lines derive their colors from the rest of your palette automatically. Joins use `nick_self` (your theme's green), parts/quits/errors use `mention_text` (its red), nick/topic changes and server replies use `accent` (its blue), and notices/wallops use `keyword` (its amber). Most themes never need to spell these out; add explicit `[events]` keys only when you want to override a specific line type.
 
 ---
 
