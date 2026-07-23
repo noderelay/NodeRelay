@@ -15,7 +15,6 @@
 
 #include <QHBoxLayout>
 #include <QIcon>
-#include <QtMath>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -70,12 +69,15 @@ void MainWindow::setupInputBar()
 
     m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
-    // NoWrap is a hard requirement: while typing, exactly ONE line is
-    // visible. Soft wrap created a second visual line whose edge kept
-    // bleeding into view (months of seam/sliver fixes); with NoWrap that
-    // line never exists and long text scrolls horizontally instead.
-    // Shift+Enter still composes explicit lines (box grows per '\n').
-    m_input->setLineWrapMode(QPlainTextEdit::NoWrap);
+    // Wrap-reset typing, Joe's chosen behavior: the box stays ONE line
+    // tall while typing; when a sentence fills the width it wraps and the
+    // view jumps to the fresh line (cursor restarts at the left edge).
+    // Only the newest line may ever be visible. QPlainTextEdit scrolls in
+    // whole-line units, so the max-pin in textChanged/rangeChanged puts
+    // the current line's top exactly at the viewport top; the height must
+    // therefore NEVER be derived from visual (wrapped) lines — explicit
+    // Shift+Enter blocks only (see updateInputHeight).
+    m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     updateInputViewportFill();
@@ -367,15 +369,15 @@ void MainWindow::applyInputColor(int fg, int bg)
     updateFormatIndicator();
 }
 
-// Auto-resize: 1 to 4 lines, explicit Shift+Enter lines only. The document
-// layout reports height in visual lines; under NoWrap that equals the block
-// count, so a long typed sentence never grows the box — it scrolls
-// horizontally on its single line instead.
+// Auto-resize: 1 to 4 lines, explicit Shift+Enter blocks ONLY. Soft wrap
+// must never grow the box (hard requirement: one visible line while
+// typing), so this counts blocks, not visual lines — document()->size()
+// would include wraps and regrow the box.
 void MainWindow::updateInputHeight()
 {
     const int lineH   = m_input->fontMetrics().lineSpacing();
     const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-    const int lines   = qBound(1, qCeil(m_input->document()->size().height()), 4);
+    const int lines   = qBound(1, m_input->document()->blockCount(), 4);
     m_input->setFixedHeight(lines * lineH + margins);
 }
 
