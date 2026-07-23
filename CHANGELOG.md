@@ -20,8 +20,16 @@ worked; they were wrong until now. Wiring:
   partial markers leave the badge. Stale/echoed markers (<= lastRead)
   are dropped.
 Docs: ircv3.md read-marker section now describes the real behavior.
-Cross-client field test owed: read on one machine, badge should clear
-on the other within ~2s (same account, e.g. fortis + zippy).
+FIELD TEST PASSED same night (fortis + zippy, both as sig on the
+dojo): zippy read #test, fortis badge self-cleared ("it works!").
+Two prerequisites surfaced during setup, now covered in the FAQ:
+the server must allow multiclient (the dojo's ergo.yaml multiclient
+block wasn't live until Joe enabled it — before that the second
+connection 433'd into sig_), and both clients need SASL creds for
+the same account (zippy's config lacked them). Noted but not built:
+Uplink sends NICK before SASL completes, so a held nick falls back
+to nick_ and is never re-claimed after auth — auto-reclaim after
+SASL success would be a small worthwhile patch.
 -->
 
 <!--

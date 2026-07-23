@@ -378,6 +378,16 @@ channels = "#linux"
 
 With `bouncer = "soju"`, Uplink negotiates `soju.im/bouncer-networks` (lists your networks in the server buffer), `soju.im/read` (syncs your read position across clients), and `soju.im/no-implicit-names`.
 
+### Why don't my unread badges sync between my machines?
+
+When two Uplinks share one identity, reading a channel on one clears its unread badge on the other within a couple of seconds. Three things have to be true:
+
+1. **The server offers a read-marker capability** — `draft/read-marker` (Ergo and others) or `soju.im/read` (soju). Check with `/caps` in the server buffer.
+2. **Both clients are logged into the same account** via SASL. Unauthenticated connections are strangers to each other.
+3. **The server allows multiple connections on one account.** On Ergo that is the `multiclient` setting (`accounts.multiclient.enabled` + `allowed-by-default` in ircd.yaml, or `/msg NickServ SET MULTICLIENT ON` per account). If your second client connects as `yournick_` instead of `yournick`, this is what's missing.
+
+A marker only clears a badge once it covers everything in the buffer — if the other client read half the backlog, your badge stays.
+
 Both bouncer types also negotiate the `chathistory` capability, which automatically requests the last 100 messages for each channel on join. Uplink also supports `draft/chathistory` (used by Ergo IRCd), so history works on Ergo servers without any extra configuration. See [IRCv3 support](ircv3.md) for full details.
 
 ### What do the dimmed messages at the top of a channel mean?
@@ -1355,7 +1365,7 @@ Preview cards are stored per-channel and reinjected when you switch back, so the
 
 ### Why don't avatars or display names show through my bouncer?
 
-Metadata travels in the IRCv3 `draft/metadata-2` capability, and a client can only use the capabilities its bouncer re-offers. Neither soju nor ZNC passes `draft/metadata-2` through (ZNC only forwards capabilities its loaded modules declare), so behind a bouncer Uplink never sees the capability and correctly skips all metadata: no avatars in, no profile out. Connect to the network directly and everything works. To see exactly which capabilities survived your bouncer, run `/caps` in that server's buffer.
+Metadata travels in the IRCv3 `draft/metadata-2`/`-3` capability, and a client can only use the capabilities its bouncer re-offers. Neither soju nor ZNC passes the metadata capability through (ZNC only forwards capabilities its loaded modules declare), so behind a bouncer Uplink never sees the capability and correctly skips all metadata: no avatars in, no profile out. Connect to the network directly and everything works. To see exactly which capabilities survived your bouncer, run `/caps` in that server's buffer.
 
 ### My own avatar shows for me but nobody else sees it
 
