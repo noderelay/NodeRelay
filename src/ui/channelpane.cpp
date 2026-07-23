@@ -263,7 +263,9 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     m_nickPrefix->setStyleSheet("font-weight: bold; padding-right: 4px;");
     m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
-    m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    // NoWrap: one visible line while typing, matching the main input.
+    // See inputbar.cpp — soft wrap is what produced the recurring sliver.
+    m_input->setLineWrapMode(QPlainTextEdit::NoWrap);
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->document()->setDocumentMargin(2);
@@ -444,12 +446,11 @@ void ChannelPane::setNickListFont(const QFont &f)
     guardFont(m_nickList, f);
 }
 
-// Auto-resize: 1 to 4 visual lines. Polish first — the stylesheet's input
-// padding only lands in contentsMargins() once the widget is polished, and
-// measuring before that undersizes the box. The document layout reports its
-// height in lines, so soft-wrapped text counts too — sizing from '\n' alone
-// left a wrapped sentence in a one-line-tall box, with the bottom of the
-// previous line peeking above the current one.
+// Auto-resize: 1 to 4 lines, explicit Shift+Enter lines only. Polish first —
+// the stylesheet's input padding only lands in contentsMargins() once the
+// widget is polished, and measuring before that undersizes the box. Under
+// NoWrap the document layout's line count equals the block count, so a long
+// typed sentence never grows the box.
 void ChannelPane::updateInputHeight()
 {
     if (!m_input) return;

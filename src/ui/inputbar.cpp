@@ -70,7 +70,12 @@ void MainWindow::setupInputBar()
 
     m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
-    m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    // NoWrap is a hard requirement: while typing, exactly ONE line is
+    // visible. Soft wrap created a second visual line whose edge kept
+    // bleeding into view (months of seam/sliver fixes); with NoWrap that
+    // line never exists and long text scrolls horizontally instead.
+    // Shift+Enter still composes explicit lines (box grows per '\n').
+    m_input->setLineWrapMode(QPlainTextEdit::NoWrap);
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     updateInputViewportFill();
@@ -362,10 +367,10 @@ void MainWindow::applyInputColor(int fg, int bg)
     updateFormatIndicator();
 }
 
-// Auto-resize: 1 to 4 visual lines. QPlainTextEdit's document layout reports
-// its height in lines, so soft-wrapped text counts too — sizing from '\n'
-// alone left a wrapped sentence in a one-line-tall box, with the bottom of
-// the previous line peeking above the current one.
+// Auto-resize: 1 to 4 lines, explicit Shift+Enter lines only. The document
+// layout reports height in visual lines; under NoWrap that equals the block
+// count, so a long typed sentence never grows the box — it scrolls
+// horizontally on its single line instead.
 void MainWindow::updateInputHeight()
 {
     const int lineH   = m_input->fontMetrics().lineSpacing();

@@ -13,9 +13,16 @@ symptoms of that mis-measure. Fix: measure document()->size().height(),
 which QPlainTextDocumentLayout reports in VISUAL lines (wraps included),
 qBound 1..4; re-measure in the existing rangeChanged handlers since the
 wrap count is only final when the lazy layout lands. Both inputs share
-the fix; initial-height singleShot now calls the same helper. Joe still
-owes a visual check on his 1.45x-scale KDE (headless repro lies there,
-per the Wayland debugging notes).
+the fix; initial-height singleShot now calls the same helper.
+CORRECTION same evening: growing the box on wrap was the WRONG fix.
+Joe's standing requirement (now in assistant memory as a hard rule):
+the input shows exactly ONE line while typing, always. PR #146 sets
+QPlainTextEdit::NoWrap on both inputs: a soft-wrapped second line never
+exists, long text scrolls horizontally, the sliver is structurally
+impossible at any scale. Shift+Enter explicit lines (1..4 growth) stay.
+The visual-line height measurement from #145 remains correct under
+NoWrap (visual lines == blocks). Joe still owes a visual check on his
+1.45x-scale KDE (headless repro lies there, per the Wayland notes).
 -->
 
 <!--
