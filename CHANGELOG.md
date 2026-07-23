@@ -15,6 +15,9 @@ acked (server replay would duplicate), seeded once per buffer per run
 messages). Emits olderHistoryLoaded so an active buffer re-renders;
 inactive buffers pick it up on activation. Scroll-up paging then
 continues past the seed as before.
+VERIFIED: Joe restarted, joined #freebsd on Libera plus his other
+non-history networks — logged backlog appeared on open everywhere
+("ok it works now"). Feature complete end-to-end.
 -->
 
 <!--
