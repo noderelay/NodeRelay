@@ -18,9 +18,17 @@ bool parseLine(const QString &line, Message &out);
 // `oldest`). Log timestamps have second resolution, so the caller passes
 // `sameSecondCount` — how many in-memory messages share `oldest`'s second;
 // that many trailing same-second log lines are skipped as already loaded.
+// An invalid `oldest` means no bound: the newest `limit` messages.
 // `blockSize` is exposed for tests only.
 QList<Message> readBefore(const QString &path, const QDateTime &oldest,
                           int sameSecondCount, int limit,
                           qint64 blockSize = 64 * 1024);
+
+// The newest `limit` messages in the log, chronological order. Used to seed
+// a buffer with recent history on join when the server has no chathistory.
+inline QList<Message> readLatest(const QString &path, int limit)
+{
+    return readBefore(path, QDateTime(), 0, limit);
+}
 
 } // namespace LogReader

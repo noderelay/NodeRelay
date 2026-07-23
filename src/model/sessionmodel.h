@@ -242,6 +242,9 @@ private:
     ServerId m_activeHost;
     BufferId m_activeChannel;
 
+    void seedFromLog(const ServerId &host, const BufferId &target);
+
+    QSet<QString> m_logSeeded;            // buffers already seeded from local logs this run
     QSet<QString> m_pendingHistoryBefore; // "host\tchannel" keys awaiting CHATHISTORY BEFORE
     QHash<QString, QList<Message>> m_historyBeforeBuf; // collected prepend messages
 };

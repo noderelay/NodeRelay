@@ -809,7 +809,7 @@ log_messages = true    # off by default, opt-in
 As far as your history reaches. Scrolling to the top of a channel keeps loading older messages automatically, from whichever source is available:
 
 - **On networks with server-side history** (`chathistory`: Ergo, soju, modern ZNC), Uplink asks the server for the next 100 older messages each time you hit the top, until the server runs out.
-- **Everywhere else**, Uplink pages older messages out of its own log files on your disk, so scrollback works even on plain networks like Libera with no bouncer. This needs **Log Messages to Disk** enabled in Preferences (see the previous answer); history accumulates from the moment you turn it on.
+- **Everywhere else**, Uplink uses its own log files on your disk: when you join a channel (or open a PM or the server window), the last 100 logged messages load automatically, and scrolling to the top pages further back. So scrollback works even on plain networks like Libera with no bouncer. This needs **Log Messages to Disk** enabled in Preferences (see the previous answer); history accumulates from the moment you turn it on.
 
 If Uplink hits the true end of what it has and logging is off, a status line at the top of the buffer tells you exactly that and points you at the setting. Messages loaded from history appear dimmed with their original timestamps.
 
