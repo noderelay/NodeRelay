@@ -744,7 +744,7 @@
 
     <h3>Auto-update from inside Uplink</h3>
     <p>Click <strong>Help → Check for Updates</strong>. If a newer version is available, a dialog offers to download and install it automatically. For AppImage users, Uplink downloads the new AppImage, replaces the existing file in place, and relaunches. No terminal, no package manager, no sudo required.</p>
-    <p>Installed through the AUR or another system package? The checker notices and points you at your package manager instead — <code>yay -Syu uplink-irc</code> keeps it current with the rest of your system, and Uplink never fights pacman over the binary.</p>
+    <p>Installed through the AUR or another system package? The checker notices and points you at your package manager instead: <code>yay -Syu uplink-irc</code> keeps it current with the rest of your system, and Uplink never fights pacman over the binary.</p>
 
     <div class="tip">
       <strong>Optional:</strong> place the AppImage in <code>~/bin/</code> or <code>~/.local/bin/</code> and it will appear in your application launcher if your desktop environment supports AppImage integration (most do with <code>libappindicator</code> installed).
@@ -1702,11 +1702,11 @@ channels = "#uplinkirc"</pre>
         <tr><td>4</td><td>2×2 grid: two columns, each with two rows</td></tr>
       </tbody>
     </table>
-    <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen. When a pane gets narrow, the header text shortens with an ellipsis (hover it for the full channel name), and a column stops at its minimum width rather than collapsing — use the <code>✕</code> in a pane's header when you want it gone.</p>
+    <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen. When a pane gets narrow, the header text shortens with an ellipsis (hover it for the full channel name), and a column stops at its minimum width rather than collapsing; use the <code>✕</code> in a pane's header when you want it gone.</p>
     <p>By default panes stack in <strong>columns</strong> (as in the table above). If you'd rather stack them in <strong>horizontal rows</strong> instead (handy on a portrait or vertically-oriented monitor), turn on <strong>Preferences → Interface → Stack Panes in Rows</strong>. The layout re-flows immediately and the choice is remembered across restarts (<code>pane_stack_rows</code> in <code>config.toml</code>). Every shape in the table above is simply rotated 90°: 2 panes stack top/bottom, 3 panes become a full-width row plus two side by side beneath it, and 4 panes stay a 2×2 grid with rows and columns swapped.</p>
 
     <h3>Rearranging panes</h3>
-    <p>Click and drag any pane's header bar to rearrange it — the primary view included. The pane <strong>lifts out and follows your cursor</strong> as a snapshot, and its old spot fills with a placeholder in the theme's panel color until you drop. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop a pane on the primary channel area instead, and the dragged pane stays exactly where it is; the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content. The cursor keeps the grab hand for the whole gesture, and releasing anywhere that isn't a highlighted target simply cancels the drag — the pane stays where it was.</p>
+    <p>Click and drag any pane's header bar to rearrange it, the primary view included. The pane <strong>lifts out and follows your cursor</strong> as a snapshot, and its old spot fills with a placeholder in the theme's panel color until you drop. While you drag, the pane (or primary view) under the cursor is outlined with a <strong>highlight frame all the way around</strong>, so you can see exactly which one will receive the drop. Drop it on another pane to swap their positions. Drop a pane on the primary channel area instead, and the dragged pane stays exactly where it is; the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content. The cursor keeps the grab hand for the whole gesture, and releasing anywhere that isn't a highlighted target simply cancels the drag; the pane stays where it was.</p>
     <p>You can also cycle keyboard focus between the open panes without touching the mouse: <strong>Alt+Left / Alt+Right</strong> moves focus through the pane input bars (the primary input included), in layout order.</p>
 
     <h3>Popping a channel out into its own window</h3>
@@ -1965,7 +1965,7 @@ typing_indicator = true   # set to false to disable completely</pre>
     </figure>
 
     <ul>
-      <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears at the top-right of the chat area; click it to expand the panel again.</li>
+      <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears in the channel header row, right of the search button; click it to expand the panel again.</li>
       <li>Drag the divider between the chat and the nick panel to resize it; width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
       <li>Nicks with <code>+B</code> (bot mode) show a small robot icon drawn inline to the right of their name. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
@@ -2132,7 +2132,7 @@ typing_indicator = true   # set to false to disable completely</pre>
     </div>
 
     <div class="note">
-      <strong>Bouncers block metadata.</strong> Neither soju nor ZNC passes <code>draft/metadata-2</code> through to clients, so behind a bouncer you will not see anyone's avatar and your own profile will not publish — even when the network itself supports metadata. Connect to the network directly for the full experience. Run <code>/caps</code> in a server buffer to see which capabilities survived your bouncer.
+      <strong>Bouncers block metadata.</strong> Neither soju nor ZNC passes <code>draft/metadata-2</code> through to clients, so behind a bouncer you will not see anyone's avatar and your own profile will not publish, even when the network itself supports metadata. Connect to the network directly for the full experience. Run <code>/caps</code> in a server buffer to see which capabilities survived your bouncer.
     </div>
 
     <h3>Where it displays</h3>
@@ -2275,10 +2275,10 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
 
     <h3>The byte counter</h3>
     <p>
-      IRC limits each message to roughly 500 bytes on the wire. When a message passes half that budget, a small counter fades in at the right edge of the input box, e.g. <code>412/493</code> (bytes used / bytes available — the exact budget depends on the channel name and any pending reply). Cross the limit and the counter turns amber and switches to a message count, e.g. <code>2 messages</code>: nothing is ever cut off — Uplink splits long text into multiple messages (always at character-safe boundaries) and the counter tells you how many will be sent.
+      IRC limits each message to roughly 500 bytes on the wire. When a message passes half that budget, a small counter fades in at the right edge of the input box, e.g. <code>412/493</code> (bytes used / bytes available; the exact budget depends on the channel name and any pending reply). Cross the limit and the counter turns amber and switches to a message count, e.g. <code>2 messages</code>: nothing is ever cut off; Uplink splits long text into multiple messages (always at character-safe boundaries) and the counter tells you how many will be sent.
     </p>
     <p>
-      Bold/color formatting and emoji count against the budget (they cost bytes on the wire even when they look like one character), so the counter can move faster than your character count. Under half budget the counter stays hidden — normal chat never sees it.
+      Bold/color formatting and emoji count against the budget (they cost bytes on the wire even when they look like one character), so the counter can move faster than your character count. Under half budget the counter stays hidden; normal chat never sees it.
     </p>
   </section>
 
@@ -2311,7 +2311,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/whois nick</code></td><td>Full user info (hostname, channels, idle time, account); reply appears in the active channel</td><td><code>/whois bob</code></td></tr>
       <tr><td><code>/whowas nick</code></td><td>History for a departed nick (last known user@host and realname); reply appears in the active channel</td><td><code>/whowas bob</code></td></tr>
       <tr><td><code>/setname realname</code></td><td>Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname)</td><td><code>/setname Alice Smith</code></td></tr>
-      <tr><td><code>/list [filter]</code></td><td>List all channels on the server; results appear in the server buffer</td><td><code>/list</code>, <code>/list #linux</code></td></tr>
+      <tr><td><code>/list</code></td><td>Open the channel browser: a sortable dialog of every channel with user counts and topics; type in the dialog to filter</td><td><code>/list</code></td></tr>
       <tr><td><code>/stats query</code></td><td>Request server statistics; results appear in the active channel</td><td><code>/stats u</code></td></tr>
       <tr><td><code>/time</code></td><td>Query the server's local time</td><td><code>/time</code></td></tr>
       <tr><td><code>/version nick</code></td><td>Ask what IRC client a nick is running; reply appears in the active channel</td><td><code>/version bob</code></td></tr>
@@ -2337,10 +2337,10 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
     </table>
 
     <div class="callout">
-      <strong>Tip: oper and server-specific commands work directly.</strong>
-      If a command is not in the list above, just type it; Uplink passes it straight to the server.
-      This means IRC operator commands like <code>/REHASH</code>, <code>/SAMODE</code>, <code>/GLOBOPS</code>, <code>/OPER</code>, and any other server-specific command work without needing a <code>/raw</code> prefix.
-      Uplink does not need to know about every command your server supports.
+      <strong>Tip: use <code>/raw</code> for server-specific commands.</strong>
+      Commands that are not in the list above are not forwarded to the server; typing <code>/REHASH</code> prints <em>Unknown command</em> and sends nothing, which protects you from typos silently going to the server.
+      To send oper or server-specific commands like <code>REHASH</code>, <code>SAMODE</code>, or <code>GLOBOPS</code>, prefix them with <code>/raw</code> (or its alias <code>/quote</code>): <code>/raw SAMODE #chan +o alice</code>.
+      <code>/oper</code> itself is built in and works directly.
     </div>
 
     <div class="tip">
@@ -2736,12 +2736,12 @@ al[Shift+Tab]     →  alice:           (cycle back)
   <section id="drafts">
     <h2>Per-channel drafts</h2>
     <p>Half-typed messages stay with their channel. If you're writing something in <code>#linux</code> and switch to another channel to check a mention, the unsent text is stashed; when you come back to <code>#linux</code>, it's right where you left it, with the cursor at the end. Every channel and PM buffer keeps its own draft, so switching around never mixes them up or carries text into the wrong channel.</p>
-    <p>There's nothing to configure — it's just how the input box behaves.</p>
+    <p>There's nothing to configure; it's just how the input box behaves.</p>
     <ul>
       <li>Drafts are per-session and not saved to disk. Quitting Uplink discards them.</li>
       <li>Sending or clearing the message discards that buffer's draft, as you'd expect.</li>
       <li>Closing a channel or removing a server discards its drafts.</li>
-      <li>Switching away while a draft is pending also ends your "is typing…" indicator in that channel — you won't appear to be typing in a channel you've left open in the background.</li>
+      <li>Switching away while a draft is pending also ends your "is typing…" indicator in that channel; you won't appear to be typing in a channel you've left open in the background.</li>
     </ul>
   </section>
 
@@ -2774,7 +2774,7 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <p><kbd>Ctrl+F</kbd> only covers the messages currently loaded in the buffer. To search the current channel's <em>entire logged history</em>, press <kbd>Ctrl+Shift+F</kbd>. This opens a separate window that scans the channel's on-disk log file and lists matching lines newest-first. Tick <strong>Regex</strong> to match with a regular expression instead of a plain substring.</p>
     <p>Because it reads the log on disk, full history search only covers messages that were actually logged: enable <strong>message logging</strong> in Preferences to record history. Without it, there is nothing on disk to search beyond the visible buffer.</p>
     <p>Double-click a result (or press <kbd>Enter</kbd> on it) to jump to that message in the channel: Uplink loads older history from the server if it has to, scrolls to the message, and briefly highlights it. On servers without history support the jump lands at the oldest message it can reach.</p>
-    <p>Tick <strong>All buffers</strong> to search every logged channel and PM across all your servers in one pass. Results are grouped per buffer: a bold header shows the channel, server, and match count, followed by that buffer's newest matches. Jumping works the same from here — double-click a result to land on that message in its buffer.</p>
+    <p>Tick <strong>All buffers</strong> to search every logged channel and PM across all your servers in one pass. Results are grouped per buffer: a bold header shows the channel, server, and match count, followed by that buffer's newest matches. Jumping works the same from here: double-click a result to land on that message in its buffer.</p>
 
     <figure class="shot">
       <img src="shots/history-search.png" loading="lazy"
@@ -3162,7 +3162,7 @@ theme = "catppuccin-mocha"</pre>
     <p>Each section of a theme colors its own region of the window: <code>[sidebar]&nbsp;background</code> fills the server/channel list, <code>[nicklist]&nbsp;background</code> the user list, <code>[buffer]&nbsp;background</code> the chat area, and <code>[general]&nbsp;background</code> the window backdrop that shows around the rounded panel cards. Both side panels float as fully rounded cards with an even backdrop gap on all sides; themes that define distinct backgrounds per section get a layered, multi-tone look, while themes that reuse one color stay flat.</p>
     <p>Prefer the old uniform look? Untick <strong>Preferences → Interface → Panel Cards</strong> (config key <code>panel_cards</code>) and every theme renders flat on the buffer color, exactly as before: no rounded corners, no per-panel tones.</p>
 
-    <p>The status lines in chat — joins, leaves, nick and topic changes, notices — are colored from the theme's own palette by default, so they match whatever theme is active: leaves and errors take the theme's mention/red, joins its self-nick/green, nick and topic changes its accent/blue, notices and wallops its keyword/amber. To override any of them, add an optional <code>[events]</code> section. It takes seven keys: <code>join</code>, <code>leave</code> (part/quit/kick), <code>nick</code> (nick and topic changes), <code>notice</code>, <code>error</code>, <code>reply</code>, and <code>wallops</code> — each optional, falling back to the palette default when omitted.</p>
+    <p>The status lines in chat (joins, leaves, nick and topic changes, notices) are colored from the theme's own palette by default, so they match whatever theme is active: leaves and errors take the theme's mention/red, joins its self-nick/green, nick and topic changes its accent/blue, notices and wallops its keyword/amber. To override any of them, add an optional <code>[events]</code> section. It takes seven keys: <code>join</code>, <code>leave</code> (part/quit/kick), <code>nick</code> (nick and topic changes), <code>notice</code>, <code>error</code>, <code>reply</code>, and <code>wallops</code>, each optional, falling back to the palette default when omitted.</p>
     <pre>[events]
 join    = "#2e8b57"
 leave   = "#e06b6b"
@@ -3241,7 +3241,7 @@ nick_brackets = "[]"   # square brackets</pre>
     <p>Drag the divider between the sidebar and the chat to resize it. Width is saved on quit.</p>
 
     <h3>Nick list (user list)</h3>
-    <p>Click the <strong>▦ close button</strong> in the <strong>nick panel header</strong> (top-right corner). The panel collapses. A floating reveal button appears at the top-right of the chat area; click it to expand again.</p>
+    <p>Click the <strong>▦ close button</strong> in the <strong>nick panel header</strong> (top-right corner). The panel collapses. A reveal button appears in the channel header row, right of the search button; click it to expand again.</p>
     <p>Drag the divider between the chat and the nick panel to resize it. Width is saved on quit.</p>
 
     <h3>Topic display</h3>
@@ -3484,7 +3484,7 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
 </main>
 
 <footer>
-  Uplink &mdash; <a href="https://github.com/noderelay/UplinkIRC">GitHub</a> &middot;
+  Uplink: <a href="https://github.com/noderelay/UplinkIRC">GitHub</a> &middot;
   <a href="index.html">Home</a> &middot;
   <a href="configuration.md">Config reference</a> &middot;
   <a href="commands.md">Commands</a> &middot;

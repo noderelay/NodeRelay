@@ -73,9 +73,11 @@ Client → AUTHENTICATE +
 Server → 903 :SASL authentication successful
 ```
 
-### `draft/typing`
+### `typing` / `draft/typing`
 
-When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input — or switch to another buffer with text still in the box — it sends `+typing=done` to the channel you were typing in.
+Uplink requests both the ratified `typing` cap name and the older `draft/typing` used by most servers today, so typing indicators work wherever either name is offered.
+
+When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input (or switch to another buffer with text still in the box), it sends `+typing=done` to the channel you were typing in.
 
 Incoming typing notifications from other users appear as "nick is typing…" above the input bar and time out automatically. The feature can be toggled from the **Preferences** dialog (**Settings → Preferences**, or **Ctrl+,**).
 
@@ -83,9 +85,13 @@ Incoming typing notifications from other users appear as "nick is typing…" abo
 
 CAP is negotiated. Labels tie server responses to outgoing commands.
 
+### `echo-message`
+
+With this cap the server echoes your own `PRIVMSG` and `TAGMSG` back to you. Uplink renders your outgoing messages from that echo instead of optimistically: your line appears in the buffer with the server's timestamp and, most importantly, its `msgid`, which is what makes reactions, replies, and redaction work on your own messages. Without the cap, Uplink falls back to echoing locally the moment you hit Enter. Self-echoes are recognized and never re-trigger typing indicators or DCC handling.
+
 ### `msgid`
 
-Assigns a globally unique ID to every message. Parsed from the `msgid` tag on all incoming `PRIVMSG`, `NOTICE`, and `ACTION` messages, stored on the `Message` struct, and carried through batch delivery. Used as the anchor for `draft/reply`, `draft/react`, and future redaction (`draft/message-redaction`).
+Assigns a globally unique ID to every message. This is a message tag that arrives via `message-tags` rather than a capability Uplink requests by name. Parsed from the `msgid` tag on all incoming `PRIVMSG`, `NOTICE`, and `ACTION` messages, stored on the `Message` struct, and carried through batch delivery. Used as the anchor for `draft/reply`, `draft/react`, and future redaction (`draft/message-redaction`).
 
 ### `draft/reply`
 
@@ -214,7 +220,7 @@ Without this, a busy network split would print one quit line per user, often hun
 
 ### `standard-replies`
 
-A structured format for servers to send machine-readable diagnostics using three commands:
+A structured format for servers to send machine-readable diagnostics. Uplink requests the cap, and also parses the three commands from servers that send them without advertising it:
 
 | Command | Meaning | Uplink display |
 |---|---|---|
@@ -292,7 +298,7 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 
 Associates key-value metadata with users: display names and avatar URLs stored server-side and synced to clients in real time.
 
-Uplink subscribes to `display-name` and `avatar` changes at registration (`METADATA * SUB`), and fetches a user's keys on demand the first time you hover their nick — a channel-wide fetch on join would flood rate-limited servers. When a subscribed user changes a key, the server pushes a `METADATA` notification and Uplink updates immediately. Data is stored per-nick, the avatar image is fetched in the background, and everything shows in the **nick list tooltip**:
+Uplink subscribes to `display-name` and `avatar` changes at registration (`METADATA * SUB`), and fetches a user's keys on demand the first time you hover their nick; a channel-wide fetch on join would flood rate-limited servers. When a subscribed user changes a key, the server pushes a `METADATA` notification and Uplink updates immediately. Data is stored per-nick, the avatar image is fetched in the background, and everything shows in the **nick list tooltip**:
 
 ```
 [avatar image]  Name: Alice Smith
@@ -340,7 +346,7 @@ No additional configuration is required; metadata is received, fetched, and disp
 
 The on-demand fetch is retried sensibly: a lookup that fails because the user just went offline no longer blocks that nick for the rest of the session, and a user rejoining clears their cached metadata so the next hover fetches fresh values (the server only pushes changes while both sides are online). The first hover on a nick requests the data; the tooltip fills in on the next hover.
 
-**Bouncers:** neither soju nor ZNC passes `draft/metadata-2` through to clients, so metadata works on direct connections only — behind a bouncer Uplink never sees the capability and skips metadata entirely. Use `/caps` in a server buffer to check what your bouncer forwards.
+**Bouncers:** neither soju nor ZNC passes `draft/metadata-2` through to clients, so metadata works on direct connections only; behind a bouncer Uplink never sees the capability and skips metadata entirely. Use `/caps` in a server buffer to check what your bouncer forwards.
 
 ### WebSocket transport
 

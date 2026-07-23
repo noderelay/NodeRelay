@@ -16,10 +16,10 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 | **Arch Linux** | AUR | `yay -S uplink-irc` (or `uplink-irc-bin` prebuilt, `uplink-irc-git` dev) |
 | **Linux x86_64** | tar.gz | Extract, then `./Uplink` |
 | **Windows x64** | zip | Extract and run `Uplink.exe` |
-| **macOS (Apple Silicon)** | DMG | Open and drag to Applications — or `brew tap noderelay/uplink && brew trust noderelay/uplink && brew install --cask uplink` |
+| **macOS (Apple Silicon)** | DMG | Open and drag to Applications, or `brew tap noderelay/uplink && brew trust noderelay/uplink && brew install --cask uplink` |
 | **FreeBSD** | - | Build from source (see below) |
 
-> **macOS note:** The DMG is built for Apple Silicon (arm64) and does not run on Intel Macs (Rosetta only translates in the other direction — Intel apps on Apple Silicon). Intel users: build from source. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.
+> **macOS note:** The DMG is built for Apple Silicon (arm64) and does not run on Intel Macs (Rosetta only translates in the other direction: Intel apps on Apple Silicon). Intel users: build from source. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.
 
 The AppImage is the recommended Linux download. It is self-contained, runs on any modern x86_64 Linux with glibc 2.35+, and supports in-place updates (see [How do I update the AppImage?](#how-do-i-update-the-appimage) below).
 
@@ -447,6 +447,12 @@ theme_light = "light"
 theme_dark = "dark"
 ```
 
+### Can I change the colors of join/part/quit lines?
+
+Yes. Event and status lines (joins, parts, quits, nick changes, topics, notices, errors, server replies) take their colors from the active theme automatically: joins use the theme's green, parts and quits its red, nick and topic changes its blue, notices its amber. Switch themes and they recolor to match; nothing to configure.
+
+If you write your own theme and want different colors for specific line types, add an `[events]` section to the theme file; see the [theme file format](configuration.md#theme-file-format) for the seven keys. Leaving the section out entirely gives you the automatic palette-derived colors.
+
 ### How do I change the font size?
 
 Use **Ctrl+Plus** / **Ctrl+Minus** to zoom the font for the UI region that currently has focus (chat, nick list, sidebar, channel header, or input box). You can also use **Ctrl+Scroll wheel** to zoom the region under the cursor. Each region has its own independent font size. For fine-grained control, open **Preferences → Appearance → Font Config** to set exact point sizes for each region. Font sizes are saved to your config automatically.
@@ -461,6 +467,10 @@ font_input = 10
 font_nick_dock = 9
 ```
 
+### What happens if my configured font isn't installed?
+
+Nothing breaks: Uplink notices the font is missing and falls back to your system's default monospace font, so text stays readable. This matters most on fresh installs where the default **IBM Plex Mono** (or **Consolas** on Windows) may not be present. To use the intended font, install it with your package manager (e.g. `ttf-ibm-plex` on Arch) and restart; your `font_family` setting is kept as-is and picks it up automatically.
+
 ### How do I hide or show the server/channel list?
 
 Click the **close button** in the top-left corner of the sidebar panel. The sidebar collapses completely; the chat panel expands to fill the window. A **reveal button** appears at the bottom-left of the chat area; click it to bring the sidebar back.
@@ -469,20 +479,20 @@ You can also drag the divider between the sidebar and the chat area to resize it
 
 ### How do I hide or show the user list?
 
-Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears so you can bring it back with one click — on v2026.7.8 it floats at the top-right of the chat area; from the next release it sits in the header row right of the search button. Drag the splitter between the chat view and the user list to resize the panel; the width is saved and restored on the next launch.
+Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears in the channel header row, right of the search button, so you can bring it back with one click. Drag the splitter between the chat view and the user list to resize the panel; the width is saved and restored on the next launch.
 
 ### My user list vanished and dragging won't bring it back
 
 Two different things can look like a missing user list:
 
-- **You're not in a channel.** The user list only exists in channels — the server window and private messages never show one. Join a channel and check again.
-- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab — and the stuck state was remembered across restarts. **v2026.7.8** brings a stuck list back automatically on startup, but if your config predates the fix the panel can still snap shut when you drag the divider — the old saved layout carries the bad behavior with it. One-time cleanup makes it permanent: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux) — on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit — then relaunch. The next release retires that config entry entirely and migrates old configs on its own.
+- **You're not in a channel.** The user list only exists in channels; the server window and private messages never show one. Join a channel and check again.
+- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab, and the stuck state was remembered across restarts. **v2026.7.8** brings a stuck list back automatically on startup, but if your config predates the fix the panel can still snap shut when you drag the divider; the old saved layout carries the bad behavior with it. One-time cleanup makes it permanent: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux); on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit, then relaunch. The next release retires that config entry entirely and migrates old configs on its own.
 
 ### How do I show the channel topic?
 
 The channel header row at the top of the chat area shows `#channel (+modes)`. The connected network name appears inline in the nick panel header (`* NetworkName`). To see the actual channel topic text:
 
-- **Global toggle:** click **⚙** to open **Preferences** → check **Show Topic Bar**. Or set in config:
+- **Global toggle:** open **Settings → Preferences** (**Ctrl+,**) → check **Show Topic Bar**. Or set in config:
   ```toml
   [ui]
   show_topic = true
@@ -518,7 +528,7 @@ away_message = "Away from keyboard, back soon"
 
 ### How do I hide my nick next to the input box?
 
-Click **⚙** to open **Preferences** and check **Show Nick in Input**. Or set it in config:
+Open **Settings → Preferences** (**Ctrl+,**) and uncheck **Show Nick in Input**. Or set it in config:
 
 ```toml
 [ui]
@@ -700,11 +710,15 @@ It depends on your state when you left:
 - **You were reading back through history** (scrolled up) → Uplink restores your exact scroll position so you can pick up where you left off.
 - **New messages arrived while you were away** → Uplink scrolls to the **unread separator** (see above), regardless of where you were scrolled. This always takes priority so you never miss the unread boundary.
 
-### I was halfway through typing a message and switched channels — where did it go?
+### I was halfway through typing a message and switched channels. Where did it go?
 
-Nowhere: it's waiting in the channel you were typing it in. Each channel and PM buffer keeps its own draft of unsent input text. Switch away mid-sentence, reply to something else, switch back — your half-typed message is restored with the cursor at the end.
+Nowhere: it's waiting in the channel you were typing it in. Each channel and PM buffer keeps its own draft of unsent input text. Switch away mid-sentence, reply to something else, switch back; your half-typed message is restored with the cursor at the end.
 
 Drafts are per-session: they are not saved to disk, and quitting Uplink discards them. Closing a channel discards its draft too.
+
+### What's the fastest way to jump to another channel?
+
+Press **Ctrl+K** (Cmd+K on macOS) to open the **quick switcher**: a small popup listing every buffer on every server. Start typing any part of a channel or server name to filter the list, then press **Enter** to jump to the highlighted entry (arrow keys move the highlight, **Escape** closes it). For example, typing `upl` is enough to jump to `#uplinkirc` from anywhere. **Alt+Up/Down** also steps through channels one at a time if you just want the next one.
 
 ### How do I filter the nick list to find someone in a big channel?
 
@@ -768,7 +782,7 @@ You can also use `/react <emoji>` after right-clicking a message and choosing **
 
 ### How do I turn message logging on or off?
 
-Click **⚙** to open **Preferences** and check or uncheck **Log Messages to Disk**.
+Open **Settings → Preferences** (**Ctrl+,**) and check or uncheck **Log Messages to Disk**.
 
 When enabled, all messages are appended to log files at:
 ```
@@ -789,6 +803,15 @@ You can also set it in config:
 [ui]
 log_messages = true    # off by default, opt-in
 ```
+
+### How far back can I scroll in a channel?
+
+As far as your history reaches. Scrolling to the top of a channel keeps loading older messages automatically, from whichever source is available:
+
+- **On networks with server-side history** (`chathistory`: Ergo, soju, modern ZNC), Uplink asks the server for the next 100 older messages each time you hit the top, until the server runs out.
+- **Everywhere else**, Uplink pages older messages out of its own log files on your disk, so scrollback works even on plain networks like Libera with no bouncer. This needs **Log Messages to Disk** enabled in Preferences (see the previous answer); history accumulates from the moment you turn it on.
+
+If Uplink hits the true end of what it has and logging is off, a status line at the top of the buffer tells you exactly that and points you at the setting. Messages loaded from history appear dimmed with their original timestamps.
 
 ### How do I message NickServ or ChanServ?
 
@@ -858,7 +881,7 @@ Uplink enforces two receive limits before accepting a transfer:
 Open **Help → Check for Updates** from the menu bar. Uplink connects to the GitHub releases API, reads the latest version tag, and compares it to the version you have installed.
 
 - If a newer version is available, a dialog offers to download and install it automatically. Linux AppImage users get an in-place replace and relaunch. Windows downloads the ZIP to your Downloads folder. macOS downloads and opens the DMG in Finder. Source builds see an informational message instead.
-- Installed from the AUR (or another system package)? Uplink notices and points you at your package manager instead of self-updating — `yay -Syu uplink-irc` keeps it current like everything else on your system.
+- Installed from the AUR (or another system package)? Uplink notices and points you at your package manager instead of self-updating: `yay -Syu uplink-irc` keeps it current like everything else on your system.
 - If you're already on the latest version, a dialog confirms that.
 
 The check requires an internet connection. It sends one small HTTPS request to `api.github.com` and nothing else.
@@ -867,11 +890,11 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme; the update checker handles both.)
 
-Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.6+9dbfe64` — the base version plus the short git hash (with `.dirty` added if the source tree had uncommitted changes). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
+Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.8+9dbfe64`, the base version plus the short git hash (with `.dirty` added if the source tree had uncommitted changes). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
 
 ### How do I get debug logs for a bug report?
 
-Uplink can print protocol-level debug output to the terminal, switched on at runtime with the `QT_LOGGING_RULES` environment variable — no special build needed. Three categories exist:
+Uplink can print protocol-level debug output to the terminal, switched on at runtime with the `QT_LOGGING_RULES` environment variable; no special build needed. Three categories exist:
 
 | Category | Covers |
 |---|---|
@@ -892,11 +915,11 @@ QT_LOGGING_RULES="uplink.*.debug=true" ./Uplink
 QT_LOGGING_RULES="uplink.irc.debug=true" ./Uplink 2> uplink-debug.log
 ```
 
-Passwords and SASL credentials are redacted from the logged traffic, but the output still contains your conversations and the channels you're in — read it before pasting it anywhere public.
+Passwords and SASL credentials are redacted from the logged traffic, but the output still contains your conversations and the channels you're in; read it before pasting it anywhere public.
 
 ### What do the signal bars mean? (lag / latency indicator)
 
-The four stair-step bars in the top-right of the server/channel list header show your connection latency to the active server. Hover over them to see the exact millisecond value.
+The four stair-step bars at the left edge of the channel header row (just before the topic bubble) show your connection latency to the active server. Hover over them to see the exact millisecond value.
 
 | Bars | Latency | Quality |
 |---|---|---|
@@ -1053,7 +1076,7 @@ Click **Help → Documentation** to open the help viewer. A search field sits at
 
 ### How do link previews work?
 
-Link previews are **disabled by default**. To enable them, click **⚙** to open **Preferences** and check **Link Previews**, or add this to `config.toml`:
+Link previews are **disabled by default**. To enable them, open **Settings → Preferences** (**Ctrl+,**) and check **Link Previews**, or add this to `config.toml`:
 
 ```toml
 [privacy]
@@ -1092,14 +1115,14 @@ Preview cards survive channel switches; cards are stored per-channel and reinjec
 
 ### The emoji button doesn't show
 
-The emoji button is hidden by default. Click **⚙** to open **Preferences** and check **Show Emoji Button**, or set it in config:
+The emoji button is hidden by default. Open **Settings → Preferences** (**Ctrl+,**) and check **Show Emoji Button**, or set it in config:
 
 ```toml
 [ui]
 show_emoji_button = true
 ```
 
-Once visible, clicking `😊` opens a searchable grid of ~400 emoji. You can also type `:shortcode:` directly in the input box; a completion list appears as you type, and pressing Enter, Tab, or clicking an entry inserts the emoji. Typing the full `:trident:` with the closing colon substitutes it instantly without the completion list.
+Once visible, clicking `😊` opens a searchable grid of ~1,900 emoji. You can also type `:shortcode:` directly in the input box; a completion list appears as you type, and pressing Enter, Tab, or clicking an entry inserts the emoji. Typing the full `:trident:` with the closing colon substitutes it instantly without the completion list.
 
 ### How do I search the chat buffer?
 
@@ -1123,18 +1146,18 @@ Switching channels automatically cancels any pending reply.
 
 Close the window normally; it minimizes to the system tray instead of quitting. Left-click the tray icon to bring the window back. Right-click for a menu with **Show** and **Quit**.
 
-### How do I switch the app icon between dark and light?
+### How do I change the app icon?
 
-Open **Preferences** (click **⚙** in the channel header) and find the **App Icon** section. Select **Dark** or **Light**; the icon changes immediately in the title bar and system tray without restarting.
+Open **Settings → Preferences** (**Ctrl+,**) and find the **App Icon** grid on the Appearance page. It shows all 15 icon variants as clickable tiles: click one and the icon changes immediately in the title bar and system tray without restarting. The preference is saved automatically.
 
 You can also set it directly in `config.toml`:
 
 ```toml
 [ui]
-app_icon = "dark"    # or "light"
+app_icon = "flat-black"    # the default
 ```
 
-Use **Dark** for dark OS themes and **Light** for light OS themes. The preference is saved automatically.
+Valid names are the 15 variants listed in [Configuration](configuration.md): `flat-black`, `black-old-orange`, `black-orange`, `original-black`, `original-flat-shine`, `colorful-blueish`, `colorful-greenblue`, `colorful-hotbluepink`, `colorful-orange`, `colorful-purple`, and the five `gruvbox-*` colors. Old configs with `app_icon = "dark"` or `"light"` still work; they map to `flat-black` and `original-flat-shine` automatically.
 
 ### macOS says the app is damaged or can't be opened
 
@@ -1165,7 +1188,7 @@ xattr -dr com.apple.quarantine ~/Downloads/Uplink-*.dmg
 
 Then open the DMG normally. The `-d` flag removes the attribute, `-r` applies it recursively (covers the app bundle inside).
 
-> The DMG is built for **Apple Silicon (arm64)** and does not run on Intel Macs — Rosetta 2 translates Intel apps for Apple Silicon, not the reverse. On an Intel Mac, build from source instead.
+> The DMG is built for **Apple Silicon (arm64)** and does not run on Intel Macs: Rosetta 2 translates Intel apps for Apple Silicon, not the reverse. On an Intel Mac, build from source instead.
 
 ---
 
@@ -1226,7 +1249,7 @@ This means the server's certificate changed. To re-pin:
 2. Restart Uplink (or click **File → Reload Config**).
 3. Your theme appears in the **Preferences** theme list.
 
-The theme format uses named `{{key}}` placeholders for colors. Look at any of the 297 built-in themes for the full list of keys.
+A theme file is plain TOML: color sections like `[general]`, `[buffer]`, and `[nicklist]`, each holding `"#rrggbb"` color keys. Every key is optional and falls back to a sensible default. See the [theme file format reference](configuration.md#theme-file-format) for every section and key, or open any of the 297 built-in themes as a live example.
 
 ---
 
@@ -1309,7 +1332,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 Uplink fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
 
-- **Are link previews enabled?** They are off by default. Click **⚙** to open **Preferences** and check **Link Previews**, or add `link_previews = true` under `[privacy]` in `config.toml`.
+- **Are link previews enabled?** They are off by default. Open **Settings → Preferences** (**Ctrl+,**) and check **Link Previews**, or add `link_previews = true` under `[privacy]` in `config.toml`.
 - **Direct image link**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
 - **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`); redirects are followed automatically.
 - **YouTube and heavy sites**: as of v0.12.0, Uplink uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
@@ -1332,11 +1355,11 @@ Preview cards are stored per-channel and reinjected when you switch back, so the
 
 ### Why don't avatars or display names show through my bouncer?
 
-Metadata travels in the IRCv3 `draft/metadata-2` capability, and a client can only use the capabilities its bouncer re-offers. Neither soju nor ZNC passes `draft/metadata-2` through (ZNC only forwards capabilities its loaded modules declare), so behind a bouncer Uplink never sees the capability and correctly skips all metadata — no avatars in, no profile out. Connect to the network directly and everything works. To see exactly which capabilities survived your bouncer, run `/caps` in that server's buffer.
+Metadata travels in the IRCv3 `draft/metadata-2` capability, and a client can only use the capabilities its bouncer re-offers. Neither soju nor ZNC passes `draft/metadata-2` through (ZNC only forwards capabilities its loaded modules declare), so behind a bouncer Uplink never sees the capability and correctly skips all metadata: no avatars in, no profile out. Connect to the network directly and everything works. To see exactly which capabilities survived your bouncer, run `/caps` in that server's buffer.
 
 ### My own avatar shows for me but nobody else sees it
 
-A local file path (e.g. `/home/you/avatar.png`) is displayed only in your own client and is deliberately never published — other people's clients can't read files on your disk. Host the image at a public `https://` URL and set that as your avatar instead (Preferences → Profile, or `/avatar https://...`).
+A local file path (e.g. `/home/you/avatar.png`) is displayed only in your own client and is deliberately never published: other people's clients can't read files on your disk. Host the image at a public `https://` URL and set that as your avatar instead (Preferences → Profile, or `/avatar https://...`).
 
 ### Someone set their avatar but my tooltip doesn't show it
 
