@@ -247,4 +247,9 @@ private:
     QSet<QString> m_logSeeded;            // buffers already seeded from local logs this run
     QSet<QString> m_pendingHistoryBefore; // "host\tchannel" keys awaiting CHATHISTORY BEFORE
     QHash<QString, QList<Message>> m_historyBeforeBuf; // collected prepend messages
+
+    void queueReadMark(const ServerId &host, const BufferId &channel);
+    void flushReadMarks();
+    QHash<QString, QPair<ServerId, BufferId>> m_pendingReadMarks; // bufferKey → buffer
+    bool m_readMarkQueued{false};
 };
