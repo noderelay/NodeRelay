@@ -190,6 +190,9 @@ private:
     quint16      m_port{6697};
     bool         m_ssl{true};
     QString      m_nick;
+    QString      m_wantedNick;         // configured nick, for post-SASL reclaim
+    bool         m_nickFallback{false}; // 433 during registration forced a fallback nick
+    bool         m_saslAuthed{false};
     QString      m_user;
     QString      m_realname;
     QString      m_password;

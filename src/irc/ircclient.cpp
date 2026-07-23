@@ -75,6 +75,9 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_port            = cfg.port;
     m_ssl             = cfg.ssl;
     m_nick            = cfg.nick;
+    m_wantedNick      = cfg.nick;
+    m_nickFallback    = false;
+    m_saslAuthed      = false;
     m_user            = cfg.user;
     m_realname        = cfg.realname;
     m_password        = cfg.password;
@@ -535,6 +538,8 @@ void IrcClient::onDisconnected()
     m_capLsBuffer.clear();
     m_batches.clear();
     m_saslPending    = false;
+    m_saslAuthed     = false;
+    m_nickFallback   = false;
     m_registered     = false;
     m_supportsWhox   = false;
     m_bouncerListing = false;
@@ -1513,6 +1518,15 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             sendRaw("MONITOR + " + m_monitorList.join(','));
         if (hasMetadataCap())
             sendRaw("METADATA * SUB display-name avatar");
+        // Registration bumped us off the configured nick (433 fallback). If
+        // SASL says we own it, take it back — once; a refusal just leaves the
+        // fallback nick and the normal in-use error. Raw send on purpose:
+        // m_nick must only change via the NICK echo if the server agrees.
+        if (m_nickFallback) {
+            m_nickFallback = false;
+            if (m_saslAuthed && m_nick.compare(m_wantedNick, Qt::CaseInsensitive) != 0)
+                sendRaw("NICK " + m_wantedNick);
+        }
         break;
 
     case 2:   // RPL_YOURHOST
@@ -1629,6 +1643,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 903: // RPL_SASLSUCCESS
         emit serverMessage(m_serverName, "SASL authentication successful");
+        m_saslAuthed  = true;
         m_saslPending = false;
         sendRaw("CAP END");
         break;
@@ -1640,10 +1655,12 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
 
     case 433: // ERR_NICKNAMEINUSE
-        if (!m_registered)
+        if (!m_registered) {
+            m_nickFallback = true;
             setNick(m_nick + "_");
-        else
-            emit errorMessage(m_serverName, "Nickname " + m_nick + " is already in use");
+        } else {
+            emit errorMessage(m_serverName, "Nickname " + params.value(1, m_nick) + " is already in use");
+        }
         break;
 
     case 431: case 432:

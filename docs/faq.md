@@ -384,7 +384,7 @@ When two Uplinks share one identity, reading a channel on one clears its unread 
 
 1. **The server offers a read-marker capability** — `draft/read-marker` (Ergo and others) or `soju.im/read` (soju). Check with `/caps` in the server buffer.
 2. **Both clients are logged into the same account** via SASL. Unauthenticated connections are strangers to each other.
-3. **The server allows multiple connections on one account.** On Ergo that is the `multiclient` setting (`accounts.multiclient.enabled` + `allowed-by-default` in ircd.yaml, or `/msg NickServ SET MULTICLIENT ON` per account). If your second client connects as `yournick_` instead of `yournick`, this is what's missing.
+3. **The server allows multiple connections on one account.** On Ergo that is the `multiclient` setting (`accounts.multiclient.enabled` + `allowed-by-default` in ircd.yaml, or `/msg NickServ SET MULTICLIENT ON` per account). If your second client connects as `yournick_` instead of `yournick`, this is what's missing. (Uplink automatically tries to take the configured nick back once after SASL login succeeds; if the server still refuses, it stays on the fallback and shows the usual in-use error.)
 
 A marker only clears a badge once it covers everything in the buffer — if the other client read half the backlog, your badge stays.
 
