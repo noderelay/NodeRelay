@@ -1,6 +1,26 @@
 # Changelog
 
 <!--
+Session 2026-07-23 (last item): auto-reclaim nick after SASL. The
+sig_ finding from the multiclient session, built at Joe's request.
+Registration must send NICK before SASL completes, so a held nick
+433s into nick_ and stayed there forever even after auth proved
+ownership. Now: 433-during-registration sets m_nickFallback; on 001,
+if SASL succeeded (m_saslAuthed, set by 903) and the current nick
+differs from the configured one (m_wantedNick), send NICK <wanted>
+exactly once. Raw send, not setNick() — m_nick only updates via the
+server's NICK echo, so a refusal (post-reg 433, now naming the
+refused nick from params) leaves consistent state and the fallback
+nick. Guards: never fires without SASL success (NickServ-identify
+users could ghost-fight), never retries. Flags reset on connect and
+in the disconnect-reset block. NOT runtime-verified: the success
+path needs a SASL-authed connect against a held nick, which
+multiclient-enabled Ergo no longer produces (it attaches instead);
+compile+tests green, logic is one-shot and fail-quiet. FAQ multi-
+machine entry notes the auto-reclaim.
+-->
+
+<!--
 Session 2026-07-23 (late): read markers actually wired. Joe asked how
 to SEE the read-marker feature; answer was you couldn't — the
 soju.im/read support had always been plumbing only (cap negotiated,
