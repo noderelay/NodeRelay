@@ -29,8 +29,15 @@ height from document()->blockCount() clamped 1..4 (explicit Shift+Enter
 lines only, NEVER visual lines — that was #145's regression), existing
 max-pin in textChanged + rangeChanged kept (QPlainTextEdit scrolls in
 whole-line units, so the pin top-aligns the newest line and the
-previous line is never rendered). Joe still owes a visual check on his
-1.45x-scale KDE (headless repro lies there, per the Wayland notes).
+previous line is never rendered).
+OUTCOME (PR #148): #147 still showed the sliver on Joe's machine — the
+bug is intrinsic to the original geometry on his 1.45x-scale KDE
+Wayland setup, not something the session's changes introduced or could
+fix blind. All input sizing/wrap/pin code REVERTED byte-identical to
+the pre-#145 state at Joe's demand; only #144's Shift+Tab work remains.
+The sliver bug is OPEN. Rule going forward: NO input-rendering changes
+without a live visual verification loop on Joe's machine (screenshot
+per attempt); three blind attempts in one evening cost Joe real time.
 -->
 
 <!--

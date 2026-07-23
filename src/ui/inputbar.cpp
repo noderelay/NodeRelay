@@ -69,14 +69,6 @@ void MainWindow::setupInputBar()
 
     m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
-    // Wrap-reset typing, Joe's chosen behavior: the box stays ONE line
-    // tall while typing; when a sentence fills the width it wraps and the
-    // view jumps to the fresh line (cursor restarts at the left edge).
-    // Only the newest line may ever be visible. QPlainTextEdit scrolls in
-    // whole-line units, so the max-pin in textChanged/rangeChanged puts
-    // the current line's top exactly at the viewport top; the height must
-    // therefore NEVER be derived from visual (wrapped) lines — explicit
-    // Shift+Enter blocks only (see updateInputHeight).
     m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -209,7 +201,11 @@ void MainWindow::setupInputBar()
         m_sendBtn->setEnabled(!text.trimmed().isEmpty());
         checkEmojiAutocomplete(text);
         updateLengthIndicator();
-        updateInputHeight();
+        // Auto-resize: 1 to 4 lines
+        const int lineH = m_input->fontMetrics().lineSpacing();
+        const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
+        const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
+        m_input->setFixedHeight(lines * lineH + margins);
         // Soft-wrapped typing: pin the view to the freshest line ourselves —
         // Qt's implicit scroll-to-cursor runs against a stale scroll range
         // (it updates lazily), gets clamped to "no scrolling", and never
@@ -222,12 +218,10 @@ void MainWindow::setupInputBar()
         m_typing->noteInputChanged(!text.isEmpty());
     });
 
-    // The scroll range updates lazily, after textChanged — when it lands,
-    // re-measure the height (the wrap count may only be known now) and
-    // re-pin so the freshest line is what shows (see the pin above).
+    // The scroll range updates lazily, after textChanged — re-pin when it
+    // lands so the freshest line is what shows (see the pin above).
     connect(m_input->verticalScrollBar(), &QAbstractSlider::rangeChanged,
             this, [this](int, int max){
-        updateInputHeight();
         if (m_input->textCursor().atEnd())
             m_input->verticalScrollBar()->setValue(max);
     });
@@ -367,18 +361,6 @@ void MainWindow::applyInputColor(int fg, int bg)
     m_input->textCursor().setCharFormat(cf);
     m_input->setCurrentCharFormat(cf);
     updateFormatIndicator();
-}
-
-// Auto-resize: 1 to 4 lines, explicit Shift+Enter blocks ONLY. Soft wrap
-// must never grow the box (hard requirement: one visible line while
-// typing), so this counts blocks, not visual lines — document()->size()
-// would include wraps and regrow the box.
-void MainWindow::updateInputHeight()
-{
-    const int lineH   = m_input->fontMetrics().lineSpacing();
-    const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-    const int lines   = qBound(1, m_input->document()->blockCount(), 4);
-    m_input->setFixedHeight(lines * lineH + margins);
 }
 
 void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel,
