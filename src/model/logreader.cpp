@@ -53,10 +53,11 @@ QList<Message> readBefore(const QString &path, const QDateTime &oldest,
                           int sameSecondCount, int limit, qint64 blockSize)
 {
     QFile f(path);
-    if (limit <= 0 || !oldest.isValid() || !f.open(QIODevice::ReadOnly))
+    if (limit <= 0 || !f.open(QIODevice::ReadOnly))
         return {};
 
-    const qint64 oldestSec = oldest.toSecsSinceEpoch();
+    const bool bounded = oldest.isValid(); // invalid = no bound (readLatest)
+    const qint64 oldestSec = bounded ? oldest.toSecsSinceEpoch() : 0;
     int skipTies = qMax(0, sameSecondCount);
 
     QList<Message> out; // collected newest-first, reversed before returning
@@ -95,11 +96,13 @@ QList<Message> readBefore(const QString &path, const QDateTime &oldest,
             Message msg;
             if (!parseLine(line, msg))
                 continue;
-            const qint64 sec = msg.timestamp.toSecsSinceEpoch();
-            if (sec > oldestSec)
-                continue; // newer than the boundary — still in memory
-            if (sec == oldestSec) {
-                if (skipTies > 0) { --skipTies; continue; }
+            if (bounded) {
+                const qint64 sec = msg.timestamp.toSecsSinceEpoch();
+                if (sec > oldestSec)
+                    continue; // newer than the boundary — still in memory
+                if (sec == oldestSec) {
+                    if (skipTies > 0) { --skipTies; continue; }
+                }
             }
             out.append(msg);
         }

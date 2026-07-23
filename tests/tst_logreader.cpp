@@ -175,6 +175,25 @@ private slots:
         QCOMPARE(msgs.first().text, "kept");
     }
 
+    void readLatestReturnsNewest()
+    {
+        QStringList lines;
+        for (int i = 0; i < 30; ++i)
+            lines << logLine(m_base.addSecs(i), MessageType::Privmsg,
+                             "n", QString("msg %1").arg(i));
+        const QString path = writeLog(lines, "latest.log");
+
+        const auto msgs = LogReader::readLatest(path, 10);
+        QCOMPARE(msgs.size(), 10);
+        QCOMPARE(msgs.first().text, "msg 20");
+        QCOMPARE(msgs.last().text, "msg 29");
+        QVERIFY(msgs.last().isHistory);
+
+        // Unbounded read caps at the file's contents
+        QCOMPARE(LogReader::readLatest(path, 100).size(), 30);
+        QVERIFY(LogReader::readLatest(m_dir.filePath("nope.log"), 10).isEmpty());
+    }
+
     void missingFileReturnsEmpty()
     {
         QVERIFY(LogReader::readBefore(m_dir.filePath("nope.log"),

@@ -439,8 +439,10 @@ void SessionModel::openPM(const ServerId &host, const QString &nick)
     if (!sess || nick.isEmpty() || isChannelName(nick)) return;
     const bool isNew = !sess->get(nick);
     sess->getOrCreate(nick);
-    if (isNew)
+    if (isNew) {
+        seedFromLog(host, BufferId{nick});
         emit channelAdded(host, BufferId{nick});
+    }
 }
 
 void SessionModel::sendMessage(const ServerId &host, const BufferId &target, const QString &text,
@@ -753,6 +755,33 @@ BufferId SessionModel::activeOrServer(const ServerId &host) const
         ? m_activeChannel : serverBufferId();
 }
 
+// Fill a freshly opened buffer with its most recent logged history, the
+// local-log counterpart of CHATHISTORY LATEST on join. Skipped when the
+// server (or ZNC playback) will replay the backlog itself — mixing the two
+// would duplicate lines. Seeded at most once per buffer per run.
+void SessionModel::seedFromLog(const ServerId &host, const BufferId &target)
+{
+    auto *cl = clientFor(host);
+    if (cl && (cl->hasCap("chathistory") || cl->hasCap("draft/chathistory")
+               || cl->hasCap("znc.in/playback")))
+        return;
+
+    const QString key = host.str() + '\t' + target.str().toLower();
+    if (m_logSeeded.contains(key)) return;
+    m_logSeeded.insert(key);
+
+    auto *sess = session(host);
+    if (!sess) return;
+
+    const QList<Message> msgs = LogReader::readLatest(logFilePath(host, target), 100);
+    if (msgs.isEmpty()) return;
+
+    auto &ch = sess->getOrCreate(target.str());
+    if (ch.name.isEmpty()) ch.name = target.str();
+    ch.prependMessages(msgs);
+    emit olderHistoryLoaded(host, target, static_cast<int>(msgs.size()));
+}
+
 void SessionModel::requestOlderHistory(const ServerId &host, const BufferId &channel)
 {
     const QString key = host.str() + '\t' + channel.str().toLower();
@@ -824,6 +853,9 @@ void SessionModel::onConnected(const QString &hostStr)
 
     IrcClient *cl = clientFor(host);
     if (!cl) return;
+
+    // Caps are settled by now, so the server buffer can take its log seed.
+    seedFromLog(host, serverBufferId());
 
     // Join configured channels (with keys)
     QSet<QString> configChans;
@@ -954,6 +986,7 @@ void SessionModel::onUserJoined(const QString &hostStr, const QString &channel, 
     const bool isSelf = sess->nick.toLower() == nick.toLower();
     if (isSelf) {
         ch.joined = true;
+        seedFromLog(host, BufferId{channel});
         emit channelAdded(host, BufferId{channel});
     }
     ch.addNick(nick);

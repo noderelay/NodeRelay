@@ -1,6 +1,23 @@
 # Changelog
 
 <!--
+Session 2026-07-23: log seed on join (PR #149). Joe field-tested #141
+and found the gap immediately: after a restart every buffer starts
+empty, so there is nothing to scroll and the log-paging path can never
+trigger (requestOlderHistory even early-returns on an empty buffer).
+What he expected is what chathistory networks do: history on open.
+Fix: SessionModel::seedFromLog() loads the newest 100 log lines
+(new LogReader::readLatest, readBefore with an invalid bound = no
+bound) into a buffer at self-join, first PM open, and server-buffer
+connect. Skipped when chathistory/draft/chathistory/znc.in/playback is
+acked (server replay would duplicate), seeded once per buffer per run
+(QSet guard, so reconnect rejoins don't re-seed on top of surviving
+messages). Emits olderHistoryLoaded so an active buffer re-renders;
+inactive buffers pick it up on activation. Scroll-up paging then
+continues past the seed as before.
+-->
+
+<!--
 Session 2026-07-22 (evening): input box soft-wrap sliver, the repeat
 offender. Root cause found this time: both auto-resize paths (main
 input in inputbar.cpp textChanged, ChannelPane::updateInputHeight)
