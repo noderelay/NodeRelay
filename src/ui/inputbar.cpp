@@ -363,12 +363,14 @@ void MainWindow::applyInputColor(int fg, int bg)
     updateFormatIndicator();
 }
 
-void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel)
+void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel,
+                                   bool backward)
 {
     const QTextCursor tc = input->textCursor();
     const QString text = tc.block().text();
     const int pos = tc.positionInBlock();
 
+    const bool freshCycle = !m_tabActive;
     if (!m_tabActive) {
         // Start a new cycle: derive prefix from text before cursor.
         // pos == 0 must not reach lastIndexOf: a from-index of -1 means
@@ -409,6 +411,16 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, 
     // else: continuing a cycle — use stored m_tabWordStart and m_tabPrefix as-is
 
     if (m_tabCandidates.isEmpty()) return;
+
+    // m_tabCandidateIndex always points at the NEXT forward candidate.
+    // Backward = insert the one before the last inserted: rewind by two
+    // (or to the end of the list on a fresh Shift+Tab).
+    if (backward) {
+        const auto n = m_tabCandidates.size();
+        m_tabCandidateIndex = freshCycle
+            ? static_cast<int>(n) - 1
+            : static_cast<int>((m_tabCandidateIndex - 2 + n) % n);
+    }
 
     const QString completed = m_tabCandidates[m_tabCandidateIndex];
     m_tabCandidateIndex = static_cast<int>((m_tabCandidateIndex + 1) % m_tabCandidates.size());
