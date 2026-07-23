@@ -539,23 +539,56 @@ void SessionModel::setActive(const ServerId &host, const BufferId &ch)
 {
     m_activeHost    = host;
     m_activeChannel = ch;
-    // Clear unread on the newly active channel
-    if (auto *c = channel(host, ch)) {
-        c->unread         = 0;
-        c->mentions       = 0;
-        c->firstUnreadIdx = -1;
-        emit unreadChanged(host, ch, 0);
-    }
+    // Clear unread on the newly active channel and advance the read marker
+    markRead(host, ch);
 }
 
 void SessionModel::markRead(const ServerId &host, const BufferId &ch)
 {
     auto *c = channel(host, ch);
-    if (!c || (c->unread == 0 && c->mentions == 0)) return;
+    if (!c) return;
+
+    if (!c->messages.isEmpty())
+        queueReadMark(host, ch);
+
+    if (c->unread == 0 && c->mentions == 0) return;
     c->unread         = 0;
     c->mentions       = 0;
     c->firstUnreadIdx = -1;
     emit unreadChanged(host, ch, 0);
+}
+
+// Advance the server-side read marker (draft/read-marker / soju.im/read)
+// so other clients on the same account clear their unread badges too.
+// Coalesced through a short timer — visible buffers hit this on every
+// appended message, and one MARKREAD per line would eat fakelag budget.
+void SessionModel::queueReadMark(const ServerId &host, const BufferId &ch)
+{
+    if (ch == serverBufferId()) return;
+    m_pendingReadMarks.insert(bufferKey(host, ch), {host, ch});
+    if (!m_readMarkQueued) {
+        m_readMarkQueued = true;
+        QTimer::singleShot(1500, this, [this]() { flushReadMarks(); });
+    }
+}
+
+void SessionModel::flushReadMarks()
+{
+    m_readMarkQueued = false;
+    const auto pending = m_pendingReadMarks;
+    m_pendingReadMarks.clear();
+    for (const auto &p : pending) {
+        auto *c  = channel(p.first, p.second);
+        auto *cl = clientFor(p.first);
+        if (!c || !cl || c->messages.isEmpty()) continue;
+        const QDateTime ts = c->messages.last().timestamp;
+        // Deduped via lastRead — the server echoes MARKREAD back and that
+        // echo must not trigger another send.
+        if (ts.isValid() && (!c->lastRead.isValid() || ts > c->lastRead)) {
+            cl->markRead(p.second.str(), ts);
+            c->lastRead = ts;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -597,8 +630,21 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     });
     connect(cl, &IrcClient::readMarkerReceived, this,
             [this](const QString &h, const QString &target, const QDateTime &ts){
-        if (auto *ch = channel(ServerId{h}, BufferId{target}))
-            ch->lastRead = ts;
+        const ServerId host{h};
+        const BufferId buf{target};
+        auto *ch = channel(host, buf);
+        if (!ch) return;
+        if (ch->lastRead.isValid() && ts <= ch->lastRead) return;
+        ch->lastRead = ts;
+        // Another client read this buffer — clear the badge once the marker
+        // covers everything we have. Partial reads keep the badge.
+        if ((ch->unread > 0 || ch->mentions > 0) &&
+            (ch->messages.isEmpty() || ch->messages.last().timestamp <= ts)) {
+            ch->unread         = 0;
+            ch->mentions       = 0;
+            ch->firstUnreadIdx = -1;
+            emit unreadChanged(host, buf, 0);
+        }
     });
     connect(cl, &IrcClient::userJoined,      this, &SessionModel::onUserJoined);
     connect(cl, &IrcClient::metaLookupFailed, this,
@@ -730,6 +776,9 @@ void SessionModel::postMessage(const ServerId &host, const BufferId &target, con
     const bool isActive = (host == m_activeHost && target.str().compare(m_activeChannel.str(), Qt::CaseInsensitive) == 0);
     const bool countsAsUnread = msg.type == MessageType::Privmsg
         || (msg.type == MessageType::Notice && target == serverBufferId());
+    // The active buffer is being read right now — keep its marker moving
+    if (isActive && !msg.isHistory && countsAsUnread)
+        queueReadMark(host, target);
     if (!isActive && !msg.isHistory && countsAsUnread) {
         if (ch.unread == 0)
             ch.firstUnreadIdx = static_cast<int>(ch.messages.size()) - 1;

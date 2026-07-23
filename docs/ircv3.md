@@ -288,7 +288,7 @@ Negotiated to receive real-time notifications when a network's connection state 
 
 ### `draft/read-marker` / `soju.im/read`
 
-Synchronizes your read position across all clients connected to the same server or bouncer. When you read messages in Uplink, it sends `MARKREAD <target> timestamp=<iso8601>` to record your position. When another client advances the read marker, the server forwards the updated marker to Uplink. `draft/read-marker` is the standard capability (supported by Ergo and others); `soju.im/read` is soju's earlier vendor form of the same mechanism — both use the same `MARKREAD` wire format.
+Synchronizes your read position across all clients connected to the same account. When you read messages in Uplink — by viewing a buffer or having it open while messages arrive — it sends `MARKREAD <target> timestamp=<iso8601>` to record your position (sends are coalesced to avoid flooding busy channels). When another client advances the read marker past everything in a buffer, Uplink clears that buffer's unread badge; a marker that only covers part of the backlog leaves the badge alone. `draft/read-marker` is the standard capability (supported by Ergo and others); `soju.im/read` is soju's earlier vendor form of the same mechanism — both use the same `MARKREAD` wire format.
 
 ### `no-implicit-names` / `soju.im/no-implicit-names`
 

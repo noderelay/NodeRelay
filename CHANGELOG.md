@@ -1,6 +1,30 @@
 # Changelog
 
 <!--
+Session 2026-07-23 (late): read markers actually wired. Joe asked how
+to SEE the read-marker feature; answer was you couldn't — the
+soju.im/read support had always been plumbing only (cap negotiated,
+incoming markers stored in Channel::lastRead which nothing consumed,
+IrcClient::markRead sender had zero callers). Docs claimed sync
+worked; they were wrong until now. Wiring:
+- outgoing: SessionModel::queueReadMark() called from markRead(),
+  setActive() (which now delegates its badge-clearing to markRead),
+  and postMessage() for the active buffer (active-buffer messages
+  never increment unread, so without that hook the marker stalled in
+  a busy channel). Sends are coalesced through a 1.5s single-shot
+  (visible panes call markRead per appended message — one MARKREAD
+  per line would eat fakelag budget); lastRead doubles as the dedupe
+  so the server's MARKREAD echo doesn't re-trigger a send.
+- incoming: a marker from another client that covers the buffer's
+  newest message clears unread/mentions and emits unreadChanged;
+  partial markers leave the badge. Stale/echoed markers (<= lastRead)
+  are dropped.
+Docs: ircv3.md read-marker section now describes the real behavior.
+Cross-client field test owed: read on one machine, badge should clear
+on the other within ~2s (same account, e.g. fortis + zippy).
+-->
+
+<!--
 Session 2026-07-23 (evening): Ergo 2.19.0 cap refresh. Joe upgraded
 LinuxDojo to Ergo v2.19.0 (ships draft/metadata-3, draft/read-marker,
 and the ratified no-implicit-names; fixes channel-metadata visibility
