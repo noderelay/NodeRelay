@@ -21,7 +21,15 @@ QPlainTextEdit::NoWrap on both inputs: a soft-wrapped second line never
 exists, long text scrolls horizontally, the sliver is structurally
 impossible at any scale. Shift+Enter explicit lines (1..4 growth) stay.
 The visual-line height measurement from #145 remains correct under
-NoWrap (visual lines == blocks). Joe still owes a visual check on his
+NoWrap (visual lines == blocks).
+FINAL (PR #147): Joe picked the classic wrap-reset feel over NoWrap's
+horizontal scroll — line fills, view jumps to the fresh line, cursor
+restarts at the left edge. Implementation: WidgetWidth wrap restored,
+height from document()->blockCount() clamped 1..4 (explicit Shift+Enter
+lines only, NEVER visual lines — that was #145's regression), existing
+max-pin in textChanged + rangeChanged kept (QPlainTextEdit scrolls in
+whole-line units, so the pin top-aligns the newest line and the
+previous line is never rendered). Joe still owes a visual check on his
 1.45x-scale KDE (headless repro lies there, per the Wayland notes).
 -->
 

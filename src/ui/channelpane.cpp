@@ -13,7 +13,6 @@
 
 #include <QListView>
 #include <QScroller>
-#include <QtMath>
 #include <QPlainTextEdit>
 #include <QKeyEvent>
 #include <QLabel>
@@ -263,9 +262,9 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     m_nickPrefix->setStyleSheet("font-weight: bold; padding-right: 4px;");
     m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
-    // NoWrap: one visible line while typing, matching the main input.
-    // See inputbar.cpp — soft wrap is what produced the recurring sliver.
-    m_input->setLineWrapMode(QPlainTextEdit::NoWrap);
+    // Wrap-reset typing, matching the main input: one line tall, the view
+    // pinned to the newest wrapped line. See inputbar.cpp for the rules.
+    m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_input->document()->setDocumentMargin(2);
@@ -446,18 +445,17 @@ void ChannelPane::setNickListFont(const QFont &f)
     guardFont(m_nickList, f);
 }
 
-// Auto-resize: 1 to 4 lines, explicit Shift+Enter lines only. Polish first —
+// Auto-resize: 1 to 4 lines, explicit Shift+Enter blocks ONLY — soft wrap
+// must never grow the box (one visible line while typing). Polish first:
 // the stylesheet's input padding only lands in contentsMargins() once the
-// widget is polished, and measuring before that undersizes the box. Under
-// NoWrap the document layout's line count equals the block count, so a long
-// typed sentence never grows the box.
+// widget is polished, and measuring before that undersizes the box.
 void ChannelPane::updateInputHeight()
 {
     if (!m_input) return;
     m_input->ensurePolished();
     const int lineH   = m_input->fontMetrics().lineSpacing();
     const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
-    const int lines   = qBound(1, qCeil(m_input->document()->size().height()), 4);
+    const int lines   = qBound(1, m_input->document()->blockCount(), 4);
     m_input->setFixedHeight(lines * lineH + margins);
 }
 
