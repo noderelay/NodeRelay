@@ -158,6 +158,15 @@ void TypingController::forgetHost(const ServerId &host)
             ++it;
         }
     }
-    for (auto it = m_typers.begin(); it != m_typers.end(); )
-        it = it.key().startsWith(prefix) ? m_typers.erase(it) : ++it;
+    bool removed = false;
+    for (auto it = m_typers.begin(); it != m_typers.end(); ) {
+        if (it.key().startsWith(prefix)) {
+            removed = !it.value().isEmpty() || removed;
+            it = m_typers.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    if (removed)
+        emit typersChanged();
 }

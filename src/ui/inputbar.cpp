@@ -199,7 +199,8 @@ void MainWindow::setupInputBar()
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
         const QString text = m_input->toPlainText();
         m_sendBtn->setEnabled(!text.trimmed().isEmpty());
-        checkEmojiAutocomplete(text);
+        if (!m_restoringDraft) // restoring must not pop the completer
+            checkEmojiAutocomplete(text);
         updateLengthIndicator();
         // Auto-resize: 1 to 4 lines
         const int lineH = m_input->fontMetrics().lineSpacing();

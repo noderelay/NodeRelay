@@ -235,10 +235,18 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
         }
 
         // An image URL without an image extension (common on pastebins)
-        // sails past isImageUrl — reroute on the actual content type
+        // sails past isImageUrl — reroute on the actual content type.
+        // Raster formats only, mirroring isImageUrl: image/* would also
+        // route SVG into the qtsvg decoder, needless attack surface for
+        // a server-controlled URL.
         const QString ctype = reply->header(QNetworkRequest::ContentTypeHeader)
-                                  .toString().toLower();
-        if (ctype.startsWith(QLatin1String("image/"))) {
+                                  .toString().toLower().section(';', 0, 0).trimmed();
+        static const QStringList kRasterTypes = {
+            QStringLiteral("image/png"), QStringLiteral("image/jpeg"),
+            QStringLiteral("image/jpg"), QStringLiteral("image/gif"),
+            QStringLiteral("image/webp"),
+        };
+        if (kRasterTypes.contains(ctype)) {
             const QUrl imgPage = m_pendingUrl;
             reply->deleteLater();
             m_buf.clear();

@@ -174,6 +174,12 @@ static int siblingSlot(qsizetype totalSlots, int slot)
 // "host|channel", so this can't collide with one.
 static const QString kPrimaryDragKey = QStringLiteral("__primary__");
 
+static bool isModifierKey(int key)
+{
+    return key == Qt::Key_Shift || key == Qt::Key_Control
+        || key == Qt::Key_Alt   || key == Qt::Key_Meta;
+}
+
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -866,9 +872,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                                       ke->key() == Qt::Key_Backtab);
                     return true;
                 }
-                // Non-Tab resets the completion cycle
-                m_tabActive = false;
-                m_tabCandidates.clear();
+                // Non-Tab resets the completion cycle — but not a bare
+                // modifier press, or Shift+Tab could never reverse mid-cycle
+                if (!isModifierKey(ke->key())) {
+                    m_tabActive = false;
+                    m_tabCandidates.clear();
+                }
                 break;
             }
         }
@@ -927,9 +936,12 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
-    // Any non-Tab key resets nick completion cycle
-    m_tabActive = false;
-    m_tabCandidates.clear();
+    // Any non-Tab key resets nick completion cycle — except a bare modifier
+    // press, or Shift+Tab could never reverse mid-cycle
+    if (!isModifierKey(ke->key())) {
+        m_tabActive = false;
+        m_tabCandidates.clear();
+    }
 
     if (ke->key() == Qt::Key_Up && !m_emojiCompleter->isVisible()) {
         if (m_input->textCursor().blockNumber() == 0) {
@@ -1090,10 +1102,14 @@ void MainWindow::onServerConnected(const ServerId &host)
         || !m_config.profileStatusText.isEmpty()) {
         auto *cl = m_model->clientFor(host);
         if (cl && cl->hasMetadataCap()) {
-            m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
+            // Only push fields that are actually configured — an empty SET
+            // clears the key server-side, clobbering values set elsewhere.
+            // (Clearing on purpose goes through the preferences dialog.)
+            if (!m_config.profileDisplayName.isEmpty())
+                m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
             const bool localPath = m_config.profileAvatarUrl.startsWith('/')
                                    || QUrl(m_config.profileAvatarUrl).isLocalFile();
-            if (!localPath)
+            if (!localPath && !m_config.profileAvatarUrl.isEmpty())
                 m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
             if (!m_config.profileStatusText.isEmpty())
                 m_model->sendRaw(host, "METADATA * SET status :" + m_config.profileStatusText);
@@ -1155,6 +1171,8 @@ void MainWindow::onServerClosed(const ServerId &host)
         it = it.key().startsWith(prefix) ? m_renderStart.erase(it) : ++it;
     for (auto it = m_inputDrafts.begin(); it != m_inputDrafts.end(); )
         it = it.key().startsWith(prefix) ? m_inputDrafts.erase(it) : ++it;
+    for (auto it = m_historyExhausted.begin(); it != m_historyExhausted.end(); )
+        it = it->startsWith(prefix) ? m_historyExhausted.erase(it) : ++it;
 
     m_sidebarCtl->removeServerItem(host);
 
@@ -1195,6 +1213,7 @@ void MainWindow::onChannelRemoved(const ServerId &host, const BufferId &channel)
     m_scrollPositions.remove(key);
     m_renderStart.remove(key);
     m_inputDrafts.remove(key);
+    m_historyExhausted.remove(key);
 
     onSidebarSelectionChanged();
 }

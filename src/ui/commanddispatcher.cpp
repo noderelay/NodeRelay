@@ -494,7 +494,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
                 "Server does not support metadata — cannot set channel avatar");
-        } else if (!channel.str().startsWith('#')) {
+        } else if (!isChannelName(channel.str())) {
             m_model->localMessage(host, channel,
                 "/chanavatar only works in a channel buffer");
         } else {
