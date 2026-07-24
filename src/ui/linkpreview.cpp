@@ -13,7 +13,8 @@
 #include <memory>
 
 static constexpr int kMaxBytes     = 32768;   // 32 KB
-static constexpr int kMaxImgBytes  = 2097152; // 2 MB
+static constexpr int kMaxImgBytes  = 8388608; // 8 MB — phone photos routinely
+                                              // exceed the old 2 MB cap
 static constexpr int kMaxCache     = 20;
 static constexpr int kTimeoutMs    = 6000;
 static constexpr int kImgTimeoutMs = 15000;
@@ -230,6 +231,19 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
         if (httpStatus >= 400) {
             reply->deleteLater();
             m_buf.clear();
+            return;
+        }
+
+        // An image URL without an image extension (common on pastebins)
+        // sails past isImageUrl — reroute on the actual content type
+        const QString ctype = reply->header(QNetworkRequest::ContentTypeHeader)
+                                  .toString().toLower();
+        if (ctype.startsWith(QLatin1String("image/"))) {
+            const QUrl imgPage = m_pendingUrl;
+            reply->deleteLater();
+            m_buf.clear();
+            const QString filename = imgPage.fileName();
+            fetchImage(imgPage, filename.isEmpty() ? imgPage.host() : filename, imgPage);
             return;
         }
 

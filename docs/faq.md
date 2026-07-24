@@ -1117,7 +1117,7 @@ Hovering over any URL shows the domain in the tooltip, updating to the full page
 
 **Preview queue:** when multiple URLs arrive at once, Uplink fetches their cards sequentially (up to 10 queued at a time) so fetches do not compete with each other. A URL hovered in chat triggers a lightweight title-only fetch that does not interfere with the card queue.
 
-Preview fetches are lightweight and automatic: HTML is capped at 32 KB, images at 2 MB, and results are cached in memory for the session.
+Preview fetches are lightweight and automatic: HTML is capped at 32 KB, images at 8 MB, and results are cached in memory for the session.
 
 **Private addresses are never fetched**: loopback (`127.x`, `::1`), RFC 1918 private ranges (`10.x`, `172.16–31.x`, `192.168.x`), link-local (`169.254.x`), and `.local` hostnames are blocked. A link posted in chat cannot be used to probe services on your local network.
 

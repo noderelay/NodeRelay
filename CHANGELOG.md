@@ -1,6 +1,24 @@
 # Changelog
 
 <!--
+2026-07-24 (late): image link previews. Joe's pastebin jpg made no
+image card. Two findings during diagnosis: (1) direct-image previews
+ALREADY existed (doPageFetch isImageUrl extension check — in-session
+claim that the pipeline was HTML-only was wrong, corrected); his file
+was 2.3MB against the 2MB kMaxImgBytes cap, so only a title card
+appeared. Cap raised to 8MB (phone photos routinely exceed 2MB;
+still bounded: one fetch in flight, 15s timeout, 4096px decode
+gate). (2) NEW: content-type reroute — an image URL without an image
+extension (common on pastebins) sailed past isImageUrl into the HTML
+parser and died; the page-fetch finished handler now checks
+Content-Type image/* and reroutes to fetchImage with the filename as
+title. VERIFIED headless with a moc'd LinkPreview harness (offscreen
+QGuiApplication, real network): Joe's exact URL → 165x220 card;
+extensionless GitHub avatar URL → 220x220 card via the reroute.
+Docs: faq.md + howto.html 2MB→8MB.
+-->
+
+<!--
 2026-07-24: SplitterGrip drag-after-first-message CLOSED, not repro.
 Joe ran a scratch-HOME fresh instance on current main (userlist train
 included), joined an empty unregistered channel, both splitters drag
