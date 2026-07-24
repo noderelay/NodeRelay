@@ -316,7 +316,7 @@
 <div class="wrap">
   <div class="stat-grid">
     <div class="stat-cell">
-      <div class="stat-num c-green">74</div>
+      <div class="stat-num c-green">75</div>
       <div class="stat-label">Tests passing</div>
     </div>
     <div class="stat-cell">
@@ -332,7 +332,7 @@
       <div class="stat-label">Compiler warnings</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-aqua">198</div>
+      <div class="stat-num c-aqua">284</div>
       <div class="stat-label">Assertions</div>
     </div>
     <div class="stat-cell">
@@ -340,15 +340,15 @@
       <div class="stat-label">Fuzz inputs</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-blue">37</div>
+      <div class="stat-num c-blue">35</div>
       <div class="stat-label">IRCv3 caps</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-orange">64</div>
+      <div class="stat-num c-orange">104</div>
       <div class="stat-label">Source files</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-purple">18 038</div>
+      <div class="stat-num c-purple">24 015</div>
       <div class="stat-label">Lines of C++</div>
     </div>
     <div class="stat-cell">
@@ -394,8 +394,11 @@
 <span class="t-pass">PASS</span>   : TstIrcParser::numericCommand()
 <span class="t-pass">PASS</span>   : TstIrcParser::tagsThenNoPrefix()
 <span class="t-pass">PASS</span>   : TstIrcParser::malformedTagsOnly()
+<span class="t-pass">PASS</span>   : TstIrcParser::decodeValidUtf8()
+<span class="t-pass">PASS</span>   : TstIrcParser::decodeLatin1Fallback()
+<span class="t-pass">PASS</span>   : TstIrcParser::decodeAsciiAndEmpty()
 
-<span class="t-ok">Totals: 15 passed, 0 failed, 0 skipped, 2ms</span>
+<span class="t-ok">Totals: 18 passed, 0 failed, 0 skipped, 0ms</span>
 <span class="t-head">********* Finished testing of TstIrcParser *********</span></div>
         </div>
       </div>
@@ -571,12 +574,12 @@
 <span class="t-dim">$ ./build-san/tests/tst_ircparser && ./build-san/tests/tst_chatformat</span>
 
 <span class="t-head">********* TstIrcParser *********</span>
-<span class="t-pass">PASS</span>   : 13 test cases
-<span class="t-ok">Totals: 15 passed, 0 failed, 0ms</span>
+<span class="t-pass">PASS</span>   : 16 test cases
+<span class="t-ok">Totals: 18 passed, 0 failed, 1ms</span>
 
 <span class="t-head">********* TstChatFormat *********</span>
-<span class="t-pass">PASS</span>   : 15 test cases
-<span class="t-ok">Totals: 17 passed, 0 failed, 1ms</span>
+<span class="t-pass">PASS</span>   : 17 test cases
+<span class="t-ok">Totals: 19 passed, 0 failed, 1ms</span>
 
 <span class="t-ok">ASan: 0 heap errors · 0 stack errors · 0 use-after-free · 0 leaks</span>
 <span class="t-ok">UBSan: 0 integer overflows · 0 null dereferences · 0 misaligned access</span></div>
@@ -604,10 +607,10 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">cppcheck 2.21 - 27 source files</span>
+        <span class="terminal-label">cppcheck 2.21 - 47 source files</span>
       </div>
       <div class="terminal-body"><span class="t-dim">$ cppcheck --enable=all --std=c++20 -I src src/</span>
-<span class="t-dim">27/27 files checked 100% done</span>
+<span class="t-dim">47/47 files checked 100% done</span>
 
 <span class="t-ok">0 real bugs found · current build is clean</span></div>
     </div>
