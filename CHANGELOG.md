@@ -1,6 +1,38 @@
 # Changelog
 
 <!--
+2026-07-24 (later): review sweep over the post-#127 delta, PRs #165-#166.
+Three-agent review of everything merged since the 2026-07-17 pass
+(#128-#164), every finding hand-verified before fixing. Also ran both
+fuzzers 5 min each (clean, ~2.2M execs) and full ctest under ASan/UBSan
+(clean). #165 = 18 verified fixes; the notable ones: standard replies
+rendered their description twice (parser appends trailing into params,
+context slice included it); Shift+Tab could not reverse tab-completion
+mid-cycle (bare Shift press reset the cycle); metadata cap ACKed after
+001 never subscribed (SUB only lived in the 001 handler); log reader
+truncated dashed nicks in notices (-Guest-42- parsed as Guest);
+firstUnreadIdx not maintained across prepend/trim; historyExhausted
+never pruned on part so rejoined buffers could not page history; theme
+switch reset scroll/render window and left stale colors in panes;
+connect-time profile push cleared unconfigured metadata fields
+server-side; link-preview ctype reroute narrowed from image/* to the
+raster whitelist (keeps hostile SVG out of qtsvg). #166 = -90-line
+dedupe: makeRenderContext (9 copies), desiredCaps (2), routeMetadata
+(3), bufferKeyLower in ids.h, stsstore.h include drop. Invariants all
+verified intact (TLS/TOFU, SSRF, WHOX >=4, echo-message, highlight
+capture group, toml::parse(string)). DEFERRED as design calls for Joe,
+not fixed: (1) plain ZNC without playback module replays its buffer
+with no cap advertised, so log-seed-on-join doubles the backlog —
+dedupe machinery vs config knob vs leave; (2) MARKREAD advances for
+active-buffer messages while the window is unfocused, clearing unread
+on other devices for unseen messages — needs focus gate + mark-on-
+refocus if wanted. Minor accepted risks noted in review, not chased:
+DST-fold hour ambiguity in log timestamps, flushReadMarks after
+tail-trim (spec clamps), logging-off same-second boundary skip.
+2026.8.0 pile now #135-#166.
+-->
+
+<!--
 Session close 2026-07-24: two-day Ergo 2.19 arc wrapped, PRs #150-#163.
 Verification sweep results not yet noted in blocks below: #139 width
 persistence VERIFIED (both panels, two restarts); search v3 context
