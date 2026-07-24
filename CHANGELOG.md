@@ -1979,6 +1979,29 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.8.0 — 2026-07-24
+
+- **Scrollback no longer needs the server**: on networks without `chathistory` (Libera, EFnet, most of IRC) buffers now open with the last 100 lines from your own logs already loaded, and scrolling to the top keeps paging further back. Requires **Log Messages to Disk**; when neither source is available a status line points you at the setting instead of leaving a dead end
+- **Channel avatars**: an op sets one with `/chanavatar <url>` and every member sees it as that channel's sidebar icon, updating live. Fetch failures are reported in the channel rather than silently leaving the icon blank. On Ergo the avatar only persists for ChanServ-registered channels
+- **Status text**: `/status <text>` (or Preferences → Profile) publishes a status line that shows in your nick tooltip for everyone else
+- **Read markers sync across clients**: reading a buffer here clears its unread badge on your other devices, and a marker set elsewhere clears it here
+- **Avatars and metadata can be switched off**: **Preferences → Chat Window → Show Avatars** keeps display names and status text but skips the image fetch, since an avatar URL points at a host of someone else's choosing that then sees your IP. **Manage Servers → Use metadata** skips the capability entirely for a given server. Both are on by default
+- Uplink now speaks `draft/metadata-3`, `draft/read-marker` and the ratified `no-implicit-names`, preferring metadata-3 where a server offers both revisions
+- **Shift+Tab** cycles backwards through nick completions, and now reverses correctly in the middle of a cycle
+- The configured nick is reclaimed automatically once SASL login succeeds, instead of leaving you on the `nick_` fallback
+- User list: it can no longer be dragged shut to nothing, the reveal button moved into the header row, and its width survives a restart
+- If **IBM Plex Mono** (or **Consolas** on Windows) is missing, Uplink falls back to the system monospace instead of rendering the input box invisible
+- Link previews now show for large images and for image URLs with no file extension
+- Chat status lines, timestamps and highlights take their colors from the active theme, and switching themes no longer scrolls you away from what you were reading
+- Fix: the quick switcher opened a channel without actually switching to it
+- Fix: unread messages past the render window could never be loaded
+- Fix: a server that offered metadata only after registration was never subscribed to, so no profiles ever arrived
+- Fix: connecting published empty values over any profile fields you had not filled in, clearing them server-side
+- Fix: standard replies from the server printed their description twice
+- Fix: log search truncated nicks containing dashes
+- Fix: rejoining a channel could leave its history permanently unpageable
+- Source builds now mark an uncommitted tree `.dev` rather than `.dirty`
+
 ## v2026.7.8 — 2026-07-19
 
 - Fix: the user list could be dragged shut to zero width with no way to reopen it, and the collapsed state survived restarts. The splitters no longer collapse below the minimum, and a user list stuck at zero width from an earlier version is restored to its normal size on startup
