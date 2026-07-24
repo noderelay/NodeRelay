@@ -330,7 +330,7 @@ Both commands print a confirmation line in the current buffer and tell you if th
 
 #### Channel avatars
 
-Channels can publish an avatar too: an op sets one with `/chanavatar <https-url>` (blank to clear), and every Uplink in the channel shows it as the channel's icon in the sidebar, updating live when it changes. Setting requires channel-op permission — the server answers a non-op's attempt with a visible `[FAIL] METADATA KEY_NO_PERMISSION` line. Channel avatars go through the same SSRF-guarded, size-capped fetcher as user avatars, and local file paths are never accepted from the network.
+Channels can publish an avatar too: an op sets one with `/chanavatar <https-url>` (blank to clear), and every Uplink in the channel shows it as the channel's icon in the sidebar, updating live when it changes. Setting requires channel-op permission — the server answers a non-op's attempt with a visible `[FAIL] METADATA KEY_NO_PERMISSION` line. Channel avatars go through the same SSRF-guarded fetcher as user avatars — images are capped at 1 MB and 4096px, redirects are not followed, and local file paths are never accepted from the network. Unlike user avatars, a channel avatar that fails to load says why in the channel buffer instead of failing silently.
 
 #### Local file avatars
 

@@ -1,6 +1,26 @@
 # Changelog
 
 <!--
+Session 2026-07-24 (follow-up): channel avatar feedback polish, from
+Joe's live test which took FOUR rounds to land — every failure was
+silent or unlabeled. (1) His first image was 1.9MB, over the 1MB
+fetch cap → aborted with no message; (2) his /chanavatar ran in
+#test not #uplink and neither the optimistic "Channel avatar set
+to:" echo nor the [FAIL] line named the channel (server-side truth
+established by probe: ~sig in #uplink, no avatar key set — that's
+what cracked it). Fixes: /chanavatar now says "Requested avatar for
+<#chan>: url" (request phrasing, names the buffer's channel);
+FAIL/WARN/NOTE display includes context params — "[FAIL] METADATA
+KEY_NO_PERMISSION [#test avatar]: ..." (careful: with no trailing,
+the last param is the description, not context); channel avatar
+fetch failures post a localMessage naming the reason (size cap,
+SSRF/private-address block, scheme, metered skip, redirect refusal,
+decode/dimension failure) — user avatar fetches stay quiet on
+purpose, hover volume would spam. Field verified: icon live on
+#uplink (gruvbox-orange.png, 33KB) on fortis.
+-->
+
+<!--
 Session 2026-07-24: channel avatars, picked by Joe off the parked
 menu — newly buildable because Ergo 2.19.0 fixed channel-metadata
 permissions. Wire-probed first (three probes, #avtest*): first

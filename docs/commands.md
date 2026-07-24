@@ -128,7 +128,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/setname <realname>` | Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname) |
 | `/displayname <text>` | Set your display name via IRCv3 `draft/metadata`; shown in nick list tooltips. Leave blank to clear. Requires server support. |
 | `/avatar <url>` | Set your avatar via IRCv3 `draft/metadata`. Accepts an `https://` URL or a local file path. Leave blank to clear. Requires server support. |
-| `/chanavatar <url>` | Set the current channel's avatar, shown as its sidebar icon in metadata-capable clients. Channel-op only; leave blank to clear. Requires server support. |
+| `/chanavatar <url>` | Set the current channel's avatar, shown as its sidebar icon in metadata-capable clients. Channel-op only; leave blank to clear. Requires server support. Images are fetched over https and capped at 1 MB. |
 | `/caps` | List all IRCv3 capabilities currently negotiated with the server |
 
 ### Examples

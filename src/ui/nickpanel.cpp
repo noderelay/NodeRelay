@@ -129,6 +129,16 @@ void MainWindow::refreshNickList(const ServerId &host, const BufferId &channel)
     }
 }
 
+// Channel avatars are explicit user actions — a silently missing icon reads
+// as broken, so fetch failures get a line in the affected channel buffer(s).
+// User avatars keep failing quietly; hover fetches would spam otherwise.
+void MainWindow::failChanAvatar(const QString &url, const QString &reason)
+{
+    for (const auto &buf : m_pendingChanAvatars.take(url))
+        m_model->localMessage(buf.first, buf.second,
+            "Channel avatar not loaded — " + reason + " (" + url + ")");
+}
+
 void MainWindow::onChannelAvatarChanged(const ServerId &host, const BufferId &channel, const QString &url)
 {
     if (url.isEmpty()) {
@@ -170,18 +180,24 @@ void MainWindow::fetchAvatar(const QString &url)
     // to point Uplink at the local filesystem.
     const QUrl qurl(url);
     if (qurl.isLocalFile() || url.startsWith('/')) {
-        if (url != m_config.profileAvatarUrl) return;
+        if (url != m_config.profileAvatarUrl) {
+            failChanAvatar(url, "local file paths are not accepted from the network");
+            return;
+        }
         cacheAndRefresh(QPixmap(qurl.isLocalFile() ? qurl.toLocalFile() : url));
         return;
     }
 
-    if (m_model->networkMonitor()->isMetered())
+    if (m_model->networkMonitor()->isMetered()) {
+        failChanAvatar(url, "skipped on metered connection");
         return;   // spare metered data; local avatars above still load
+    }
 
     // Same SSRF discipline as link previews: scheme/literal gate, DNS
     // pre-check against private ranges, then fetch pinned to the vetted IP.
     if (isBlockedBySchemeOrLiteral(qurl)) {
         qCDebug(lcPreview) << "avatar: blocked" << url;
+        failChanAvatar(url, "URL scheme or address not allowed");
         return;
     }
 
@@ -197,6 +213,7 @@ void MainWindow::fetchAvatar(const QString &url)
         if (blocked) {
             m_avatarFetching.remove(url);
             qCDebug(lcPreview) << "avatar: blocked private address for" << qurl.host();
+            failChanAvatar(url, "host is unresolvable or resolves to a private address");
             return;
         }
 
@@ -221,9 +238,16 @@ void MainWindow::fetchAvatar(const QString &url)
             [this, reply, url, buf, cacheAndRefresh] {
             reply->deleteLater();
             m_avatarFetching.remove(url);
-            if (reply->error() != QNetworkReply::NoError) return;
-            if (reply->attribute(QNetworkRequest::RedirectionTargetAttribute).isValid())
+            if (reply->error() != QNetworkReply::NoError) {
+                failChanAvatar(url, buf->size() >= kMaxAvatarBytes
+                    ? "image exceeds the 1 MB limit"
+                    : reply->errorString());
                 return;
+            }
+            if (reply->attribute(QNetworkRequest::RedirectionTargetAttribute).isValid()) {
+                failChanAvatar(url, "server redirected; redirects are not followed");
+                return;
+            }
 
             // Decode via QImageReader with a dimension gate and scaled decode —
             // a small compressed file must not balloon into a huge bitmap.
@@ -231,12 +255,16 @@ void MainWindow::fetchAvatar(const QString &url)
             imgBuf.open(QIODevice::ReadOnly);
             QImageReader reader(&imgBuf);
             const QSize srcSize = reader.size();
-            if (!srcSize.isValid() || srcSize.width() > 4096 || srcSize.height() > 4096)
+            if (!srcSize.isValid() || srcSize.width() > 4096 || srcSize.height() > 4096) {
+                failChanAvatar(url, "not a valid image, or larger than 4096px");
                 return;
+            }
             reader.setScaledSize(srcSize.scaled(36, 36, Qt::KeepAspectRatio));
             const QImage img = reader.read();
             if (!img.isNull())
                 cacheAndRefresh(QPixmap::fromImage(img));
+            else
+                failChanAvatar(url, "could not decode image");
         });
     });
 }
