@@ -488,7 +488,8 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             const QString val = args.trimmed();
             m_model->sendRaw(host, "METADATA " + channel.str() + " SET avatar :" + val);
             m_model->localMessage(host, channel,
-                val.isEmpty() ? "Channel avatar cleared." : "Channel avatar set to: " + val);
+                val.isEmpty() ? "Requested avatar clear for " + channel.str()
+                              : "Requested avatar for " + channel.str() + ": " + val);
         }
     } else if (cmd == "/list") {
         emit openChannelList(host);

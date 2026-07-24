@@ -864,10 +864,20 @@ void IrcClient::processLine(const QString &line)
             const QString &p = msg.params[i];
             if (!p.isEmpty() && QString("&#!+").contains(p[0])) { channel = p; break; }
         }
-        const QString prefix = "[" + cmd + "] ";
-        const QString text   = triggeredBy.isEmpty() || triggeredBy == "*"
-            ? prefix + code + ": " + desc
-            : prefix + triggeredBy + " " + code + ": " + desc;
+        // Context params (channel, key, …) say what was refused — without
+        // them a FAIL from the wrong buffer is undebuggable. When there is
+        // no trailing, the last param is the description, not context.
+        const qsizetype ctxEnd = msg.trailing.isEmpty() ? msg.params.size() - 1
+                                                        : msg.params.size();
+        const QString context = ctxEnd > 2 ? msg.params.mid(2, ctxEnd - 2).join(' ')
+                                           : QString();
+        const QString prefix  = "[" + cmd + "] ";
+        QString text = triggeredBy.isEmpty() || triggeredBy == "*"
+            ? prefix + code
+            : prefix + triggeredBy + " " + code;
+        if (!context.isEmpty())
+            text += " [" + context + "]";
+        text += ": " + desc;
         if (!channel.isEmpty())
             emit standardReply(m_serverName, channel, cmd, text);
         else if (cmd == "FAIL")
