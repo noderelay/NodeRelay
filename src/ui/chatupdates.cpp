@@ -92,23 +92,28 @@ void MainWindow::applyThemeColors(ChatRenderer::Context &ctx) const
     }
 }
 
+// Every render site needs the same context fields — build them in one place
+// so the copies can't drift apart.
+ChatRenderer::Context MainWindow::makeRenderContext(const ServerId &host, Channel *ch) const
+{
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks   = m_config.ui.coloredNicks;
+    ctx.nickBrackets   = m_config.ui.nickBrackets;
+    ctx.emojiPt        = m_config.ui.fontSizes.emoji;
+    ctx.chatPt         = m_config.ui.fontSizes.chat;
+    applyThemeColors(ctx);
+    ctx.selfNickRe     = selfNickReFor(host);
+    ctx.highlightRe    = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
+    ctx.channel        = ch;
+    return ctx;
+}
+
 void MainWindow::onMessageAdded(const ServerId &host, const BufferId &channel, const Message &msg)
 {
     const QString selfNick = m_model->selfNick(host);
 
-    auto makeCtx = [&](Channel *ch) {
-        ChatRenderer::Context ctx;
-        ctx.coloredNicks = m_config.ui.coloredNicks;
-        ctx.nickBrackets = m_config.ui.nickBrackets;
-        ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-        ctx.chatPt       = m_config.ui.fontSizes.chat;
-        applyThemeColors(ctx);
-        ctx.selfNickRe   = selfNickReFor(host);
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-        ctx.channel      = ch;
-        return ctx;
-    };
+    auto makeCtx = [&](Channel *ch) { return makeRenderContext(host, ch); };
 
     auto appendToView = [&](ChatView *view, Channel *ch) {
         if (ChatRenderer::isCondensable(msg, selfNick)) {
@@ -207,19 +212,7 @@ void MainWindow::onReactionsChanged(const ServerId &host, const BufferId &channe
 
 void MainWindow::onMessageRedacted(const ServerId &host, const BufferId &channel, const QString &msgid)
 {
-    auto makeCtx = [&](Channel *ch) {
-        ChatRenderer::Context ctx;
-        ctx.coloredNicks = m_config.ui.coloredNicks;
-        ctx.nickBrackets = m_config.ui.nickBrackets;
-        ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-        ctx.chatPt       = m_config.ui.fontSizes.chat;
-        applyThemeColors(ctx);
-        ctx.selfNickRe   = selfNickReFor(host);
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-        ctx.channel      = ch;
-        return ctx;
-    };
+    auto makeCtx = [&](Channel *ch) { return makeRenderContext(host, ch); };
 
     auto updateView = [&](ChatView *view, Channel *ch) {
         if (view->findLine(msgid) < 0) return;
@@ -250,16 +243,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     auto *ch = m_model->channel(pane->host(), pane->channel());
     if (!ch) return;
 
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe   = selfNickReFor(pane->host());
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = ch;
+    const ChatRenderer::Context ctx = makeRenderContext(pane->host(), ch);
 
     const QString selfNick = m_model->selfNick(pane->host());
 
@@ -327,16 +311,7 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
         R"(https?://[^\s<>"]+)",
         QRegularExpression::CaseInsensitiveOption);
 
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = ch;
+    const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     if (startIdx > 0) {
         ChatLine status = ChatRenderer::makeStatusLine(
@@ -461,16 +436,7 @@ void MainWindow::loadOlderMessages()
     m_renderStart[key]  = qMax(0, prevStart - kRenderChunk);
     const int newStart  = m_renderStart[key];
 
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = ch;
+    const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     const QString selfNick = m_model->selfNick(host);
     QList<ChatLine> older;
@@ -549,16 +515,7 @@ void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &chan
 
     m_renderStart[key] = 0;
 
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks   = m_config.ui.coloredNicks;
-    ctx.nickBrackets   = m_config.ui.nickBrackets;
-    ctx.emojiPt        = m_config.ui.fontSizes.emoji;
-    ctx.chatPt         = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe     = m_selfNickRe;
-    ctx.highlightRe    = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel        = ch;
+    const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     const QString selfNick = m_model->selfNick(host);
     QList<ChatLine> older;
@@ -686,16 +643,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
     const BufferId channel = m_model->activeChannel();
     auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
 
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = ch;
+    const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     m_chatView->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
 
@@ -739,15 +687,8 @@ void MainWindow::appendPreviewCards(ChatView *view, const Message &msg,
 
 QString MainWindow::formatMessage(const Message &msg) const
 {
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+    const ChatRenderer::Context ctx = makeRenderContext(
+        m_model->activeHost(),
+        m_model->channel(m_model->activeHost(), m_model->activeChannel()));
     return ChatRenderer::formatMessage(msg, ctx);
 }

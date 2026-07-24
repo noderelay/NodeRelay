@@ -168,6 +168,7 @@ private:
 
     QString    formatMessage(const Message &msg) const;
     void       applyThemeColors(ChatRenderer::Context &ctx) const;
+    ChatRenderer::Context makeRenderContext(const ServerId &host, Channel *ch) const;
     void       toggleEventGroupInView(ChatView *view, const QString &groupId,
                                       const ServerId &host, const BufferId &channel);
     void       handleChatViewContextMenu(ChatView *view, const QString &anchor,
