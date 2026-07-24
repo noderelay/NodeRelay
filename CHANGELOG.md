@@ -1,6 +1,30 @@
 # Changelog
 
 <!--
+Session close 2026-07-24: two-day Ergo 2.19 arc wrapped, PRs #150-#163.
+Verification sweep results not yet noted in blocks below: #139 width
+persistence VERIFIED (both panels, two restarts); search v3 context
+jump VERIFIED (regex date search, jump landed with context — first
+attempt searched a date older than the log, check date range first);
+read-marker cross-machine VERIFIED; /status cross-machine VERIFIED;
+channel avatars + image previews field-VERIFIED. Heaptrack soak
+(the July review's last owed item): PASSED on primary evidence —
+RSS dead flat 107.3->107.4MB across 20 min of continuous traffic;
+callsite-level recording truncated by a teardown bug in the soak
+script (pattern-matched kill hit the wrong processes, including
+Joe's running instance TWICE — incident + hardened never-pattern-kill
+rule recorded in assistant memory, not a project bug). Closed as
+passed-on-RSS; rerun only at Joe's request with him watching.
+Also closed: SplitterGrip (not repro), sliver (unseen since 07-22,
+closed-until-recurrence, NOT fixed). Winget: both PRs validation-
+passed, awaiting MS moderator. Dojo state: Ergo 2.19.0, multiclient
+enabled, #test now ChanServ-registered (channel metadata only
+persists on registered channels). Backlog is decisions-only:
+avatar opt-out toggle default, DCC NAT, spellcheck/first-run/a11y
+as next feature candidates. 2026.8.0 release pile: #135-#163.
+-->
+
+<!--
 2026-07-24 (day 2): /status — metadata status text, the ROADMAP item,
 Joe picked it. Wire-probed the status key on Ergo 2.19 first (SUB 770,
 SET echo 761 with trailing value, clear pushes 766 — all identical to
