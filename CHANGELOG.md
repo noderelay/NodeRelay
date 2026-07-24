@@ -1,6 +1,32 @@
 # Changelog
 
 <!--
+Session 2026-07-24 (sidebar fix): avatar rows shifted right when
+selected — ONLY on Joe's live 1.45x-scale KDE Wayland, exactly the
+class the wayland-debugging memory warns about. Offscreen repro with
+the REAL delegate + REAL QSS + Breeze showed geometry rock-stable in
+both states (breeze deco.x=4/text.x=26 selected or not; full
+QTreeWidget repro identical), so the shift lives somewhere in the
+live fractional-scaling path (style decoration layout and/or
+QIcon::Selected pixmap generation — never pinpointed, deliberately).
+Fix by construction instead: stop using the style's decoration
+layout entirely — avatar painted manually at opt.rect.x()+4 (row
+rect is selection-independent by definition), text laid out via the
+plain no-decoration path (empirically stable on Joe's machine for
+months) inset by a constant 24px, icon drawn with explicit
+QIcon::Normal always. Pill wrap experiment from the first attempt
+reverted (it fixed nothing — the movement was the icon, not the
+pill). VERIFIED live by Joe: "that fixed it, they stay in place".
+Also that session: #test avatar vanished — server-side, not client:
+probe showed "Key is not set" + ChanServ "#test is not registered".
+Ergo persists channel metadata only for REGISTERED channels;
+unregistered channels drop all state when they empty. Documented in
+ircv3.md. Joe to REGISTER #test.
+Bonus probe observation: non-member GET of #uplink metadata →
+KEY_NO_PERMISSION (Ergo 2.19 visibility fix confirmed working).
+-->
+
+<!--
 Session 2026-07-24 (follow-up): channel avatar feedback polish, from
 Joe's live test which took FOUR rounds to land — every failure was
 silent or unlabeled. (1) His first image was 1.9MB, over the 1MB
