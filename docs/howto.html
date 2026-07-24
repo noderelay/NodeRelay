@@ -2154,6 +2154,25 @@ typing_indicator = true   # set to false to disable completely</pre>
       Metadata follows a nick across all channels on the same server. If Alice sets her display name, you will see it in <code>#general</code>, <code>#linux</code>, and every other channel you share with her.
     </p>
 
+    <h3>Channel avatars</h3>
+    <p>
+      Channels can have an avatar too. A channel operator sets one with <code>/chanavatar &lt;https-url&gt;</code> in the channel's buffer (leave the URL off to clear it), and every Uplink in the channel shows the image as that channel's icon in the sidebar, updating live when it changes.
+    </p>
+
+    <figure class="shot">
+      <img src="shots/channel-avatar.png" loading="lazy"
+           alt="Sidebar showing three channels, each with its own avatar icon">
+      <figcaption>Channel avatars in the sidebar. Each channel's op picks its icon; members see it automatically.</figcaption>
+    </figure>
+
+    <p>Things to know:</p>
+    <ul>
+      <li><strong>Image files must be 1 MB or smaller</strong> (and at most 4096px). Larger files are rejected and Uplink tells you so in the channel buffer. At sidebar size, a small image of a few tens of KB is plenty.</li>
+      <li>The URL must be a public <code>https://</code> link. Private/LAN addresses and redirects are refused, and local file paths are not accepted from the network.</li>
+      <li>Setting requires <strong>channel operator</strong> status; anyone else gets a <code>[FAIL] METADATA KEY_NO_PERMISSION</code> line from the server. Being a network oper is not enough.</li>
+      <li>On Ergo, the avatar persists only if the channel is <strong>registered with ChanServ</strong>. An unregistered channel loses all of its state, avatar included, when its last member leaves.</li>
+    </ul>
+
     <h3>Setting your own display name and avatar</h3>
     <p>There are two ways to set your profile: via the Preferences dialog or via slash commands. Both save the values to your config so they are re-published automatically every time you connect to a supporting server.</p>
 
