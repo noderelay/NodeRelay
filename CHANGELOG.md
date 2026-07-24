@@ -1,6 +1,25 @@
 # Changelog
 
 <!--
+2026-07-24: sidebar highlight follows the main view around panes.
+
+Joe: #linuxdojo in the main view, open #freebsd in a pane, close the
+pane again — #freebsd stayed highlighted in the sidebar with nothing
+showing it.
+
+The highlight is meant to track the primary view (that is what
+syncSidebarToActive exists for), but only the floating-window paths ever
+called it. Right-clicking a row to open a pane moves the selection onto
+that channel — Qt sets the current item on the press — and nothing moved
+it back, on open or on close.
+
+One call added at each end of openChannelPane/closeChannelPane. The
+open case matters as much as the close one Joe hit: a highlight sitting
+on a channel that is in a pane rather than the main view is exactly the
+state switchToChannel already bounces away from when you click it.
+-->
+
+<!--
 2026-07-24: edge-drop only highlights zones that would move something.
 
 Joe: two panes side by side, grab the right one, hover the LEFT pane's
