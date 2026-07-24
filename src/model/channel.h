@@ -95,6 +95,7 @@ struct Channel {
     int              firstUnreadIdx{-1}; // index of first unread msg; -1 when none
     bool             joined{false};
     QDateTime        lastRead;  // soju.im/read marker
+    QString          avatarUrl; // channel avatar via metadata (empty = none)
 
     bool hasMessage(const QString &msgid) const
     {

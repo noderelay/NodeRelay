@@ -429,6 +429,7 @@ channels = "#linux, #archlinux"
 | `/setname <realname>` | Change your realname live (IRCv3 `setname`) |
 | `/displayname <name>` | Set your profile display name (`draft/metadata`) |
 | `/avatar <url>` | Set your profile avatar (`draft/metadata`) |
+| `/chanavatar <url>` | Set the channel's sidebar avatar (op only, `draft/metadata`) |
 | `/caps` | List the IRCv3 capabilities active on this connection |
 | `/stats <query>` | Server statistics (`u`=uptime, `o`=opers, `m`=commands) |
 | `/time [nick]` | Server local time, or a user's via CTCP |

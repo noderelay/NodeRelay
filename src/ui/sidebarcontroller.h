@@ -15,7 +15,8 @@ class QTreeWidgetItem;
 // lookup for servers/channels, display labels, unread badges (self-connected
 // to the model), connection-state icons, and checked-out markers. Item data
 // roles: UserRole = host, UserRole+1 = channel ("(server)" on server rows),
-// UserRole+2 = badge icon, UserRole+3 = unread count.
+// UserRole+2 = badge icon, UserRole+3 = unread count, UserRole+5 = channel
+// avatar icon.
 // Selection behavior, navigation, ordering, and drag/drop stay in MainWindow,
 // which reaches the widget via tree().
 class SidebarController : public QObject
@@ -44,6 +45,10 @@ public:
 
     // Italic + dimmed row for channels checked out to a floating window.
     void setCheckedOut(const ServerId &host, const BufferId &channel, bool out);
+
+    // Leading avatar icon for channels that publish one via metadata;
+    // a null icon restores the plain row.
+    void setChannelAvatar(const ServerId &host, const BufferId &channel, const QIcon &icon);
 
 private:
     void updateUnread(const ServerId &host, const BufferId &channel, int count);

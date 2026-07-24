@@ -1167,6 +1167,10 @@ void MainWindow::onChannelAdded(const ServerId &host, const BufferId &channel)
     auto *item = m_sidebarCtl->addChannelItem(host, channel);
     if (!item) return;
 
+    // A recreated row starts plain — restore the channel avatar if one is known
+    if (auto *chData = m_model->channel(host, channel); chData && !chData->avatarUrl.isEmpty())
+        onChannelAvatarChanged(host, channel, chData->avatarUrl);
+
     // Checked out to a floating window: re-mark, but don't select or raise —
     // (re)joins would otherwise steal focus and misplace the sidebar highlight.
     if (m_paneWindows.contains(paneKey(host, channel))) {

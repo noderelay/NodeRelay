@@ -1064,8 +1064,11 @@ void IrcClient::processLine(const QString &line)
         QString target     = msg.params[0];
         if (target == QLatin1String("*")) target = m_nick;
         const QString &key = msg.params[1];
-        if ((key == "display-name" || key == "avatar") && !target.startsWith('#')) {
-            const QString value = !msg.trailing.isEmpty() ? msg.trailing : msg.params.value(3);
+        const QString value = !msg.trailing.isEmpty() ? msg.trailing : msg.params.value(3);
+        if (target.startsWith('#')) {
+            if (key == "avatar")
+                emit channelMetaChanged(m_serverName, target, key, value);
+        } else if (key == "display-name" || key == "avatar") {
             emit userMetaChanged(m_serverName, target, key, value);
         }
         return;
@@ -1704,8 +1707,11 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             QString target     = params[1];
             if (target == QLatin1String("*")) target = m_nick;
             const QString &key = params[2];
-            if ((key == "display-name" || key == "avatar") && !target.startsWith('#')) {
-                const QString value = !trailing.isEmpty() ? trailing : params.value(4);
+            const QString value = !trailing.isEmpty() ? trailing : params.value(4);
+            if (target.startsWith('#')) {
+                if (key == "avatar")
+                    emit channelMetaChanged(m_serverName, target, key, value);
+            } else if (key == "display-name" || key == "avatar") {
                 emit userMetaChanged(m_serverName, target, key, value);
             }
         }
@@ -1830,7 +1836,21 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 369: // RPL_ENDOFWHOWAS
         break;
 
-    case 766: // ERR_NOMATCHINGKEY — metadata key not set, expected and silent
+    case 766: { // ERR_NOMATCHINGKEY — key not set; Ergo also pushes this to
+                // subscribers when a key is deleted, so treat it as "cleared"
+        if (params.size() >= 3) {
+            QString target     = params[1];
+            if (target == QLatin1String("*")) target = m_nick;
+            const QString &key = params[2];
+            if (target.startsWith('#')) {
+                if (key == "avatar")
+                    emit channelMetaChanged(m_serverName, target, key, QString());
+            } else if (key == "display-name" || key == "avatar") {
+                emit userMetaChanged(m_serverName, target, key, QString());
+            }
+        }
+        break;
+    }
     case 768: // ERR_KEYNOTSET
         break;
 
