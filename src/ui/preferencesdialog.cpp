@@ -293,6 +293,14 @@ QWidget *PreferencesDialog::createChatWindowPage(const Config &cfg)
     connect(m_linkPreviewsCheck, &QCheckBox::toggled, this, [this](bool on){ emit linkPreviewsToggled(on); });
     vbox->addWidget(m_linkPreviewsCheck);
 
+    m_avatarsCheck = new QCheckBox("Show Avatars");
+    m_avatarsCheck->setToolTip("Avatar images are fetched from whatever URL the user or\n"
+                               "channel op set, so the host they point at sees your IP.\n"
+                               "Uncheck to skip the fetch — names and status text still work.");
+    m_avatarsCheck->setChecked(cfg.ui.showAvatars);
+    connect(m_avatarsCheck, &QCheckBox::toggled, this, [this](bool on){ emit avatarsToggled(on); });
+    vbox->addWidget(m_avatarsCheck);
+
     vbox->addSpacing(6);
     vbox->addWidget(sectionLabel("Nick Brackets"));
     {
@@ -681,6 +689,7 @@ void PreferencesDialog::syncFromConfig(const Config &cfg)
     setCheck(m_topicCheck,         cfg.ui.showTopic);
     setCheck(m_timestampsCheck,    cfg.ui.showTimestamps);
     setCheck(m_unreadCountsCheck,  cfg.ui.showUnreadCounts);
+    setCheck(m_avatarsCheck,       cfg.ui.showAvatars);
     setCheck(m_panelCardsCheck,    cfg.ui.panelCards);
     setCheck(m_paneStackRowsCheck, cfg.ui.paneStackRows);
     setCheck(m_themeAutoCheck,     cfg.ui.themeAuto);

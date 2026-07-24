@@ -134,6 +134,7 @@ Config Config::load(const QString &path)
             cfg.ui.hangingIndent   = (*ui)["hanging_indent"].value_or(true);
             cfg.ui.logMessages       = (*ui)["log_messages"].value_or(false);
             cfg.ui.showUnreadCounts  = (*ui)["show_unread_counts"].value_or(true);
+            cfg.ui.showAvatars       = (*ui)["show_avatars"].value_or(true);
             cfg.ui.showTimestamps    = (*ui)["show_timestamps"].value_or(true);
             cfg.ui.highlightWords    = ustr("highlight_words", "");
             cfg.ui.appIcon           = ustr("app_icon", "flat-black");
@@ -277,6 +278,7 @@ Config Config::load(const QString &path)
                 sc.proxyPass         = sstr("proxy_pass");
                 sc.pinnedFingerprint = sstr("ssl_fingerprint");
                 sc.websocket         = (*s)["websocket"].value_or(false);
+                sc.metadata          = (*s)["metadata"].value_or(true);
                 sc.disabled          = (*s)["disabled"].value_or(false);
                 sc.quitMessage       = sstr("quit_message");
                 sc.awayMessage       = sstr("away_message");
@@ -343,6 +345,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "hanging_indent = " << boolStr(cfg.ui.hangingIndent) << "\n";
     out << "log_messages = " << boolStr(cfg.ui.logMessages) << "\n";
     out << "show_unread_counts = " << boolStr(cfg.ui.showUnreadCounts) << "\n";
+    out << "show_avatars = " << boolStr(cfg.ui.showAvatars) << "\n";
     out << "show_timestamps = " << boolStr(cfg.ui.showTimestamps) << "\n";
     out << "highlight_words = " << tomlQuote(cfg.ui.highlightWords) << "\n";
     out << "app_icon = " << tomlQuote(cfg.ui.appIcon) << "\n";
@@ -488,6 +491,8 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             out << "ssl_fingerprint = " << tomlQuote(s.pinnedFingerprint) << "\n";
         if (s.websocket)
             out << "websocket = true\n";
+        if (!s.metadata)
+            out << "metadata = false\n";
         if (s.disabled)
             out << "disabled = true\n";
         if (!s.quitMessage.isEmpty())

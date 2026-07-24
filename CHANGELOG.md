@@ -1,6 +1,34 @@
 # Changelog
 
 <!--
+2026-07-24 (later still): metadata/avatar opt-outs. Both on by default;
+this is about giving people a way out, not changing the default.
+Two switches at different levels:
+- [ui] show_avatars (Preferences -> Chat Window -> Show Avatars) gates
+  the image fetch only. Metadata stays negotiated, so display names and
+  status text keep working — those arrive in-band over IRC and reach no
+  third party. The images do not: an avatar URL is chosen by another
+  user or a channel op, so fetching one hands your IP to whatever host
+  it points at. That asymmetry is the whole reason the switch is here
+  rather than a single metadata on/off. Live toggle: off clears the
+  pixmap cache, the pending-fetch map and every sidebar channel icon
+  (leaving stale images up would imply fetches were still running);
+  on re-fetches the URLs we already hold (Channel::avatarUrl, nickMeta,
+  own profile) — anything else refills on the next push or hover.
+- [[server]] metadata (Manage Servers -> Use metadata) drops the caps
+  from desiredCaps(), so hasMetadataCap() is false for that connection
+  and every SET/GET/SUB site already gated on it goes quiet with no
+  further plumbing. Applies on next connect.
+Wording follow-ups: the four /displayname /avatar /status /chanavatar
+guards said "Server does not support metadata" even when the user was
+the one who switched it off — now metadataOffReason(cl) picks the true
+reason; profile-apply says "Skipped (metadata off or unsupported)".
+Docs: configuration.md (both keys + tables), ircv3.md, faq.md (new
+"How do I turn avatars off?"), howto.html, config.toml.example.
+Build clean, 7/7 ctest.
+-->
+
+<!--
 2026-07-24 (later): review sweep over the post-#127 delta, PRs #165-#166.
 Three-agent review of everything merged since the 2026-07-17 pass
 (#128-#164), every finding hand-verified before fixing. Also ran both

@@ -16,6 +16,7 @@ show_topic = true           # show the topic bar at the top
 show_emoji_button = false   # show emoji picker button next to input box
 show_send_button = true     # show send button (paper-plane) in the input box
 colored_nicks = true        # give each nick a unique color
+show_avatars = true         # fetch avatar images; off keeps names/status, skips the fetch
 menu_style = "menubar"      # "menubar" File/Edit/... bar (joins the KDE global menu), "hidden" shortcuts only
 
 # ─── Profile ──────────────────────────────────────────────────────────────────
@@ -35,7 +36,8 @@ menu_style = "menubar"      # "menubar" File/Edit/... bar (joins the KDE global 
 #   /avatar                                   (blank arg = clear)
 #
 # Requires draft/metadata-2 support. On servers without it, these values are
-# silently skipped — nothing breaks.
+# silently skipped — nothing breaks. Set metadata = false in a [[server]] block
+# to skip the capability on that server entirely.
 
 [profile]
 display_name = "Alice Smith"                    # friendly name shown in nick tooltip

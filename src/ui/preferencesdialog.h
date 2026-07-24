@@ -34,6 +34,7 @@ signals:
     void hangingIndentToggled(bool on);
     void loggingToggled(bool on);
     void linkPreviewsToggled(bool on);
+    void avatarsToggled(bool on);
     void unreadCountsToggled(bool on);
     void timestampsToggled(bool on);
     void highlightWordsChanged(const QString &words);
@@ -76,6 +77,7 @@ private:
     QCheckBox *m_hangingIndentCheck{nullptr};
     QCheckBox *m_loggingCheck{nullptr};
     QCheckBox *m_linkPreviewsCheck{nullptr};
+    QCheckBox *m_avatarsCheck{nullptr};
     QCheckBox *m_unreadCountsCheck{nullptr};
     QCheckBox *m_timestampsCheck{nullptr};
     QLineEdit *m_highlightWordsEdit{nullptr};

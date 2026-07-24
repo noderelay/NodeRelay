@@ -900,7 +900,7 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme; the update checker handles both.)
 
-Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.8+9dbfe64`, the base version plus the short git hash (with `.dirty` added if the source tree had uncommitted changes). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
+Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.8+9dbfe64`, the base version plus the short git hash (with `.dev` added if the source tree had uncommitted changes — a development build of something not committed anywhere). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
 
 ### How do I get debug logs for a bug report?
 
@@ -1374,6 +1374,17 @@ A local file path (e.g. `/home/you/avatar.png`) is displayed only in your own cl
 ### Someone set their avatar but my tooltip doesn't show it
 
 Hover twice: the first hover requests the data in the background, the second renders it. Uplink fetches metadata lazily on hover (a channel-wide fetch on join would flood servers with rate limiting). If a user was offline when you first hovered them, Uplink retries automatically after they rejoin.
+
+Also check **Preferences → Chat Window → Show Avatars** is still on — with it off, names and status text keep working but no image is ever fetched.
+
+### How do I turn avatars off?
+
+Two levels, depending on what you want gone:
+
+- **Just the images:** uncheck **Preferences → Chat Window → Show Avatars** (or set `show_avatars = false` under `[ui]`). Display names and status text keep working. Takes effect immediately: cached images are dropped and the sidebar icons clear.
+- **Metadata entirely for a server:** open **File → Manage Servers**, edit the server, and uncheck **Use metadata** (or set `metadata = false` in that `[[server]]` block). Uplink then never requests the capability there — nothing is published about you, and no names, avatars or status text come back. Takes effect on the next connection.
+
+Avatars are on by default. The reason the switch exists is that an avatar URL is set by another user or a channel op, so fetching the image tells whatever host it points at your IP address. Everything else metadata carries arrives in-band over IRC and reaches no third party.
 
 ---
 

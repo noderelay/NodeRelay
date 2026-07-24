@@ -34,6 +34,7 @@ nick = "joe"
         QCOMPARE(s.realname, "Uplink User");
         QCOMPARE(s.bouncerType, BouncerType::None);
         QVERIFY(!s.websocket);
+        QVERIFY(s.metadata);
         QVERIFY(!s.disabled);
     }
 
@@ -68,6 +69,7 @@ menu_style = "hidden"
         QVERIFY(!cfg.ui.showTimestamps);
         QCOMPARE(cfg.ui.highlightWords, "alert,urgent");
         QCOMPARE(cfg.ui.menuStyle, "hidden");
+        QVERIFY(cfg.ui.showAvatars);   // absent key keeps avatars on
     }
 
     void themeAutoDefaults()
@@ -242,6 +244,7 @@ nick = "joe"
         orig.ui.nickBrackets = "[]";
         orig.ui.logMessages = true;
         orig.ui.linkPreviews = true;
+        orig.ui.showAvatars = false;
         orig.ui.menuStyle = "hidden";
         orig.profileDisplayName = "Joe";
         orig.profileAvatarUrl = "https://example.com/avatar.png";
@@ -257,6 +260,7 @@ nick = "joe"
         sc.bouncerType = BouncerType::Soju;
         sc.bouncerNetwork = "libera";
         sc.quitMessage = "bye";
+        sc.metadata = false;
         sc.channels.append(ChannelConfig{"#dev", QString()});
         sc.channels.append(ChannelConfig{"#chat", QString()});
         orig.servers.append(sc);
@@ -281,6 +285,7 @@ nick = "joe"
         QCOMPARE(loaded.ui.nickBrackets, "[]");
         QVERIFY(loaded.ui.logMessages);
         QVERIFY(loaded.ui.linkPreviews);
+        QVERIFY(!loaded.ui.showAvatars);
         QCOMPARE(loaded.ui.menuStyle, "hidden");
         QCOMPARE(loaded.profileDisplayName, "Joe");
         QCOMPARE(loaded.profileAvatarUrl, "https://example.com/avatar.png");
@@ -297,6 +302,7 @@ nick = "joe"
         QCOMPARE(ls.bouncerType, BouncerType::Soju);
         QCOMPARE(ls.bouncerNetwork, "libera");
         QCOMPARE(ls.quitMessage, "bye");
+        QVERIFY(!ls.metadata);
         QCOMPARE(ls.channels.size(), 2);
         QCOMPARE(ls.channels[0].name, "#dev");
         QCOMPARE(ls.channels[1].name, "#chat");

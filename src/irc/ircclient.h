@@ -60,6 +60,7 @@ public:
     bool    hasCap(const QString &cap) const { return m_ackedCaps.contains(cap); }
     bool    hasMetadataCap() const { return m_ackedCaps.contains("draft/metadata-3")
                                          || m_ackedCaps.contains("draft/metadata-2"); }
+    bool    metadataEnabled() const { return m_metadataEnabled; }
     bool    supportsWhox() const { return m_supportsWhox; }
     QStringList ackedCaps() const { auto l = m_ackedCaps.values(); l.sort(); return l; }
     quint32 localIpv4()  const;
@@ -209,6 +210,7 @@ private:
     QByteArray   m_buffer;
 
     BouncerType  m_bouncerType{BouncerType::None};
+    bool         m_metadataEnabled{true};
     QString      m_bouncerNetwork;
     QString      m_pinnedFingerprint;
     QString      m_proxyHost;

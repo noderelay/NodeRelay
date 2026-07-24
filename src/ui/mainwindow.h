@@ -338,6 +338,7 @@ private:
     void fetchAvatar(const QString &url);
     void onChannelAvatarChanged(const ServerId &host, const BufferId &channel, const QString &url);
     void failChanAvatar(const QString &url, const QString &reason);
+    void applyShowAvatarsSetting(bool on);
     QString nickTooltip(const QString &nick, const ServerId &host) const;
 
     QRegularExpression m_selfNickRe;  // pre-compiled highlight regex for active host's nick

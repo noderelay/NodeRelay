@@ -62,6 +62,7 @@ struct ServerConfig {
     QString            proxyPass;        // optional proxy password
     QString            pinnedFingerprint; // SHA-256 hex of pinned TLS cert (empty = verify normally)
     bool               websocket{false};  // connect via WebSocket (ws:// or wss://)
+    bool               metadata{true};    // negotiate draft/metadata (profiles, avatars)
     bool               disabled{false};  // skip on startup; keep in config
     QString            quitMessage;      // QUIT message (empty = "Uplink")
     QString            awayMessage;      // default /away message when no arg given
@@ -119,6 +120,7 @@ struct UiConfig {
     bool      showTimestamps{true};
     QString   highlightWords{};   // comma-separated extra highlight keywords
     bool      showUnreadCounts{true};
+    bool      showAvatars{true};      // fetch and show user/channel avatar images
     QString   appIcon{"flat-black"};
     QString   nickBrackets{"<>"};
     bool      paneStackRows{false};   // false = columns (default), true = rows

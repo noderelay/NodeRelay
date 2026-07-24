@@ -349,6 +349,15 @@ avatar_url = "https://example.com/avatar.png"
 
 No additional configuration is required; metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2` or `draft/metadata-3`.
 
+#### Turning it off
+
+Two switches, at different levels:
+
+- **Per server: `metadata = false`** (**File → Manage Servers** → **Use metadata**) stops Uplink requesting the capability at all on that connection. Your profile is never published there and no display names, avatars or status text come back. Takes effect on the next connection.
+- **Globally: `show_avatars = false`** (**Preferences → Chat Window → Show Avatars**) keeps metadata running but never fetches avatar images. Names and status text still work. Takes effect immediately.
+
+The second exists because an avatar URL is chosen by whoever set it, and fetching one tells that host your IP address. Turning avatars off keeps everything that arrives in-band over IRC and drops only the part that reaches out to a third party.
+
 #### Fetch semantics and bouncers
 
 The on-demand fetch is retried sensibly: a lookup that fails because the user just went offline no longer blocks that nick for the rest of the session, and a user rejoining clears their cached metadata so the next hover fetches fresh values (the server only pushes changes while both sides are online). The first hover on a nick requests the data; the tooltip fills in on the next hover.
