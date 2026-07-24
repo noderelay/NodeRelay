@@ -835,6 +835,16 @@ void IrcClient::processLine(const QString &line)
         return;
     }
 
+    // PERSISTENCE STATUS <client-setting> <effective-setting> — sent in the
+    // registration burst and in reply to PERSISTENCE GET/SET (draft/persistence)
+    if (cmd == "PERSISTENCE" && msg.params.value(0).toUpper() == "STATUS" &&
+        msg.params.size() >= 3) {
+        emit contextualMessage(m_serverName,
+            QString("Persistence: %1 (your setting: %2)")
+                .arg(msg.params.value(2).toLower(), msg.params.value(1).toLower()));
+        return;
+    }
+
     // Standard replies are command responses — handle immediately, never
     // buffer them into batches (metadata-3 sends FAIL METADATA inside one)
     if (cmd == "FAIL" || cmd == "WARN" || cmd == "NOTE") {
@@ -856,8 +866,10 @@ void IrcClient::processLine(const QString &line)
             emit metaLookupFailed(m_serverName, msg.params.value(2));
             return;
         }
-        // ACCOUNT_REQUIRED is informational — route to server buffer only, not channels
-        if (code == "ACCOUNT_REQUIRED")
+        // ACCOUNT_REQUIRED is informational — route to server buffer only, not
+        // channels. PERSISTENCE is the exception: it's the reply to something
+        // the user just typed, so dropping it would look like nothing happened.
+        if (code == "ACCOUNT_REQUIRED" && triggeredBy != "PERSISTENCE")
             return;
         // The description is always the last param — the parser appends
         // trailing into params, so trailing or not, it sits at the end.
@@ -1330,6 +1342,7 @@ QStringList IrcClient::desiredCaps() const
         "userhost-in-names", "draft/message-redaction", "draft/multiline",
         "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
         "no-implicit-names", "cap-notify", "standard-replies",
+        "draft/persistence",
     };
     // Metadata off for this server: never REQ the caps, so hasMetadataCap()
     // stays false and every SET/GET/SUB site below it goes quiet on its own.

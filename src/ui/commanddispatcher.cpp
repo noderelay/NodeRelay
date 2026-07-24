@@ -513,6 +513,19 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
                 val.isEmpty() ? "Requested avatar clear for " + channel.str()
                               : "Requested avatar for " + channel.str() + ": " + val);
         }
+    } else if (cmd == "/persistence") {
+        auto *cl = m_model->clientFor(host);
+        const QString val = args.trimmed().toUpper();
+        if (!cl || !cl->hasCap("draft/persistence")) {
+            m_model->localMessage(host, channel,
+                "This server does not support persistence (draft/persistence)");
+        } else if (val.isEmpty()) {
+            m_model->sendRaw(host, "PERSISTENCE GET");
+        } else if (val == "ON" || val == "OFF" || val == "DEFAULT") {
+            m_model->sendRaw(host, "PERSISTENCE SET " + val);
+        } else {
+            m_model->localMessage(host, channel, "Usage: /persistence [on|off|default]");
+        }
     } else if (cmd == "/list") {
         emit openChannelList(host);
     } else if (cmd == "/motd") {
@@ -778,6 +791,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             "  /avatar [url]               — set your avatar URL (draft/metadata; leave blank to clear)",
             "  /chanavatar [url]           — set this channel's sidebar avatar (needs op; blank to clear)",
             "  /status [text]              — set your status text, shown in nick tooltips (draft/metadata; blank to clear)",
+            "  /persistence [on|off|default] — stay on the server while disconnected (draft/persistence)",
             "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",
             "  /version [nick]             — request VERSION (nick optional)",

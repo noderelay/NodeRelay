@@ -562,6 +562,7 @@
     <li><a href="#soju">soju bouncer</a></li>
     <li><a href="#soju-admin">soju server admin</a></li>
     <li><a href="#chathistory">Chat history replay</a></li>
+    <li><a href="#persistence">Server-side persistence</a></li>
     <li><a href="#websocket">WebSocket transport</a></li>
   </ul>
 
@@ -1605,6 +1606,38 @@ channels = "#uplinkirc, #linux"</pre>
     <p>Uplink always requests the last <strong>100 messages</strong> per channel. The server may return fewer if the channel has less history stored. There is currently no config option to change this limit.</p>
   </section>
 
+  <!-- SERVER-SIDE PERSISTENCE -->
+  <section id="persistence">
+    <h2>Server-side persistence (no bouncer needed)</h2>
+
+    <p>A bouncer exists to keep you on the network when your client is closed. Some servers can do that themselves: Ergo calls it <strong>always-on</strong>, and you stay joined to your channels, keep your nick, and collect history while nothing is connected. The IRCv3 <code>draft/persistence</code> capability makes that setting visible to the client instead of leaving it buried in your account config.</p>
+
+    <p>When the server supports it, Uplink reads your persistence state during connection and prints it in the buffer you are looking at:</p>
+    <pre>Persistence: on (your setting: default)</pre>
+
+    <p>The first value is what is actually in effect. The second is your own preference, which can be <code>on</code>, <code>off</code>, or <code>default</code> (follow whatever the server decides for accounts like yours).</p>
+
+    <h3>Changing it</h3>
+    <p>Use <code>/persistence</code> in any buffer on that server:</p>
+    <table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td><code>/persistence</code></td><td>Report the current state</td></tr>
+      <tr><td><code>/persistence on</code></td><td>Ask the server to keep you online while disconnected</td></tr>
+      <tr><td><code>/persistence off</code></td><td>Ask it not to</td></tr>
+      <tr><td><code>/persistence default</code></td><td>Follow the server's default for your account</td></tr>
+    </table>
+
+    <p>The server confirms with a fresh status line. It is allowed to refuse: if it does, you get a note explaining why and the state stays as it was.</p>
+
+    <div class="note">
+      <strong>You must be logged into an account.</strong> Persistence is a property of your account, not your connection, so it needs SASL or NickServ identification first. Without one you get <code>FAIL PERSISTENCE ACCOUNT_REQUIRED</code>. On servers that do not advertise the capability at all, <code>/persistence</code> says so and sends nothing.
+    </div>
+
+    <div class="tip">
+      <strong>This is a draft capability.</strong> The specification is still under discussion at IRCv3, and Ergo is currently the only server implementing it. The command may change before it is ratified.
+    </div>
+  </section>
+
   <!-- WEBSOCKET TRANSPORT -->
   <section id="websocket">
     <h2>WebSocket transport</h2>
@@ -2361,6 +2394,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/whois nick</code></td><td>Full user info (hostname, channels, idle time, account); reply appears in the active channel</td><td><code>/whois bob</code></td></tr>
       <tr><td><code>/whowas nick</code></td><td>History for a departed nick (last known user@host and realname); reply appears in the active channel</td><td><code>/whowas bob</code></td></tr>
       <tr><td><code>/setname realname</code></td><td>Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname)</td><td><code>/setname Alice Smith</code></td></tr>
+      <tr><td><code>/persistence [on|off|default]</code></td><td>Stay on the server while your client is disconnected, where the server supports it (Ergo always-on). No argument reports the current state</td><td><code>/persistence on</code></td></tr>
       <tr><td><code>/list</code></td><td>Open the channel browser: a sortable dialog of every channel with user counts and topics; type in the dialog to filter</td><td><code>/list</code></td></tr>
       <tr><td><code>/stats query</code></td><td>Request server statistics; results appear in the active channel</td><td><code>/stats u</code></td></tr>
       <tr><td><code>/time</code></td><td>Query the server's local time</td><td><code>/time</code></td></tr>

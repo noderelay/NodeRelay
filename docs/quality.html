@@ -486,7 +486,7 @@
 <section class="alt-bg">
   <div class="wrap">
     <span class="section-tag c-blue">Protocol conformance</span>
-    <h2>37 IRCv3 capabilities negotiated</h2>
+    <h2>38 IRCv3 capabilities negotiated</h2>
     <p class="section-sub">
       Full <code>CAP LS 302</code> negotiation. Only capabilities the server actually advertises
       are requested; no blindly batched REQs that fail silently.
@@ -516,6 +516,7 @@
         <tr><td class="cap-name">draft/multiline</td><td>Shift+Enter to compose; opens BATCH, sends lines, falls back gracefully</td><td class="cap-status status-full">Full (send + recv)</td></tr>
         <tr><td class="cap-name">draft/metadata-2 / -3</td><td>Display name, avatar + status text synced from server; channel avatars as sidebar icons; async fetch, cached per session; -3 preferred when both offered</td><td class="cap-status status-full">Full (send + recv)</td></tr>
         <tr><td class="cap-name">draft/read-marker</td><td>Syncs read position across clients via MARKREAD (standard form of soju.im/read)</td><td class="cap-status status-full">Full (send + recv)</td></tr>
+        <tr><td class="cap-name">draft/persistence</td><td>Reads the server's persistence state on connect and sets it with /persistence (Ergo always-on)</td><td class="cap-status status-full">Full (send + recv)</td></tr>
         <tr><td class="cap-name">no-implicit-names</td><td>Suppresses automatic NAMES on join; Uplink requests names explicitly (ratified + soju.im/ forms)</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">labeled-response</td><td>CAP negotiated; labels tie server responses to outgoing commands</td><td class="cap-status status-recv">Negotiated</td></tr>
         <tr><td class="cap-name">multi-prefix</td><td>NAMES returns all mode prefixes (e.g. @+ for op+voice)</td><td class="cap-status status-full">Full</td></tr>
@@ -898,7 +899,7 @@
       <div class="principle-card">
         <h3 style="color:var(--gb-blue)">Protocol depth</h3>
         <p>
-          37 IRCv3 capabilities, each with an implementation
+          38 IRCv3 capabilities, each with an implementation
           that was tested against a live Ergo IRCd instance. Bouncer-specific caps are only
           requested when a bouncer type is configured.
         </p>
