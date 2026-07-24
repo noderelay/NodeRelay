@@ -591,6 +591,14 @@ void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &chan
 
     m_chatView->removeLine("status:older");
     m_chatView->prependLines(std::move(older));
+
+    // Same guard as loadOlderMessages: a heavily condensed batch may leave
+    // no scroll range, so the scrollbar can never re-trigger paging — keep
+    // pulling until there is one or the exhausted/empty case ends it.
+    QTimer::singleShot(0, this, [this]{
+        if (m_chatView->verticalScrollBar()->maximum() == 0)
+            loadOlderMessages();
+    });
 }
 
 void MainWindow::startHistoryJump(const ServerId &host, const BufferId &channel, const QDateTime &ts)

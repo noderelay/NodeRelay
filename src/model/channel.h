@@ -112,6 +112,8 @@ struct Channel {
             messages.removeFirst();
             if (!oldId.isEmpty())
                 reactions.remove(oldId);
+            // Keep the unread pointer on the same message as indices shift
+            if (firstUnreadIdx > 0) --firstUnreadIdx;
         }
     }
 
@@ -139,6 +141,13 @@ struct Channel {
             messages.removeLast();
             if (!oldId.isEmpty())
                 reactions.remove(oldId);
+        }
+        // Prepending shifts every existing index; if the unread messages
+        // themselves were trimmed off the tail, there is nothing to point at.
+        if (firstUnreadIdx >= 0) {
+            firstUnreadIdx += static_cast<int>(msgs.size());
+            if (firstUnreadIdx >= messages.size())
+                firstUnreadIdx = -1;
         }
     }
 

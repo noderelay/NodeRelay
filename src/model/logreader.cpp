@@ -40,7 +40,12 @@ bool parseLine(const QString &line, Message &out)
         return true;
     }
     if (rest.startsWith('-')) {
-        const qsizetype dash = rest.indexOf('-', 1);
+        // Nicks may contain '-'; the closing delimiter is "- " (the writer
+        // emits "-nick- text"). An empty-text notice may come back trimmed
+        // to "-nick-", so fall back to a bare trailing dash.
+        qsizetype dash = rest.indexOf(QLatin1String("- "), 1);
+        if (dash < 1 && rest.size() > 2 && rest.endsWith('-'))
+            dash = rest.size() - 1;
         if (dash < 1) return false;
         out = Message::make(MessageType::Notice, rest.mid(1, dash - 1),
                             rest.mid(dash + 2), ts, true);

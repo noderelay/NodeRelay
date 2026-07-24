@@ -134,9 +134,14 @@ void MainWindow::refreshNickList(const ServerId &host, const BufferId &channel)
 // User avatars keep failing quietly; hover fetches would spam otherwise.
 void MainWindow::failChanAvatar(const QString &url, const QString &reason)
 {
-    for (const auto &buf : m_pendingChanAvatars.take(url))
+    for (const auto &buf : m_pendingChanAvatars.take(url)) {
+        // The buffer may have been parted/closed while the fetch was in
+        // flight — posting would recreate it as an invisible zombie
+        if (!m_model->channel(buf.first, buf.second))
+            continue;
         m_model->localMessage(buf.first, buf.second,
             "Channel avatar not loaded — " + reason + " (" + url + ")");
+    }
 }
 
 void MainWindow::onChannelAvatarChanged(const ServerId &host, const BufferId &channel, const QString &url)

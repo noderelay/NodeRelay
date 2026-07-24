@@ -75,7 +75,9 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_port            = cfg.port;
     m_ssl             = cfg.ssl;
     m_nick            = cfg.nick;
-    m_wantedNick      = cfg.nick;
+    // Registration sends the sanitized nick — reclaim must compare against
+    // and send the same form, or the two never converge.
+    m_wantedNick      = stripCrlf(cfg.nick).remove(' ').remove('\0');
     m_nickFallback    = false;
     m_saslAuthed      = false;
     m_user            = cfg.user;
@@ -856,19 +858,19 @@ void IrcClient::processLine(const QString &line)
         // ACCOUNT_REQUIRED is informational — route to server buffer only, not channels
         if (code == "ACCOUNT_REQUIRED")
             return;
-        const QString desc        = msg.trailing.isEmpty() ? msg.params.value(msg.params.size() - 1)
-                                                           : msg.trailing;
+        // The description is always the last param — the parser appends
+        // trailing into params, so trailing or not, it sits at the end.
+        const QString desc = msg.params.size() > 2 ? msg.params.value(msg.params.size() - 1)
+                                                   : QString();
         // Look for a channel name in the context parameters
         QString channel;
-        for (int i = 2; i < msg.params.size(); ++i) {
+        for (int i = 2; i < msg.params.size() - 1; ++i) {
             const QString &p = msg.params[i];
-            if (!p.isEmpty() && QString("&#!+").contains(p[0])) { channel = p; break; }
+            if (isChannelName(p)) { channel = p; break; }
         }
         // Context params (channel, key, …) say what was refused — without
-        // them a FAIL from the wrong buffer is undebuggable. When there is
-        // no trailing, the last param is the description, not context.
-        const qsizetype ctxEnd = msg.trailing.isEmpty() ? msg.params.size() - 1
-                                                        : msg.params.size();
+        // them a FAIL from the wrong buffer is undebuggable.
+        const qsizetype ctxEnd = msg.params.size() - 1;
         const QString context = ctxEnd > 2 ? msg.params.mid(2, ctxEnd - 2).join(' ')
                                            : QString();
         const QString prefix  = "[" + cmd + "] ";
@@ -877,7 +879,8 @@ void IrcClient::processLine(const QString &line)
             : prefix + triggeredBy + " " + code;
         if (!context.isEmpty())
             text += " [" + context + "]";
-        text += ": " + desc;
+        if (!desc.isEmpty())
+            text += ": " + desc;
         if (!channel.isEmpty())
             emit standardReply(m_serverName, channel, cmd, text);
         else if (cmd == "FAIL")
@@ -1075,7 +1078,7 @@ void IrcClient::processLine(const QString &line)
         if (target == QLatin1String("*")) target = m_nick;
         const QString &key = msg.params[1];
         const QString value = !msg.trailing.isEmpty() ? msg.trailing : msg.params.value(3);
-        if (target.startsWith('#')) {
+        if (isChannelName(target)) {
             if (key == "avatar")
                 emit channelMetaChanged(m_serverName, target, key, value);
         } else if (key == "display-name" || key == "avatar" || key == "status") {
@@ -1427,8 +1430,18 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
 
     if (subCmd == "ACK") {
         const QStringList acked = trailing.split(' ', Qt::SkipEmptyParts);
-        for (const QString &cap : acked)
-            m_ackedCaps.insert(cap.startsWith('-') ? cap.mid(1) : cap);
+        const bool hadMetadata = hasMetadataCap();
+        for (const QString &cap : acked) {
+            // An ACKed "-cap" confirms the cap was disabled, not enabled
+            if (cap.startsWith('-'))
+                m_ackedCaps.remove(cap.mid(1));
+            else
+                m_ackedCaps.insert(cap);
+        }
+        // Metadata gained mid-session (CAP NEW → REQ → ACK) — the 001
+        // handler already ran, so subscribe here or pushes never arrive.
+        if (m_registered && !hadMetadata && hasMetadataCap())
+            sendRaw("METADATA * SUB display-name avatar status");
 
         if (!m_registered) {
             if (acked.contains("sasl") &&
@@ -1488,6 +1501,9 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             if (desired.contains(name) && !m_ackedCaps.contains(name))
                 want << name;
         }
+        // Both metadata drafts advertised in one CAP NEW — take only v3
+        if (want.contains("draft/metadata-3"))
+            want.removeAll("draft/metadata-2");
         if (!want.isEmpty())
             sendRaw("CAP REQ :" + want.join(' '));
         return;
@@ -1718,7 +1734,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             if (target == QLatin1String("*")) target = m_nick;
             const QString &key = params[2];
             const QString value = !trailing.isEmpty() ? trailing : params.value(4);
-            if (target.startsWith('#')) {
+            if (isChannelName(target)) {
                 if (key == "avatar")
                     emit channelMetaChanged(m_serverName, target, key, value);
             } else if (key == "display-name" || key == "avatar" || key == "status") {
@@ -1852,7 +1868,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             QString target     = params[1];
             if (target == QLatin1String("*")) target = m_nick;
             const QString &key = params[2];
-            if (target.startsWith('#')) {
+            if (isChannelName(target)) {
                 if (key == "avatar")
                     emit channelMetaChanged(m_serverName, target, key, QString());
             } else if (key == "display-name" || key == "avatar" || key == "status") {

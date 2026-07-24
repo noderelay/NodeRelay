@@ -162,6 +162,8 @@ void MainWindow::applyThemeByName(const QString &name)
             const QColor ic(m_theme.text);
             pane->setSearchIcon(MenuIcons::fromSvg(QStringLiteral(":/icons/mi-search.svg"), ic, 20));
             pane->setPopOutIcon(MenuIcons::pipEnter(ic));
+            // Pane chat lines bake their colors at append time too
+            refreshPaneChatView(pane);
         }
         applyPanelChrome();
     }
@@ -177,9 +179,11 @@ void MainWindow::applyThemeByName(const QString &name)
         buildMenuBar();
     }
     // Chat lines bake their per-segment colors (timestamp, text, mentions) at
-    // append time, so re-render the active buffer to pick up the new theme live.
+    // append time, so re-render the active buffer to pick up the new theme
+    // live — without collapsing the render window or losing scroll position
+    // (auto theme can flip while the user is reading paged-in history).
     if (m_chatView)
-        refreshChatView(m_model->activeHost(), m_model->activeChannel());
+        refreshChatView(m_model->activeHost(), m_model->activeChannel(), false);
 }
 
 QString MainWindow::effectiveThemeName() const

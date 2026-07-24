@@ -65,6 +65,12 @@ private slots:
         QCOMPARE(m.type, MessageType::Server);
         QVERIFY(m.nick.isEmpty());
         QCOMPARE(m.text, "carol has joined");
+
+        // Dashes inside the nick must not truncate it
+        QVERIFY(LogReader::parseLine("[2026-07-20 12:00:05] -Guest-42- hi", m));
+        QCOMPARE(m.type, MessageType::Notice);
+        QCOMPARE(m.nick, "Guest-42");
+        QCOMPARE(m.text, "hi");
     }
 
     void rejectsGarbage()
@@ -84,6 +90,9 @@ private slots:
         QVERIFY(m.text.isEmpty());
         QVERIFY(LogReader::parseLine("[2026-07-20 12:00:01] * bob", m));
         QCOMPARE(m.nick, "bob");
+        QVERIFY(m.text.isEmpty());
+        QVERIFY(LogReader::parseLine("[2026-07-20 12:00:01] -Guest-42-", m));
+        QCOMPARE(m.nick, "Guest-42");
         QVERIFY(m.text.isEmpty());
     }
 
