@@ -1,6 +1,29 @@
 # Changelog
 
 <!--
+2026-07-24 (release prep): docs sweep before 2026.8.0. Two real gaps,
+rest was verification.
+- howto.html said scrollback REQUIRES chathistory ("The server must
+  support...") — untrue since #141/#142/#149. Rewrote the section with
+  both sources (server vs local logs), the seed-on-open behavior, the
+  no-history status line, and the REDACT-reappears caveat. The Libera
+  note in the chat-history section said the feature "simply does not
+  activate" with no mention of the log fallback; now points at it.
+- index.html gained two feature cards (profiles/avatars/channel icons,
+  log-backed scrollback) — both shipped this cycle, neither on the
+  landing page. Caps list was already current from #153.
+- README: profiles/avatars row incl. both new opt-outs.
+quality.html numbers were stale, several from before v2026.7.8 — all
+recomputed from real runs, not edited to taste: tests 74->75 (tst_logreader
+was added in #141 without updating the page), assertions 198->284,
+source files 64->104, LOC 18038->24015, caps 37->35 (counted from
+desiredCaps()), cppcheck 27->47 files. Re-ran ASan/UBSan (clean, totals
+now match) and cppcheck 2.21.1 (0 errors, 0 warnings; 7 unusedFunction
+style hits are cross-TU false positives, so "0 real bugs" stands).
+Fuzz inputs 61 and themes 297 verified unchanged.
+-->
+
+<!--
 2026-07-24 (later still): metadata/avatar opt-outs. Both on by default;
 this is about giving people a way out, not changing the default.
 Two switches at different levels:

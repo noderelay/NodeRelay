@@ -1570,7 +1570,7 @@ sudo service soju restart</pre>
     </table>
 
     <div class="note">
-      <strong>Libera, EFnet, IRCnet, and most large networks do not support chat history.</strong> Their IRC daemons (Solanum, Charybdis, etc.) do not implement the <code>chathistory</code> cap. The feature simply does not activate; you will not see an error.
+      <strong>Libera, EFnet, IRCnet, and most large networks do not support chat history.</strong> Their IRC daemons (Solanum, Charybdis, etc.) do not implement the <code>chathistory</code> cap. The feature simply does not activate; you will not see an error. On those networks Uplink falls back to its own log files instead: with <strong>Log Messages to Disk</strong> enabled, opening a buffer loads the last 100 logged lines and scrolling up pages further back. See <a href="#scroll-history">Scrollback history loading</a>.
     </div>
 
     <h3>What history messages look like</h3>
@@ -1871,11 +1871,23 @@ channels = "#uplinkirc"</pre>
   <!-- SCROLLBACK HISTORY LOADING -->
   <section id="scroll-history">
     <h2>Scrollback history loading</h2>
-    <p>When you scroll to the top of a channel buffer, Uplink automatically fetches older messages from the server using <code>CHATHISTORY BEFORE</code>. Messages are prepended above the existing buffer without jumping the scroll position.</p>
-    <p>This continues as long as the server has more history available. When the server returns an empty batch, Uplink stops requesting.</p>
+    <p>When you scroll to the top of a channel buffer, Uplink automatically loads older messages and prepends them above the existing buffer without jumping the scroll position. There are two sources, and it picks whichever is available:</p>
+    <table>
+      <tr><th>Source</th><th>When it's used</th></tr>
+      <tr>
+        <td><strong>The server</strong> — <code>CHATHISTORY BEFORE</code></td>
+        <td>On networks that support the <code>chathistory</code> or <code>draft/chathistory</code> capability (Ergo, soju, modern ZNC). Continues until the server returns an empty batch.</td>
+      </tr>
+      <tr>
+        <td><strong>Your local logs</strong></td>
+        <td>Everywhere else — plain networks like Libera with no bouncer. Requires <strong>Log Messages to Disk</strong> (Preferences → Logging); history accumulates from the moment you turn it on. Only used when the server offers no history capability, so the two never double up.</td>
+      </tr>
+    </table>
+    <p>Log-backed history also seeds a buffer when you open it: joining a channel, opening a PM or opening the server window loads the last 100 logged lines straight away, so a buffer is never blank on a network without server history. This is skipped when the server is replaying its own history, and happens once per buffer per run.</p>
+    <p>If neither source is available — no server history and logging switched off — a status line at the top of the buffer points you at the logging setting rather than leaving you at a silent dead end.</p>
+    <p>One caveat worth knowing: messages deleted with <code>draft/message-redaction</code> reappear when history is paged back from local logs. Redaction removes a message from the server and from your view, but does not rewrite log files already on your disk.</p>
     <h3>Jump to bottom</h3>
     <p>On busy channels, scrolling up locks the viewport so incoming messages don't snap you back to the bottom. A floating <strong>⬇⬇</strong> button appears in the bottom-right corner of the chat area; click it to return to live chat. The button fades in when you scroll up and fades out when you return to the bottom.</p>
-    <p><strong>Requirement:</strong> The server must support the <code>chathistory</code> or <code>draft/chathistory</code> IRCv3 capability. Ergo, soju, and modern ZNC all support this.</p>
   </section>
 
   <!-- UNREAD SEPARATOR & SCROLL MEMORY -->
