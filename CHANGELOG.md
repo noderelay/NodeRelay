@@ -1,6 +1,18 @@
 # Changelog
 
 <!--
+2026-07-24: SplitterGrip drag-after-first-message CLOSED, not repro.
+Joe ran a scratch-HOME fresh instance on current main (userlist train
+included), joined an empty unregistered channel, both splitters drag
+fine before any message. Either the #135-#139 splitter rework fixed
+it indirectly or zam's symptom came from his legacy nickSplitter blob
+(which #138/#139 killed). splittergrip.h itself was never changed.
+If a fresh-install report of an undraggable divider ever comes in
+again, the old theory (grip track() stale until first layout pass)
+and repro recipe are in the 2026-07-20 session note below.
+-->
+
+<!--
 Session 2026-07-24 (sidebar fix): avatar rows shifted right when
 selected — ONLY on Joe's live 1.45x-scale KDE Wayland, exactly the
 class the wayland-debugging memory warns about. Offscreen repro with
