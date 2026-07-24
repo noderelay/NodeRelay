@@ -45,12 +45,6 @@ const QList<QPair<QString,QString>> PreferencesDialog::s_bracketChoices = {
     { "",     "nick  (none)"      },
 };
 
-const QList<QPair<QString,QString>> PreferencesDialog::s_paneSplitChoices = {
-    { "auto",    "Automatic (follows the window shape)" },
-    { "columns", "Always columns (side by side)"        },
-    { "rows",    "Always rows (stacked)"                },
-};
-
 const QList<QPair<QString,QString>> PreferencesDialog::s_menuStyleChoices = {
     { "menubar", "Menu bar"                  },
     { "hidden",  "Hidden (shortcuts only)"   },
@@ -364,23 +358,16 @@ QWidget *PreferencesDialog::createInterfacePage(const Config &cfg)
     connect(m_unreadCountsCheck, &QCheckBox::toggled, this, [this](bool on){ emit unreadCountsToggled(on); });
     vbox->addWidget(m_unreadCountsCheck);
 
-    vbox->addSpacing(6);
-    vbox->addWidget(sectionLabel("Pane Split"));
-    {
-        m_paneSplitGroup = new QButtonGroup(this);
-        m_paneSplitGroup->setExclusive(true);
-        for (int i = 0; i < s_paneSplitChoices.size(); ++i) {
-            auto *rb = new QRadioButton(s_paneSplitChoices[i].second);
-            rb->setChecked(s_paneSplitChoices[i].first == cfg.ui.paneSplitAxis);
-            m_paneSplitGroup->addButton(rb, i);
-            vbox->addWidget(rb);
-        }
-        connect(m_paneSplitGroup, &QButtonGroup::idClicked, this, [this](int idx){
-            if (idx >= 0 && idx < s_paneSplitChoices.size())
-                emit paneSplitAxisChanged(s_paneSplitChoices[idx].first);
-        });
-    }
-    vbox->addSpacing(6);
+    m_paneSplitAutoCheck = new QCheckBox("Split Panes Automatically");
+    m_paneSplitAutoCheck->setToolTip(
+        "Panes split along whichever axis fits: columns on a wide window,\n"
+        "rows on a tall one. Dropping a pane on another pane's edge picks\n"
+        "a side by hand and turns this off; unchecking it here keeps\n"
+        "whichever way the panes are split right now.");
+    m_paneSplitAutoCheck->setChecked(cfg.ui.paneSplitAxis == "auto");
+    connect(m_paneSplitAutoCheck, &QCheckBox::toggled, this,
+            [this](bool on){ emit paneSplitAutoToggled(on); });
+    vbox->addWidget(m_paneSplitAutoCheck);
 
     m_panelCardsCheck = new QCheckBox("Panel Cards");
     m_panelCardsCheck->setToolTip("Side panels use their own theme colors with rounded tops.\n"
@@ -710,6 +697,8 @@ void PreferencesDialog::syncFromConfig(const Config &cfg)
     setCheck(m_unreadCountsCheck,  cfg.ui.showUnreadCounts);
     setCheck(m_avatarsCheck,       cfg.ui.showAvatars);
     setCheck(m_panelCardsCheck,    cfg.ui.panelCards);
+    // An edge-drop writes columns/rows, so this can change without the dialog
+    setCheck(m_paneSplitAutoCheck, cfg.ui.paneSplitAxis == "auto");
     setCheck(m_themeAutoCheck,     cfg.ui.themeAuto);
     auto setCombo = [&cfg](SolidComboBox *combo, const QString &text){
         if (!combo) return;

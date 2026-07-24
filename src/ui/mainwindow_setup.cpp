@@ -341,8 +341,13 @@ void MainWindow::connectPreferences()
     connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled,
             this, &MainWindow::applyUnreadCountsSetting);
 
-    connect(m_prefsDialog, &PreferencesDialog::paneSplitAxisChanged,
-            this, &MainWindow::applyPaneSplitAxisSetting);
+    // Unticking freezes the axis where it stands rather than jumping to a
+    // default the user never chose — paneRowsAxis() is what's in force now.
+    connect(m_prefsDialog, &PreferencesDialog::paneSplitAutoToggled, this, [this](bool on){
+        applyPaneSplitAxisSetting(on ? QStringLiteral("auto")
+                                     : (paneRowsAxis() ? QStringLiteral("rows")
+                                                       : QStringLiteral("columns")));
+    });
 
     connect(m_prefsDialog, &PreferencesDialog::panelCardsToggled,
             this, &MainWindow::applyPanelCardsSetting);
