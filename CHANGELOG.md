@@ -1,6 +1,24 @@
 # Changelog
 
 <!--
+2026-07-24: Pane Split radios collapse to one checkbox (unreleased).
+
+Joe asked whether the control could go entirely now that edge-drop can
+set the axis. It can't: edge-drop only ever writes columns/rows, so with
+no control there'd be no way back to auto short of editing config.toml.
+One checkbox instead of a section label plus three radios.
+
+Unticking by hand freezes the axis where it stands (paneRowsAxis(), the
+value in force right now) rather than jumping to a default the user
+never picked. MainWindow does that computation, so the dialog emits
+paneSplitAutoToggled(bool) and not an axis string.
+
+pane_split_axis keeps all three values — this is a UI change only, no
+config migration. syncFromConfig has to re-tick the box because an
+edge-drop changes the axis from outside the dialog.
+-->
+
+<!--
 2026-07-24: edge-drop places a pane on a side (unreleased).
 
 Joe expected to be able to grab a pane and drag it to a side. Drag has
