@@ -800,13 +800,17 @@ void SessionModel::postMessage(const ServerId &host, const BufferId &target, con
             ++ch.mentions;
     }
 
-    // Read before the emit: a directly-connected slot that inserts into the
-    // session's channel hash would invalidate the ch reference (Qt 6 QHash
-    // rehash). No current handler does, but don't rely on that.
-    const int unread = ch.unread;
     emit messageAdded(host, target, msg);
-    if (!isActive && !msg.isHistory && countsAsUnread)
-        emit unreadChanged(host, target, unread);
+    // Re-read the count instead of caching it before the emit: a buffer shown
+    // in a pane or a popped-out window is marked read from inside that emit,
+    // and a cached value would re-badge it as unread the moment it was
+    // cleared. Look the channel up again rather than reusing the reference —
+    // a directly-connected slot that inserts into the session's channel hash
+    // would have invalidated it (Qt 6 QHash rehash).
+    if (!isActive && !msg.isHistory && countsAsUnread) {
+        if (auto *c = channel(host, target))
+            emit unreadChanged(host, target, c->unread);
+    }
 }
 
 BufferId SessionModel::activeOrServer(const ServerId &host) const

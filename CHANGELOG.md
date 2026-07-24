@@ -30,6 +30,36 @@ session per account. Syntax may move before ratification.
 -->
 
 <!--
+2026-07-24: panes take sidebar clicks + paned unread fix (unreleased).
+
+Joe had #linuxdojo over #ergo in rows mode and found that clicking a
+channel while typing in the bottom pane switched the top one. Sidebar
+selection only ever drove the primary view; panes were fixed to the
+channel they were opened on. Now the last docked pane to hold focus is
+the target, tracked off QApplication::focusChanged so the sidebar itself
+(which takes focus on the click) doesn't count as leaving the pane.
+
+Retarget rules: buffer already open in another pane/window = no-op with
+the highlight bounced back, same as before. Buffer is what the primary
+is showing = trade, pane takes it and the primary takes the pane's old
+channel, which keeps the one-view-per-buffer invariant without refusing
+a click that looks like it should work. Drafts move with the buffer
+through m_inputDrafts, shared with the primary.
+
+Two lambdas in createPane captured host/channel by value; they now read
+pane->host()/channel(), or a retargeted pane would send input to the
+channel it used to show.
+
+Separate bug found while looking: postMessage cached ch.unread BEFORE
+emitting messageAdded, and the pane branch of onMessageAdded marks the
+buffer read from inside that emit. The cached value then re-badged the
+row it had just cleared, so a channel sitting open in a pane kept a
+badge. Re-read the count after the emit (re-lookup, not the stale
+reference: QHash rehash). README already promised paned channels never
+badge, so this was the docs being right and the code being wrong.
+-->
+
+<!--
 Session close 2026-07-24 (RELEASE DAY): v2026.8.0 shipped, PRs #168-#169.
 
 BUILT: metadata/avatar opt-outs (#168). Two switches, both default ON.

@@ -419,6 +419,20 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     trimTimer->start(60000);
 #endif
 
+    // Track which view the user is typing in, so a sidebar click knows whether
+    // to load into a docked pane or the primary. Widgets that belong to
+    // neither (the sidebar itself, dialogs) leave the last choice standing —
+    // clicking a channel row must not count as leaving the pane.
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget *, QWidget *now){
+        for (QWidget *w = now; w; w = w->parentWidget()) {
+            if (w == m_primaryPanel) { m_focusedPane = nullptr; return; }
+            if (auto *p = qobject_cast<ChannelPane *>(w)) {
+                if (m_orderedPanes.contains(p)) m_focusedPane = p; // docked only
+                return;
+            }
+        }
+    });
+
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
     connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
     connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
@@ -1288,7 +1302,12 @@ void MainWindow::onSidebarSelectionChanged()
     const ServerId host{item->data(0, Qt::UserRole).toString()};
     const BufferId channel{item->data(0, Qt::UserRole + 1).toString()};
     if (host.isEmpty() || channel.isEmpty()) return;
-    switchToChannel(host, channel);
+    // Typing in a docked pane? Load the selection there and leave the primary
+    // (and the layout) alone.
+    if (m_focusedPane && m_orderedPanes.contains(m_focusedPane))
+        retargetPane(m_focusedPane, host, channel);
+    else
+        switchToChannel(host, channel);
 }
 
 void MainWindow::navigateChannel(int direction)
@@ -1387,6 +1406,16 @@ void MainWindow::dispatchInput(const QString &text, const ServerId &host, const 
 // View helpers
 // ---------------------------------------------------------------------------
 
+// The highlight follows the primary view, never a pane — a checked-out or
+// paned row left selected would claim to be what the main view is showing.
+void MainWindow::syncSidebarToActive()
+{
+    if (auto *active = m_sidebarCtl->channelItem(m_model->activeHost(), m_model->activeChannel()))
+        m_sidebar->setCurrentItem(active);
+    else
+        m_sidebar->clearSelection();
+}
+
 void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
 {
     // Checked out to a floating window — raise it instead of loading in main,
@@ -1396,20 +1425,14 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         win->show();
         win->raise();
         win->activateWindow();
-        if (auto *active = m_sidebarCtl->channelItem(m_model->activeHost(), m_model->activeChannel()))
-            m_sidebar->setCurrentItem(active);
-        else
-            m_sidebar->clearSelection(); // don't leave the checked-out row highlighted
+        syncSidebarToActive();
         return;
     }
 
     // Already docked in a visible pane — don't also load it into the primary
     // view. Same reasoning as the floating-window case above.
     if (m_panes.contains(key)) {
-        if (auto *active = m_sidebarCtl->channelItem(m_model->activeHost(), m_model->activeChannel()))
-            m_sidebar->setCurrentItem(active);
-        else
-            m_sidebar->clearSelection();
+        syncSidebarToActive();
         return;
     }
 
@@ -1633,11 +1656,13 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     if (auto *ch = m_model->channel(host, channel))
         pane->setTopic(ChatRenderer::linkifyTopic(ch->topic));
 
-    connect(pane, &ChannelPane::closeRequested, this, [this, host, channel]{
-        closeChannelPane(host, channel);
+    // Read the buffer off the pane, not the values it was created with — a
+    // docked pane can be retargeted at a different channel later.
+    connect(pane, &ChannelPane::closeRequested, this, [this, pane]{
+        closeChannelPane(pane->host(), pane->channel());
     });
-    connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
-        dispatchInput(text, host, channel);
+    connect(pane, &ChannelPane::inputSubmitted, this, [this, pane](const QString &text){
+        dispatchInput(text, pane->host(), pane->channel());
     });
     connect(pane, &ChannelPane::dropReceived, this, [this, pane](const QString &sourceKey){
         if (sourceKey == kPrimaryDragKey) {
@@ -1729,6 +1754,7 @@ void MainWindow::floatPane(ChannelPane *pane)
     const BufferId channel = pane->channel();
 
     const bool wasDocked = m_orderedPanes.removeOne(pane);
+    if (m_focusedPane == pane) m_focusedPane = nullptr; // no longer a docked target
 
     auto *win = new QWidget(nullptr, Qt::Window);
     win->setObjectName("paneWindow");
@@ -1826,6 +1852,7 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     const QString key = paneKey(host, channel);
     auto *pane = m_panes.take(key);
     if (!pane) return;
+    if (m_focusedPane == pane) m_focusedPane = nullptr;
 
     // Floating pane: tear down its window and return to the server list.
     if (auto *win = m_paneWindows.take(key)) {
@@ -1959,6 +1986,61 @@ void MainWindow::rebuildPaneLayout()
     // every pane, which resets programmatic fonts to the app default —
     // re-apply the configured fonts.
     applyFontSizes();
+}
+
+// Puts another buffer in an already-docked pane. The pane keeps its slot, the
+// layout is untouched, and the primary view carries on with whatever it had.
+void MainWindow::retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel)
+{
+    if (!pane) return;
+    const QString oldKey = pane->key();
+    const QString newKey = paneKey(host, channel);
+    if (oldKey == newKey) return;
+
+    // A buffer lives in exactly one view. If it's already open elsewhere the
+    // click can't be honoured, so bounce the highlight back like
+    // switchToChannel does for the same case.
+    if (m_panes.contains(newKey) || m_paneWindows.contains(newKey)) {
+        syncSidebarToActive();
+        return;
+    }
+
+    const ServerId oldHost = pane->host();
+    const BufferId oldChan = pane->channel();
+    // The primary is showing the clicked buffer: trade, rather than refuse.
+    // The pane gets what was asked for and the primary takes the pane's old
+    // channel, so nothing ends up displayed twice and nothing disappears.
+    const bool takeFromPrimary =
+        host == m_model->activeHost() &&
+        channel.str().compare(m_model->activeChannel().str(), Qt::CaseInsensitive) == 0;
+
+    // Stash the unsent text under the buffer it was written for, same as the
+    // primary does on a switch — the two share m_inputDrafts.
+    const QString oldDraftKey = bufferKey(oldHost, oldChan);
+    const QString draft = pane->input()->toPlainText();
+    if (draft.isEmpty()) m_inputDrafts.remove(oldDraftKey);
+    else                 m_inputDrafts[oldDraftKey] = draft;
+
+    m_panes.remove(oldKey);
+    pane->retarget(host, channel);
+    m_panes[newKey] = pane;
+
+    if (auto *sess = m_model->session(host))
+        pane->setNick(sess->nick);
+    if (auto *ch = m_model->channel(host, channel))
+        pane->setTopic(ChatRenderer::linkifyTopic(ch->topic));
+    pane->setTyping(m_typing->typingText(host, channel));
+    pane->input()->setPlainText(m_inputDrafts.value(bufferKey(host, channel)));
+    pane->input()->moveCursor(QTextCursor::End);
+    refreshPaneChatView(pane);
+    refreshPaneNickList(pane);
+    m_model->markRead(host, channel);
+
+    if (takeFromPrimary)
+        switchToChannel(oldHost, oldChan);
+    else
+        syncSidebarToActive();
+    pane->input()->setFocus(); // stay in the pane; the next click targets it too
 }
 
 void MainWindow::refreshPaneNickList(ChannelPane *pane)
