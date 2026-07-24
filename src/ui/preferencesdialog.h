@@ -44,7 +44,8 @@ signals:
     void manageServersRequested();
     void aboutRequested();
     void docsRequested();
-    void profileSetRequested(const QString &displayName, const QString &avatarUrl);
+    void profileSetRequested(const QString &displayName, const QString &avatarUrl,
+                             const QString &statusText);
     void scriptsChanged(const QList<ScriptBinding> &scripts);
 
 private:
@@ -82,6 +83,7 @@ private:
     QButtonGroup *m_menuStyleGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
+    QLineEdit *m_statusEdit{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;

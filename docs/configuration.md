@@ -67,6 +67,7 @@ link_previews = false              # set to true to enable URL preview cards in 
 
 [profile]
 display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata)
+status = "afk until monday"            # italic status line in nick tooltips
 avatar_url = "https://example.com/avatar.png"  # https:// URL or /local/path
 
 [[server]]

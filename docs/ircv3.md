@@ -298,7 +298,7 @@ Tells the server not to send a NAMES list automatically on JOIN; Uplink requests
 
 Associates key-value metadata with users: display names and avatar URLs stored server-side and synced to clients in real time. `metadata-3` is a revision of the same spec (new standard-reply codes, pushes delivered as numerics); when a server offers both, Uplink requests only `metadata-3`. Everything below applies to either revision.
 
-Uplink subscribes to `display-name` and `avatar` changes at registration (`METADATA * SUB`), and fetches a user's keys on demand the first time you hover their nick; a channel-wide fetch on join would flood rate-limited servers. When a subscribed user changes a key, the server pushes a `METADATA` notification and Uplink updates immediately. Data is stored per-nick, the avatar image is fetched in the background, and everything shows in the **nick list tooltip**:
+Uplink subscribes to `display-name`, `avatar`, and `status` changes at registration (`METADATA * SUB`), and fetches a user's keys on demand the first time you hover their nick; a channel-wide fetch on join would flood rate-limited servers. When a subscribed user changes a key, the server pushes a `METADATA` notification and Uplink updates immediately. Data is stored per-nick, the avatar image is fetched in the background, and everything shows in the **nick list tooltip**:
 
 ```
 [avatar image]  Name: Alice Smith
@@ -317,6 +317,7 @@ Avatar images are fetched asynchronously when metadata arrives and cached for th
 /displayname Alice Smith
 /avatar https://example.com/avatar.png
 /avatar /home/alice/avatar.png
+/status afk until monday
 ```
 
 Leave the argument blank to clear the value:

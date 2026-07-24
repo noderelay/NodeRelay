@@ -476,6 +476,19 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             m_model->localMessage(host, channel,
                 val.isEmpty() ? "Avatar cleared." : "Avatar URL set to: " + val);
         }
+    } else if (cmd == "/status") {
+        auto *cl = m_model->clientFor(host);
+        if (!cl || !cl->hasMetadataCap()) {
+            m_model->localMessage(host, channel,
+                "Server does not support metadata — cannot set status");
+        } else {
+            const QString val = args.trimmed();
+            m_model->sendRaw(host, "METADATA * SET status :" + val);
+            m_config->profileStatusText = val;
+            Config::save(*m_config, Config::defaultPath());
+            m_model->localMessage(host, channel,
+                val.isEmpty() ? "Status cleared." : "Status set to: " + val);
+        }
     } else if (cmd == "/chanavatar") {
         auto *cl = m_model->clientFor(host);
         if (!cl || !cl->hasMetadataCap()) {
@@ -755,6 +768,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             "  /displayname [text]         — set your display name (draft/metadata; leave blank to clear)",
             "  /avatar [url]               — set your avatar URL (draft/metadata; leave blank to clear)",
             "  /chanavatar [url]           — set this channel's sidebar avatar (needs op; blank to clear)",
+            "  /status [text]              — set your status text, shown in nick tooltips (draft/metadata; blank to clear)",
             "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",
             "  /version [nick]             — request VERSION (nick optional)",

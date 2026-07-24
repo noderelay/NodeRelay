@@ -1078,7 +1078,7 @@ void IrcClient::processLine(const QString &line)
         if (target.startsWith('#')) {
             if (key == "avatar")
                 emit channelMetaChanged(m_serverName, target, key, value);
-        } else if (key == "display-name" || key == "avatar") {
+        } else if (key == "display-name" || key == "avatar" || key == "status") {
             emit userMetaChanged(m_serverName, target, key, value);
         }
         return;
@@ -1530,7 +1530,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         if (!m_monitorList.isEmpty())
             sendRaw("MONITOR + " + m_monitorList.join(','));
         if (hasMetadataCap())
-            sendRaw("METADATA * SUB display-name avatar");
+            sendRaw("METADATA * SUB display-name avatar status");
         // Registration bumped us off the configured nick (433 fallback). If
         // SASL says we own it, take it back — once; a refusal just leaves the
         // fallback nick and the normal in-use error. Raw send on purpose:
@@ -1721,7 +1721,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             if (target.startsWith('#')) {
                 if (key == "avatar")
                     emit channelMetaChanged(m_serverName, target, key, value);
-            } else if (key == "display-name" || key == "avatar") {
+            } else if (key == "display-name" || key == "avatar" || key == "status") {
                 emit userMetaChanged(m_serverName, target, key, value);
             }
         }
@@ -1855,7 +1855,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             if (target.startsWith('#')) {
                 if (key == "avatar")
                     emit channelMetaChanged(m_serverName, target, key, QString());
-            } else if (key == "display-name" || key == "avatar") {
+            } else if (key == "display-name" || key == "avatar" || key == "status") {
                 emit userMetaChanged(m_serverName, target, key, QString());
             }
         }

@@ -1086,7 +1086,8 @@ void MainWindow::onServerConnected(const ServerId &host)
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Connected);
 
-    if (!m_config.profileDisplayName.isEmpty() || !m_config.profileAvatarUrl.isEmpty()) {
+    if (!m_config.profileDisplayName.isEmpty() || !m_config.profileAvatarUrl.isEmpty()
+        || !m_config.profileStatusText.isEmpty()) {
         auto *cl = m_model->clientFor(host);
         if (cl && cl->hasMetadataCap()) {
             m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
@@ -1094,6 +1095,8 @@ void MainWindow::onServerConnected(const ServerId &host)
                                    || QUrl(m_config.profileAvatarUrl).isLocalFile();
             if (!localPath)
                 m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
+            if (!m_config.profileStatusText.isEmpty())
+                m_model->sendRaw(host, "METADATA * SET status :" + m_config.profileStatusText);
         }
         // Local file avatars are never sent to the server, so seed nickMeta + cache manually.
         if (!m_config.profileAvatarUrl.isEmpty()) {

@@ -9,6 +9,7 @@
 struct NickMeta {
     QString displayName;
     QString avatarUrl;
+    QString status;
 };
 
 struct ServerSession {
@@ -32,6 +33,7 @@ struct ServerSession {
         auto &m = nickMeta[lowerNick];
         if (key == "display-name") m.displayName = value;
         else if (key == "avatar")  m.avatarUrl   = value;
+        else if (key == "status")  m.status      = value;
     }
 
     // key = channel name lowercased
