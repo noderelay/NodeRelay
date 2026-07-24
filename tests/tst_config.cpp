@@ -92,6 +92,30 @@ menu_style = "icons"
         QCOMPARE(cfg.ui.menuStyle, "menubar");
     }
 
+    void paneSplitAxisMigration()
+    {
+        {   // no keys at all: auto
+            LOAD(cfg, "[ui]\n");
+            QCOMPARE(cfg.ui.paneSplitAxis, "auto");
+        }
+        {   // legacy false was the old default, not a choice — don't pin to columns
+            LOAD(cfg, "[ui]\npane_stack_rows = false\n");
+            QCOMPARE(cfg.ui.paneSplitAxis, "auto");
+        }
+        {   // legacy true was deliberate — keep stacking in rows
+            LOAD(cfg, "[ui]\npane_stack_rows = true\n");
+            QCOMPARE(cfg.ui.paneSplitAxis, "rows");
+        }
+        {   // the new key wins over the legacy one
+            LOAD(cfg, "[ui]\npane_stack_rows = true\npane_split_axis = \"columns\"\n");
+            QCOMPARE(cfg.ui.paneSplitAxis, "columns");
+        }
+        {   // anything unrecognised falls back to auto
+            LOAD(cfg, "[ui]\npane_split_axis = \"diagonal\"\n");
+            QCOMPARE(cfg.ui.paneSplitAxis, "auto");
+        }
+    }
+
     void loadMultipleServers()
     {
         LOAD(cfg, R"(

@@ -1,6 +1,36 @@
 # Changelog
 
 <!--
+2026-07-24: pane split axis goes automatic + drag cursor (unreleased).
+
+Joe asked what Halloy does before picking. Halloy is built on iced's
+pane_grid (a real split tree) and its split_axis config defaults to
+"shorter": the axis follows the shape of the pane being split. The tree
+is the big rewrite; the auto axis is the part that carries most of the
+benefit, so that's what we took.
+
+paneRowsAxis() resolves it per layout rebuild — wide area splits into
+columns, tall into rows. Deliberately NOT re-evaluated on resize: a
+layout re-flowing under the cursor mid drag is worse than a wrong axis.
+The pane area can be unsized during the startup restore, hence the
+fallback chain (splitter, chat section, window).
+
+pane_stack_rows (bool) becomes pane_split_axis (auto|columns|rows).
+Migration only honours a legacy true. Every existing config has
+pane_stack_rows = false written into it — that was the old default, not
+a choice, and mapping it to "columns" would mean nobody ever sees auto.
+Test covers all five cases.
+
+Prefs checkbox became a three-way radio group. Radios, not a combo:
+QComboBox popups still fatally crash on Plasma 6.7 Wayland.
+
+Also: the pane headers are drag handles and never said so. OpenHand on
+hover, PointingHand on the buttons inside them so the grab doesn't sit
+over click targets, and the primary header only advertises it once a
+pane exists to trade with (that's when the gesture arms).
+-->
+
+<!--
 2026-07-24: draft/persistence support (unreleased).
 
 Prompted by slingamn in #ircv3: nobody has implemented the client side of

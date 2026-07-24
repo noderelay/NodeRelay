@@ -341,8 +341,8 @@ void MainWindow::connectPreferences()
     connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled,
             this, &MainWindow::applyUnreadCountsSetting);
 
-    connect(m_prefsDialog, &PreferencesDialog::paneStackRowsToggled,
-            this, &MainWindow::applyPaneStackRowsSetting);
+    connect(m_prefsDialog, &PreferencesDialog::paneSplitAxisChanged,
+            this, &MainWindow::applyPaneSplitAxisSetting);
 
     connect(m_prefsDialog, &PreferencesDialog::panelCardsToggled,
             this, &MainWindow::applyPanelCardsSetting);
@@ -732,8 +732,12 @@ void MainWindow::setupChatArea()
     m_primaryHeader->installEventFilter(this);
     // Every direct header child feeds the primary pane drag gesture, same
     // as ChannelPane does for its own header.
-    for (auto *w : m_primaryHeader->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))
+    for (auto *w : m_primaryHeader->findChildren<QWidget*>(Qt::FindDirectChildrenOnly)) {
         w->installEventFilter(this);
+        // Click targets, not drag handles — keep the grab hand off them.
+        if (qobject_cast<QAbstractButton *>(w))
+            w->setCursor(Qt::PointingHandCursor);
+    }
 
     m_chatSection     = new QWidget;
     m_chatSection->setObjectName("chatSection");

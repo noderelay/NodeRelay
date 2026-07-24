@@ -53,7 +53,7 @@ hanging_indent    = true
 show_timestamps   = true
 highlight_words   = ""           # comma-separated words that trigger highlight (e.g. "myproject,alert")
 nick_brackets     = "<>"         # "<>" angle, "[]" square, "::::" double-colon, "" none
-pane_stack_rows   = false        # false = stack panes in columns, true = stack in rows
+pane_split_axis   = "auto"       # "auto" follows the window shape, or force "columns" / "rows"
 panel_cards       = true         # side panels use their own theme colors + rounded tops; false = classic flat look
 menu_style        = "menubar"    # "menubar" File/Edit/... bar (joins the KDE global menu), "hidden" shortcuts only
 font_family       = "IBM Plex Mono"
@@ -141,7 +141,14 @@ Config Config::load(const QString &path)
             if (cfg.ui.appIcon == "dark")  cfg.ui.appIcon = "flat-black";
             if (cfg.ui.appIcon == "light") cfg.ui.appIcon = "original-flat-shine";
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
-            cfg.ui.paneStackRows   = (*ui)["pane_stack_rows"].value_or(false);
+            // pane_stack_rows was a bool before the axis went automatic. Only
+            // a true carries over: false was the old default, not a choice,
+            // and pinning every existing config to columns would mean nobody
+            // ever sees "auto".
+            cfg.ui.paneSplitAxis   = ustr("pane_split_axis",
+                                          (*ui)["pane_stack_rows"].value_or(false) ? "rows" : "auto");
+            if (cfg.ui.paneSplitAxis != "columns" && cfg.ui.paneSplitAxis != "rows")
+                cfg.ui.paneSplitAxis = "auto";
             cfg.ui.panelCards      = (*ui)["panel_cards"].value_or(true);
             cfg.ui.menuStyle       = ustr("menu_style", "menubar");
             if (cfg.ui.menuStyle != "hidden")
@@ -350,7 +357,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "highlight_words = " << tomlQuote(cfg.ui.highlightWords) << "\n";
     out << "app_icon = " << tomlQuote(cfg.ui.appIcon) << "\n";
     out << "nick_brackets = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
-    out << "pane_stack_rows = " << boolStr(cfg.ui.paneStackRows) << "\n";
+    out << "pane_split_axis = " << tomlQuote(cfg.ui.paneSplitAxis) << "\n";
     out << "panel_cards = " << boolStr(cfg.ui.panelCards) << "\n";
     out << "menu_style = " << tomlQuote(cfg.ui.menuStyle) << "\n";
     out << "notifications = " << boolStr(cfg.ui.notifications) << "\n";

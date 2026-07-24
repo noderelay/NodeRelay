@@ -117,6 +117,13 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     hbox->addWidget(m_closeBtn);
     vbox->addWidget(m_header);
 
+    // The header is the drag handle for the whole pane — show that on hover.
+    // The buttons sitting in it are click targets, so they keep their own
+    // cursor rather than inheriting the grab hand.
+    m_header->setCursor(Qt::OpenHandCursor);
+    for (QToolButton *b : {m_topicToggle, m_popOutBtn, m_searchBtn, m_nickRevealBtn, m_closeBtn})
+        b->setCursor(Qt::PointingHandCursor);
+
     m_header->installEventFilter(this);
     for (auto *w : m_header->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))
         w->installEventFilter(this);
