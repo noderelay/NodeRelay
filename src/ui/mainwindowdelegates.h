@@ -152,15 +152,20 @@ public:
         const QIcon avatar     = qvariant_cast<QIcon>(index.data(Qt::UserRole + 5));
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
-        if (avatar.isNull()) {
-            opt.icon = QIcon();
-            opt.decorationSize = QSize(0, 0);
-        } else {
-            // Channel avatar as the leading decoration; the base paint
-            // shifts the text right for us
-            opt.icon = avatar;
-            opt.decorationSize = QSize(16, 16);
-            opt.features |= QStyleOptionViewItem::HasDecoration;
+        opt.icon = QIcon();
+        opt.decorationSize = QSize(0, 0);
+        // Channel avatar is painted manually at a position derived only from
+        // the row rect — never via the style's decoration layout, which
+        // shifts on selection under fractional scaling. Text keeps the plain
+        // no-decoration layout, inset by a constant.
+        constexpr int avatarSz  = 16;
+        constexpr int avatarGap = 4;
+        QRect avatarRect;
+        if (!avatar.isNull()) {
+            avatarRect = QRect(opt.rect.x() + avatarGap,
+                               opt.rect.y() + (opt.rect.height() - avatarSz) / 2,
+                               avatarSz, avatarSz);
+            opt.rect.setLeft(opt.rect.left() + avatarGap + avatarSz + avatarGap);
         }
 
         const bool selected = opt.state & QStyle::State_Selected;
@@ -210,6 +215,11 @@ public:
             opt.palette.setColor(QPalette::All, QPalette::HighlightedText, textCol);
         }
         QStyledItemDelegate::paint(painter, opt, index);
+
+        // Always QIcon::Normal — the style's Selected-mode pixmap generation
+        // is another thing that behaves differently under fractional scaling
+        if (!avatar.isNull())
+            avatar.paint(painter, avatarRect, Qt::AlignCenter, QIcon::Normal, QIcon::Off);
 
         int afterTextX = textRect.x() + textMargin + textW;
         if (!indicator.isNull()) {
