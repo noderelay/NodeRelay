@@ -12,19 +12,22 @@ Overhauled 2026-07-14. Everything shipped through v2026.7.6 is summarized by are
 We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal quality items, no user-visible features. The C++20 bump landed 2026-07-15; new-standard idioms (designated initializers, ranges, `Qt::StringLiterals`, chrono) get adopted opportunistically when touching a file, not as a sweep.
 
 - [ ] IrcParser allocation pass — `parseLine()` splits every incoming line into a `QStringList`. Rework the hot path on `QStringView` slices and `qTokenize` (zero-allocation splitting), materializing `QString` only at the edges. Benchmark before/after on a busy-channel replay.
-- [ ] QFuture continuations for history search — full-history search currently uses manual worker-thread plumbing. `QtConcurrent::run(...).then(this, ...)` gives off-thread scanning with results delivered back on the GUI thread for free. Do this as part of search v3 rather than as a standalone rewrite.
+- [ ] QFuture continuations for history search — full-history search currently uses manual worker-thread plumbing. `QtConcurrent::run(...).then(this, ...)` gives off-thread scanning with results delivered back on the GUI thread for free. Search v3 shipped without it, so this is now a standalone cleanup — do it opportunistically.
 - [ ] `Qt::StringLiterals` adoption — `u"..."_s` / `"..."_L1` instead of `QStringLiteral` / `QLatin1String` in new code; convert existing call sites opportunistically when touching a file, not as a big-bang sweep.
 - [ ] std::chrono timeouts — `QTimer::singleShot(250ms, ...)`, `setTransferTimeout(10s)` etc. in reconnect, typing-debounce, and DCC timeout code. Ergonomic only, do alongside other edits.
 - [ ] Color emoji rendering check — Qt 6.8+ ships a proper emoji segmenter (ZWJ sequences, skin tones). Verify ChatView renders combined emoji correctly and remove any workarounds that predate it.
 
 ## Planned — Features
 
-- [ ] Full-history search v3 — CHATHISTORY context jump: open a search result in its buffer with surrounding history fetched from the server, not just the log line.
 - [ ] Input byte counter in pane inputs — the main input got it in #92; channelpane.cpp inputs still don't have it.
 - [ ] Accessibility — QAccessibleInterface for ChatView so screen readers can read chat.
 - [ ] Long-press context menus — touch-friendly alternative to right-click for tablets.
 - [ ] More bundled scripts — /calc, /8ball, /shrug, /tableflip, etc.
 - [ ] Spellcheck — hunspell integration for the input box (on hold).
+
+## Planned — Distribution
+
+- [ ] winget — Uplink is still not published upstream. `manifests/n/NodeRelay/Uplink` 404s in microsoft/winget-pkgs, and both PRs have sat open since 2026-07-17: #403545 (new package, 2026.7.6) and #403562 (version, 2026.7.7). The version PR depends on the package PR, so stacking further versions on top makes the queue worse. Wait for a moderator to merge the base package, then submit one clean version PR for the current release. AUR (×3) and the Homebrew tap are current and need no action.
 
 ## Planned — DCC
 
@@ -43,7 +46,7 @@ How complete "complete" is, by area. Detail is in git history of this file and i
 
 **IRCv3** — effectively full coverage: server-time, message-tags, batch, labeled-response, echo-message, msgid, cap-notify, account-notify, account-tag, extended-join, chghost, invite-notify, setname, userhost-in-names, WHOX, MONITOR, standard replies, UTF8ONLY, netsplit/netjoin batches, chathistory (scrollback uses timestamp bounds since 2026-07-16 — soju rejects msgid bounds), plus the draft specs (typing, reply, react, message-redaction, multiline, metadata-2/-3, read-marker) and no-implicit-names in both its ratified and soju.im/ forms (2026-07-23, verified against Ergo 2.19.0). Metadata is hover-fetched on demand with retry on rejoin/failed lookup (2026-07-16); metadata-3 is preferred over -2 when both are offered. Status text shipped 2026-07-24 (/status + Profile field, italic tooltip line, cross-client verified). Channel avatars shipped 2026-07-24: ops set one with `/chanavatar`, members see it as the channel's sidebar icon, live-updating, with fetch failures reported in-buffer (persists only on ChanServ-registered channels — Ergo drops unregistered channel state when the room empties). Read markers are wired to unread badges as of 2026-07-23: reading a buffer advances the marker (coalesced sends), and a marker from another client clears the badge once it covers the buffer. Caveat: the draft/* specs track moving targets; revisit when they ratify or when Ergo changes behavior. Bouncer caveat: neither soju nor ZNC passes the metadata cap through, so metadata features light up on direct connections only. Both sides are optional as of 2026-07-24: `metadata = false` per server skips the capability entirely, and `show_avatars = false` keeps metadata but never fetches avatar images (an avatar URL is set by someone else, so the fetch exposes your IP to their host).
 
-**UI** — done and stable. Menu bar (v2 with Bookmarks), detachable/pop-out channel panes with drag rearrange and persistence (stacked panes open 50/50 since 2026-07-16), custom virtual-scrolling ChatView, model-based nick list, 297 themes, redesigned Preferences, emoji picker (Unicode 16.0), reactions/replies/redaction, link preview cards, mIRC formatting input with a byte counter near the wire limit (2026-07-16), per-buffer input drafts — unsent text survives channel switches (2026-07-18), font zoom, quick switcher, in-buffer search plus full-history log search v1/v2 (v3 planned above).
+**UI** — done and stable. Menu bar (v2 with Bookmarks), detachable/pop-out channel panes with drag rearrange and persistence (stacked panes open 50/50 since 2026-07-16), custom virtual-scrolling ChatView, model-based nick list, 297 themes, redesigned Preferences, emoji picker (Unicode 16.0), reactions/replies/redaction, link preview cards, mIRC formatting input with a byte counter near the wire limit (2026-07-16), per-buffer input drafts — unsent text survives channel switches (2026-07-18), font zoom, quick switcher, in-buffer search plus full-history log search v1/v2/v3 — v3 adds the context jump, opening a hit in place in its buffer's scrollback (shipped v2026.7.8, field-verified 2026-07-24).
 
 **DCC file transfer** — mostly done: active and passive send/receive, progress UI, and the full hardening list (offer validation, size caps, filename sanitization, peer checks, timeout/cleanup races). Incomplete: NAT handling, see Planned — DCC.
 

@@ -1,6 +1,69 @@
 # Changelog
 
 <!--
+Session close 2026-07-24 (RELEASE DAY): v2026.8.0 shipped, PRs #168-#169.
+
+BUILT: metadata/avatar opt-outs (#168). Two switches, both default ON.
+[ui] show_avatars gates only the image fetch — metadata stays negotiated
+so names and status text keep working, because those arrive in-band over
+IRC while an avatar URL is chosen by another user or a channel op and
+fetching it hands your IP to their host. That asymmetry is why it isn't
+one combined switch. Live toggle clears cache/pending/sidebar icons on
+off, re-fetches known URLs on. [[server]] metadata drops the caps from
+desiredCaps(), so hasMetadataCap() goes false and every SET/GET/SUB site
+already gated on it goes quiet with no new plumbing. Also .dirty -> .dev
+for the uncommitted-tree suffix (Joe's call — reads as a dev build, not
+something broken).
+
+VERSION: Joe asked for "2026.7-2", which could not ship: v2026.7.2 is an
+existing tag that sorts BELOW the then-current v2026.7.8, and the form
+fails both release.sh's X.Y.Z check and the updater regex
+^v?(\d+)\.(\d+)\.(\d+)$ (a non-matching tag means in-app update checks
+silently stop finding releases). Root cause of the ask: he reads the
+third digit as a month — ".8 is the month and it is 7/24". Shipped
+2026.8.0 instead, an early-August release that resets the fix digit.
+Recorded in memory so future releases roll the month rather than climb.
+
+FIXED (docs, #169): howto.html claimed scrollback REQUIRES chathistory,
+untrue since #141/#142/#149 — rewritten with both sources, seed-on-open,
+the no-history status line and the REDACT-reappears caveat; the Libera
+note now points at the log fallback. index.html gained cards for
+profiles/avatars and log-backed scrollback. quality.html numbers were
+stale, several from before v2026.7.8 (tst_logreader was added without
+updating the page): tests 74->75, assertions 198->284, source files
+64->104, LOC 18038->24015, caps 37->35 (from desiredCaps()), cppcheck
+27->47. All recomputed from real runs, not edited to taste — re-ran
+ASan/UBSan and cppcheck 2.21.1 to confirm the zero-finding claims hold.
+
+FIXED (packaging): the Homebrew cask in this repo is the documented
+source of truth but sat at 2026.7.7 while the tap served 2026.7.8 — the
+.8 release updated the mirror and never came back. release.sh bumps the
+AUR PKGBUILDs and NOT the cask (the sha256 cannot exist until the
+artifacts do), so it is a manual step that is easy to skip. Resynced,
+verified against GitHub's own asset digest, and a drift check plus a
+no-download way to read the hash are now in packaging/homebrew/README.md.
+
+SHIPPED: v2026.8.0 tagged, all three platform builds green, 5 artifacts
+published. AUR uplink-irc / -bin / -git all live at 2026.8.0 (checksums
+verified against GitHub digests, both non-git packages test-built before
+push). Homebrew tap live. Repo and tap now in sync.
+
+NO REGRESSIONS. Known issues left open:
+- winget: never published upstream at all; PRs #403545/#403562 open in
+  Microsoft's queue since 2026-07-17. Left alone deliberately — the
+  version PR depends on the unmerged package PR, so adding a third makes
+  it worse. Now tracked under Planned — Distribution in ROADMAP.
+- CodeQL on this repo is erratic: 48m on #168, 6m41s on #169 with
+  effectively the same content. Not stuck; it also cannot be re-run
+  while in progress.
+- makepkg leaves a stale cmake cache in $srcdir that breaks the next
+  release's test build. Use makepkg -f -C.
+
+NEXT: spellcheck remains the top feature pick; DCC NAT and the avatar
+toggle default were the open decisions and the latter is now answered.
+-->
+
+<!--
 2026-07-24 (release prep): docs sweep before 2026.8.0. Two real gaps,
 rest was verification.
 - howto.html said scrollback REQUIRES chathistory ("The server must
