@@ -150,6 +150,11 @@ private:
     // Edge-drop placement: nullptr means the primary view on either side.
     void placePaneBeside(ChannelPane *source, ChannelPane *target,
                          ChannelPane::DropZone zone);
+    QList<ChannelPane*> paneSlotOrder() const;
+    QList<ChannelPane*> paneOrderAfterDrop(ChannelPane *source, ChannelPane *target,
+                                           ChannelPane::DropZone zone) const;
+    bool paneDropWouldChange(ChannelPane *source, ChannelPane *target,
+                             ChannelPane::DropZone zone) const;
     void rebuildPaneLayout();
     bool paneRowsAxis() const;  // true = stack in rows; resolves the "auto" setting
 

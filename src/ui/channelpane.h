@@ -7,6 +7,7 @@
 #include <QIcon>
 #include <QFont>
 #include <QHash>
+#include <functional>
 
 class ChatView;
 class ElidedLabel;
@@ -33,6 +34,10 @@ public:
     // Band geometry lives here so the primary view, which is not a
     // ChannelPane, classifies drops exactly the same way.
     static DropZone zoneFor (const QSize &size, const QPoint &pos);
+    // Asked during a drag whether a zone would actually rearrange anything;
+    // zones that would land the pane back where it started never light up.
+    using DropZoneFilter = std::function<bool(const QString &sourceKey, DropZone)>;
+    void setDropZoneFilter(DropZoneFilter filter) { m_zoneFilter = std::move(filter); }
     static QRect    zoneRect(const QSize &size, DropZone zone);
     explicit ChannelPane(const ServerId &host, const BufferId &channel, QWidget *parent = nullptr);
     const ServerId &host()    const { return m_host; }
@@ -88,6 +93,7 @@ protected:
     void dropEvent(QDropEvent *event) override;
 private:
     bool isPaneDropTarget(const QMimeData *mime) const;
+    void updateDropHighlight(const QMimeData *mime, const QPoint &pos);
     void updateInputHeight();
     void guardFont(QWidget *w, const QFont &f);
 private:
@@ -126,5 +132,6 @@ private:
     QString       m_rawTopicHtml;
     QHash<QWidget*, QFont> m_fontGuards;
     bool          m_fontGuardBusy{false};
+    DropZoneFilter m_zoneFilter;
     QColor        m_inputBase; // theme input bg for the viewport seam guard
 };
