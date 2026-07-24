@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+2026-07-24: pane header stops at the user list (unreleased).
+
+Joe screenshotted a second pane (#freebsd under #linuxdojo) whose
+pop-out/search/X sat above its user list while the primary view's sat at
+the chat column's edge. Read as "a hidden window at some point"; it was
+neither a window nor an overlay.
+
+Cause: the primary builds header + topic + chat + compose into chatLeft
+INSIDE m_chatSplitter (mainwindow_setup.cpp), so its header ends where
+the nick panel begins. ChannelPane instead added m_header to the pane's
+outer vbox, above m_bodySplitter, so it spanned the full pane width and
+the buttons floated over the nick panel. Everything else in the pane
+(topic bar, compose strip) was already in the chat column, which is why
+only the header row looked wrong.
+
+Fix is the one-line move of m_header into ccVbox. Side effect worth
+knowing: the drag handle no longer extends over the user list, which
+also matches the primary.
+-->
+
+<!--
 2026-07-24: Pane Split radios collapse to one checkbox (unreleased).
 
 Joe asked whether the control could go entirely now that edge-drop can

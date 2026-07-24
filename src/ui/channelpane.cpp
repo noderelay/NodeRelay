@@ -115,7 +115,9 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     hbox->addWidget(m_searchBtn);
     hbox->addWidget(m_nickRevealBtn);
     hbox->addWidget(m_closeBtn);
-    vbox->addWidget(m_header);
+    // Added to the chat column further down, not here: the header has to stop
+    // at the user list's edge like the main window's does (mainwindow_setup:
+    // chatLeftVbox), or its buttons sit above the user list instead.
 
     // The header is the drag handle for the whole pane — show that on hover.
     // The buttons sitting in it are click targets, so they keep their own
@@ -225,6 +227,7 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     auto *ccVbox   = new QVBoxLayout(chatCol);
     ccVbox->setContentsMargins(0, 0, 0, 0);
     ccVbox->setSpacing(0);
+    ccVbox->addWidget(m_header);
     ccVbox->addWidget(m_topicBar);
     ccVbox->addWidget(m_chatView, 1);
 
