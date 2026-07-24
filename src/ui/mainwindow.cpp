@@ -1885,6 +1885,28 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     rebuildPaneLayout();
 }
 
+// Which way panes split. On "auto" the shape of the pane area decides: a wide
+// area splits into columns, a tall one into rows, so neither half ends up
+// cramped. Evaluated per layout rebuild (open, close, rearrange) and not on
+// every resize — re-flowing under the cursor mid-drag would be worse than the
+// wrong axis. The pane area can still be unsized during the startup restore,
+// so fall back to the chat section and then the window.
+bool MainWindow::paneRowsAxis() const
+{
+    const QString &mode = m_config.ui.paneSplitAxis;
+    if (mode == "rows")    return true;
+    if (mode == "columns") return false;
+
+    QSize s;
+    if (m_panesSplitter && m_panesSplitter->width() > 0 && m_panesSplitter->height() > 0)
+        s = m_panesSplitter->size();
+    else if (m_chatSection && m_chatSection->width() > 0)
+        s = m_chatSection->size();
+    else
+        s = size();
+    return s.height() > s.width();
+}
+
 void MainWindow::rebuildPaneLayout()
 {
     // The primary can be hidden via its ✕ button — a rebuild must not
@@ -1920,11 +1942,18 @@ void MainWindow::rebuildPaneLayout()
             delete s;
     }
 
-    // Columns mode (default): primary top-level splitter is horizontal, any
-    // stacking within a slot uses a nested vertical splitter. Rows mode is
-    // the same shapes transposed 90°.
-    const Qt::Orientation mainAxis  = m_config.ui.paneStackRows ? Qt::Vertical : Qt::Horizontal;
-    const Qt::Orientation crossAxis = m_config.ui.paneStackRows ? Qt::Horizontal : Qt::Vertical;
+    // The primary header only becomes a drag handle once there's a pane to
+    // trade places with — don't advertise the grab before then.
+    if (m_primaryHeader)
+        m_primaryHeader->setCursor(m_orderedPanes.isEmpty() ? Qt::ArrowCursor
+                                                            : Qt::OpenHandCursor);
+
+    // Columns: the top-level splitter is horizontal and any stacking within a
+    // slot uses a nested vertical splitter. Rows is the same shapes transposed
+    // 90°. paneRowsAxis() decides which is in force.
+    const bool rows = paneRowsAxis();
+    const Qt::Orientation mainAxis  = rows ? Qt::Vertical : Qt::Horizontal;
+    const Qt::Orientation crossAxis = rows ? Qt::Horizontal : Qt::Vertical;
     m_panesSplitter->setOrientation(mainAxis);
 
     auto makeCross = [crossAxis]() -> QSplitter * {

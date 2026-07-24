@@ -39,7 +39,7 @@ signals:
     void timestampsToggled(bool on);
     void highlightWordsChanged(const QString &words);
     void nickBracketsChanged(const QString &brackets);
-    void paneStackRowsToggled(bool on);
+    void paneSplitAxisChanged(const QString &axis);
     void panelCardsToggled(bool on);
     void menuStyleChanged(const QString &style);
     void manageServersRequested();
@@ -69,7 +69,7 @@ private:
     QCheckBox *m_nickPrefixCheck{nullptr};
     QCheckBox *m_emojiCheck{nullptr};
     QCheckBox *m_sendBtnCheck{nullptr};
-    QCheckBox *m_paneStackRowsCheck{nullptr};
+
     QCheckBox *m_panelCardsCheck{nullptr};
     QCheckBox *m_typingCheck{nullptr};
     QCheckBox *m_notificationsCheck{nullptr};
@@ -82,6 +82,7 @@ private:
     QCheckBox *m_timestampsCheck{nullptr};
     QLineEdit *m_highlightWordsEdit{nullptr};
     QButtonGroup *m_bracketsGroup{nullptr};
+    QButtonGroup *m_paneSplitGroup{nullptr};
     QButtonGroup *m_menuStyleGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
@@ -89,5 +90,6 @@ private:
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
+    static const QList<QPair<QString,QString>> s_paneSplitChoices;
     static const QList<QPair<QString,QString>> s_menuStyleChoices;
 };

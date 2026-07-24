@@ -123,7 +123,9 @@ struct UiConfig {
     bool      showAvatars{true};      // fetch and show user/channel avatar images
     QString   appIcon{"flat-black"};
     QString   nickBrackets{"<>"};
-    bool      paneStackRows{false};   // false = columns (default), true = rows
+    // "auto" (default) picks the split axis from the shape of the pane area,
+    // "columns" and "rows" force it either way
+    QString   paneSplitAxis{"auto"};
     bool      panelCards{true};       // side panels use own theme colors + rounded-top cards
     QString   menuStyle{"menubar"};   // "menubar" (File/Edit/... bar), "hidden" (shortcuts only)
 };

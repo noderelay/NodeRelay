@@ -148,6 +148,7 @@ private:
     // Puts the sidebar highlight back on whatever the primary view is showing.
     void syncSidebarToActive();
     void rebuildPaneLayout();
+    bool paneRowsAxis() const;  // true = stack in rows; resolves the "auto" setting
 
     // Menu bar (menu_style) — mainwindow_menubar.cpp
     void setupMenuActions();
@@ -163,7 +164,7 @@ private:
     void applyTimestampsSetting(bool on);
     void applyUnreadCountsSetting(bool on);
     void applyPanelCardsSetting(bool on);
-    void applyPaneStackRowsSetting(bool on);
+    void applyPaneSplitAxisSetting(const QString &axis);
     void setSidebarVisible(bool on);
     void setNickPanelVisible(bool on);
     void clearActiveBuffer();

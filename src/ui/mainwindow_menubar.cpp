@@ -418,9 +418,9 @@ void MainWindow::applyPanelCardsSetting(bool on)
     if (m_prefsDialog)  m_prefsDialog->syncFromConfig(m_config);
 }
 
-void MainWindow::applyPaneStackRowsSetting(bool on)
+void MainWindow::applyPaneSplitAxisSetting(const QString &axis)
 {
-    m_config.ui.paneStackRows = on;
+    m_config.ui.paneSplitAxis = axis;
     saveConfig();
     rebuildPaneLayout();
     if (m_prefsDialog) m_prefsDialog->syncFromConfig(m_config);
