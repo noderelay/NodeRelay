@@ -532,14 +532,50 @@ void ChannelPane::enableSearchShortcut()
     connect(m_findShortcut, &QShortcut::activated, this, &ChannelPane::toggleSearch);
 }
 
-void ChannelPane::setDragHighlight(bool on)
+// Edge bands are a quarter of the pane, floored so a narrow pane still has a
+// grabbable edge and capped so a wide one keeps a large middle for the swap.
+static QSize dropBands(const QSize &size)
 {
-    if (on) {
-        if (!m_dropFrame) m_dropFrame = new DropFrame(this);
-        m_dropFrame->activate();
-    } else if (m_dropFrame) {
-        m_dropFrame->hide();
+    return QSize(qBound(24, size.width()  / 4, 120),
+                 qBound(24, size.height() / 4, 120));
+}
+
+ChannelPane::DropZone ChannelPane::zoneFor(const QSize &size, const QPoint &pos)
+{
+    const QSize band = dropBands(size);
+    // Left/right win the corners: the horizontal split is the common one.
+    if (pos.x() < band.width())                    return DropZone::Left;
+    if (pos.x() > size.width()  - band.width())    return DropZone::Right;
+    if (pos.y() < band.height())                   return DropZone::Top;
+    if (pos.y() > size.height() - band.height())   return DropZone::Bottom;
+    return DropZone::Center;
+}
+
+QRect ChannelPane::zoneRect(const QSize &size, DropZone zone)
+{
+    const QSize band = dropBands(size);
+    const QRect full(QPoint(0, 0), size);
+    switch (zone) {
+    case DropZone::Left:   return QRect(0, 0, band.width(), size.height());
+    case DropZone::Right:  return QRect(size.width() - band.width(), 0,
+                                        band.width(), size.height());
+    case DropZone::Top:    return QRect(0, 0, size.width(), band.height());
+    case DropZone::Bottom: return QRect(0, size.height() - band.height(),
+                                        size.width(), band.height());
+    case DropZone::Center: break;
     }
+    return full;
+}
+
+void ChannelPane::setDragHighlight(DropZone zone)
+{
+    if (!m_dropFrame) m_dropFrame = new DropFrame(this);
+    m_dropFrame->activate(zoneRect(size(), zone));
+}
+
+void ChannelPane::clearDragHighlight()
+{
+    if (m_dropFrame) m_dropFrame->hide();
 }
 
 QString ChannelPane::mimeType()
@@ -569,29 +605,35 @@ void ChannelPane::dragEnterEvent(QDragEnterEvent *event)
     // targets get the drop frame, and only they act on the drop.
     event->acceptProposedAction();
     if (isPaneDropTarget(event->mimeData()))
-        setDragHighlight(true);
+        setDragHighlight(zoneFor(size(), event->position().toPoint()));
 }
 
 void ChannelPane::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasFormat(mimeType().toUtf8()))
-        event->acceptProposedAction();
-    else
+    if (!event->mimeData()->hasFormat(mimeType().toUtf8())) {
         event->ignore();
+        return;
+    }
+    event->acceptProposedAction();
+    // Track the cursor: the highlight has to say which side is about to be
+    // taken, not just that this pane is the target.
+    if (isPaneDropTarget(event->mimeData()))
+        setDragHighlight(zoneFor(size(), event->position().toPoint()));
 }
 
 void ChannelPane::dragLeaveEvent(QDragLeaveEvent *)
 {
-    setDragHighlight(false);
+    clearDragHighlight();
 }
 
 void ChannelPane::dropEvent(QDropEvent *event)
 {
-    setDragHighlight(false);
+    clearDragHighlight();
     event->acceptProposedAction();
     const QByteArray fmt = mimeType().toUtf8();
     if (isPaneDropTarget(event->mimeData()))
-        emit dropReceived(QString::fromUtf8(event->mimeData()->data(fmt)));
+        emit dropReceived(QString::fromUtf8(event->mimeData()->data(fmt)),
+                          zoneFor(size(), event->position().toPoint()));
 }
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)

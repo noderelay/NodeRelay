@@ -14,6 +14,7 @@
 #include "config/config.h"
 #include "ui/nicklistmodel.h"
 #include "ui/themeloader.h"
+#include "ui/channelpane.h"   // ChannelPane::DropZone appears in a signature below
 
 namespace ChatRenderer { struct Context; }
 
@@ -33,7 +34,6 @@ class DccController;
 class PreviewController;
 class SidebarController;
 class TypingController;
-class ChannelPane;
 class DropFrame;
 class QuickSwitcher;
 class UpdateChecker;
@@ -147,6 +147,9 @@ private:
     void retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel);
     // Puts the sidebar highlight back on whatever the primary view is showing.
     void syncSidebarToActive();
+    // Edge-drop placement: nullptr means the primary view on either side.
+    void placePaneBeside(ChannelPane *source, ChannelPane *target,
+                         ChannelPane::DropZone zone);
     void rebuildPaneLayout();
     bool paneRowsAxis() const;  // true = stack in rows; resolves the "auto" setting
 

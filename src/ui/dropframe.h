@@ -18,10 +18,15 @@ public:
         hide();
     }
 
-    void activate() {
-        setGeometry(parentWidget()->rect());
+    void activate() { activate(parentWidget()->rect()); }
+
+    // Cover only part of the parent — an edge band, when the drop would place
+    // the dragged pane on that side rather than swap with it.
+    void activate(const QRect &area) {
+        setGeometry(area);
         raise();
         show();
+        update(); // geometry may be unchanged while the highlighted side isn't
     }
 
 protected:

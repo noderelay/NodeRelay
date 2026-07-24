@@ -25,6 +25,15 @@ class QMimeData;
 class ChannelPane : public QWidget {
     Q_OBJECT
 public:
+    // Where in a pane a drag was released. An edge band means "put it on this
+    // side" and forces the matching split axis; the middle keeps the plain
+    // position swap.
+    enum class DropZone { Center, Left, Right, Top, Bottom };
+    Q_ENUM(DropZone)
+    // Band geometry lives here so the primary view, which is not a
+    // ChannelPane, classifies drops exactly the same way.
+    static DropZone zoneFor (const QSize &size, const QPoint &pos);
+    static QRect    zoneRect(const QSize &size, DropZone zone);
     explicit ChannelPane(const ServerId &host, const BufferId &channel, QWidget *parent = nullptr);
     const ServerId &host()    const { return m_host; }
     const BufferId &channel() const { return m_channel; }
@@ -58,7 +67,8 @@ public:
     void setTopicFont(const QFont &f);
     void setTopic(const QString &html);
     void setTopicIcon(const QIcon &collapsed, const QIcon &expanded);
-    void setDragHighlight(bool on);
+    void setDragHighlight(DropZone zone);
+    void clearDragHighlight();
     void toggleSearch();
     void enableSearchShortcut(); // for popped-out windows, where the main window's Ctrl+F can't reach
     static QString mimeType();
@@ -69,7 +79,7 @@ signals:
     void closeRequested();
     void popOutRequested();
     void inputSubmitted(const QString &text);
-    void dropReceived(const QString &sourceKey);
+    void dropReceived(const QString &sourceKey, ChannelPane::DropZone zone);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
