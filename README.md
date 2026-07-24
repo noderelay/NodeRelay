@@ -99,7 +99,7 @@
 
 | Feature | Details |
 |---|---|
-| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `draft/chathistory`, `labeled-response`, `typing`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `account-tag`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction`, `draft/multiline`, `sts`, `standard-replies`, `cap-notify`, `draft/metadata-2`, `draft/metadata-3`, `draft/read-marker`, `no-implicit-names` |
+| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `draft/chathistory`, `labeled-response`, `typing`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `account-tag`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction`, `draft/multiline`, `sts`, `standard-replies`, `cap-notify`, `draft/metadata-2`, `draft/metadata-3`, `draft/read-marker`, `no-implicit-names`, `draft/persistence` |
 | **Netsplit / netjoin collapse** | Server-sent `netsplit` and `netjoin` batch types collapse into a single summary line per channel instead of flooding the buffer with individual quit/join lines. |
 | **Standard Replies** | `FAIL`, `WARN`, and `NOTE` server commands displayed in the relevant channel or server buffer with clear `[FAIL]`/`[WARN]`/`[NOTE]` prefixes. |
 | **STS (Strict Transport Security)** | When a server advertises STS, Uplink upgrades plain connections to TLS automatically and caches the policy to `~/.config/uplink/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
@@ -432,6 +432,7 @@ channels = "#linux, #archlinux"
 | `/avatar <url>` | Set your profile avatar (`draft/metadata`) |
 | `/chanavatar <url>` | Set the channel's sidebar avatar (op only, `draft/metadata`) |
 | `/status <text>` | Set your status text, shown in nick tooltips (`draft/metadata`) |
+| `/persistence [on\|off\|default]` | Stay on the server while your client is disconnected (`draft/persistence`) |
 | `/caps` | List the IRCv3 capabilities active on this connection |
 | `/stats <query>` | Server statistics (`u`=uptime, `o`=opers, `m`=commands) |
 | `/time [nick]` | Server local time, or a user's via CTCP |

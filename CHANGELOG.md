@@ -1,6 +1,35 @@
 # Changelog
 
 <!--
+2026-07-24: draft/persistence support (unreleased).
+
+Prompted by slingamn in #ircv3: nobody has implemented the client side of
+ircv3-specifications#503 yet. It exposes Ergo's always-on setting over the
+wire so a client can read and change it instead of it living only in the
+account config.
+
+Small surface: cap in desiredCaps(), inbound PERSISTENCE STATUS handled
+next to MARKREAD, /persistence [on|off|default] in the dispatcher.
+STATUS goes out over contextualMessage, not serverMessage, so the reply
+lands in the buffer the user typed in (activeOrServer falls back to the
+server buffer for the unsolicited one during registration).
+
+Gotcha worth remembering: the FAIL handler drops ACCOUNT_REQUIRED
+wholesale so background metadata probes stay quiet, which would have
+eaten the only reply an unauthenticated /persistence ever gets. Added a
+PERSISTENCE exception rather than removing the suppression.
+
+Wire-verified against the dojo Ergo (2.19-dev): cap is advertised, ACK
+comes back, and GET/SET both answer FAIL PERSISTENCE ACCOUNT_REQUIRED
+when not logged in. The authenticated STATUS path is from the spec text,
+not yet observed on the wire.
+
+Spec is still open and argued over: emersion questions whether the
+commands are needed at all, spb pointed out it assumes one persistent
+session per account. Syntax may move before ratification.
+-->
+
+<!--
 Session close 2026-07-24 (RELEASE DAY): v2026.8.0 shipped, PRs #168-#169.
 
 BUILT: metadata/avatar opt-outs (#168). Two switches, both default ON.
