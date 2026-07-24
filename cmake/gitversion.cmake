@@ -14,7 +14,7 @@ if(GIT_HASH)
                     ERROR_QUIET
                     RESULT_VARIABLE DIRTY_RC)
     if(NOT DIRTY_RC EQUAL 0)
-        set(GIT_HASH "${GIT_HASH}.dirty")
+        set(GIT_HASH "${GIT_HASH}.dev")
     endif()
     set(VERSION_FULL "${BASE_VERSION}+${GIT_HASH}")
 else()

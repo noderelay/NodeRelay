@@ -23,6 +23,7 @@ private:
     QSpinBox  *m_port;
     QCheckBox *m_ssl;
     QCheckBox *m_websocket;
+    QCheckBox *m_metadata;
     QLineEdit *m_nick;
     QLineEdit *m_user;
     QLineEdit *m_realname;

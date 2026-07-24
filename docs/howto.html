@@ -2232,6 +2232,25 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
     <p>
       Local file paths (starting with <code>/</code> or <code>file://</code>) are loaded from disk directly, with no network request. They are never sent to the server, so other users see no avatar for you unless you also have a web URL configured.
     </p>
+
+    <h3>Turning it off</h3>
+    <p>
+      Avatars and metadata are on by default. There are two switches, at different levels:
+    </p>
+    <table>
+      <tr><th>Switch</th><th>What it does</th></tr>
+      <tr>
+        <td><strong>Preferences → Chat Window → Show Avatars</strong><br><code>show_avatars</code> under <code>[ui]</code></td>
+        <td>Keeps metadata running but never fetches avatar images. Display names and status text still work. Applies immediately: cached images are dropped and sidebar icons clear.</td>
+      </tr>
+      <tr>
+        <td><strong>File → Manage Servers → Use metadata</strong><br><code>metadata</code> in a <code>[[server]]</code> block</td>
+        <td>Uplink never requests the capability on that server. Nothing about you is published, and no display names, avatars or status text come back. Applies on the next connection to that server.</td>
+      </tr>
+    </table>
+    <p>
+      The avatar switch exists because an avatar URL is picked by another user or a channel op, and fetching the image tells whatever host it points at your IP address. Everything else metadata carries arrives in-band over IRC and reaches no third party.
+    </p>
   </section>
 
   <!-- SIGNAL BARS -->

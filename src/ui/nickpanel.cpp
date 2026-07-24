@@ -146,6 +146,7 @@ void MainWindow::failChanAvatar(const QString &url, const QString &reason)
 
 void MainWindow::onChannelAvatarChanged(const ServerId &host, const BufferId &channel, const QString &url)
 {
+    if (!m_config.ui.showAvatars) return;   // URL stays in the model for re-enable
     if (url.isEmpty()) {
         m_sidebarCtl->setChannelAvatar(host, channel, QIcon());
         return;
@@ -160,6 +161,7 @@ void MainWindow::onChannelAvatarChanged(const ServerId &host, const BufferId &ch
 
 void MainWindow::fetchAvatar(const QString &url)
 {
+    if (!m_config.ui.showAvatars) return;
     if (url.isEmpty() || m_avatarCache.contains(url) || m_avatarFetching.contains(url))
         return;
 
@@ -272,4 +274,30 @@ void MainWindow::fetchAvatar(const QString &url)
                 failChanAvatar(url, "could not decode image");
         });
     });
+}
+
+// Live toggle. Off drops every image we hold — leaving them on screen would
+// suggest the fetches are still happening. On re-fetches the URLs we already
+// know about; anything else arrives with the next metadata push or hover.
+void MainWindow::applyShowAvatarsSetting(bool on)
+{
+    if (!on) {
+        m_avatarCache.clear();
+        m_avatarCacheOrder.clear();
+        m_pendingChanAvatars.clear();
+        for (const auto &sess : m_model->sessions())
+            for (const auto &ch : std::as_const(sess.channels))
+                m_sidebarCtl->setChannelAvatar(ServerId{sess.name}, BufferId{ch.name}, QIcon());
+        scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+        return;
+    }
+
+    for (const auto &sess : m_model->sessions()) {
+        for (const auto &ch : std::as_const(sess.channels))
+            if (!ch.avatarUrl.isEmpty())
+                onChannelAvatarChanged(ServerId{sess.name}, BufferId{ch.name}, ch.avatarUrl);
+        for (const auto &meta : std::as_const(sess.nickMeta))
+            fetchAvatar(meta.avatarUrl);
+    }
+    fetchAvatar(m_config.profileAvatarUrl);
 }

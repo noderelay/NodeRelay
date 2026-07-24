@@ -31,6 +31,11 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_ssl       = new QCheckBox("Use SSL/TLS");
     m_ssl->setChecked(true);
     m_websocket = new QCheckBox("Use WebSocket (ws:// / wss://)");
+    m_metadata  = new QCheckBox("Use metadata (profiles, avatars, status)");
+    m_metadata->setToolTip("Negotiates draft/metadata with this server.\n"
+                           "Off means your profile is never published here and\n"
+                           "no display names, avatars or status text are received.");
+    m_metadata->setChecked(true);
 
     m_nick     = new QLineEdit;
     m_user     = new QLineEdit;
@@ -78,6 +83,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Port:",    m_port);
     form->addRow("",         m_ssl);
     form->addRow("",         m_websocket);
+    form->addRow("",         m_metadata);
 
     m_quitMessage = new QLineEdit;
     m_quitMessage->setPlaceholderText("Uplink  (default — leave blank to use this)");
@@ -217,6 +223,7 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_port->setValue(existing.port);
     m_ssl->setChecked(existing.ssl);
     m_websocket->setChecked(existing.websocket);
+    m_metadata->setChecked(existing.metadata);
     m_nick->setText(existing.nick);
     m_user->setText(existing.user);
     m_realname->setText(existing.realname);
@@ -257,6 +264,7 @@ ServerConfig ServerDialog::serverConfig() const
     sc.port             = static_cast<quint16>(m_port->value());
     sc.ssl              = m_ssl->isChecked();
     sc.websocket        = m_websocket->isChecked();
+    sc.metadata         = m_metadata->isChecked();
     sc.nick             = m_nick->text().trimmed();
     sc.user             = m_user->text().trimmed();
     sc.realname         = m_realname->text().trimmed();

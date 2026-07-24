@@ -90,6 +90,7 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_utf8Only        = false;
     m_nickservPassword = cfg.nickservPassword;
     m_bouncerType     = cfg.bouncerType;
+    m_metadataEnabled = cfg.metadata;
     m_bouncerNetwork  = cfg.bouncerNetwork;
     m_proxyHost           = cfg.proxyHost;
     m_proxyPort           = cfg.proxyPort;
@@ -1330,6 +1331,12 @@ QStringList IrcClient::desiredCaps() const
         "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
         "no-implicit-names", "cap-notify", "standard-replies",
     };
+    // Metadata off for this server: never REQ the caps, so hasMetadataCap()
+    // stays false and every SET/GET/SUB site below it goes quiet on its own.
+    if (!m_metadataEnabled) {
+        desired.removeAll("draft/metadata-2");
+        desired.removeAll("draft/metadata-3");
+    }
     if (m_bouncerType == BouncerType::ZNC)
         desired << "znc.in/playback" << "znc.in/self-message" << "znc.in/batch";
     if (m_bouncerType == BouncerType::Soju)

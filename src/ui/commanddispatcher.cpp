@@ -309,6 +309,15 @@ static QString sysinfoUptime()
 
 // ---------------------------------------------------------------------------
 
+// The metadata commands are dead either because the server never offered the
+// cap or because the user switched it off for this server — say which.
+static QString metadataOffReason(const IrcClient *cl)
+{
+    return (cl && !cl->metadataEnabled())
+        ? QStringLiteral("Metadata is turned off for this server")
+        : QStringLiteral("Server does not support metadata");
+}
+
 CommandDispatcher::CommandDispatcher(SessionModel *model, Config *config,
                                      QWidget *dialogParent, QObject *parent)
     : QObject(parent)
@@ -454,7 +463,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         auto *cl = m_model->clientFor(host);
         if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
-                "Server does not support metadata — cannot set display name");
+                metadataOffReason(cl) + " — cannot set display name");
         } else {
             const QString val = args.trimmed();
             m_model->sendRaw(host, "METADATA * SET display-name :" + val);
@@ -467,7 +476,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         auto *cl = m_model->clientFor(host);
         if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
-                "Server does not support metadata — cannot set avatar");
+                metadataOffReason(cl) + " — cannot set avatar");
         } else {
             const QString val = args.trimmed();
             m_model->sendRaw(host, "METADATA * SET avatar :" + val);
@@ -480,7 +489,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         auto *cl = m_model->clientFor(host);
         if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
-                "Server does not support metadata — cannot set status");
+                metadataOffReason(cl) + " — cannot set status");
         } else {
             const QString val = args.trimmed();
             m_model->sendRaw(host, "METADATA * SET status :" + val);
@@ -493,7 +502,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         auto *cl = m_model->clientFor(host);
         if (!cl || !cl->hasMetadataCap()) {
             m_model->localMessage(host, channel,
-                "Server does not support metadata — cannot set channel avatar");
+                metadataOffReason(cl) + " — cannot set channel avatar");
         } else if (!isChannelName(channel.str())) {
             m_model->localMessage(host, channel,
                 "/chanavatar only works in a channel buffer");

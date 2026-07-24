@@ -41,6 +41,7 @@ typing_indicator = true
 hanging_indent = true               # wrap long messages past the timestamp+nick column
 log_messages = false            # write all messages to ~/.config/uplink/logs/ (opt-in)
 show_unread_counts = true             # show message count badges in the sidebar
+show_avatars = true             # fetch and show user/channel avatar images (see Privacy)
 notifications = true             # green dot on tray icon for mentions/PMs when unfocused
 highlight_words = ""             # comma-separated words highlighted like mentions (e.g. "myproject,alert")
 nick_brackets = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
@@ -89,6 +90,7 @@ realname = "Uplink User"
 # proxy_pass = ""               # optional: proxy password
 # ssl_fingerprint = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
 # websocket = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
+# metadata = true              # negotiate draft/metadata on this server (profiles, avatars, status)
 # disabled = false            # set to true to keep in config but skip on startup
 # quit_message = "Later!"         # shown to others when you disconnect (default: "Uplink")
 # away_message = "AFK"            # used by /away with no argument (default: sends "Away")
@@ -127,6 +129,7 @@ Controls the look and feel of the interface. All keys are optional; missing keys
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Chat Window → Hanging Indent**. |
 | `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in, off by default. Toggle from **Preferences → Logging → Log Messages to Disk**. Logs also feed infinite scrollback on servers without chathistory. |
 | `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Interface → Show Unread Message Counts**. |
+| `show_avatars` | bool | `true` | Fetch and display avatar images: channel avatars in the sidebar, user avatars in nick tooltips. Avatar URLs are chosen by other users, so fetching one reveals your IP address to whatever host it points at. Turn off from **Preferences → Chat Window → Show Avatars**; display names and status text keep working. Toggling takes effect immediately — no reconnect. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Notifications → Tray Notifications**. |
 | `highlight_words` | string | `""` | Extra words that get treated like a mention of your nick: they render bold in the active theme's keyword highlight color and count as mentions for unread indicators. Comma-separated, case-insensitive, whole words only: `highlight_words = "myproject, deploy, lunch"` highlights "deploy" but not "deployment". Leave empty to only highlight your own nick. Change live from **Preferences → Notifications → Highlight Words**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
@@ -247,6 +250,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
 | `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
+| `metadata` | bool | no | Negotiate `draft/metadata` with this server. When `false`, Uplink never requests the capability: your profile is never published here, and no display names, avatars or status text are received. `/avatar`, `/displayname`, `/status` and `/chanavatar` report that metadata is off. Toggle from **File → Manage Servers** → select the server → **Use metadata** in the Connection section; takes effect on the next connection. Defaults to `true`. |
 | `quit_message` | string | no | Message broadcast to the server when you disconnect or type `/quit` with no argument. Defaults to `"Uplink"` when omitted or blank. You can always override it for a single disconnect with `/quit <message>`. |
 | `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` sends `"Away"` as a fallback. You can always override for a single session with `/away <message>`. Use `/back` to clear away status. |
 | `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup: no connection attempt, no sidebar entry. Toggle from **File → Manage Servers** → select the server → **Disabled** checkbox in the Connection section. Defaults to `false`. |

@@ -332,6 +332,12 @@ void MainWindow::connectPreferences()
         saveConfig();
     });
 
+    connect(m_prefsDialog, &PreferencesDialog::avatarsToggled, this, [this](bool on){
+        m_config.ui.showAvatars = on;
+        saveConfig();
+        applyShowAvatarsSetting(on);
+    });
+
     connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled,
             this, &MainWindow::applyUnreadCountsSetting);
 
@@ -419,7 +425,7 @@ void MainWindow::connectPreferences()
                 "Profile sent to: " + sent.join(", "));
         if (!skipped.isEmpty())
             m_model->localMessage(activeHost, activeChan,
-                "Skipped (no metadata support): " + skipped.join(", "));
+                "Skipped (metadata off or unsupported): " + skipped.join(", "));
         if (sent.isEmpty() && skipped.isEmpty())
             m_model->localMessage(activeHost, activeChan,
                 "No connected servers to send profile to.");
