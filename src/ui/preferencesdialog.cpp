@@ -488,12 +488,22 @@ QWidget *PreferencesDialog::createProfilePage(const Config &cfg, const QColor &a
         vbox->addLayout(row);
     }
     {
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("Status:"));
+        m_statusEdit = new QLineEdit;
+        m_statusEdit->setPlaceholderText("e.g. afk until monday  (leave blank to clear)");
+        m_statusEdit->setText(cfg.profileStatusText);
+        row->addWidget(m_statusEdit, 1);
+        vbox->addLayout(row);
+    }
+    {
         auto *applyBtn = new PillButton("Apply to connected servers");
         applyBtn->setAccentColor(accent);
         applyBtn->setAutoDefault(false);
         connect(applyBtn, &QPushButton::clicked, this, [this]{
             emit profileSetRequested(m_displayNameEdit->text().trimmed(),
-                                     m_avatarUrlEdit->text().trimmed());
+                                     m_avatarUrlEdit->text().trimmed(),
+                                     m_statusEdit->text().trimmed());
         });
         vbox->addWidget(applyBtn);
     }

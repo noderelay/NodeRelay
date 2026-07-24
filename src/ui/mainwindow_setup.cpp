@@ -375,10 +375,12 @@ void MainWindow::connectPreferences()
     });
 
     connect(m_prefsDialog, &PreferencesDialog::profileSetRequested,
-            this, [this](const QString &displayName, const QString &avatarUrl) {
+            this, [this](const QString &displayName, const QString &avatarUrl,
+                         const QString &statusText) {
         const QString oldAvatarUrl = m_config.profileAvatarUrl;
         m_config.profileDisplayName = displayName;
         m_config.profileAvatarUrl   = avatarUrl;
+        m_config.profileStatusText  = statusText;
         saveConfig();
         // Evict stale cached avatar so the new one is fetched and displayed
         if (!oldAvatarUrl.isEmpty() && oldAvatarUrl != avatarUrl)
@@ -391,6 +393,8 @@ void MainWindow::connectPreferences()
                 m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "display-name", displayName);
             if (!avatarUrl.isEmpty())
                 m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "avatar", avatarUrl);
+            if (!statusText.isEmpty())
+                m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "status", statusText);
             auto *cl = m_model->clientFor(ServerId{sess.name});
             if (!cl || !cl->hasMetadataCap()) {
                 skipped << sess.name;
@@ -400,6 +404,7 @@ void MainWindow::connectPreferences()
             const bool localPath = avatarUrl.startsWith('/') || QUrl(avatarUrl).isLocalFile();
             if (!localPath)
                 m_model->sendRaw(ServerId{sess.name}, "METADATA * SET avatar :" + avatarUrl);
+            m_model->sendRaw(ServerId{sess.name}, "METADATA * SET status :" + statusText);
             sent << sess.name;
         }
         if (!avatarUrl.isEmpty()) fetchAvatar(avatarUrl);

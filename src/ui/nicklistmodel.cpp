@@ -109,6 +109,8 @@ QVariant NickListModel::tooltipFor(const NickEntry &e) const
         QStringList lines;
         if (!meta->displayName.isEmpty())
             lines << QLatin1String("Name:") + meta->displayName.toHtmlEscaped();
+        if (!meta->status.isEmpty())
+            lines << QLatin1String("<i>") + meta->status.toHtmlEscaped() + QLatin1String("</i>");
         if (!e.account.isEmpty())
             lines << QLatin1String("Account: ") + e.account.toHtmlEscaped();
         return QString("<html><body><table><tr>"
@@ -120,6 +122,8 @@ QVariant NickListModel::tooltipFor(const NickEntry &e) const
     QStringList tips;
     if (meta && !meta->displayName.isEmpty())
         tips << QLatin1String("Name:") + meta->displayName;
+    if (meta && !meta->status.isEmpty())
+        tips << QLatin1String("Status: ") + meta->status;
     if (!e.account.isEmpty())
         tips << QLatin1String("Account: ") + e.account;
     if (meta && !meta->avatarUrl.isEmpty())

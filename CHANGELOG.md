@@ -1,6 +1,22 @@
 # Changelog
 
 <!--
+2026-07-24 (day 2): /status — metadata status text, the ROADMAP item,
+Joe picked it. Wire-probed the status key on Ergo 2.19 first (SUB 770,
+SET echo 761 with trailing value, clear pushes 766 — all identical to
+the other keys; live push to subscriber again rate-limited, hover-GET
+covers). Plumbing is pure precedent-following: NickMeta.status +
+setNickMeta; the three ircclient key filters (METADATA verb/761/766)
+accept "status"; SUB at 001 and the hover GET include it; nick list
+tooltip shows it as an italic line (html branch) / "Status: " (plain
+branch); config [profile] status key; Preferences Profile gains a
+Status field (profileSetRequested grew a third param); republish on
+connect includes it; /status [text] sets/clears with localMessage
+feedback + help entry. Docs: commands.md, README table, ircv3.md,
+configuration.md, howto, quality page. Heaptrack soak queued next.
+-->
+
+<!--
 2026-07-24 (late): image link previews. Joe's pastebin jpg made no
 image card. Two findings during diagnosis: (1) direct-image previews
 ALREADY existed (doPageFetch isImageUrl extension check — in-session

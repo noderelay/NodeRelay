@@ -173,6 +173,7 @@ Config Config::load(const QString &path)
         if (auto prof = tbl["profile"].as_table()) {
             cfg.profileDisplayName = QString::fromStdString((*prof)["display_name"].value_or<std::string>(""));
             cfg.profileAvatarUrl   = QString::fromStdString((*prof)["avatar_url"].value_or<std::string>(""));
+            cfg.profileStatusText  = QString::fromStdString((*prof)["status"].value_or<std::string>(""));
         }
 
         // [ignore]
@@ -367,12 +368,15 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "[privacy]\n";
     out << "link_previews = " << boolStr(cfg.ui.linkPreviews) << "\n\n";
 
-    if (!cfg.profileDisplayName.isEmpty() || !cfg.profileAvatarUrl.isEmpty()) {
+    if (!cfg.profileDisplayName.isEmpty() || !cfg.profileAvatarUrl.isEmpty()
+        || !cfg.profileStatusText.isEmpty()) {
         out << "[profile]\n";
         if (!cfg.profileDisplayName.isEmpty())
             out << "display_name = " << tomlQuote(cfg.profileDisplayName) << "\n";
         if (!cfg.profileAvatarUrl.isEmpty())
             out << "avatar_url = " << tomlQuote(cfg.profileAvatarUrl) << "\n";
+        if (!cfg.profileStatusText.isEmpty())
+            out << "status = " << tomlQuote(cfg.profileStatusText) << "\n";
         out << "\n";
     }
 

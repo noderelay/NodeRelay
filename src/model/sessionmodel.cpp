@@ -1468,7 +1468,7 @@ void SessionModel::requestNickMeta(const ServerId &host, const QString &nick)
     auto *cl = clientFor(host);
     if (!cl || !cl->hasMetadataCap()) return;
     sess->metaRequested.insert(lower);
-    sendRaw(host, "METADATA " + nick + " GET avatar display-name");
+    sendRaw(host, "METADATA " + nick + " GET avatar display-name status");
 }
 
 void SessionModel::onUserMetaChanged(const ServerId &host, const QString &nick,

@@ -136,6 +136,7 @@ struct Config {
     QList<ScriptBinding> scripts;
     QString             profileDisplayName; // draft/metadata display-name
     QString             profileAvatarUrl;   // draft/metadata avatar URL
+    QString             profileStatusText;  // draft/metadata status
 
     bool needsNickSetup() const;
 
