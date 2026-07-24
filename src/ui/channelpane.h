@@ -9,6 +9,7 @@
 #include <QHash>
 
 class ChatView;
+class ElidedLabel;
 class SearchBar;
 class NickFilterEdit;
 class NickListModel;
@@ -28,6 +29,9 @@ public:
     const ServerId &host()    const { return m_host; }
     const BufferId &channel() const { return m_channel; }
     QString         key()     const { return paneKey(m_host, m_channel); }
+    // Point the pane at another buffer, keeping the widget itself. The caller
+    // re-keys it and refills the views; the pane owns only its own identity.
+    void retarget(const ServerId &host, const BufferId &channel);
     ChatView     *chatView() const { return m_chatView; }
     QListView    *nickList() const { return m_nickList; }
     NickListModel *nickModel() const { return m_nickModel; }
@@ -81,6 +85,7 @@ private:
     BufferId              m_channel;
     QMetaObject::Connection m_topicIconConn;
     QWidget      *m_header{nullptr};
+    ElidedLabel  *m_nameLabel{nullptr};
     QPoint        m_dragStartPos;
     bool          m_dragPending{false};
     bool          m_dragging{false};

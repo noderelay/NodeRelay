@@ -68,11 +68,11 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
 
-    auto *nameLabel = new ElidedLabel(m_channel.str());
-    nameLabel->setObjectName("paneChannelLabel");
-    QFont f = nameLabel->font();
+    m_nameLabel = new ElidedLabel(m_channel.str());
+    m_nameLabel->setObjectName("paneChannelLabel");
+    QFont f = m_nameLabel->font();
     f.setBold(true);
-    nameLabel->setFont(f);
+    m_nameLabel->setFont(f);
 
     m_popOutBtn = new QToolButton;
     m_popOutBtn->setFixedSize(28, 28);
@@ -110,7 +110,7 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     connect(m_closeBtn, &QToolButton::clicked, this, &ChannelPane::closeRequested);
 
     hbox->addWidget(m_topicToggle);
-    hbox->addWidget(nameLabel, 1);
+    hbox->addWidget(m_nameLabel, 1);
     hbox->addWidget(m_popOutBtn);
     hbox->addWidget(m_searchBtn);
     hbox->addWidget(m_nickRevealBtn);
@@ -490,6 +490,21 @@ void ChannelPane::setTopicIcon(const QIcon &collapsed, const QIcon &expanded)
                               [this, collapsed, expanded](bool on){
         m_topicToggle->setIcon(on ? expanded : collapsed);
     });
+}
+
+// Swap the pane onto another buffer. Only the pane's own identity and header
+// are touched here — the chat view, nick list, topic and typing line are
+// refilled by MainWindow, which owns the model lookups.
+void ChannelPane::retarget(const ServerId &host, const BufferId &channel)
+{
+    m_host    = host;
+    m_channel = channel;
+    if (m_nameLabel) m_nameLabel->setText(channel.str());
+    setTopic({});
+    setTyping({});
+    // Matches and the query belong to the buffer we just left.
+    if (m_searchBar && m_searchBar->isVisible())
+        m_searchBar->dismiss();
 }
 
 void ChannelPane::toggleSearch()

@@ -143,6 +143,10 @@ private:
     void switchAwayFromChannel(const ServerId &host, const BufferId &channel);
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
+    // Loads another buffer into an already-docked pane, leaving the layout alone.
+    void retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel);
+    // Puts the sidebar highlight back on whatever the primary view is showing.
+    void syncSidebarToActive();
     void rebuildPaneLayout();
 
     // Menu bar (menu_style) — mainwindow_menubar.cpp
@@ -267,6 +271,9 @@ private:
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout (docked panes only)
     QHash<QString, QWidget*>     m_paneWindows;  // key -> top-level window for popped-out panes
+    // Last docked pane that held keyboard focus — sidebar clicks load into it
+    // instead of the primary view. Null means the primary is the target.
+    ChannelPane                 *m_focusedPane{nullptr};
     QSet<QString>                m_nickRefreshPending;    // channels with a debounced refresh queued
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
     int                          m_primarySlot{0}; // position of primary panel in layout order
