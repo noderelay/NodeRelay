@@ -1,7 +1,6 @@
 #pragma once
 
 #include "config/config.h"
-#include "irc/stsstore.h"
 #include <QDateTime>
 #include <QHash>
 #include <QList>
@@ -177,6 +176,8 @@ private:
     QAbstractSocket::SocketState sockState() const;
     QHostAddress                 sockLocalAddress() const;
     QString                      sockErrorString() const;
+    QStringList desiredCaps() const;
+    void routeMetadata (QString target, const QString &key, const QString &value);
     void handleCap     (const QStringList &params, const QString &trailing);
     void handleNumeric (const QString &cmd, const QStringList &params, const QString &trailing);
     void handleBatch   (const QStringList &params);

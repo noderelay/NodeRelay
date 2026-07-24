@@ -1074,16 +1074,8 @@ void IrcClient::processLine(const QString &line)
     // (metadata-3 drops this verb; its pushes arrive as numeric 761 instead)
     // ircmsg only adds trailing colon when value has spaces — plain URLs land in params[3]
     if (cmd == "METADATA" && msg.params.size() >= 2) {
-        QString target     = msg.params[0];
-        if (target == QLatin1String("*")) target = m_nick;
-        const QString &key = msg.params[1];
         const QString value = !msg.trailing.isEmpty() ? msg.trailing : msg.params.value(3);
-        if (isChannelName(target)) {
-            if (key == "avatar")
-                emit channelMetaChanged(m_serverName, target, key, value);
-        } else if (key == "display-name" || key == "avatar" || key == "status") {
-            emit userMetaChanged(m_serverName, target, key, value);
-        }
+        routeMetadata(msg.params[0], msg.params[1], value);
         return;
     }
 
@@ -1310,6 +1302,44 @@ void IrcClient::handleBouncer(const QStringList &params, const QString &trailing
 // CAP negotiation
 // ---------------------------------------------------------------------------
 
+// Route a metadata push/reply (METADATA verb, numeric 761, numeric 766) to
+// the right signal. Channel targets carry only the avatar key; everything
+// else is per-user profile metadata.
+void IrcClient::routeMetadata(QString target, const QString &key, const QString &value)
+{
+    if (target == QLatin1String("*")) target = m_nick;
+    if (isChannelName(target)) {
+        if (key == "avatar")
+            emit channelMetaChanged(m_serverName, target, key, value);
+    } else if (key == "display-name" || key == "avatar" || key == "status") {
+        emit userMetaChanged(m_serverName, target, key, value);
+    }
+}
+
+// Capabilities we REQ when the server offers them — shared by the CAP LS
+// and CAP NEW paths so the list can't drift between them.
+QStringList IrcClient::desiredCaps() const
+{
+    QStringList desired = {
+        "multi-prefix", "away-notify", "server-time",
+        "message-tags", "batch", "labeled-response", "typing", "draft/typing",
+        "echo-message",
+        "chathistory", "draft/chathistory", "chghost", "draft/react",
+        "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
+        "userhost-in-names", "draft/message-redaction", "draft/multiline",
+        "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
+        "no-implicit-names", "cap-notify", "standard-replies",
+    };
+    if (m_bouncerType == BouncerType::ZNC)
+        desired << "znc.in/playback" << "znc.in/self-message" << "znc.in/batch";
+    if (m_bouncerType == BouncerType::Soju)
+        desired << "soju.im/bouncer-networks" << "soju.im/bouncer-networks-notify"
+                << "soju.im/read" << "soju.im/no-implicit-names";
+    if ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)
+        desired << "sasl";
+    return desired;
+}
+
 void IrcClient::handleCap(const QStringList &params, const QString &trailing)
 {
     if (params.size() < 2) return;
@@ -1381,34 +1411,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             break;
         }
 
-        QStringList desired = {
-            "multi-prefix", "away-notify", "server-time",
-            "message-tags", "batch", "labeled-response", "typing", "draft/typing",
-            "echo-message",
-            "chathistory", "draft/chathistory", "chghost", "draft/react",
-            "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
-            "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
-            "no-implicit-names", "cap-notify", "standard-replies",
-        };
-
-        // ZNC-specific caps
-        if (m_bouncerType == BouncerType::ZNC) {
-            desired << "znc.in/playback"
-                    << "znc.in/self-message"
-                    << "znc.in/batch";
-        }
-
-        // Soju-specific caps
-        if (m_bouncerType == BouncerType::Soju) {
-            desired << "soju.im/bouncer-networks"
-                    << "soju.im/bouncer-networks-notify"
-                    << "soju.im/read"
-                    << "soju.im/no-implicit-names";
-        }
-
-        if ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)
-            desired << "sasl";
+        const QStringList desired = desiredCaps();
 
         QStringList want;
         for (const QString &cap : std::as_const(desired)) {
@@ -1475,23 +1478,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
     if (subCmd == "NEW") {
         // Server added capabilities mid-session — request any we want
         const QStringList newCaps = trailing.split(' ', Qt::SkipEmptyParts);
-        QStringList desired = {
-            "multi-prefix", "away-notify", "server-time",
-            "message-tags", "batch", "labeled-response", "typing", "draft/typing",
-            "echo-message",
-            "chathistory", "draft/chathistory", "chghost", "draft/react",
-            "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
-            "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2", "draft/metadata-3", "draft/read-marker",
-            "no-implicit-names", "cap-notify", "standard-replies",
-        };
-        if (m_bouncerType == BouncerType::ZNC)
-            desired << "znc.in/playback" << "znc.in/self-message" << "znc.in/batch";
-        if (m_bouncerType == BouncerType::Soju)
-            desired << "soju.im/bouncer-networks" << "soju.im/bouncer-networks-notify"
-                    << "soju.im/read" << "soju.im/no-implicit-names";
-        if ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)
-            desired << "sasl";
+        const QStringList desired = desiredCaps();
 
         QStringList want;
         for (const QString &cap : newCaps) {
@@ -1729,18 +1716,9 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         // params: [client, target, key, visibility, ?value], trailing = value
         // Ergo echoes target as "*" when you SET your own metadata; resolve to own nick
         // ircmsg only adds trailing colon when value has spaces — plain URLs land in params[4]
-        if (params.size() >= 3) {
-            QString target     = params[1];
-            if (target == QLatin1String("*")) target = m_nick;
-            const QString &key = params[2];
-            const QString value = !trailing.isEmpty() ? trailing : params.value(4);
-            if (isChannelName(target)) {
-                if (key == "avatar")
-                    emit channelMetaChanged(m_serverName, target, key, value);
-            } else if (key == "display-name" || key == "avatar" || key == "status") {
-                emit userMetaChanged(m_serverName, target, key, value);
-            }
-        }
+        if (params.size() >= 3)
+            routeMetadata(params[1], params[2],
+                          !trailing.isEmpty() ? trailing : params.value(4));
         break;
     }
 
@@ -1864,17 +1842,8 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 766: { // ERR_NOMATCHINGKEY — key not set; Ergo also pushes this to
                 // subscribers when a key is deleted, so treat it as "cleared"
-        if (params.size() >= 3) {
-            QString target     = params[1];
-            if (target == QLatin1String("*")) target = m_nick;
-            const QString &key = params[2];
-            if (isChannelName(target)) {
-                if (key == "avatar")
-                    emit channelMetaChanged(m_serverName, target, key, QString());
-            } else if (key == "display-name" || key == "avatar" || key == "status") {
-                emit userMetaChanged(m_serverName, target, key, QString());
-            }
-        }
+        if (params.size() >= 3)
+            routeMetadata(params[1], params[2], QString());
         break;
     }
     case 768: // ERR_KEYNOTSET

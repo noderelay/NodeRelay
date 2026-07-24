@@ -57,6 +57,12 @@ inline QString bufferKey(const ServerId &host, const BufferId &channel) {
     return host.str() + '\t' + channel.str();
 }
 
+// Model-side per-buffer key: like bufferKey but lower-cased, matching
+// SessionModel's case-insensitive channel lookups.
+inline QString bufferKeyLower(const ServerId &host, const BufferId &channel) {
+    return host.str() + '\t' + channel.str().toLower();
+}
+
 // RFC 2811 channel name prefixes: '#' (standard), '&' (local-only),
 // '+' (modeless), '!' (safe). Networks that advertise a narrower
 // ISUPPORT CHANTYPES simply never issue the others, so checking all

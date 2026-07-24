@@ -5,6 +5,7 @@
 #include "net/networkmonitor.h"
 
 #include <memory>
+#include <utility>
 #include <QPointer>
 #include <QDir>
 #include <QFile>
@@ -565,7 +566,8 @@ void SessionModel::markRead(const ServerId &host, const BufferId &ch)
 void SessionModel::queueReadMark(const ServerId &host, const BufferId &ch)
 {
     if (ch == serverBufferId()) return;
-    m_pendingReadMarks.insert(bufferKey(host, ch), {host, ch});
+    // Lower-cased so #Chan and #chan share one pending slot
+    m_pendingReadMarks.insert(bufferKeyLower(host, ch), {host, ch});
     if (!m_readMarkQueued) {
         m_readMarkQueued = true;
         QTimer::singleShot(1500, this, [this]() { flushReadMarks(); });
@@ -575,8 +577,7 @@ void SessionModel::queueReadMark(const ServerId &host, const BufferId &ch)
 void SessionModel::flushReadMarks()
 {
     m_readMarkQueued = false;
-    const auto pending = m_pendingReadMarks;
-    m_pendingReadMarks.clear();
+    const auto pending = std::exchange(m_pendingReadMarks, {});
     for (const auto &p : pending) {
         auto *c  = channel(p.first, p.second);
         auto *cl = clientFor(p.first);
@@ -770,7 +771,7 @@ void SessionModel::postMessage(const ServerId &host, const BufferId &target, con
     auto *sess = session(host);
     if (!sess) return;
 
-    const QString key = host.str() + '\t' + target.str().toLower();
+    const QString key = bufferKeyLower(host, target);
 
     if (msg.isHistory && m_pendingHistoryBefore.contains(key)) {
         m_historyBeforeBuf[key].append(msg);
@@ -825,7 +826,7 @@ void SessionModel::seedFromLog(const ServerId &host, const BufferId &target)
                || cl->hasCap("znc.in/playback")))
         return;
 
-    const QString key = host.str() + '\t' + target.str().toLower();
+    const QString key = bufferKeyLower(host, target);
     if (m_logSeeded.contains(key)) return;
     m_logSeeded.insert(key);
 
@@ -843,7 +844,7 @@ void SessionModel::seedFromLog(const ServerId &host, const BufferId &target)
 
 void SessionModel::requestOlderHistory(const ServerId &host, const BufferId &channel)
 {
-    const QString key = host.str() + '\t' + channel.str().toLower();
+    const QString key = bufferKeyLower(host, channel);
     if (m_pendingHistoryBefore.contains(key)) return;
 
     auto *ch = this->channel(host, channel);
@@ -887,7 +888,7 @@ void SessionModel::requestOlderHistory(const ServerId &host, const BufferId &cha
 void SessionModel::onHistoryBatchDone(const QString &hostStr, const QString &target)
 {
     const ServerId host{hostStr};
-    const QString key = hostStr + '\t' + target.toLower();
+    const QString key = bufferKeyLower(host, BufferId{target});
     if (!m_pendingHistoryBefore.remove(key)) return;  // join-time LATEST etc.
 
     const QList<Message> msgs = m_historyBeforeBuf.take(key);

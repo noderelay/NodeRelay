@@ -60,16 +60,7 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
         m_expandedEventGroups.remove(groupId);
     }
 
-    ChatRenderer::Context ctx;
-    ctx.coloredNicks = m_config.ui.coloredNicks;
-    ctx.nickBrackets = m_config.ui.nickBrackets;
-    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-    ctx.chatPt       = m_config.ui.fontSizes.chat;
-    applyThemeColors(ctx);
-    ctx.selfNickRe   = selfNickReFor(host);
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
-    ctx.channel      = ch;
+    const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     const bool atBottom = view->isAtBottom();
     view->replaceLine("evgrp:" + groupId,
