@@ -1,6 +1,37 @@
 # Changelog
 
 <!--
+2026-07-24: edge-drop places a pane on a side (unreleased).
+
+Joe expected to be able to grab a pane and drag it to a side. Drag has
+only ever swapped positions, so this adds the missing half.
+
+Drop zones: quarter-width/height bands, floored at 24px so a narrow pane
+still has a grabbable edge and capped at 120px so a wide one keeps a big
+middle. Left/right win the corners. The middle is unchanged (swap).
+
+The gesture writes the setting: an edge drop sets pane_split_axis to
+columns or rows, since the user just picked an axis with their hands and
+auto would otherwise undo it on the next rebuild. Precedent is the theme
+list switching Follow System off, and Preferences re-syncs so the radio
+shows what happened.
+
+zoneFor/zoneRect are static on ChannelPane because the primary view is a
+plain QWidget, not a ChannelPane, and has to classify drops identically.
+That does mean mainwindow.h now includes channelpane.h for the enum in
+placePaneBeside's signature — the forward declaration is gone.
+
+Ordering is exact for 2 panes (slot 0/1 along the main axis is literally
+left/top). For 3-4 the nested shapes make "that side" approximate: the
+axis flip is exact, the before/after insert is the closest the
+count-driven layout can express. Per-pair axes still need the split
+tree.
+
+Also fixed a README gap from #172: the pane row still described the old
+Stack Panes in Rows checkbox.
+-->
+
+<!--
 2026-07-24: pane split axis goes automatic + drag cursor (unreleased).
 
 Joe asked what Halloy does before picking. Halloy is built on iced's

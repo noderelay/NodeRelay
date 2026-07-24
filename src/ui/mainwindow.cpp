@@ -770,7 +770,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 if (QString::fromUtf8(de->mimeData()->data(fmt)) != kPrimaryDragKey) {
                     if (!m_primaryDropFrame)
                         m_primaryDropFrame = new DropFrame(m_primaryPanel);
-                    m_primaryDropFrame->activate();
+                    // Same edge bands a pane uses, so the primary view reads
+                    // as a drop target in exactly the same way.
+                    const auto zone = ChannelPane::zoneFor(m_primaryPanel->size(),
+                                                           de->position().toPoint());
+                    m_primaryDropFrame->activate(
+                        ChannelPane::zoneRect(m_primaryPanel->size(), zone));
                 }
             } else {
                 de->ignore();
@@ -787,6 +792,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             const QString sourceKey = QString::fromUtf8(de->mimeData()->data(fmt));
             de->acceptProposedAction();
             if (m_primaryDropFrame) m_primaryDropFrame->hide();
+
+            // Edge drop: place the dragged pane on that side of the primary
+            // view and take the axis it implies, instead of the swap below.
+            const auto zone = ChannelPane::zoneFor(m_primaryPanel->size(),
+                                                   de->position().toPoint());
+            if (zone != ChannelPane::DropZone::Center) {
+                if (auto *src = m_panes.value(sourceKey))
+                    placePaneBeside(src, nullptr, zone);
+                return true;
+            }
 
             // pane <-> primary: the dragged pane stays exactly where it is;
             // primary takes over whichever slot the dragged pane's stack-
@@ -1664,7 +1679,17 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     connect(pane, &ChannelPane::inputSubmitted, this, [this, pane](const QString &text){
         dispatchInput(text, pane->host(), pane->channel());
     });
-    connect(pane, &ChannelPane::dropReceived, this, [this, pane](const QString &sourceKey){
+    connect(pane, &ChannelPane::dropReceived, this,
+            [this, pane](const QString &sourceKey, ChannelPane::DropZone zone){
+        // Dropped on an edge: place the dragged view on that side of this one
+        // instead of trading slots, and take the axis the side implies.
+        if (zone != ChannelPane::DropZone::Center) {
+            ChannelPane *source = (sourceKey == kPrimaryDragKey)
+                ? nullptr : m_panes.value(sourceKey);
+            if (sourceKey == kPrimaryDragKey || source)
+                placePaneBeside(source, pane, zone);
+            return;
+        }
         if (sourceKey == kPrimaryDragKey) {
             // Primary dragged onto this pane: plain slot swap — the primary
             // takes this pane's slot, the pane takes the primary's old one.
@@ -2015,6 +2040,45 @@ void MainWindow::rebuildPaneLayout()
     // every pane, which resets programmatic fonts to the app default —
     // re-apply the configured fonts.
     applyFontSizes();
+}
+
+// Moves `source` next to `target` on the side the drop chose, and forces the
+// split axis that side implies. A nullptr means the primary view in either
+// position. Placing by hand overrides the automatic axis, the same way picking
+// a theme from the list turns Follow System Light/Dark off.
+void MainWindow::placePaneBeside(ChannelPane *source, ChannelPane *target,
+                                 ChannelPane::DropZone zone)
+{
+    if (source == target || zone == ChannelPane::DropZone::Center) return;
+
+    const qsizetype nSlots = 1 + m_orderedPanes.size();
+    QList<ChannelPane*> combined; // nullptr marks the primary slot
+    int pi = 0;
+    for (int i = 0; i < nSlots; i++)
+        combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
+
+    const qsizetype from = combined.indexOf(source);
+    if (from < 0) return;
+    combined.removeAt(from);
+    const qsizetype at = combined.indexOf(target);
+    if (at < 0) return; // target vanished mid-drag; leave the layout alone
+
+    const bool before = (zone == ChannelPane::DropZone::Left ||
+                         zone == ChannelPane::DropZone::Top);
+    combined.insert(before ? at : at + 1, source);
+
+    m_orderedPanes.clear();
+    for (int i = 0; i < combined.size(); i++) {
+        if (!combined[i]) m_primarySlot = i;
+        else              m_orderedPanes.append(combined[i]);
+    }
+
+    const QString axis = (zone == ChannelPane::DropZone::Left ||
+                          zone == ChannelPane::DropZone::Right) ? "columns" : "rows";
+    if (m_config.ui.paneSplitAxis != axis)
+        applyPaneSplitAxisSetting(axis); // saves, rebuilds, re-syncs Preferences
+    else
+        rebuildPaneLayout();
 }
 
 // Puts another buffer in an already-docked pane. The pane keeps its slot, the
