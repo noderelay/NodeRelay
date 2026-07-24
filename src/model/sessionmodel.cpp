@@ -736,6 +736,16 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
             [this](const QString &h, const QString &nick, const QString &key, const QString &val){
         onUserMetaChanged(ServerId{h}, nick, key, val);
     });
+    connect(cl, &IrcClient::channelMetaChanged, this,
+            [this](const QString &h, const QString &chan, const QString &key, const QString &val){
+        if (key != QLatin1String("avatar")) return;
+        const ServerId host{h};
+        if (auto *c = channel(host, BufferId{chan})) {
+            if (c->avatarUrl == val) return;
+            c->avatarUrl = val;
+            emit channelAvatarChanged(host, BufferId{chan}, val);
+        }
+    });
 
     if (!m_config.monitorList.isEmpty())
         cl->setMonitorList(m_config.monitorList);
@@ -1037,6 +1047,10 @@ void SessionModel::onUserJoined(const QString &hostStr, const QString &channel, 
         ch.joined = true;
         seedFromLog(host, BufferId{channel});
         emit channelAdded(host, BufferId{channel});
+        // Ergo sends an empty metadata batch on join instead of replaying
+        // channel keys, so ask explicitly; pushes keep it current after
+        if (auto *cl = clientFor(host); cl && cl->hasMetadataCap())
+            sendRaw(host, "METADATA " + channel + " GET avatar");
     }
     ch.addNick(nick);
     emit nickAdded(host, BufferId{channel}, nick);

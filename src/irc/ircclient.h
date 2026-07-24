@@ -134,6 +134,8 @@ signals:
     void setNameReceived(const QString &server, const QString &nick, const QString &realname);
     void monitorOnline (const QString &server, const QStringList &nicks);
     void monitorOffline(const QString &server, const QStringList &nicks);
+    void channelMetaChanged (const QString &server, const QString &channel,
+                             const QString &key, const QString &value);
     void userMetaChanged    (const QString &server, const QString &nick,
                              const QString &key,    const QString &value);
     void metaLookupFailed   (const QString &server, const QString &nick);

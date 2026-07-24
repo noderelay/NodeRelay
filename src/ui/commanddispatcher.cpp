@@ -476,6 +476,20 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             m_model->localMessage(host, channel,
                 val.isEmpty() ? "Avatar cleared." : "Avatar URL set to: " + val);
         }
+    } else if (cmd == "/chanavatar") {
+        auto *cl = m_model->clientFor(host);
+        if (!cl || !cl->hasMetadataCap()) {
+            m_model->localMessage(host, channel,
+                "Server does not support metadata — cannot set channel avatar");
+        } else if (!channel.str().startsWith('#')) {
+            m_model->localMessage(host, channel,
+                "/chanavatar only works in a channel buffer");
+        } else {
+            const QString val = args.trimmed();
+            m_model->sendRaw(host, "METADATA " + channel.str() + " SET avatar :" + val);
+            m_model->localMessage(host, channel,
+                val.isEmpty() ? "Channel avatar cleared." : "Channel avatar set to: " + val);
+        }
     } else if (cmd == "/list") {
         emit openChannelList(host);
     } else if (cmd == "/motd") {
@@ -739,6 +753,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             "  /setname <realname>         — change your realname (IRCv3 setname)",
             "  /displayname [text]         — set your display name (draft/metadata; leave blank to clear)",
             "  /avatar [url]               — set your avatar URL (draft/metadata; leave blank to clear)",
+            "  /chanavatar [url]           — set this channel's sidebar avatar (needs op; blank to clear)",
             "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",
             "  /version [nick]             — request VERSION (nick optional)",

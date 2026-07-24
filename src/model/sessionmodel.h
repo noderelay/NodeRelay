@@ -152,6 +152,8 @@ signals:
     void channelListEnd  (const ServerId &host, int total);
 
     // User metadata
+    void channelAvatarChanged(const ServerId &host, const BufferId &channel,
+                              const QString &url);
     void userMetaChanged(const ServerId &host, const QString &nick,
                          const QString &key, const QString &value);
 

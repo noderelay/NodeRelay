@@ -1036,6 +1036,8 @@ void MainWindow::connectModel()
             [this](const ServerId &, const QString &, const QString &key, const QString &value) {
         if (key == QLatin1String("avatar")) fetchAvatar(value);
     });
+    connect(m_model, &SessionModel::channelAvatarChanged, this,
+            &MainWindow::onChannelAvatarChanged);
 
     connect(m_model, &SessionModel::sslFingerprintPrompt, this,
             [this](const ServerId &host, const QString &fp)

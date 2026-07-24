@@ -149,10 +149,19 @@ public:
         const int   unreadCnt  = m_showCounts ? index.data(Qt::UserRole + 3).toInt() : 0;
         const QString countStr = unreadCnt > 0 ? QString::number(unreadCnt) : QString();
         const QIcon awayIcon   = qvariant_cast<QIcon>(index.data(Qt::UserRole + 4));
+        const QIcon avatar     = qvariant_cast<QIcon>(index.data(Qt::UserRole + 5));
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
-        opt.icon = QIcon();
-        opt.decorationSize = QSize(0, 0);
+        if (avatar.isNull()) {
+            opt.icon = QIcon();
+            opt.decorationSize = QSize(0, 0);
+        } else {
+            // Channel avatar as the leading decoration; the base paint
+            // shifts the text right for us
+            opt.icon = avatar;
+            opt.decorationSize = QSize(16, 16);
+            opt.features |= QStyleOptionViewItem::HasDecoration;
+        }
 
         const bool selected = opt.state & QStyle::State_Selected;
         const bool hovered  = opt.state & QStyle::State_MouseOver;

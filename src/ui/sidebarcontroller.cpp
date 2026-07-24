@@ -123,6 +123,13 @@ void SidebarController::clearConnectionIcon(const ServerId &host)
         item->setData(0, Qt::UserRole + 2, QVariant());
 }
 
+void SidebarController::setChannelAvatar(const ServerId &host, const BufferId &channel, const QIcon &icon)
+{
+    if (auto *item = channelItem(host, channel))
+        item->setData(0, Qt::UserRole + 5,
+                      icon.isNull() ? QVariant() : QVariant::fromValue(icon));
+}
+
 void SidebarController::setCheckedOut(const ServerId &host, const BufferId &channel, bool out)
 {
     auto *item = channelItem(host, channel);

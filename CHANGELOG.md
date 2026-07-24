@@ -1,6 +1,33 @@
 # Changelog
 
 <!--
+Session 2026-07-24: channel avatars, picked by Joe off the parked
+menu — newly buildable because Ergo 2.19.0 fixed channel-metadata
+permissions. Wire-probed first (three probes, #avtest*): first
+joiner gets op and may SET; non-op gets FAIL KEY_NO_PERMISSION
+(surfaces as a visible [FAIL] line via standard-replies — free
+feedback); subscribed members get live 761 pushes (client param "*");
+join batch is EMPTY (Ergo does NOT replay channel metadata at join →
+explicit GET per self-join); CLEARS push numeric 766 "Key deleted".
+That last one forced a fix: 766 was fully silent, so cleared avatars
+(channel AND user) would linger on other clients forever — 766 now
+emits an empty-value meta-changed for avatar/display-name keys,
+doubling as the harmless "not set" GET answer (deduped in model).
+Plumbing: IrcClient::channelMetaChanged signal (METADATA verb + 761
++ 766 route '#' targets there); Channel::avatarUrl;
+SessionModel::channelAvatarChanged; METADATA <chan> GET avatar on
+self-join. UI: sidebar rows get a 16px leading icon via UserRole+5 —
+SidebarDelegate re-enables the built-in decoration for rows that
+have one (it normally strips opt.icon); SidebarController::
+setChannelAvatar; MainWindow::onChannelAvatarChanged reuses the
+SSRF-guarded fetchAvatar cache with m_pendingChanAvatars to apply
+icons after async fetch, re-applied when a sidebar row is recreated
+(onChannelAdded). /chanavatar [url] sets/clears (op only).
+Docs: ircv3.md channel-avatars subsection, commands.md, README
+command table, quality page metadata row, howto metadata intro.
+-->
+
+<!--
 Session 2026-07-23 (last item): auto-reclaim nick after SASL. The
 sig_ finding from the multiclient session, built at Joe's request.
 Registration must send NICK before SASL completes, so a held nick

@@ -333,7 +333,9 @@ private:
     QHash<QString, QPixmap>       m_avatarCache;       // URL → scaled pixmap
     QList<QString>                m_avatarCacheOrder;  // FIFO eviction order
     QSet<QString>                 m_avatarFetching;    // in-flight URLs
+    QHash<QString, QList<QPair<ServerId, BufferId>>> m_pendingChanAvatars; // URL → buffers awaiting icon
     void fetchAvatar(const QString &url);
+    void onChannelAvatarChanged(const ServerId &host, const BufferId &channel, const QString &url);
     QString nickTooltip(const QString &nick, const ServerId &host) const;
 
     QRegularExpression m_selfNickRe;  // pre-compiled highlight regex for active host's nick

@@ -2,6 +2,7 @@
 #include "ui/channelpane.h"
 #include "ui/nickfilteredit.h"
 #include "ui/nicklistmodel.h"
+#include "ui/sidebarcontroller.h"
 #include "ui/typingcontroller.h"
 #include "model/sessionmodel.h"
 #include "net/addresscheck.h"
@@ -128,6 +129,20 @@ void MainWindow::refreshNickList(const ServerId &host, const BufferId &channel)
     }
 }
 
+void MainWindow::onChannelAvatarChanged(const ServerId &host, const BufferId &channel, const QString &url)
+{
+    if (url.isEmpty()) {
+        m_sidebarCtl->setChannelAvatar(host, channel, QIcon());
+        return;
+    }
+    if (m_avatarCache.contains(url)) {
+        m_sidebarCtl->setChannelAvatar(host, channel, QIcon(m_avatarCache.value(url)));
+        return;
+    }
+    m_pendingChanAvatars[url].append({host, channel});
+    fetchAvatar(url);
+}
+
 void MainWindow::fetchAvatar(const QString &url)
 {
     if (url.isEmpty() || m_avatarCache.contains(url) || m_avatarFetching.contains(url))
@@ -146,6 +161,8 @@ void MainWindow::fetchAvatar(const QString &url)
         }
         m_avatarCache.insert(url, px);
         scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+        for (const auto &buf : m_pendingChanAvatars.take(url))
+            m_sidebarCtl->setChannelAvatar(buf.first, buf.second, QIcon(px));
     };
 
     // Local file — honored only for the user's own configured avatar. Avatar
