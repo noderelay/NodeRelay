@@ -1,6 +1,6 @@
 cask "uplink" do
-  version "2026.7.7"
-  sha256 "e52f138e56c7f2442405297d3530b15ee5b9a1cae0c86a81b75a643866fc1e6e"
+  version "2026.7.8"
+  sha256 "227b94b5fea395e0ebbe69c2dbe0285b1557c7b5f010f63fbb531167f3ce0e7a"
 
   url "https://github.com/noderelay/UplinkIRC/releases/download/v#{version}/Uplink-v#{version}-macos-arm64.dmg"
   name "Uplink"
