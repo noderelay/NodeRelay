@@ -400,7 +400,7 @@ channels = "#linux, #archlinux"
 | `/nick <newnick>` | Change your nickname |
 | `/me <action>` | Send a CTCP ACTION (`* nick waves`) |
 | `/msg <target> <text>` | Send a private message or open a PM tab |
-| `/query <nick>` | Open a PM buffer without sending a message |
+| `/query <nick> [text]` | Open a PM buffer, sending `text` with it if given |
 | `/ns <text>` | Message NickServ |
 | `/cs <text>` | Message ChanServ |
 | `/bs <text>` | Message BotServ |

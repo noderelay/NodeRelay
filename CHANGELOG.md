@@ -1,6 +1,46 @@
 # Changelog
 
 <!--
+SESSION SUMMARY 2026-07-25 (quality sweep + live testing), PRs #188-#194,
+all merged, unreleased:
+
+Built/changed:
+- Full quality/leak/resource sweep over the pane arc: ASan/UBSan suite,
+  both fuzzers (~900k execs, no crashes), cppcheck/clang-tidy, deep
+  review of the #170-#187 delta. Fixes in #188.
+- MARKREAD now focus-gated (#189, Joe's pick over keep-as-is).
+- Pane-layout JSON moved into panetree.{h,cpp} + first tests for the
+  save/restore surface, duplicate-key dedupe fix riding along (#190).
+- Four bulk render loops collapsed into renderMessageRange(), one
+  shared URL regex everywhere (#191).
+- /query nick <text> sends the text now, mIRC-style (#192).
+- RULE CHANGE at Joe's request: sidebar highlight follows keyboard
+  focus, replacing the anchored-to-main-view rule from #177 (#194).
+
+Bugs found and fixed: two remote-triggerable crashes (pane dying under
+an open context menu / mid header-drag), /clear from a pane window
+clearing the wrong buffer, /query//msg loading PMs into the hidden
+primary, Esc cancelling replies cross-buffer, two slow leaks (typing
+map, CTCP origins), preview queue 20s stalls on dud URLs, redirected
+URLs never getting preview cards, sidebar highlight lagging /query and
+/msg (#192), and a pane-retargeting command persisting itself as the
+old channel's draft (#193 — stale drafts saved before the fix show
+once more, delete once and they stay gone).
+
+Regressions discovered: none — all of the above predate this session
+(most shipped with the pane arc, some earlier).
+
+Known issues left open: heaptrack GUI soak still owed (needs Joe
+driving the app); startup restore can silently drop saved panes on a
+smaller window; buildShapeTree is production-dead code kept for its
+tests; ZNC-without-playback seed doubling still awaiting Joe's pick.
+
+Next: field verification of the sweep behavior changes (highlight
+follow-focus feel, MARKREAD cross-device timing), then whatever Joe
+reports from daily driving. No release prep unless asked.
+-->
+
+<!--
 2026-07-25 (Joe's pick, live-testing): the sidebar highlight now
 FOLLOWS KEYBOARD FOCUS — click into a pane (docked or floating) and its
 row lights up; back in the main view and the active buffer's row does.

@@ -388,6 +388,8 @@ When two Uplinks share one identity, reading a channel on one clears its unread 
 
 A marker only clears a badge once it covers everything in the buffer — if the other client read half the backlog, your badge stays.
 
+In the other direction, Uplink only reports messages as read while one of its windows actually has focus. A channel sitting open in a minimized Uplink doesn't silently clear the unread state on your phone; the marks are sent when you come back to the window.
+
 Both bouncer types also negotiate the `chathistory` capability, which automatically requests the last 100 messages for each channel on join. Uplink also supports `draft/chathistory` (used by Ergo IRCd), so history works on Ergo servers without any extra configuration. See [IRCv3 support](ircv3.md) for full details.
 
 ### What do the dimmed messages at the top of a channel mean?
