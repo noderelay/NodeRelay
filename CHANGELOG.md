@@ -20,6 +20,28 @@ state switchToChannel already bounces away from when you click it.
 -->
 
 <!--
+2026-07-24: pane layout becomes a tree — stage A (unreleased).
+
+Joe picked the split-tree rewrite over the cheap "make 3 flat" rule,
+after asking what Halloy does (iced pane_grid: recursive splits, no
+shape table, no documented pane cap). Staged A/B/C so main never breaks:
+A = model + recursive build at parity, B = real splits (three stacked,
+5+ panes, per-pair axes), C = persist the tree.
+
+A only: buildShapeTree(count, rows) returns the SAME arrangements as the
+old branch-per-count code, and rebuildPaneLayout walks it. Nothing moves
+on screen. m_orderedPanes/m_primarySlot are still the source of truth —
+turning the tree into the source of truth is B.
+
+The tree is indices, not widgets, so panetree.h needs no Qt Widgets and
+the shapes are unit-testable headlessly. tst_panetree (9 cases) pins
+every shape, that each view appears exactly once, and that rows is the
+columns tree transposed. That test is the safety net B gets to lean on.
+
+Gotcha: `slots` is a Qt keyword, so the test's local is `found`.
+-->
+
+<!--
 2026-07-24: edge-drop only highlights zones that would move something.
 
 Joe: two panes side by side, grab the right one, hover the LEFT pane's

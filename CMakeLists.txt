@@ -94,6 +94,8 @@ qt_add_executable(Uplink WIN32
     src/ui/chatview.cpp
     src/ui/chatview.h
     src/ui/channelpane.cpp
+    src/ui/panetree.cpp
+    src/ui/panetree.h
     src/ui/channelpane.h
     src/ui/searchbar.cpp
     src/ui/searchbar.h

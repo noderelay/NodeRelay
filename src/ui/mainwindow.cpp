@@ -32,6 +32,7 @@
 #include "ui/signalbars.h"
 #include "ui/fadescrollbar.h"
 #include "ui/channelpane.h"
+#include "ui/panetree.h"
 #include "ui/dropframe.h"
 #include "ui/chatrenderer.h"
 #include "ui/chatview.h"
@@ -1951,6 +1952,34 @@ bool MainWindow::paneRowsAxis() const
     return s.height() > s.width();
 }
 
+// Builds the widget side of a layout tree: leaves are the views themselves,
+// every split becomes a nested QSplitter carrying its own axis.
+static QWidget *buildPaneWidgets(const PaneNode &node, const QList<QWidget*> &views,
+                                 const std::function<void(QWidget*)> &show)
+{
+    if (node.isLeaf()) {
+        QWidget *w = views.value(node.slot);
+        if (w) show(w);
+        return w;
+    }
+    auto *split = new QSplitter(node.axis);
+    split->setHandleWidth(2);
+    split->setChildrenCollapsible(false); // clamp, don't snap panes closed
+    for (const PaneNode &child : node.children)
+        if (QWidget *w = buildPaneWidgets(child, views, show))
+            split->addWidget(w);
+    return split;
+}
+
+// Equal slices at every level of the splitter tree.
+static void equalizeSplitters(QSplitter *s, int total)
+{
+    if (!s || s->count() == 0 || total <= 0) return;
+    s->setSizes(QList<int>(s->count(), total / s->count()));
+    for (int i = 0; i < s->count(); ++i)
+        equalizeSplitters(qobject_cast<QSplitter *>(s->widget(i)), total);
+}
+
 void MainWindow::rebuildPaneLayout()
 {
     // The primary can be hidden via its ✕ button — a rebuild must not
@@ -1992,68 +2021,20 @@ void MainWindow::rebuildPaneLayout()
         m_primaryHeader->setCursor(m_orderedPanes.isEmpty() ? Qt::ArrowCursor
                                                             : Qt::OpenHandCursor);
 
-    // Columns: the top-level splitter is horizontal and any stacking within a
-    // slot uses a nested vertical splitter. Rows is the same shapes transposed
-    // 90°. paneRowsAxis() decides which is in force.
-    const bool rows = paneRowsAxis();
-    const Qt::Orientation mainAxis  = rows ? Qt::Vertical : Qt::Horizontal;
-    const Qt::Orientation crossAxis = rows ? Qt::Horizontal : Qt::Vertical;
-    m_panesSplitter->setOrientation(mainAxis);
-
-    auto makeCross = [crossAxis]() -> QSplitter * {
-        auto *s = new QSplitter(crossAxis);
-        s->setHandleWidth(2);
-        s->setChildrenCollapsible(false); // clamp, don't snap panes closed
-        return s;
-    };
-
-    const qsizetype n = widgets.size();
-    if (n <= 2) {
-        // 1 or 2 panes: flat along the main axis
-        for (auto *w : std::as_const(widgets)) {
+    // The shapes are a tree now rather than a branch per pane count, so the
+    // layout is built by walking it. buildShapeTree still returns exactly the
+    // arrangements Uplink has always used; paneRowsAxis() picks the main axis.
+    const PaneNode root = buildShapeTree(static_cast<int>(widgets.size()), paneRowsAxis());
+    m_panesSplitter->setOrientation(root.axis);
+    for (const PaneNode &child : root.children)
+        if (QWidget *w = buildPaneWidgets(child, widgets, showWidget))
             m_panesSplitter->addWidget(w);
-            showWidget(w);
-        }
-    } else if (n == 3) {
-        // primary full-length in the first slot, two panes stacked in the second
-        m_panesSplitter->addWidget(widgets[0]);
-        showWidget(widgets[0]);
-        auto *second = makeCross();
-        second->addWidget(widgets[1]);
-        second->addWidget(widgets[2]);
-        showWidget(widgets[1]);
-        showWidget(widgets[2]);
-        m_panesSplitter->addWidget(second);
-    } else { // n == 4  (2×2 grid)
-        auto *first = makeCross();
-        first->addWidget(widgets[0]);
-        first->addWidget(widgets[1]);
-        showWidget(widgets[0]);
-        showWidget(widgets[1]);
-        auto *second = makeCross();
-        second->addWidget(widgets[2]);
-        second->addWidget(widgets[3]);
-        showWidget(widgets[2]);
-        showWidget(widgets[3]);
-        m_panesSplitter->addWidget(first);
-        m_panesSplitter->addWidget(second);
-    }
 
-    // Equalize top-level slices along whichever axis is now the main one,
-    // and split stacked pairs evenly down the middle of their slot.
-    auto equalize = [](QSplitter *s, int total){
-        if (total <= 0 || s->count() == 0) return;
-        QList<int> sizes(s->count(), total / s->count());
-        s->setSizes(sizes);
-    };
-    const int mainTotal  = (mainAxis == Qt::Horizontal) ? m_panesSplitter->width()
-                                                        : m_panesSplitter->height();
-    const int crossTotal = (crossAxis == Qt::Horizontal) ? m_panesSplitter->width()
-                                                         : m_panesSplitter->height();
-    equalize(m_panesSplitter, mainTotal);
-    for (int i = 0; i < m_panesSplitter->count(); ++i)
-        if (auto *s = qobject_cast<QSplitter *>(m_panesSplitter->widget(i)))
-            equalize(s, crossTotal);
+    // Give every splitter in the tree equal slices. Any positive number splits
+    // evenly, so the top-level extent serves for the nested ones too — they
+    // have no size of their own until the layout runs.
+    equalizeSplitters(m_panesSplitter, qMax(m_panesSplitter->width(),
+                                            m_panesSplitter->height()));
 
     // The setParent(nullptr) detach above makes the style engine repolish
     // every pane, which resets programmatic fonts to the app default —
