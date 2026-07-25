@@ -1,6 +1,20 @@
 # Changelog
 
 <!--
+2026-07-25 (Joe's pick, live-testing): the sidebar highlight now
+FOLLOWS KEYBOARD FOCUS — click into a pane (docked or floating) and its
+row lights up; back in the main view and the active buffer's row does.
+This deliberately replaces the #177 anchored-to-main-view rule at Joe's
+request ("make it follow focus") — since sidebar clicks started routing
+into the focused pane, the anchored highlight claimed the main view
+while clicks acted on the pane. Focus parked on the sidebar or a dialog
+keeps the last choice (same rule as the click routing), so clicking a
+row doesn't bounce the highlight. syncSidebarToActive resolves: actual
+focused pane → last docked m_focusedPane → standing-in pane when the
+main view is closed → active buffer; the focusChanged tracker calls it.
+-->
+
+<!--
 2026-07-25 (live-testing, cont): a command that retargets its own pane
 (/query, /msg) came back as the OLD channel's draft forever — the pane
 emits inputSubmitted before clearing (receiver reads formats off the

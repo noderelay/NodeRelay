@@ -155,6 +155,7 @@ private:
     // being typed in, else the first in layout order. Null if there are none.
     ChannelPane *currentPaneTarget() const;
     ChannelPane *paneRouteTarget() const;
+    ChannelPane *paneWithFocus() const;
     // Puts the sidebar highlight back on whatever the primary view is showing.
     void syncSidebarToActive();
     // Edge-drop placement: nullptr means the primary view on either side.
