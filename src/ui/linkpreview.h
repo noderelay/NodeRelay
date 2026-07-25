@@ -22,6 +22,10 @@ public:
 signals:
     void titleReady(const QUrl &url, const QString &title);
     void cardReady(const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail);
+    // A card fetch that ends with nothing to show — blocked, DNS failure,
+    // HTTP error, no title. Lets the queue move on instead of waiting out
+    // the controller's watchdog.
+    void fetchFailed(const QUrl &pageUrl);
 
 private:
     struct CachedCard {

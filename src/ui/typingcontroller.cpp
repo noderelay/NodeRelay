@@ -86,6 +86,17 @@ void TypingController::endSelfTyping(const ServerId &host, const BufferId &chann
     m_selfTyping = false;
 }
 
+// Remove a nick from a buffer's typer set without operator[]'s
+// default-insert, and drop the set once it empties — the map otherwise
+// keeps one dead key per buffer that ever saw a typing TAGMSG.
+void TypingController::removeTyper(const QString &key, const QString &nick)
+{
+    auto it = m_typers.find(key);
+    if (it == m_typers.end()) return;
+    it->remove(nick);
+    if (it->isEmpty()) m_typers.erase(it);
+}
+
 void TypingController::onTypingReceived(const ServerId &host, const BufferId &channel,
                                         const QString &nick, const QString &state)
 {
@@ -105,7 +116,7 @@ void TypingController::onTypingReceived(const ServerId &host, const BufferId &ch
             auto *t = new QTimer(this);
             t->setSingleShot(true);
             connect(t, &QTimer::timeout, this, [this, key, timerKey, nick]{
-                m_typers[key].remove(nick);
+                removeTyper(key, nick);
                 if (auto *timer = m_nickTimers.value(timerKey)) {
                     m_nickTimers.remove(timerKey);
                     timer->deleteLater();
@@ -116,7 +127,7 @@ void TypingController::onTypingReceived(const ServerId &host, const BufferId &ch
             t->start(6000);
         }
     } else {
-        m_typers[key].remove(nick);
+        removeTyper(key, nick);
         if (auto *t = m_nickTimers.value(timerKey)) {
             t->stop();
             t->deleteLater();
@@ -149,7 +160,7 @@ void TypingController::forgetNick(const ServerId &host, const BufferId &channel,
         t->stop();
         t->deleteLater();
         m_nickTimers.remove(timerKey);
-        m_typers[key].remove(nick);
+        removeTyper(key, nick);
         emit typersChanged();
     }
 }

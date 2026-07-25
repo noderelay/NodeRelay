@@ -27,6 +27,21 @@ PreviewController::PreviewController(SessionModel *model, QObject *parent)
 
     connect(m_linkPreview, &LinkPreview::cardReady,
             this, &PreviewController::onCardReady);
+
+    // A fetch that dies early (blocked scheme, DNS failure, HTTP error, no
+    // title) used to sit on the queue until the watchdog fired — 20s of
+    // nothing per dud URL. Release the slot the moment it reports back.
+    connect(m_linkPreview, &LinkPreview::fetchFailed, this, [this](const QUrl &pageUrl){
+        const QString urlStr = pageUrl.toString();
+        qCDebug(lcPreview) << "fetch failed:" << urlStr;
+        if (urlStr == m_inFlightUrl) {
+            m_previewWatchdog->stop();
+            m_inFlightUrl.clear();
+            m_previewFetchBusy = false;
+        }
+        m_previewChannels.remove(urlStr);
+        processQueue();
+    });
 }
 
 void PreviewController::enqueue(const QUrl &url, const ServerId &host, const BufferId &channel, const QString &msgid)

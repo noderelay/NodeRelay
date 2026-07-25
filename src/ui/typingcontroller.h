@@ -42,6 +42,7 @@ private:
     void onTypingReceived(const ServerId &host, const BufferId &channel,
                           const QString &nick, const QString &state);
     void endSelfTyping(const ServerId &host, const BufferId &channel);
+    void removeTyper(const QString &key, const QString &nick);
 
     SessionModel *m_model;
     bool          m_enabled{true};

@@ -21,6 +21,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QTimer>
 #include <QTreeWidget>
 
@@ -80,14 +81,17 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
     }
 
     // Which view this menu belongs to — the reply state has to land in the
-    // input the user is actually looking at.
-    ChannelPane *srcPane = nullptr;
+    // input the user is actually looking at. QPointer: the pane can be torn
+    // down (kick, PART, server close) while a menu's exec() loop runs.
+    QPointer<ChannelPane> srcPane;
     for (auto *p : std::as_const(m_panes))
         if (p->chatView() == view) { srcPane = p; break; }
 
     if (anchor.startsWith("msgid:")) {
         const QString msgid = anchor.mid(6);
-        QMenu menu(view->viewport());
+        // Parented to the window, not the view — a pane's deleteLater() can
+        // run inside exec() and would delete a viewport-parented stack menu.
+        QMenu menu(this);
         auto *cl = m_model->clientFor(host);
         const QString sel = view->selectedText();
         if (!sel.isEmpty()) {
@@ -117,7 +121,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
                 m_pendingReplyPane = srcPane;
                 srcPane->input()->setPlaceholderText("↩ Replying to " + who + " — Esc to cancel");
                 srcPane->input()->viewport()->update();
-                QTimer::singleShot(0, this, [srcPane]{ srcPane->input()->setFocus(); });
+                QTimer::singleShot(0, this, [srcPane]{ if (srcPane) srcPane->input()->setFocus(); });
                 return;
             }
             if (m_replyLabel) m_replyLabel->setText("↩ " + who);
@@ -155,7 +159,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
 
     if (anchor.startsWith("preview:")) {
         const QString url = anchor.mid(8);
-        QMenu menu(view->viewport());
+        QMenu menu(this);
         connect(menu.addAction("Open URL"), &QAction::triggered, this, [url]{
             const QUrl u(url);
             if (u.scheme().toLower() == "http" || u.scheme().toLower() == "https")
@@ -178,7 +182,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
         // URL or other anchor
         QString href = anchor;
         if (href.startsWith("url:")) href = href.mid(4);
-        QMenu menu(view->viewport());
+        QMenu menu(this);
         connect(menu.addAction("Copy URL"), &QAction::triggered,
                 this, [href]{ QApplication::clipboard()->setText(href); });
         connect(menu.addAction("Open URL"), &QAction::triggered, this, [href]{
@@ -352,7 +356,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     // ── Common actions ────────────────────────────────────────────────────────
     connect(menu.addAction("Message"), &QAction::triggered, this, [this, host, nick]{
         m_model->openPM(host, nick);
-        switchToChannel(host, BufferId{nick});
+        showBuffer(host, BufferId{nick});
         if (m_input) m_input->setFocus();
     });
 

@@ -1,6 +1,62 @@
 # Changelog
 
 <!--
+2026-07-25 (quality sweep): full pass over the pane arc (#170-#187)
+after the bug run: ASan/UBSan test suite, both fuzzers (~900k execs,
+no crashes), cppcheck/clang-tidy, and a line-by-line read of the delta
+for leaks, lifetime and buffer scoping. Fixes:
+
+- Crash: the chat-view context menus were stack-allocated but parented
+  to the clicked view's viewport. Fine when only the main view existed;
+  with panes, a kick/PART/server-close during menu.exec() tears the pane
+  down inside the menu's event loop and heap-deletes a stack object.
+  Menus are parented to the window now, and the Reply action holds the
+  source pane through a QPointer (both the menu lambda and the deferred
+  focus shot).
+- Crash: same teardown during a pane header drag. QDrag::exec() runs a
+  nested loop that still services the socket; the pane dying mid-drag
+  left execPaneDrag calling deleteLater() on a freed placeholder and the
+  caller writing m_dragging on freed this. QPointer guards both.
+- /clear typed in a popped-out pane window cleared the wrong buffer:
+  the dispatcher's clearChat(host, channel) was wired to
+  clearActiveBuffer(), which drops the args and re-derives from the
+  focused DOCKED pane. Wired straight to clearBuffer() now; the menu
+  entry keeps the focus-derived path.
+- With the main view closed, /query, /msg and the nick menu's Message
+  loaded the PM into the hidden primary: nothing visible happened.
+  Extracted the sidebar click's routing into showBuffer() and funneled
+  all of them through it, so the buffer lands in the focused pane (or
+  any pane) like a sidebar click would. focusInput follows the same
+  routing instead of yanking focus to the main input.
+- Closing a floating pane window with the main view closed loaded its
+  buffer into the hidden primary and pointed the sidebar highlight at a
+  row shown nowhere. It now just returns to the server list.
+- Esc cancelled a pending reply from ANY view; now only from the buffer
+  the reply was started in (all three Esc paths go through
+  replyMsgidFor()).
+- Two slow leaks: TypingController's per-buffer typer sets were
+  insert-only (operator[] default-inserts on the remove paths, empty
+  sets never dropped); CTCP reply origins lived forever when the peer
+  never answered (most don't) — now a 5-minute TTL pruned on insert.
+- Link previews: a fetch that dies early (blocked scheme, DNS failure,
+  private address, HTTP >= 400, no title) never reported back, so each
+  dud URL froze the queue until the 20s watchdog. New fetchFailed
+  signal releases the slot immediately. A blocked thumbnail degrades to
+  a title-only card instead of stalling.
+- Redirected preview URLs (youtu.be, bit.ly, http->https) never showed
+  a card at all: after a hop, cardReady carried the redirect target,
+  which the controller doesn't recognise, so the card was dropped AND
+  the queue stalled 20s. The original URL is the fetch's identity now,
+  held across hops; the content-type image reroute refetches from the
+  final hop, where the bytes actually are.
+
+Also ran: generated fuzz corpus cleaned, sanitizer suite green after
+the fixes. Follow-ups agreed: MARKREAD only when the window is active,
+pane-layout JSON round-trip moved into panetree + tests, and the four
+chatupdates render loops collapsed into one helper.
+-->
+
+<!--
 2026-07-25 (round three): typing, drafts and the byte counter.
 
 - Typing TAGMSGs were never sent from a pane: noteInputChanged() was
