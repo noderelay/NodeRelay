@@ -64,6 +64,12 @@ public:
     QString selfNick  (const ServerId &host);
     bool    hasMention(const ServerId &host, const BufferId &channel);
     void sendJoin   (const ServerId &host, const BufferId &channel, const QString &key = {});
+    // True once, for a channel the user asked to join (/join, Rejoin, the
+    // channel list) — tells the UI it may switch the view to it.
+    bool takeUserJoin(const ServerId &host, const BufferId &channel);
+    // CTCP request sent from a buffer; its reply is posted back there.
+    void sendCtcp(const ServerId &host, const BufferId &origin,
+                  const QString &nick, const QString &request);
     void sendPart   (const ServerId &host, const BufferId &channel, const QString &reason = {});
     void sendNick   (const ServerId &host, const QString &nick);
     void sendAction (const ServerId &host, const BufferId &target, const QString &text);
@@ -213,6 +219,9 @@ private:
     void onContextualMessage (const QString &host, const QString &text);
     void onCtcpPingReply     (const QString &host, const QString &nick, qint64 rttMs);
     void onCtcpTimeReply  (const QString &host, const QString &nick, const QString &timeStr);
+    void onCtcpVersionReply(const QString &host, const QString &nick, const QString &version);
+    // Buffer a CTCP reply belongs in: the one that asked, else active-or-server
+    BufferId ctcpReplyBuffer(const ServerId &host, const QString &nick, const QString &cmd);
     void onSelfNickChanged(const QString &host, const QString &nick);
     void onHostChanged    (const QString &host, const QString &nick,
                            const QString &newUser, const QString &newHost);
@@ -246,6 +255,8 @@ private:
 
     void seedFromLog(const ServerId &host, const BufferId &target);
 
+    QSet<QString> m_userJoins;            // pane keys the user asked to join, pending arrival
+    QHash<QString, QString> m_ctcpOrigins; // host\tnick\tCMD → buffer that asked
     QSet<QString> m_logSeeded;            // buffers already seeded from local logs this run
     QSet<QString> m_pendingHistoryBefore; // "host\tchannel" keys awaiting CHATHISTORY BEFORE
     QHash<QString, QList<Message>> m_historyBeforeBuf; // collected prepend messages

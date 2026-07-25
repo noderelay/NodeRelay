@@ -182,8 +182,7 @@ void MainWindow::applyThemeByName(const QString &name)
     // append time, so re-render the active buffer to pick up the new theme
     // live — without collapsing the render window or losing scroll position
     // (auto theme can flip while the user is reading paged-in history).
-    if (m_chatView)
-        refreshChatView(m_model->activeHost(), m_model->activeChannel(), false);
+    refreshVisibleChatViews(false);
 }
 
 QString MainWindow::effectiveThemeName() const

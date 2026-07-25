@@ -504,7 +504,17 @@ bool SessionModel::hasMention(const ServerId &host, const BufferId &ch)
 void SessionModel::sendJoin(const ServerId &host, const BufferId &channel, const QString &key)
 {
     auto *cl = clientFor(host);
-    if (cl) cl->join(channel.str(), key);
+    if (!cl) return;
+    // Remember that this one was asked for, so the UI knows to show it. Joins
+    // the client makes on its own (config autojoin, a reconnect replaying the
+    // list) must not drag the view off whatever is being read.
+    m_userJoins.insert(paneKey(host, channel));
+    cl->join(channel.str(), key);
+}
+
+bool SessionModel::takeUserJoin(const ServerId &host, const BufferId &channel)
+{
+    return m_userJoins.remove(paneKey(host, channel));
 }
 
 void SessionModel::sendPart(const ServerId &host, const BufferId &channel, const QString &reason)
@@ -691,6 +701,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     });
     connect(cl, &IrcClient::ctcpPingReply,     this, &SessionModel::onCtcpPingReply);
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
+    connect(cl, &IrcClient::ctcpVersionReply, this, &SessionModel::onCtcpVersionReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived, this,
             [this](const QString &h, const QString &ch, const QString &nick, const QString &state){
@@ -1380,20 +1391,60 @@ void SessionModel::onContextualMessage(const QString &hostStr, const QString &te
     postMessage(host, activeOrServer(host), Message::make(MessageType::Reply, "", text));
 }
 
+// A CTCP the user sent from a buffer is answered in that buffer — the reply
+// arrives as a plain NOTICE with no idea where it was asked from, so the
+// request side records it. Falls back to the old active-or-server routing for
+// replies nobody asked for.
+static QString ctcpOriginKey(const ServerId &host, const QString &nick, const QString &cmd)
+{
+    return host.str() + '\t' + nick.toLower() + '\t' + cmd.toUpper();
+}
+
+void SessionModel::sendCtcp(const ServerId &host, const BufferId &origin,
+                            const QString &nick, const QString &request)
+{
+    auto *cl = clientFor(host);
+    if (!cl) return;
+    const QString cmd = request.section(' ', 0, 0).toUpper();
+    if (!origin.isEmpty() && origin.str() != "(server)")
+        m_ctcpOrigins.insert(ctcpOriginKey(host, nick, cmd), origin.str());
+    cl->privmsg(nick, "\x01" + request + "\x01");
+}
+
+BufferId SessionModel::ctcpReplyBuffer(const ServerId &host, const QString &nick,
+                                       const QString &cmd)
+{
+    const QString stored = m_ctcpOrigins.take(ctcpOriginKey(host, nick, cmd));
+    if (!stored.isEmpty() && channel(host, BufferId{stored}))
+        return BufferId{stored};
+    return activeOrServer(host);
+}
+
 void SessionModel::onCtcpPingReply(const QString &hostStr, const QString &nick, qint64 rttMs)
 {
     const QString text = rttMs >= 0
         ? QString("Ping reply from %1: %2ms").arg(nick).arg(rttMs)
         : QString("Ping reply from %1").arg(nick);
     const ServerId host{hostStr};
-    postMessage(host, activeOrServer(host), Message::make(MessageType::Server, "", text));
+    postMessage(host, ctcpReplyBuffer(host, nick, "PING"),
+                Message::make(MessageType::Server, "", text));
 }
 
 void SessionModel::onCtcpTimeReply(const QString &hostStr, const QString &nick, const QString &timeStr)
 {
     const QString text = QString("Time reply from %1: %2").arg(nick, timeStr);
     const ServerId host{hostStr};
-    postMessage(host, activeOrServer(host), Message::make(MessageType::Server, "", text));
+    postMessage(host, ctcpReplyBuffer(host, nick, "TIME"),
+                Message::make(MessageType::Server, "", text));
+}
+
+void SessionModel::onCtcpVersionReply(const QString &hostStr, const QString &nick,
+                                      const QString &version)
+{
+    const QString text = QString("VERSION reply from %1: %2").arg(nick, version);
+    const ServerId host{hostStr};
+    postMessage(host, ctcpReplyBuffer(host, nick, "VERSION"),
+                Message::make(MessageType::Reply, "", text));
 }
 
 void SessionModel::onSelfNickChanged(const QString &hostStr, const QString &nick)

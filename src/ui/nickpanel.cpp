@@ -129,6 +129,17 @@ void MainWindow::refreshNickList(const ServerId &host, const BufferId &channel)
     }
 }
 
+// Anything that changes how nicks are drawn (an avatar arriving, the avatar
+// setting, the ignore list) has to reach every user list on screen, not just
+// the main view's — a pane would otherwise keep the old rendering until
+// something unrelated refreshed it.
+void MainWindow::refreshVisibleNickLists()
+{
+    scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+    for (auto *p : std::as_const(m_panes))
+        scheduleNickRefresh(p->host(), p->channel());
+}
+
 // Channel avatars are explicit user actions — a silently missing icon reads
 // as broken, so fetch failures get a line in the affected channel buffer(s).
 // User avatars keep failing quietly; hover fetches would spam otherwise.
@@ -177,7 +188,7 @@ void MainWindow::fetchAvatar(const QString &url)
             m_avatarCacheOrder.append(url);
         }
         m_avatarCache.insert(url, px);
-        scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+        refreshVisibleNickLists();
         for (const auto &buf : m_pendingChanAvatars.take(url))
             m_sidebarCtl->setChannelAvatar(buf.first, buf.second, QIcon(px));
     };
@@ -288,7 +299,7 @@ void MainWindow::applyShowAvatarsSetting(bool on)
         for (const auto &sess : m_model->sessions())
             for (const auto &ch : std::as_const(sess.channels))
                 m_sidebarCtl->setChannelAvatar(ServerId{sess.name}, BufferId{ch.name}, QIcon());
-        scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+        refreshVisibleNickLists();
         return;
     }
 

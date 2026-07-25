@@ -278,6 +278,15 @@ ChannelPane::ChannelPane(const ServerId &host, const BufferId &channel, QWidget 
     m_input->document()->setDocumentMargin(2);
     m_input->installEventFilter(this);
     m_input->viewport()->installEventFilter(this); // seam-guard re-assert hook
+    // Active IRC format modes, floating bottom-left inside the input — the
+    // same badge the main view carries, so Ctrl+B in a pane shows something.
+    m_formatIndicator = new QLabel(m_input);
+    m_formatIndicator->setObjectName("formatIndicator");
+    m_formatIndicator->setStyleSheet(
+        "color: rgba(200,200,200,1.0); font-size: 13px; padding: 1px 5px;"
+        "background: rgba(120,120,120,0.25); border-radius: 4px;");
+    m_formatIndicator->hide();
+
     ibox->addWidget(m_nickPrefix);
     ibox->addWidget(m_input, 1);
     ccVbox->addWidget(inputBar);
@@ -358,6 +367,17 @@ void ChannelPane::setNickModel(NickListModel *model)
     model->setParent(this);
     m_nickList->setModel(model);
     m_nickFilter->setModel(model);
+}
+
+void ChannelPane::setFormatBadge(const QString &html)
+{
+    if (!m_formatIndicator) return;
+    if (html.isEmpty()) { m_formatIndicator->hide(); return; }
+    m_formatIndicator->setText(html);
+    m_formatIndicator->adjustSize();
+    m_formatIndicator->move(4, m_input->height() - m_formatIndicator->height() - 3);
+    m_formatIndicator->raise();
+    m_formatIndicator->show();
 }
 
 void ChannelPane::clearNickFilter()
@@ -712,8 +732,11 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
                 return false;
             const QString raw = m_input->toPlainText();
             if (!raw.trimmed().isEmpty()) {
-                m_input->clear();
+                // Emit before clearing: the receiver reads the IRC codes off
+                // the document (bold/colour live in the char formats, not the
+                // plain text) and an already-cleared input has none left.
                 emit inputSubmitted(raw);
+                m_input->clear();
             }
             return true;
         }

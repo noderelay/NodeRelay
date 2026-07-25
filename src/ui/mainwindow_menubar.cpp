@@ -352,7 +352,7 @@ void MainWindow::openIgnoreList()
         m_model->setIgnore(e.nick, e.flags);
     m_config.ignoreList = updated;
     saveConfig();
-    scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+    refreshVisibleNickLists();
 }
 
 // ---------------------------------------------------------------------------
@@ -385,7 +385,7 @@ void MainWindow::applyTimestampsSetting(bool on)
 {
     m_config.ui.showTimestamps = on;
     saveConfig();
-    refreshChatView(m_model->activeHost(), m_model->activeChannel());
+    refreshVisibleChatViews();
     if (m_actViewTimestamps) m_actViewTimestamps->setChecked(on);
     if (m_prefsDialog)       m_prefsDialog->syncFromConfig(m_config);
 }

@@ -1,6 +1,58 @@
 # Changelog
 
 <!--
+2026-07-25 (later still): sweep round two. Joe: "right now we are finding
+fucked up bugs you allowed from regressions" — so this round went looking
+instead of waiting for the next report.
+
+Wrong buffer / wrong view:
+
+- Autojoins stole the view. onChannelAdded() ran setCurrentItem() +
+  switchToChannel() for EVERY channel as it arrived, so during startup
+  the last channel to join kept the sidebar highlight while the view sat
+  on the first — Joe's report: "#thelounge is highlighted but it starts
+  me off in #uplink". Worse with the main view closed: setCurrentItem
+  fires onSidebarSelectionChanged, which retargets the pane being read,
+  so an autojoin could yank the pane onto another channel. Now only a
+  join the user asked for takes the view: SessionModel::sendJoin()
+  records the request and onChannelAdded() consumes it. The first buffer
+  of a session still opens. The channel-list dialog was sending a raw
+  JOIN and had to move to sendJoin() to keep switching.
+- CTCP replies landed in the server buffer. They arrive as plain
+  NOTICEs, and the model routed them with activeOrServer(), so asking
+  from a pane answered somewhere else. sendCtcp() records the buffer
+  that asked (host+nick+CMD) and the reply is posted back there; VERSION
+  needed its own signal, having gone through contextualMessage() which
+  drops the nick. Covers the user-list menu, /ctcp, /ping, /time and
+  /version <nick>.
+- Ctrl+B/I/U/S/O and Ctrl+Shift+K were main-input only, and ChannelPane
+  sent toPlainText() — so even formatted text would have had every IRC
+  code stripped at send. Shortcuts shared, pane sends go through
+  inputToIrcText(), and each pane carries its own format badge (the
+  first cut wired the shortcut with no visible feedback, which Joe
+  caught immediately: "doesn't show anything").
+- The colour menu and the emoji picker wrote to m_input regardless of
+  where you were typing. Both resolve the focused input now, falling
+  back to m_focusedPane because a menu holds focus while its action
+  fires — the same trap that broke Esc.
+- Avatars arriving, avatar toggling and ignore-list edits refreshed only
+  the active buffer's user list; theme and timestamp changes re-rendered
+  only the main chat view. Panes kept the old rendering.
+
+Silent refusals (a menu entry that does nothing reads as broken):
+"Open in Pane" refused with no message when no view had room to halve
+(NEW in this delta — #179's minimum-extent check; before it always
+opened), at the pane cap, and at the window cap; opening a channel
+already in a pane did nothing at all and now goes to that pane.
+
+Checked and already correct: message add / reactions / redaction /
+topic / every nick handler have pane branches, link previews ARE
+requested for pane messages, /part closes the pane, Ctrl+wheel resolves
+pane widgets, and multi-line sends go through sendMultiline (no
+newline injection).
+-->
+
+<!--
 2026-07-25 (later): the sweep. Joe, after the fourth pane bug: "run the
 sweep". Every call site that reaches for the main view instead of the
 buffer it was invoked from, audited in one pass instead of waiting for

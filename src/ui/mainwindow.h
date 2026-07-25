@@ -123,6 +123,7 @@ private:
     void startHistoryJump(const ServerId &host, const BufferId &channel, const QDateTime &ts);
     void continueHistoryJump();
     void refreshNickList(const ServerId &host, const BufferId &channel);
+    void refreshVisibleNickLists();  // main view plus every pane
     void updateNickViews(const ServerId &host, const BufferId &channel);
     void scheduleNickRefresh(const ServerId &host, const BufferId &channel);
     void refreshTopicBar(const ServerId &host, const BufferId &channel);
@@ -144,6 +145,7 @@ private:
     void switchAwayFromChannel(const ServerId &host, const BufferId &channel);
     void refreshPaneChatView(ChannelPane *pane);
     void refreshViewsFor(const ServerId &host, const BufferId &channel);
+    void refreshVisibleChatViews(bool resetToLatest = true); // main view plus every pane
     void refreshPaneNickList(ChannelPane *pane);
     // Loads another buffer into an already-docked pane, leaving the layout alone.
     void retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel);
@@ -192,6 +194,7 @@ private:
     void clearActiveBuffer();
     void clearBuffer(const ServerId &host, const BufferId &channel);
     QString replyMsgidFor(const ServerId &host, const BufferId &channel) const;
+    void notifyFocusedBuffer(const QString &text);
 
     static QString   topicAgeStr (quint64 ts);
 
@@ -228,6 +231,11 @@ private:
     void showColorPicker();
     QMenu *makeColorMenu(QWidget *parent);   // reused by Ctrl+Shift+K and right-click
     void applyInputColor(int fg, int bg);    // -1 clears, -2 leaves unchanged
+    QPlainTextEdit *formatTargetInput() const; // focused pane's input, else the main one
+    // Document (bold/colour char formats) to IRC control codes, at send time
+    static QString inputToIrcText(QPlainTextEdit *edit);
+    bool applyFormatShortcut(QPlainTextEdit *input, QKeyEvent *ke);
+    void updateFormatIndicatorFor(QPlainTextEdit *input);
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
     int         m_tabWordStart{0};

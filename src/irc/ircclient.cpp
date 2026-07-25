@@ -1044,8 +1044,7 @@ void IrcClient::processLine(const QString &line)
                 const qint64 rtt  = QDateTime::currentMSecsSinceEpoch() - sent;
                 emit ctcpPingReply(m_serverName, msg.nick, ok ? rtt : -1);
             } else if (ctcpCmd == "VERSION") {
-                emit contextualMessage(m_serverName,
-                    QString("VERSION reply from %1: %2").arg(msg.nick, ctcp.section(' ', 1)));
+                emit ctcpVersionReply(m_serverName, msg.nick, ctcp.section(' ', 1));
             } else if (ctcpCmd == "TIME") {
                 emit ctcpTimeReply(m_serverName, msg.nick, ctcp.section(' ', 1));
             } else {

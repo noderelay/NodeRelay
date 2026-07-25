@@ -422,17 +422,19 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     {
         auto *ctcpSub = new QMenu("CTCP", &menu);
 
-        connect(ctcpSub->addAction("Ping"), &QAction::triggered, this, [this, host, nick]{
+        // Sent through sendCtcp so the reply lands in the buffer it was asked
+        // from, instead of whatever happens to be active when it arrives.
+        connect(ctcpSub->addAction("Ping"), &QAction::triggered, this, [this, host, channel, nick]{
             const qint64 ts = QDateTime::currentMSecsSinceEpoch();
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
+            m_model->sendCtcp(host, channel, nick, "PING " + QString::number(ts));
         });
 
-        connect(ctcpSub->addAction("Time"), &QAction::triggered, this, [this, host, nick]{
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01TIME\x01");
+        connect(ctcpSub->addAction("Time"), &QAction::triggered, this, [this, host, channel, nick]{
+            m_model->sendCtcp(host, channel, nick, "TIME");
         });
 
-        connect(ctcpSub->addAction("Version"), &QAction::triggered, this, [this, host, nick]{
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01VERSION\x01");
+        connect(ctcpSub->addAction("Version"), &QAction::triggered, this, [this, host, channel, nick]{
+            m_model->sendCtcp(host, channel, nick, "VERSION");
         });
 
         menu.addMenu(ctcpSub);
