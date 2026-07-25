@@ -110,15 +110,19 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
 
             // Panes have no reply bar. Say it in the placeholder instead —
             // a reply with nothing on screen to show for it reads as broken.
+            // Focus has to wait for the menu to tear down — Qt hands it back
+            // to the widget that had it (the chat view) as the menu closes,
+            // which is what left Esc going nowhere.
             if (srcPane) {
                 m_pendingReplyPane = srcPane;
                 srcPane->input()->setPlaceholderText("↩ Replying to " + who + " — Esc to cancel");
-                srcPane->input()->setFocus();
+                srcPane->input()->viewport()->update();
+                QTimer::singleShot(0, this, [srcPane]{ srcPane->input()->setFocus(); });
                 return;
             }
             if (m_replyLabel) m_replyLabel->setText("↩ " + who);
             if (m_replyBar) m_replyBar->show();
-            if (m_input)    m_input->setFocus();
+            if (m_input) QTimer::singleShot(0, this, [this]{ m_input->setFocus(); });
             updateLengthIndicator();
         });
         if (cl && cl->hasCap("message-tags")) {
