@@ -404,18 +404,13 @@ History messages are intentionally displayed at reduced opacity and with their o
 
 Yes: **right-click** any `#channel` in the sidebar and choose **Open in Pane**. The chat area splits and that channel appears as a new column with its own chat history, nick list, topic bar, and input bar. You can type and send messages in either pane independently.
 
-You can have up to **4 panes** open at once (the primary view plus 3 extras). The layout adjusts automatically:
+There is no fixed set of shapes. Opening a pane splits the roomiest view in half along its longer side, so panes stay near-square, and each split keeps its own direction: a column of rows beside a single view is a layout you can build. Panes stop when the space does, once halving a view would leave both halves too narrow to read, with a hard ceiling of 8 views.
 
-| Panes | Layout |
-|---|---|
-| 1 | Full width (normal) |
-| 2 | Side by side |
-| 3 | Primary left, two panes stacked right |
-| 4 | 2×2 grid |
+Want three equal rows instead? Untick **Preferences → Interface → Split Panes Automatically** and every view flattens onto one axis.
 
-Click the `✕` in a pane's header to close it. Closing a pane does not leave the channel; it just removes the split view.
+Click the `✕` in a pane's header to close it. Closing a pane does not leave the channel; it just removes the split view. The main view has a `✕` of its own once a pane is open: closing it hands the whole window to your panes, and sidebar clicks then load into the pane you're working in rather than reopening it. It comes back when you close the last pane.
 
-**Pane layout is saved automatically.** The channels open in each pane, and the position of the primary column, are written to your preferences on quit and restored on the next launch, so your multi-channel layout persists across restarts without any configuration.
+**Pane layout is saved automatically.** The arrangement, the nesting, and the divider positions are written to your preferences on quit and restored on the next launch. Proportions are stored rather than pixel widths, so the layout comes back right even at a different window size or on a different monitor.
 
 See [Channel panes](howto.html#channel-panes) in the how-to guide for a full walkthrough.
 

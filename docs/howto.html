@@ -1712,12 +1712,12 @@ channels = "#uplinkirc"</pre>
   <!-- CHANNEL PANES -->
   <section id="channel-panes">
     <h2>Channel panes: view multiple channels at once</h2>
-    <p>Uplink can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained: it has its own chat history, nick list, topic bar, and input bar. The pane's user list carries the same controls as the main view: the hide/reveal toggle, the user count, and the <em>filter users</em> box.</p>
+    <p>Uplink can display <strong>several channels side by side</strong> in the chat area, as many as the window has room for. Each pane is fully self-contained: it has its own chat history, nick list, topic bar, and input bar. The pane's user list carries the same controls as the main view: the hide/reveal toggle, the user count, and the <em>filter users</em> box.</p>
 
     <figure class="shot">
       <img src="shots/channel-panes.png" loading="lazy"
            alt="Multiple channels open side by side in the chat area">
-      <figcaption>Up to four channels side by side, each with its own history, nick list, topic, and input.</figcaption>
+      <figcaption>Several channels side by side, each with its own history, nick list, topic, and input.</figcaption>
     </figure>
 
     <h3>Opening a pane</h3>
@@ -1731,7 +1731,7 @@ channels = "#uplinkirc"</pre>
     <p>If you would rather not have it decided, untick <strong>Preferences → Interface → Split Panes Automatically</strong> and pick a direction. That flattens the whole layout onto one axis and keeps it there: three panes with rows forced are three equal rows, full width, top to bottom. Ticking the box again hands the choice back to the shape of each view. Either way the setting is written to <code>pane_split_axis</code> in <code>config.toml</code>.</p>
 
     <h3>Changing what a pane shows</h3>
-    <p>A pane is not stuck with the channel you opened it on. <strong>Click inside a pane</strong> (its input bar, chat area, or nick list) and then <strong>left-click a channel in the sidebar</strong>: that channel loads into the pane you were last typing in, and the layout does not move. Click in the main view first and sidebar clicks go back to loading there, as usual. Focus is what decides the target, so <strong>Alt+Left / Alt+Right</strong> followed by a sidebar click works too.</p>
+    <p>A pane is not stuck with the channel you opened it on. <strong>Click inside a pane</strong> (its input bar, chat area, or nick list) and then <strong>left-click a channel in the sidebar</strong>: that channel loads into the pane you were last typing in, and the layout does not move. Click in the main view first and sidebar clicks go back to loading there, as usual. Focus is what decides the target, so <strong>Alt+Left / Alt+Right</strong> followed by a sidebar click works too. With the main view collapsed by its <code>✕</code>, every sidebar click loads into a pane, whether or not you have clicked into one.</p>
     <p>A channel can only be in one place at a time. Pick a channel that is already open in another pane or a popped-out window and nothing happens; the sidebar highlight simply snaps back to whatever the main view is showing. Pick the channel the <em>main view</em> is currently on and the two trade places: the pane takes that channel and the main view picks up the channel the pane was showing. Whatever you had half-typed in the pane is kept with the channel you left, and typing it again when you come back is not necessary.</p>
 
     <h3 id="rearranging">Rearranging panes</h3>
@@ -1764,7 +1764,7 @@ channels = "#uplinkirc"</pre>
     <ul>
       <li>A <strong>speech bubble icon</strong>; click to show or hide the primary channel's topic text independently of the global Preferences setting. The icon is muted when the topic is hidden and accent-colored when visible. It is always present, even in single-window mode with no extra panes open.</li>
       <li>The current channel name in bold.</li>
-      <li>A <code>✕</code> button, only visible when extra panes are open. Collapses the primary column so the panes fill the screen. Click any channel in the sidebar to bring it back.</li>
+      <li>A <code>✕</code> button, only visible when extra panes are open. Collapses the primary column so the panes fill the screen. While it is collapsed the panes are the whole window: clicking a channel in the sidebar loads it into the pane you were last typing in rather than reopening the primary column, and the sidebar highlight follows that pane. Close the last pane to bring the primary column back.</li>
     </ul>
 
     <h3>Pane layout persistence</h3>

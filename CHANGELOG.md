@@ -1,6 +1,35 @@
 # Changelog
 
 <!--
+2026-07-24 (evening session): stage C merged as #180, plus the three bugs
+it surfaced.
+
+BUILT: nothing new — the session was closing out the pane tree arc.
+#180 (layout persistence, fractions in the tree) went in after the fixes
+below, squashed to 6d58c10. Docs swept afterwards: the FAQ still carried
+the old 1-4 pane shape table and a "4 panes" cap, and the how-to still
+told users a sidebar click reopens the collapsed primary column.
+
+FIXED (all three came in with #178/#179, all field-verified on FreeBSD):
+blank chat area when panes were closed back down to one; channel clicks
+opening stray top-level windows; the ✕-closed main view reappearing on a
+click, with the sidebar highlight stuck on a buffer nothing was showing.
+Detail in the block below.
+
+REGRESSIONS: none found. The fixes are confined to rebuildPaneLayout(),
+switchToChannel() and syncSidebarToActive(); CI green on all four
+platforms and 26 tst_panetree cases pass.
+
+KNOWN/OPEN: nothing outstanding on panes. Restart persistence was the
+last unverified piece and Joe confirmed it ("the pane layout after a
+restart keeps where I had them"). ROADMAP still lists the pane-input byte
+counter as the open pane-adjacent item.
+
+NEXT: spellcheck is still the top next-feature pick; DCC NAT and the
+avatar-toggle default remain decisions-only.
+-->
+
+<!--
 2026-07-24: pane layout persists, sizes included — stage C (unreleased).
 
 Joe asked for the dragged sizes to survive, not just the arrangement.
