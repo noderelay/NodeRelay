@@ -79,7 +79,7 @@ Type any of these commands in the message input box and press Enter.
 |---|---|
 | `/me <text>` | Send an action message. Shown as `* yournick text` in chat |
 | `/msg <nick> <text>` | Send a private message; opens a PM buffer in the sidebar for the conversation |
-| `/query <nick>` | Open a PM buffer without sending a message |
+| `/query <nick> [text]` | Open a PM buffer, sending `text` with it if given |
 | `/notice <target> <text>` | Send a NOTICE to a user or channel |
 
 ### Examples
