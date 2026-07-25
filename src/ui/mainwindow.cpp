@@ -916,7 +916,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 auto *ke = static_cast<QKeyEvent *>(event);
                 // Emoji autocomplete owns the navigation keys while it's up
                 if (handleEmojiCompleterKey(obj, ke)) return true;
-                if (ke->key() == Qt::Key_Escape && m_pendingReplyPane == pane) {
+                if (ke->key() == Qt::Key_Escape && !m_pendingReplyMsgid.isEmpty()) {
                     clearReplyBar();
                     return true;
                 }
@@ -1639,6 +1639,18 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
                                     QColor(m_theme.border));
 
     pane->input()->installEventFilter(this);
+    // Right-click in the pane's user list, same menu the main one gets —
+    // scoped to this pane's channel.
+    pane->nickList()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(pane->nickList(), &QListView::customContextMenuRequested,
+            this, [this, pane](const QPoint &pos){
+        const QModelIndex idx = pane->nickList()->indexAt(pos);
+        if (!idx.isValid()) return;
+        const QString nick = idx.data(Qt::UserRole).toString();
+        if (nick.isEmpty()) return;
+        showNickContextMenu(nick, pane->nickList()->viewport()->mapToGlobal(pos),
+                            pane->host(), pane->channel());
+    });
     // Panes get the same :shortcode completion as the main view
     connect(pane->input(), &QPlainTextEdit::textChanged, this, [this, pane]{
         if (m_restoringDraft) return; // buffer switch, not the user typing
@@ -1660,6 +1672,9 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
             pane->setInputBase(QColor(m_theme.inputBg));
         }
     }
+    connect(pane, &ChannelPane::escapePressed, this, [this]{
+        if (!m_pendingReplyMsgid.isEmpty()) clearReplyBar();
+    });
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,
             [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
@@ -1950,6 +1965,7 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     if (!pane) return;
     if (m_focusedPane == pane) m_focusedPane = nullptr;
     if (m_emojiTarget == pane->input()) hideEmojiAutocomplete();
+    if (m_pendingReplyPane == pane) clearReplyBar(); // don't outlive the pane
 
     // Floating pane: tear down its window and return to the server list.
     if (auto *win = m_paneWindows.take(key)) {
@@ -2386,6 +2402,8 @@ void MainWindow::retargetPane(ChannelPane *pane, const ServerId &host, const Buf
     if (draft.isEmpty()) m_inputDrafts.remove(oldDraftKey);
     else                 m_inputDrafts[oldDraftKey] = draft;
 
+    if (m_pendingReplyPane == pane) clearReplyBar(); // it belonged to the old buffer
+
     m_panes.remove(oldKey);
     pane->retarget(host, channel);
     m_panes[newKey] = pane;
@@ -2520,7 +2538,11 @@ void MainWindow::clearReplyBar()
     m_pendingReplyHost    = {};
     m_pendingReplyChannel = {};
     if (m_pendingReplyPane) {
+        // The pane paints its own input background every frame (seam guard),
+        // so nudge the viewport — a placeholder swap alone can sit stale
+        // until something else forces a repaint.
         m_pendingReplyPane->input()->setPlaceholderText("Type a message...");
+        m_pendingReplyPane->input()->viewport()->update();
         m_pendingReplyPane = nullptr;
     }
     if (m_replyLabel) m_replyLabel->setText({});

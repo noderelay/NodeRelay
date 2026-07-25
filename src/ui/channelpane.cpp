@@ -695,6 +695,16 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
         return false;
     }
 
+    // Escape cancels whatever the pane has pending (a reply, today) no matter
+    // which of its widgets holds focus — the input and the chat view trade it
+    // back and forth as menus open and close. Not consumed: the search bar
+    // owns Escape while it's open.
+    if (event->type() == QEvent::KeyPress
+        && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape
+        && !(m_searchBar && m_searchBar->isVisible())) {
+        emit escapePressed();
+    }
+
     if (obj == m_input && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent*>(event);
         if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {

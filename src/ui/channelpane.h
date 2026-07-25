@@ -85,6 +85,7 @@ signals:
     void popOutRequested();
     void inputSubmitted(const QString &text);
     void dropReceived(const QString &sourceKey, ChannelPane::DropZone zone);
+    void escapePressed(); // anywhere in the pane, while its search bar is closed
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;

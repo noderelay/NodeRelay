@@ -35,9 +35,26 @@ onMessageRedacted, onTopicChanged, and every nick-list handler all have
 pane branches; React carries its own host/channel; the op/kick lambdas
 were already parameterised, they were just being handed the wrong value.
 
+Follow-ups from Joe testing the above, both field-verified:
+
+- Right-click in a PANE's user list did nothing, and never had:
+  ChannelPane never set a context menu policy on its nick view. Wired to
+  the same menu, scoped to the pane's channel. (The nick menu inside a
+  pane's chat view is the one fixed above; the user list is a separate
+  widget.)
+- Esc didn't cancel a reply. Two causes stacked: the Reply action
+  focused the input while the menu was still up, and Qt hands focus back
+  to the chat view as the menu tears down, so Esc went nowhere; and a
+  placeholder swap on a pane input can sit stale, because the pane
+  repaints that background itself every frame (seam guard) — "you have
+  to click out of the input box" was the repaint, not the state. Focus
+  is deferred past the menu now, ChannelPane emits escapePressed from
+  any of its widgets (not consumed — the search bar keeps Esc while
+  open), and the viewport is nudged when the placeholder changes.
+
 Known gaps, left alone because they are missing features rather than
 wrong targets — panes have no reply bar, no emoji button, no format
-indicator, no byte counter, no nick-list context menu, no jump-to-bottom
+indicator, no byte counter, no jump-to-bottom
 button, and no loadOlderRequested wiring (scrolling to the top of a pane
 loads nothing; pane scrollback is deliberately capped at kPaneMaxLines,
 and m_renderStart is keyed per buffer, so wiring it would need per-view
