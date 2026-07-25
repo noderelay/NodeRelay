@@ -73,9 +73,17 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
                                             const ServerId &host, const BufferId &channel)
 {
     if (anchor.startsWith("nick:")) {
-        showNickContextMenu(anchor.mid(5), globalPos);
+        // Scoped to the view that was clicked, not the main one — a pane's
+        // kick/ban/mode entries have to act on the pane's channel.
+        showNickContextMenu(anchor.mid(5), globalPos, host, channel);
         return;
     }
+
+    // Which view this menu belongs to — the reply state has to land in the
+    // input the user is actually looking at.
+    ChannelPane *srcPane = nullptr;
+    for (auto *p : std::as_const(m_panes))
+        if (p->chatView() == view) { srcPane = p; break; }
 
     if (anchor.startsWith("msgid:")) {
         const QString msgid = anchor.mid(6);
@@ -88,13 +96,27 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
             menu.addSeparator();
         }
         connect(menu.addAction("Reply"), &QAction::triggered, this,
-                [this, msgid, host, channel]{
+                [this, msgid, host, channel, srcPane]{
             auto *ch = m_model->channel(host, channel);
             QString origNick;
             if (ch) for (const auto &m : std::as_const(ch->messages))
                 if (m.msgid == msgid) { origNick = m.nick; break; }
-            m_pendingReplyMsgid = msgid;
-            if (m_replyLabel) m_replyLabel->setText("↩ " + (origNick.isEmpty() ? msgid : origNick));
+            const QString who = origNick.isEmpty() ? msgid : origNick;
+
+            clearReplyBar(); // whatever was pending elsewhere is not this one
+            m_pendingReplyMsgid   = msgid;
+            m_pendingReplyHost    = host;
+            m_pendingReplyChannel = channel;
+
+            // Panes have no reply bar. Say it in the placeholder instead —
+            // a reply with nothing on screen to show for it reads as broken.
+            if (srcPane) {
+                m_pendingReplyPane = srcPane;
+                srcPane->input()->setPlaceholderText("↩ Replying to " + who + " — Esc to cancel");
+                srcPane->input()->setFocus();
+                return;
+            }
+            if (m_replyLabel) m_replyLabel->setText("↩ " + who);
             if (m_replyBar) m_replyBar->show();
             if (m_input)    m_input->setFocus();
             updateLengthIndicator();
@@ -141,7 +163,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
                     [this, url, host, channel]{
                 auto *inner = m_model->channel(host, channel);
                 if (inner) inner->hiddenPreviews.insert(url);
-                refreshChatView(host, channel);
+                refreshViewsFor(host, channel);
             });
         }
         menu.exec(globalPos);
@@ -168,7 +190,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
                     [this, href, host, channel]{
                 auto *inner = m_model->channel(host, channel);
                 if (inner) inner->hiddenPreviews.remove(href);
-                refreshChatView(host, channel);
+                refreshViewsFor(host, channel);
             });
         } else {
             auto *hideAction = menu.addAction("Hide Preview");
@@ -176,7 +198,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
             connect(hideAction, &QAction::triggered, this, [this, href, host, channel]{
                 auto *inner = m_model->channel(host, channel);
                 if (inner) inner->hiddenPreviews.insert(href);
-                refreshChatView(host, channel);
+                refreshViewsFor(host, channel);
             });
         }
         menu.exec(globalPos);
@@ -304,13 +326,14 @@ void MainWindow::onNickListContextMenu(const QPoint &pos)
     if (!idx.isValid()) return;
     const QString nick = idx.data(Qt::UserRole).toString();
     if (nick.isEmpty()) return;
-    showNickContextMenu(nick, m_nickList->mapToGlobal(pos));
+    // The main window's user list always shows the main view's channel.
+    showNickContextMenu(nick, m_nickList->mapToGlobal(pos),
+                        m_model->activeHost(), m_model->activeChannel());
 }
 
-void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPos)
+void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPos,
+                                     const ServerId &host, const BufferId &channel)
 {
-    const ServerId host    = m_model->activeHost();
-    const BufferId channel = m_model->activeChannel();
     if (nick.isEmpty() || host.isEmpty()) return;
 
     QMenu menu(this);
@@ -351,7 +374,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             auto *act = ignoreSub->addAction(label);
             act->setCheckable(true);
             act->setChecked(bool(curFlags & type));
-            connect(act, &QAction::triggered, this, [this, host, key, type](bool checked) {
+            connect(act, &QAction::triggered, this, [this, host, channel, key, type](bool checked) {
                 IgnoreTypes flags = m_model->ignoreFlags(key);
                 if (checked) flags |= type;
                 else         flags &= ~IgnoreTypes(type);
@@ -361,11 +384,11 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
                     m_config.ignoreList.append({key, flags});
                 } else {
                     m_model->clearIgnore(key);
-                    m_model->localMessage(host, m_model->activeChannel(),
+                    m_model->localMessage(host, channel,
                                           "No longer ignoring " + key);
                 }
                 saveConfig();
-                scheduleNickRefresh(host, m_model->activeChannel());
+                scheduleNickRefresh(host, channel);
             });
         };
 
@@ -376,13 +399,13 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         if (curFlags) {
             ignoreSub->addSeparator();
             connect(ignoreSub->addAction(MenuIcons::close(), "Unignore All"),
-                    &QAction::triggered, this, [this, host, key] {
+                    &QAction::triggered, this, [this, host, channel, key] {
                 m_model->clearIgnore(key);
                 m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
                 saveConfig();
-                m_model->localMessage(host, m_model->activeChannel(),
+                m_model->localMessage(host, channel,
                                       "No longer ignoring " + key);
-                scheduleNickRefresh(host, m_model->activeChannel());
+                scheduleNickRefresh(host, channel);
             });
         }
 

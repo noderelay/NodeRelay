@@ -143,6 +143,7 @@ private:
     ChannelPane *createPane(const ServerId &host, const BufferId &channel);
     void switchAwayFromChannel(const ServerId &host, const BufferId &channel);
     void refreshPaneChatView(ChannelPane *pane);
+    void refreshViewsFor(const ServerId &host, const BufferId &channel);
     void refreshPaneNickList(ChannelPane *pane);
     // Loads another buffer into an already-docked pane, leaving the layout alone.
     void retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel);
@@ -190,6 +191,7 @@ private:
     void setNickPanelVisible(bool on);
     void clearActiveBuffer();
     void clearBuffer(const ServerId &host, const BufferId &channel);
+    QString replyMsgidFor(const ServerId &host, const BufferId &channel) const;
 
     static QString   topicAgeStr (quint64 ts);
 
@@ -201,7 +203,8 @@ private:
     void       handleChatViewContextMenu(ChatView *view, const QString &anchor,
                                          const QPoint &globalPos,
                                          const ServerId &host, const BufferId &channel);
-    void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
+    void       showNickContextMenu(const QString &nick, const QPoint &globalPos,
+                                   const ServerId &host, const BufferId &channel);
     QString    msgidAtViewPos(const QPoint &viewPos) const;
     void       openLogSearch();
     void       clearReplyBar();
@@ -326,7 +329,13 @@ private:
     SearchBar    *m_searchBar{nullptr};
     QWidget      *m_replyBar{nullptr};
     QLabel       *m_replyLabel{nullptr};
+    // A pending reply belongs to the buffer it was started in — the main view
+    // and a pane both send through dispatchInput(), and an unscoped msgid
+    // would ride along with whatever is typed next, in any channel.
     QString       m_pendingReplyMsgid;
+    ServerId      m_pendingReplyHost;
+    BufferId      m_pendingReplyChannel;
+    ChannelPane  *m_pendingReplyPane{nullptr};
     QString       m_pendingReactMsgid;
     ServerId      m_pendingReactHost;
     BufferId      m_pendingReactChannel;

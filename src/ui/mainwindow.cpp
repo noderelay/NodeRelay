@@ -916,6 +916,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 auto *ke = static_cast<QKeyEvent *>(event);
                 // Emoji autocomplete owns the navigation keys while it's up
                 if (handleEmojiCompleterKey(obj, ke)) return true;
+                if (ke->key() == Qt::Key_Escape && m_pendingReplyPane == pane) {
+                    clearReplyBar();
+                    return true;
+                }
                 if (ke->key() == Qt::Key_Tab || ke->key() == Qt::Key_Backtab) {
                     handleTabComplete(pane->input(), pane->host(), pane->channel(),
                                       ke->key() == Qt::Key_Backtab);
@@ -1400,10 +1404,19 @@ void MainWindow::navigatePane(int direction)
 // Input dispatch
 // ---------------------------------------------------------------------------
 
+// A pending reply only applies to the buffer it was started in.
+QString MainWindow::replyMsgidFor(const ServerId &host, const BufferId &channel) const
+{
+    if (m_pendingReplyMsgid.isEmpty()) return {};
+    if (host != m_pendingReplyHost) return {};
+    if (channel.str().compare(m_pendingReplyChannel.str(), Qt::CaseInsensitive) != 0) return {};
+    return m_pendingReplyMsgid;
+}
+
 void MainWindow::dispatchInput(const QString &text, const ServerId &host, const BufferId &channel)
 {
     if (text.startsWith('/')) {
-        m_dispatcher->dispatch(text, host, channel, m_pendingReplyMsgid);
+        m_dispatcher->dispatch(text, host, channel, replyMsgidFor(host, channel));
         return;
     }
 
@@ -1424,8 +1437,8 @@ void MainWindow::dispatchInput(const QString &text, const ServerId &host, const 
         }
     }
 
-    const QString replyMsgid = m_pendingReplyMsgid;
-    clearReplyBar();
+    const QString replyMsgid = replyMsgidFor(host, channel);
+    if (!replyMsgid.isEmpty()) clearReplyBar();
     m_model->sendMessage(host, channel, outText, replyMsgid);
 }
 
@@ -2504,6 +2517,12 @@ void MainWindow::openLogSearch()
 void MainWindow::clearReplyBar()
 {
     m_pendingReplyMsgid.clear();
+    m_pendingReplyHost    = {};
+    m_pendingReplyChannel = {};
+    if (m_pendingReplyPane) {
+        m_pendingReplyPane->input()->setPlaceholderText("Type a message...");
+        m_pendingReplyPane = nullptr;
+    }
     if (m_replyLabel) m_replyLabel->setText({});
     if (m_replyBar)   m_replyBar->hide();
     updateLengthIndicator();

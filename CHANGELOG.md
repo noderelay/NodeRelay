@@ -1,6 +1,52 @@
 # Changelog
 
 <!--
+2026-07-25 (later): the sweep. Joe, after the fourth pane bug: "run the
+sweep". Every call site that reaches for the main view instead of the
+buffer it was invoked from, audited in one pass instead of waiting for
+the next report.
+
+Fixed:
+
+1. Nick context menu — the worst one. showNickContextMenu() read
+   activeHost()/activeChannel(), so right-clicking a nick in a PANE gave
+   a menu whose Kick, Ban, Give/Take Op, Voice and Invite entries acted
+   on the MAIN view's channel. Kicking someone from a channel you were
+   not looking at, from a menu that named the right nick. Takes the
+   buffer it was opened from now; the main window's user list still
+   passes the active buffer, which is what it shows.
+
+2. Reply — set m_pendingReplyMsgid with no buffer attached, showed the
+   main view's reply bar and focused the main input. From a pane with
+   the main view closed that is zero feedback, and the msgid then rode
+   along with the next thing sent from ANY view, tagging a reply in one
+   channel onto a message id from another. The pending reply now carries
+   its host/channel and only applies to that buffer (replyMsgidFor()).
+   Panes have no reply bar, so the pane's input placeholder says
+   "Replying to <nick> — Esc to cancel" and Esc in that pane clears it.
+
+3. Hide/Show Preview from a pane called refreshChatView(), which only
+   re-renders the main view — the pane kept showing the preview it had
+   just been told to hide. refreshViewsFor() re-renders the buffer
+   wherever it is on screen.
+
+Audited and already correct: onMessageAdded, onReactionsChanged,
+onMessageRedacted, onTopicChanged, and every nick-list handler all have
+pane branches; React carries its own host/channel; the op/kick lambdas
+were already parameterised, they were just being handed the wrong value.
+
+Known gaps, left alone because they are missing features rather than
+wrong targets — panes have no reply bar, no emoji button, no format
+indicator, no byte counter, no nick-list context menu, no jump-to-bottom
+button, and no loadOlderRequested wiring (scrolling to the top of a pane
+loads nothing; pane scrollback is deliberately capped at kPaneMaxLines,
+and m_renderStart is keyed per buffer, so wiring it would need per-view
+bookkeeping). Pane anchorHovered still only feeds nick: tooltips. And
+/query focuses the main input while /msg and /query switch the main view
+rather than loading into the pane you typed in.
+-->
+
+<!--
 2026-07-25: :emoji completion in panes, and the closed main view stays
 closed across a restart (unreleased).
 
