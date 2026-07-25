@@ -15,6 +15,7 @@
 
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -200,7 +201,7 @@ void MainWindow::setupInputBar()
         const QString text = m_input->toPlainText();
         m_sendBtn->setEnabled(!text.trimmed().isEmpty());
         if (!m_restoringDraft) // restoring must not pop the completer
-            checkEmojiAutocomplete(text);
+            checkEmojiAutocomplete(m_input, text);
         updateLengthIndicator();
         // Auto-resize: 1 to 4 lines
         const int lineH = m_input->fontMetrics().lineSpacing();
@@ -440,36 +441,62 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, 
     input->setTextCursor(editCursor);
 }
 
-void MainWindow::handleHistoryUp()
+// One history, cycled from whichever input asked. Moving to a different
+// input starts its own pass through the list rather than carrying the
+// position — and the stashed draft — over from the last one.
+void MainWindow::noteHistoryTarget(QPlainTextEdit *input)
 {
-    if (m_inputHistory.isEmpty()) return;
-    if (m_historyIndex == -1)
-        m_historyDraft = m_input->toPlainText();
-    m_historyIndex = qMin(m_historyIndex + 1, static_cast<int>(m_inputHistory.size()) - 1);
-    m_input->setPlainText(m_inputHistory[m_historyIndex]);
-    m_input->moveCursor(QTextCursor::End);
+    if (m_historyTarget == input) return;
+    m_historyTarget = input;
+    m_historyIndex  = -1;
+    m_historyDraft.clear();
 }
 
-void MainWindow::handleHistoryDown()
+void MainWindow::pushInputHistory(const QString &text)
 {
+    // Newest first, skip consecutive duplicates
+    if (m_inputHistory.isEmpty() || m_inputHistory.first() != text) {
+        m_inputHistory.prepend(text);
+        if (m_inputHistory.size() > kInputHistoryCap)
+            m_inputHistory.removeLast();
+    }
+    m_historyIndex = -1;
+}
+
+void MainWindow::handleHistoryUp(QPlainTextEdit *input)
+{
+    if (!input || m_inputHistory.isEmpty()) return;
+    noteHistoryTarget(input);
+    if (m_historyIndex == -1)
+        m_historyDraft = input->toPlainText();
+    m_historyIndex = qMin(m_historyIndex + 1, static_cast<int>(m_inputHistory.size()) - 1);
+    input->setPlainText(m_inputHistory[m_historyIndex]);
+    input->moveCursor(QTextCursor::End);
+}
+
+void MainWindow::handleHistoryDown(QPlainTextEdit *input)
+{
+    if (!input) return;
+    noteHistoryTarget(input);
     if (m_historyIndex == -1) return;
     m_historyIndex--;
     if (m_historyIndex < 0) {
         m_historyIndex = -1;
-        m_input->setPlainText(m_historyDraft);
+        input->setPlainText(m_historyDraft);
     } else {
-        m_input->setPlainText(m_inputHistory[m_historyIndex]);
+        input->setPlainText(m_inputHistory[m_historyIndex]);
     }
-    m_input->moveCursor(QTextCursor::End);
+    input->moveCursor(QTextCursor::End);
 }
 
 // ---------------------------------------------------------------------------
 // Emoji inline autocomplete
 // ---------------------------------------------------------------------------
 
-void MainWindow::checkEmojiAutocomplete(const QString &text)
+void MainWindow::checkEmojiAutocomplete(QPlainTextEdit *input, const QString &text)
 {
-    const int cursorPos = m_input->textCursor().position();
+    if (!input) return;
+    const int cursorPos = input->textCursor().position();
     const QString before = text.left(cursorPos);
 
     // Auto-substitute a completed :shortcode: when the closing colon is just typed
@@ -482,11 +509,11 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
             if (wordOnly.match(code).hasMatch()) {
                 const QString emoji = emojiForCode(code);
                 if (!emoji.isEmpty()) {
-                    QTextCursor tc = m_input->textCursor();
+                    QTextCursor tc = input->textCursor();
                     tc.setPosition(static_cast<int>(openColon));
                     tc.setPosition(cursorPos, QTextCursor::KeepAnchor);
                     tc.insertText(emoji);
-                    m_input->setTextCursor(tc);
+                    input->setTextCursor(tc);
                     hideEmojiAutocomplete();
                     return;
                 }
@@ -510,6 +537,14 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     if (matches.isEmpty()) { hideEmojiAutocomplete(); return; }
 
     m_emojiTriggerPos = static_cast<int>(colon);
+    m_emojiTarget     = input;
+
+    // The completer is positioned in the coordinates of the window the input
+    // lives in — that's this window for the main view and docked panes, and
+    // the pane's own window once it's floated out.
+    QWidget *host = input->window();
+    if (m_emojiCompleter->parentWidget() != host)
+        m_emojiCompleter->setParent(host);
 
     m_emojiCompleter->clear();
     const int shown = static_cast<int>(qMin(matches.size(), qsizetype(8)));
@@ -526,21 +561,22 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     const int popupH = itemH * shown + 4;
     const int popupW = 220;
 
-    // Position above the input bar in main-window coords
-    const QPoint inputTL = m_input->mapTo(this, QPoint(0, 0));
+    // Position above the input bar in host-window coords
+    const QPoint inputTL = input->mapTo(host, QPoint(0, 0));
 
     // Align left edge with colon position using actual text advance
     const QString textUpToColon = before.left(colon);
-    const int colonX = m_input->contentsMargins().left()
-                       + m_input->fontMetrics().horizontalAdvance(textUpToColon);
-    const QPoint colonLocal = m_input->mapTo(this, QPoint(colonX, 0));
+    const int colonX = input->contentsMargins().left()
+                       + input->fontMetrics().horizontalAdvance(textUpToColon);
+    const QPoint colonLocal = input->mapTo(host, QPoint(colonX, 0));
 
     int px = qMax(inputTL.x(), colonLocal.x());
     int py = inputTL.y() - popupH - 2;
-    if (py < 0) py = inputTL.y() + m_input->height() + 2;
+    if (py < 0) py = inputTL.y() + input->height() + 2;
 
     // Clamp horizontally
-    if (px + popupW > width()) px = width() - popupW;
+    if (px + popupW > host->width()) px = host->width() - popupW;
+    if (px < 0) px = 0;
 
     m_emojiCompleter->setGeometry(px, py, popupW, popupH);
     m_emojiCompleter->show();
@@ -551,17 +587,19 @@ void MainWindow::commitEmojiAutocomplete(int row)
 {
     if (row < 0 || row >= m_emojiCompleter->count()) return;
 
+    QPlainTextEdit *input = m_emojiTarget ? m_emojiTarget : m_input;
     const QString emoji = m_emojiCompleter->item(row)->data(Qt::UserRole).toString();
+    const int trigger = m_emojiTriggerPos;
     hideEmojiAutocomplete();
 
     // Replace :word (from trigger pos to cursor) with the emoji
-    const int end = m_input->textCursor().position();
-    QTextCursor tc = m_input->textCursor();
-    tc.setPosition(m_emojiTriggerPos);
+    const int end = input->textCursor().position();
+    QTextCursor tc = input->textCursor();
+    tc.setPosition(trigger);
     tc.setPosition(end, QTextCursor::KeepAnchor);
     tc.insertText(emoji);
-    m_input->setTextCursor(tc);
-    m_input->setFocus();
+    input->setTextCursor(tc);
+    input->setFocus();
 }
 
 void MainWindow::hideEmojiAutocomplete()
@@ -569,6 +607,42 @@ void MainWindow::hideEmojiAutocomplete()
     m_emojiCompleter->hide();
     m_emojiCompleter->clear();
     m_emojiTriggerPos = -1;
+    m_emojiTarget     = nullptr;
+    // Never leave it parented to a pane window — that window can be torn
+    // down, and it would take the completer with it.
+    if (m_emojiCompleter->parentWidget() != this)
+        m_emojiCompleter->setParent(this);
+}
+
+// Popup navigation for whichever input opened it. Returns true when the key
+// was the completer's, so the caller stops handling it (Tab must complete the
+// emoji here, not a nick).
+bool MainWindow::handleEmojiCompleterKey(QObject *obj, QKeyEvent *ke)
+{
+    if (!m_emojiCompleter->isVisible() || obj != m_emojiTarget) return false;
+
+    switch (ke->key()) {
+    case Qt::Key_Escape:
+        hideEmojiAutocomplete();
+        return true;
+    case Qt::Key_Up:
+        m_emojiCompleter->setCurrentRow(qMax(0, m_emojiCompleter->currentRow() - 1));
+        return true;
+    case Qt::Key_Down:
+        m_emojiCompleter->setCurrentRow(
+            qMin(m_emojiCompleter->count() - 1, m_emojiCompleter->currentRow() + 1));
+        return true;
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+    case Qt::Key_Tab:
+        if (const int row = m_emojiCompleter->currentRow(); row >= 0) {
+            commitEmojiAutocomplete(row);
+            return true;
+        }
+        return false;
+    default:
+        return false;
+    }
 }
 
 // Convert the input widget's rich-formatted document to an IRC-encoded string.
@@ -681,13 +755,8 @@ void MainWindow::onInputSubmit()
     const QString text = raw.trimmed();
     if (text.isEmpty()) return;
 
-    // Push to history (newest first, skip consecutive duplicates)
-    if (m_inputHistory.isEmpty() || m_inputHistory.first() != text) {
-        m_inputHistory.prepend(text);
-        if (m_inputHistory.size() > kInputHistoryCap)
-            m_inputHistory.removeLast();
-    }
-    m_historyIndex = -1;
+    pushInputHistory(text);
+    noteHistoryTarget(m_input);
     m_tabActive = false;
     m_tabCandidates.clear();
     hideEmojiAutocomplete();

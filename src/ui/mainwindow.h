@@ -189,6 +189,7 @@ private:
     void setSidebarVisible(bool on);
     void setNickPanelVisible(bool on);
     void clearActiveBuffer();
+    void clearBuffer(const ServerId &host, const BufferId &channel);
 
     static QString   topicAgeStr (quint64 ts);
 
@@ -230,19 +231,25 @@ private:
     QString     m_tabPrefix;
     bool        m_tabActive{false};
 
-    // Emoji inline autocomplete
-    void checkEmojiAutocomplete(const QString &text);
+    // Emoji inline autocomplete. Works in any input — the main view's and
+    // every pane's — so the completer follows whichever one triggered it.
+    void checkEmojiAutocomplete(QPlainTextEdit *input, const QString &text);
     void commitEmojiAutocomplete(int row);
     void hideEmojiAutocomplete();
-    QListWidget *m_emojiCompleter{nullptr};
-    int          m_emojiTriggerPos{-1};
+    bool handleEmojiCompleterKey(QObject *obj, QKeyEvent *ke);
+    QListWidget    *m_emojiCompleter{nullptr};
+    QPlainTextEdit *m_emojiTarget{nullptr};
+    int             m_emojiTriggerPos{-1};
 
-    // Input history
-    void handleHistoryUp();
-    void handleHistoryDown();
-    QStringList m_inputHistory;
-    int         m_historyIndex{-1};
-    QString     m_historyDraft;
+    // Input history — shared by the main view and every pane
+    void handleHistoryUp(QPlainTextEdit *input);
+    void handleHistoryDown(QPlainTextEdit *input);
+    void noteHistoryTarget(QPlainTextEdit *input);
+    void pushInputHistory(const QString &text);
+    QStringList     m_inputHistory;
+    int             m_historyIndex{-1};
+    QString         m_historyDraft;
+    QPlainTextEdit *m_historyTarget{nullptr};
 
     void syncSidebarOrderToConfig();
     void syncSidebarOrderFromConfig();

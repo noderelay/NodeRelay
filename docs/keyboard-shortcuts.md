@@ -59,6 +59,8 @@ Alt+arrow shortcuts wrap around: pressing Alt+Down on the last channel jumps bac
 | **Shift+Tab** | Cycle backwards through completions |
 | **Escape** | Cancel a pending reply |
 
+Send history is shared across the whole window: a message sent from a pane is in the list the Up arrow walks back through in the main view, and the other way round.
+
 ### Tab completion
 
 Tab completion works anywhere in the line. Type a few letters and press Tab to complete to the first matching nick in the channel. Press Tab again to cycle alphabetically through all matches.
@@ -105,7 +107,7 @@ Type a colon to start an emoji shortcode:
 | **Escape** | Dismiss the list |
 | `:fire:` | Substituted to 🔥 immediately, no list needed |
 
-Any `:shortcode:` patterns still in the text when you send are substituted automatically.
+Any `:shortcode:` patterns still in the text when you send are substituted automatically. This works in every input box: the main view, docked panes, and popped-out windows.
 
 ---
 
