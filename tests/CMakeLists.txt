@@ -40,6 +40,12 @@ uplink_test(tst_ignoretypes
         tst_ignoretypes.cpp
 )
 
+uplink_test(tst_panetree
+    SOURCES
+        tst_panetree.cpp
+        ${CMAKE_SOURCE_DIR}/src/ui/panetree.cpp
+)
+
 # ---------------------------------------------------------------------------
 # Fuzz targets — two build modes:
 #   Standalone replay (default): any compiler, replays corpus as a smoke test
