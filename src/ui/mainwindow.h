@@ -146,6 +146,9 @@ private:
     void refreshPaneNickList(ChannelPane *pane);
     // Loads another buffer into an already-docked pane, leaving the layout alone.
     void retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel);
+    // The pane a sidebar click acts on while the main view is closed: the one
+    // being typed in, else the first in layout order. Null if there are none.
+    ChannelPane *currentPaneTarget() const;
     // Puts the sidebar highlight back on whatever the primary view is showing.
     void syncSidebarToActive();
     // Edge-drop placement: nullptr means the primary view on either side.

@@ -1309,17 +1309,12 @@ void MainWindow::onSidebarSelectionChanged()
     const BufferId channel{item->data(0, Qt::UserRole + 1).toString()};
     if (host.isEmpty() || channel.isEmpty()) return;
     // Typing in a docked pane? Load the selection there and leave the primary
-    // (and the layout) alone.
+    // (and the layout) alone. With the main view closed the panes are all
+    // there is, so a click loads into one of them either way — switching into
+    // the hidden main view would put a dismissed view back on screen.
     ChannelPane *target = (m_focusedPane && m_orderedPanes.contains(m_focusedPane))
-                          ? m_focusedPane : nullptr;
-
-    // The main view closed with its ✕ is only hidden, not gone — switching
-    // into it would put a view back on screen that was just dismissed, which
-    // reads as a channel click splitting the layout by itself. While it's
-    // closed the panes are all there is, so load into the first one.
-    if (!target && m_primaryPanel->isHidden())
-        for (QWidget *w : paneViewOrder())
-            if (auto *p = qobject_cast<ChannelPane *>(w)) { target = p; break; }
+                          ? m_focusedPane
+                          : (m_primaryPanel->isHidden() ? currentPaneTarget() : nullptr);
 
     tracePanes(target ? "sidebar click -> retarget pane" : "sidebar click -> primary");
     if (target) retargetPane(target, host, channel);
@@ -1422,11 +1417,27 @@ void MainWindow::dispatchInput(const QString &text, const ServerId &host, const 
 // View helpers
 // ---------------------------------------------------------------------------
 
+ChannelPane *MainWindow::currentPaneTarget() const
+{
+    if (m_focusedPane && m_orderedPanes.contains(m_focusedPane)) return m_focusedPane;
+    for (QWidget *w : paneViewOrder())
+        if (auto *p = qobject_cast<ChannelPane *>(w)) return p;
+    return nullptr;
+}
+
 // The highlight follows the primary view, never a pane — a checked-out or
 // paned row left selected would claim to be what the main view is showing.
+// Closed with its ✕, though, the main view shows nothing at all, and leaving
+// the highlight on the buffer it still holds marks a row the user can't see.
+// The pane they're working in stands in until the main view is back.
 void MainWindow::syncSidebarToActive()
 {
-    if (auto *active = m_sidebarCtl->channelItem(m_model->activeHost(), m_model->activeChannel()))
+    ServerId host = m_model->activeHost();
+    BufferId chan = m_model->activeChannel();
+    if (m_primaryPanel->isHidden())
+        if (ChannelPane *p = currentPaneTarget()) { host = p->host(); chan = p->channel(); }
+
+    if (auto *active = m_sidebarCtl->channelItem(host, chan))
         m_sidebar->setCurrentItem(active);
     else
         m_sidebar->clearSelection();
@@ -1474,10 +1485,16 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         m_typing->noteBufferLeft(m_model->activeHost(), m_model->activeChannel());
     }
 
-    // Showing it while it sits outside the layout would open it as a window of
-    // its own — put it back in the splitter first.
-    if (!m_primaryPanel->parentWidget()) rebuildPaneLayout();
-    m_primaryPanel->setVisible(true);
+    // The ✕ on the main view is a real close — loading a buffer into it must
+    // not undo that. Panes cover every route here (a sidebar click retargets
+    // one, and the pane/primary trade below lands in the hidden view on
+    // purpose); closing the last pane is what brings it back.
+    if (m_orderedPanes.isEmpty()) {
+        // Showing it while it sits outside the layout would open it as a
+        // window of its own — put it back in the splitter first.
+        if (!m_primaryPanel->parentWidget()) rebuildPaneLayout();
+        m_primaryPanel->setVisible(true);
+    }
 
     const bool isChannel = isChannelName(channel.str());
 
