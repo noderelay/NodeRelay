@@ -1310,10 +1310,19 @@ void MainWindow::onSidebarSelectionChanged()
     if (host.isEmpty() || channel.isEmpty()) return;
     // Typing in a docked pane? Load the selection there and leave the primary
     // (and the layout) alone.
-    if (m_focusedPane && m_orderedPanes.contains(m_focusedPane))
-        retargetPane(m_focusedPane, host, channel);
-    else
-        switchToChannel(host, channel);
+    ChannelPane *target = (m_focusedPane && m_orderedPanes.contains(m_focusedPane))
+                          ? m_focusedPane : nullptr;
+
+    // The main view closed with its ✕ is only hidden, not gone — switching
+    // into it would put a view back on screen that was just dismissed, which
+    // reads as a channel click splitting the layout by itself. While it's
+    // closed the panes are all there is, so load into the first one.
+    if (!target && m_primaryPanel->isHidden())
+        for (QWidget *w : paneViewOrder())
+            if (auto *p = qobject_cast<ChannelPane *>(w)) { target = p; break; }
+
+    if (target) retargetPane(target, host, channel);
+    else        switchToChannel(host, channel);
 }
 
 void MainWindow::navigateChannel(int direction)
