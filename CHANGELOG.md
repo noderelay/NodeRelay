@@ -1,6 +1,16 @@
 # Changelog
 
 <!--
+2026-07-25 (follow-up): MARKREAD only while the app has focus. A buffer
+open in a pane or window was marked read the moment a message arrived,
+even minimized — so other clients on the account never saw it as
+unread. The wire gate lives in flushReadMarks(): marks still queue as
+before, but only flush while some Uplink window is active
+(applicationStateChanged -> SessionModel::setUiActive); returning to
+the app flushes what accumulated. Local badges unchanged.
+-->
+
+<!--
 2026-07-25 (quality sweep): full pass over the pane arc (#170-#187)
 after the bug run: ASan/UBSan test suite, both fuzzers (~900k execs,
 no crashes), cppcheck/clang-tidy, and a line-by-line read of the delta

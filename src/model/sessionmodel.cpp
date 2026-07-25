@@ -584,9 +584,23 @@ void SessionModel::queueReadMark(const ServerId &host, const BufferId &ch)
     }
 }
 
+// A buffer being on screen in an unfocused window is not the user reading
+// it — sending MARKREAD for it wipes the unread state every other client
+// on the account shows. Marks queue up while the user is away and go out
+// when focus returns.
+void SessionModel::setUiActive(bool active)
+{
+    m_uiActive = active;
+    if (active && !m_pendingReadMarks.isEmpty() && !m_readMarkQueued) {
+        m_readMarkQueued = true;
+        QTimer::singleShot(1500, this, [this]() { flushReadMarks(); });
+    }
+}
+
 void SessionModel::flushReadMarks()
 {
     m_readMarkQueued = false;
+    if (!m_uiActive) return; // hold them; setUiActive(true) re-queues the flush
     const auto pending = std::exchange(m_pendingReadMarks, {});
     for (const auto &p : pending) {
         auto *c  = channel(p.first, p.second);

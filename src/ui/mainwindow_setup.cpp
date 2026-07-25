@@ -1011,6 +1011,14 @@ void MainWindow::setupChatArea()
 
 void MainWindow::connectModel()
 {
+    // Read marks only go out while some Uplink window has focus — covers
+    // the main window and popped-out panes alike. Held marks flush when
+    // the user comes back.
+    connect(qApp, &QGuiApplication::applicationStateChanged, m_model,
+            [this](Qt::ApplicationState st){
+        m_model->setUiActive(st == Qt::ApplicationActive);
+    });
+
     connect(m_model, &SessionModel::serverAdded,       this, &MainWindow::onServerAdded);
     connect(m_model, &SessionModel::serverConnected,   this, &MainWindow::onServerConnected);
     connect(m_model, &SessionModel::serverDisconnected,this, &MainWindow::onServerDisconnected);
