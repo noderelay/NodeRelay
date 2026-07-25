@@ -1590,6 +1590,12 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
     setWindowTitle("Uplink — " + channel.str() + " @ " + host.str());
     updateTypingLabel();
     updateLengthIndicator();
+
+    // The highlight follows the switch no matter who asked for it. Sidebar
+    // clicks and the quick switcher set their row before landing here (a
+    // same-item set is a no-op — the sidebar only acts on itemClicked), but
+    // /query and /msg arrive with the OLD row still selected.
+    syncSidebarToActive();
 }
 
 void MainWindow::openChannelList(const ServerId &host)

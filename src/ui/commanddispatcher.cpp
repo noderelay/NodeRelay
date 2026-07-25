@@ -369,8 +369,13 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             emit switchChannel(host, BufferId{target});
     } else if (cmd == "/query") {
         const QString target = args.trimmed().section(' ', 0, 0);
+        const QString body   = args.trimmed().section(' ', 1);
         if (!target.isEmpty()) {
             m_model->openPM(host, target);
+            // Text after the nick is sent, mIRC-style — it used to be
+            // silently dropped, which read as the message vanishing.
+            if (!body.isEmpty())
+                m_model->sendMessage(host, BufferId{target}, body);
             emit switchChannel(host, BufferId{target});
             emit focusInput();
         }
@@ -760,7 +765,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
             "  /nick <newnick>             — change your nick",
             "  /me <action>                — send an action (/me waves)",
             "  /msg <target> <message>     — send a private message",
-            "  /query <nick>               — open a PM buffer without sending",
+            "  /query <nick> [text]        — open a PM buffer, sending text if given",
             "  /ns <text>                  — message NickServ",
             "  /cs <text>                  — message ChanServ",
             "  /bs <text>                  — message BotServ",

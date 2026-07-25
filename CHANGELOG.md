@@ -1,6 +1,22 @@
 # Changelog
 
 <!--
+2026-07-25 (Joe live-testing the sweep), two finds:
+
+- /query and /msg switched the view but left the sidebar highlight on
+  the previous channel — every other route (sidebar click, quick
+  switcher, join, pane close) sets its row before calling
+  switchToChannel; the dispatcher route was the one that didn't.
+  switchToChannel now ends with syncSidebarToActive(), which is a no-op
+  for the routes that already did it (sidebar acts on itemClicked only,
+  so no recursion) and keeps the pane invariant: with the main view
+  hidden it highlights the standing-in pane's buffer.
+- /query nick <text> silently dropped the text (Joe pasted a URL after
+  the nick and got an empty PM). It sends now, mIRC-style; /help and
+  docs/commands.md updated.
+-->
+
+<!--
 2026-07-25 (follow-up): the four near-identical bulk render loops in
 chatupdates.cpp (pane refresh, main refresh, scrollback page-in,
 server-history prepend) collapsed into one renderMessageRange() —
