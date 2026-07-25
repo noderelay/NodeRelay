@@ -441,27 +441,52 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, 
     input->setTextCursor(editCursor);
 }
 
-void MainWindow::handleHistoryUp()
+// One history, cycled from whichever input asked. Moving to a different
+// input starts its own pass through the list rather than carrying the
+// position — and the stashed draft — over from the last one.
+void MainWindow::noteHistoryTarget(QPlainTextEdit *input)
 {
-    if (m_inputHistory.isEmpty()) return;
-    if (m_historyIndex == -1)
-        m_historyDraft = m_input->toPlainText();
-    m_historyIndex = qMin(m_historyIndex + 1, static_cast<int>(m_inputHistory.size()) - 1);
-    m_input->setPlainText(m_inputHistory[m_historyIndex]);
-    m_input->moveCursor(QTextCursor::End);
+    if (m_historyTarget == input) return;
+    m_historyTarget = input;
+    m_historyIndex  = -1;
+    m_historyDraft.clear();
 }
 
-void MainWindow::handleHistoryDown()
+void MainWindow::pushInputHistory(const QString &text)
 {
+    // Newest first, skip consecutive duplicates
+    if (m_inputHistory.isEmpty() || m_inputHistory.first() != text) {
+        m_inputHistory.prepend(text);
+        if (m_inputHistory.size() > kInputHistoryCap)
+            m_inputHistory.removeLast();
+    }
+    m_historyIndex = -1;
+}
+
+void MainWindow::handleHistoryUp(QPlainTextEdit *input)
+{
+    if (!input || m_inputHistory.isEmpty()) return;
+    noteHistoryTarget(input);
+    if (m_historyIndex == -1)
+        m_historyDraft = input->toPlainText();
+    m_historyIndex = qMin(m_historyIndex + 1, static_cast<int>(m_inputHistory.size()) - 1);
+    input->setPlainText(m_inputHistory[m_historyIndex]);
+    input->moveCursor(QTextCursor::End);
+}
+
+void MainWindow::handleHistoryDown(QPlainTextEdit *input)
+{
+    if (!input) return;
+    noteHistoryTarget(input);
     if (m_historyIndex == -1) return;
     m_historyIndex--;
     if (m_historyIndex < 0) {
         m_historyIndex = -1;
-        m_input->setPlainText(m_historyDraft);
+        input->setPlainText(m_historyDraft);
     } else {
-        m_input->setPlainText(m_inputHistory[m_historyIndex]);
+        input->setPlainText(m_inputHistory[m_historyIndex]);
     }
-    m_input->moveCursor(QTextCursor::End);
+    input->moveCursor(QTextCursor::End);
 }
 
 // ---------------------------------------------------------------------------
@@ -730,13 +755,8 @@ void MainWindow::onInputSubmit()
     const QString text = raw.trimmed();
     if (text.isEmpty()) return;
 
-    // Push to history (newest first, skip consecutive duplicates)
-    if (m_inputHistory.isEmpty() || m_inputHistory.first() != text) {
-        m_inputHistory.prepend(text);
-        if (m_inputHistory.size() > kInputHistoryCap)
-            m_inputHistory.removeLast();
-    }
-    m_historyIndex = -1;
+    pushInputHistory(text);
+    noteHistoryTarget(m_input);
     m_tabActive = false;
     m_tabCandidates.clear();
     hideEmojiAutocomplete();

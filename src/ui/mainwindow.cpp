@@ -648,11 +648,30 @@ bool MainWindow::zoomFont(QObject *target, double delta, const QPoint &pos)
     return true;
 }
 
+// /clear acts on the buffer the command was typed in, which is not the
+// active one when it came from a pane. The menu entry has no buffer of its
+// own, so it follows the view the user is working in.
+void MainWindow::clearBuffer(const ServerId &host, const BufferId &channel)
+{
+    if (auto *ch = m_model->channel(host, channel))
+        ch->messages.clear();
+
+    // Every view showing that buffer, not just the one that asked: the main
+    // view and a pane can hold the same channel at once.
+    if (m_chatView && host == m_model->activeHost()
+        && channel.str().compare(m_model->activeChannel().str(), Qt::CaseInsensitive) == 0)
+        m_chatView->clear();
+    if (auto *pane = m_panes.value(paneKey(host, channel)))
+        pane->chatView()->clear();
+}
+
 void MainWindow::clearActiveBuffer()
 {
-    if (m_chatView) m_chatView->clear();
-    auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
-    if (ch) ch->messages.clear();
+    if (auto *pane = m_focusedPane; pane && m_panes.value(pane->key()) == pane) {
+        clearBuffer(pane->host(), pane->channel());
+        return;
+    }
+    clearBuffer(m_model->activeHost(), m_model->activeChannel());
 }
 
 double *MainWindow::fontFieldForWidget(QObject *obj, const QPoint &pos)
@@ -902,6 +921,19 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                                       ke->key() == Qt::Key_Backtab);
                     return true;
                 }
+                // Input history, same rule as the main view: only step once
+                // the cursor is on the first (or last) line of what's typed
+                QPlainTextEdit *inp = pane->input();
+                if (ke->key() == Qt::Key_Up
+                    && inp->textCursor().blockNumber() == 0) {
+                    handleHistoryUp(inp);
+                    return true;
+                }
+                if (ke->key() == Qt::Key_Down
+                    && inp->textCursor().blockNumber() == inp->document()->blockCount() - 1) {
+                    handleHistoryDown(inp);
+                    return true;
+                }
                 // Non-Tab resets the completion cycle — but not a bare
                 // modifier press, or Shift+Tab could never reverse mid-cycle
                 if (!isModifierKey(ke->key())) {
@@ -951,13 +983,13 @@ if (obj == m_input && event->type() == QEvent::Resize) {
 
     if (ke->key() == Qt::Key_Up && !m_emojiCompleter->isVisible()) {
         if (m_input->textCursor().blockNumber() == 0) {
-            handleHistoryUp();
+            handleHistoryUp(m_input);
             return true;
         }
     }
     if (ke->key() == Qt::Key_Down && !m_emojiCompleter->isVisible()) {
         if (m_input->textCursor().blockNumber() == m_input->document()->blockCount() - 1) {
-            handleHistoryDown();
+            handleHistoryDown(m_input);
             return true;
         }
     }
@@ -1697,6 +1729,12 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     });
     connect(pane, &ChannelPane::inputSubmitted, this, [this, pane](const QString &text){
         hideEmojiAutocomplete();
+        // Panes share the main view's history, both ways: what's sent from
+        // one is what Up cycles back through in any of them.
+        if (const QString trimmed = text.trimmed(); !trimmed.isEmpty()) {
+            pushInputHistory(trimmed);
+            noteHistoryTarget(pane->input());
+        }
         dispatchInput(text, pane->host(), pane->channel());
     });
     pane->setDropZoneFilter([this, pane](const QString &sourceKey, ChannelPane::DropZone zone){

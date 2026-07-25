@@ -752,7 +752,7 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
                 "Usage: /monitor add|del|list|clear|status [nick]");
         }
     } else if (cmd == "/clear") {
-        emit clearChat();
+        emit clearChat(host, channel);
     } else if (cmd == "/help") {
         const QStringList lines = {
             "Available commands:",

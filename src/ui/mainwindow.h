@@ -189,6 +189,7 @@ private:
     void setSidebarVisible(bool on);
     void setNickPanelVisible(bool on);
     void clearActiveBuffer();
+    void clearBuffer(const ServerId &host, const BufferId &channel);
 
     static QString   topicAgeStr (quint64 ts);
 
@@ -240,12 +241,15 @@ private:
     QPlainTextEdit *m_emojiTarget{nullptr};
     int             m_emojiTriggerPos{-1};
 
-    // Input history
-    void handleHistoryUp();
-    void handleHistoryDown();
-    QStringList m_inputHistory;
-    int         m_historyIndex{-1};
-    QString     m_historyDraft;
+    // Input history — shared by the main view and every pane
+    void handleHistoryUp(QPlainTextEdit *input);
+    void handleHistoryDown(QPlainTextEdit *input);
+    void noteHistoryTarget(QPlainTextEdit *input);
+    void pushInputHistory(const QString &text);
+    QStringList     m_inputHistory;
+    int             m_historyIndex{-1};
+    QString         m_historyDraft;
+    QPlainTextEdit *m_historyTarget{nullptr};
 
     void syncSidebarOrderToConfig();
     void syncSidebarOrderFromConfig();

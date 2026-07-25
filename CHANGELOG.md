@@ -30,6 +30,29 @@ main view's.
 
 His uplink.conf showed it exactly: panes=LINUXDOJO|#linuxdojo with
 paneLayout sizes [0,1].
+
+3. Up/Down input history, reported the same way an hour later: "we've
+   lost the ability to press the down arrow keys to cycle through typed
+   messages". handleHistoryUp/Down were hard-wired to m_input and the
+   pane branch of the event filter never called them, and pane sends go
+   straight to dispatchInput() so they never entered the history either.
+   Both take an input now, the list is shared window-wide, and moving to
+   a different input restarts the walk (m_historyTarget) instead of
+   carrying the position — and the stashed draft — across.
+
+4. /clear, reported minutes later. clearActiveBuffer() cleared m_chatView
+   and the ACTIVE buffer's messages, so running it in a pane looked like
+   nothing happened — and quietly wiped the main view's buffer instead.
+   clearChat now carries the host/channel it was typed in, clearBuffer()
+   clears the model plus every view showing that buffer (main and pane
+   can hold the same channel at once), and Edit → Clear Buffer follows
+   the focused view.
+
+Four in one session. Worth saying plainly: anything wired to m_input,
+m_chatView or activeChannel() alone is a pane bug waiting to be
+reported. Known and deliberately left for now: /query focuses the main
+input rather than the pane you typed it in, and /msg + /query switch
+the main view rather than loading into the pane.
 -->
 
 <!--

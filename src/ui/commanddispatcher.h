@@ -23,7 +23,7 @@ public:
 signals:
     void switchChannel(const ServerId &host, const BufferId &channel);
     void focusInput();
-    void clearChat();
+    void clearChat(const ServerId &host, const BufferId &channel);
     void replyBarCleared();
     void openChannelList(const ServerId &host);
 
