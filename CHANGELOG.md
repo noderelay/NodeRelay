@@ -1,6 +1,31 @@
 # Changelog
 
 <!--
+2026-07-24: links and preview cards open again inside panes (unreleased).
+
+Joe: "we've lost the ability to click Preview images to open links."
+
+The main chat view and pane chat views wire anchorActivated separately.
+The pane handler only had branches for evgrp: and nick:; everything else
+fell through to handleChatViewContextMenu, so a LEFT click on a link or a
+preview card popped the "Open URL / Hide Preview" menu instead of opening
+the browser. The main view has always stripped url:/preview: and called
+QDesktopServices::openUrl.
+
+Nothing regressed in the pane arc itself: the pane handler has been like
+this since the ChatView rewrite. It only started showing now because
+#177-#180 moved buffers into panes, so the view you click in usually
+isn't the main one any more. Fix mirrors the main view's left-button
+branch in createPane(); right click still gets the context menu.
+
+Field-verified by Joe.
+
+STILL OPEN: pane hover only feeds tooltips for nick: anchors, so panes
+don't show the link host in the status bar the way the main view does.
+Left alone, not asked for.
+-->
+
+<!--
 2026-07-24 (evening session): stage C merged as #180, plus the three bugs
 it surfaced.
 

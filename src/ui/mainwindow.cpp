@@ -1639,6 +1639,15 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
             QTextCursor c = inp->textCursor();
             c.movePosition(QTextCursor::End);
             inp->setTextCursor(c);
+        } else if (btn == Qt::LeftButton
+                   && (anchor.startsWith(QLatin1String("url:"))
+                       || anchor.startsWith(QLatin1String("preview:")))) {
+            QString href = anchor;
+            if (href.startsWith("url:"))     href = href.mid(4);
+            if (href.startsWith("preview:")) href = href.mid(8);
+            const QUrl u(href);
+            const QString s = u.scheme().toLower();
+            if (s == "http" || s == "https") QDesktopServices::openUrl(u);
         } else {
             handleChatViewContextMenu(pane->chatView(), anchor, gp,
                                       pane->host(), pane->channel());
