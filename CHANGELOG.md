@@ -2598,6 +2598,20 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.8.1 — 2026-07-25
+
+- **Pane layout rebuilt on a split tree**: opening a pane now halves the roomiest view along its longer side, so three views can be three equal columns, three rows, or one tall view beside a stacked pair — no more fixed shapes per pane count. Dragging a pane onto another view's edge places it on that side; the middle still swaps
+- **The whole layout survives a restart**: which channels were open, how the views were split, every divider position, and a main view you closed with its ✕ — a window left as a single pane starts as a single pane
+- **Panes now match the main view**: `:emoji` autocomplete and shortcode substitution, Up/Down send history (one list shared across all inputs), **Ctrl+B/I/U/S/O** and colors with the format badge, outgoing typing notifications, Reply (shown in the input placeholder, **Esc** cancels), the user-list right-click menu, `/clear`, and clickable links and preview cards
+- **Actions taken in a pane act on the pane's channel**: Kick/Ban/Op/Voice/Invite from a nick menu, CTCP Version/Time/Ping replies, `/clear`, and Hide Preview all used to hit the main view's buffer instead
+- **Sidebar clicks load into the pane you were typing in**, paned channels stop counting unread, and the sidebar highlight stays on what the main view is showing — autojoined channels no longer steal it at startup
+- **Preferences → Split Panes Automatically** replaces the pane-direction radios: columns on a wide window, rows on a tall one, and an edge-drop picks a side by hand
+- **`/persistence [on|off|default]`**: read and set server-side always-on presence where the server offers `draft/persistence`
+- Seven **Circle Bubble** app icons join the picker
+- Unsent drafts follow their channel between the main view and panes, including across a pane closing
+- Avatar arrivals, ignore-list edits, and theme or timestamp changes now refresh panes too, not just the main view
+- Opening a pane when there's no room says so instead of silently doing nothing, and opening a channel already in a pane goes to that pane
+
 ## v2026.8.0 — 2026-07-24
 
 - **Scrollback no longer needs the server**: on networks without `chathistory` (Libera, EFnet, most of IRC) buffers now open with the last 100 lines from your own logs already loaded, and scrolling to the top keeps paging further back. Requires **Log Messages to Disk**; when neither source is available a status line points you at the setting instead of leaving a dead end
