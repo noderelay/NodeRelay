@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 #include "ui/panetree.h"
 
+#include <QJsonDocument>
 #include <set>
 
 // Collects every leaf slot in the tree, in layout order.
@@ -289,6 +290,99 @@ private slots:
     {
         const PaneNode t = buildShapeTree(0, false);
         QVERIFY(t.children.empty());
+    }
+
+    // ── JSON persistence ──────────────────────────────────────────────
+
+    // slot n ↔ key "kN", both directions, for round-trip tests.
+    static QHash<int, QString> keysFor(const PaneNode &root)
+    {
+        QHash<int, QString> out;
+        for (int id : leafOrder(root))
+            out.insert(id, QStringLiteral("k%1").arg(id));
+        return out;
+    }
+    static QHash<QString, int> invert(const QHash<int, QString> &keys)
+    {
+        QHash<QString, int> out;
+        for (auto it = keys.constBegin(); it != keys.constEnd(); ++it)
+            out.insert(it.value(), it.key());
+        return out;
+    }
+
+    void jsonRoundTripPreservesTheTree()
+    {
+        // A nested shape with dragged (uneven) fractions on both levels.
+        PaneNode t = buildShapeTree(4, false);
+        t.fractions = {0.7, 0.3};
+        t.children[1].fractions = {0.25, 0.75};
+
+        const QHash<int, QString> keys = keysFor(t);
+        PaneNode back;
+        QVERIFY(paneTreeFromJson(paneTreeToJson(t, keys), invert(keys), back));
+        QVERIFY(back == t);
+    }
+
+    void jsonDropsUnknownLeavesAndEmptiedSplits()
+    {
+        PaneNode t = buildShapeTree(3, false); // slot 0 | stack of 1,2
+        QHash<int, QString> keys = keysFor(t);
+        const QJsonObject saved = paneTreeToJson(t, keys);
+
+        // Only slot 0's channel came back: the whole stack must vanish and
+        // the split-of-one collapse to the surviving leaf.
+        QHash<QString, int> only0;
+        only0.insert("k0", 0);
+        PaneNode back;
+        QVERIFY(paneTreeFromJson(saved, only0, back));
+        QVERIFY(back.isLeaf());
+        QCOMPARE(back.slot, 0);
+
+        // Nothing came back: restore reports failure rather than an empty split.
+        QVERIFY(!paneTreeFromJson(saved, {}, back));
+    }
+
+    void jsonDuplicateKeyKeepsOnlyTheFirstLeaf()
+    {
+        // A hand-edited layout naming the same view twice must not produce a
+        // duplicate-slot tree (one widget in two splitters).
+        const QByteArray raw = R"({"axis":"h","sizes":[0.5,0.5],
+            "children":[{"view":"k0"},{"view":"k0"}]})";
+        QHash<QString, int> ids;
+        ids.insert("k0", 0);
+        PaneNode back;
+        QVERIFY(paneTreeFromJson(QJsonDocument::fromJson(raw).object(), ids, back));
+        QCOMPARE(leafSlots(back), QList<int>{0});
+    }
+
+    void jsonBadSizesFallBackToEvenShares()
+    {
+        // Wrong length, zeros and negatives all normalise instead of leaving
+        // a split whose shares don't sum to 1.
+        const QByteArray raw = R"({"axis":"v","sizes":[0,-3],
+            "children":[{"view":"k0"},{"view":"k1"},{"view":"k2"}]})";
+        QHash<QString, int> ids;
+        ids.insert("k0", 0); ids.insert("k1", 1); ids.insert("k2", 2);
+        PaneNode back;
+        QVERIFY(paneTreeFromJson(QJsonDocument::fromJson(raw).object(), ids, back));
+        QCOMPARE(back.fractions.size(), size_t(3));
+        QVERIFY(qAbs(back.fractions[0] - 1.0/3) < 1e-9);
+        QCOMPARE(back.axis, Qt::Vertical);
+    }
+
+    void jsonGarbageNeverYieldsATree()
+    {
+        QHash<QString, int> ids;
+        ids.insert("k0", 0);
+        PaneNode back;
+        // Not a layout at all, a split with no children, and children that
+        // aren't objects.
+        QVERIFY(!paneTreeFromJson(QJsonDocument::fromJson("{}").object(), ids, back));
+        QVERIFY(!paneTreeFromJson(
+            QJsonDocument::fromJson(R"({"axis":"h","children":[]})").object(), ids, back));
+        QVERIFY(!paneTreeFromJson(
+            QJsonDocument::fromJson(R"({"axis":"h","children":[1,"x",null]})").object(),
+            ids, back));
     }
 };
 

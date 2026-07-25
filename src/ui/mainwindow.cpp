@@ -161,8 +161,7 @@ static constexpr int kMaxExtraPanes   = 7;
 // Layout-tree plumbing, defined with the rest of it further down; the window's
 // constructor needs them for the quit handler.
 static void captureFractions(PaneNode &node, QSplitter *s);
-static QJsonObject paneNodeToJson(const PaneNode &node, const QHash<int, QWidget*> &views,
-                                  QWidget *primary);
+static QString paneLayoutKeyFor(QWidget *view, QWidget *primary);
 static constexpr int kMaxPaneWindows  = 4;
 static constexpr int kPaneMaxLines    = 800; // pane scrollback retention (main view: 2000)
 
@@ -420,9 +419,12 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         s.remove("primarySlot"); // replaced by the layout tree below
         // Sizes as last dragged, then the arrangement itself.
         captureFractions(m_paneTree, m_panesSplitter);
+        QHash<int, QString> keyForSlot;
+        for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it)
+            keyForSlot.insert(it.key(), paneLayoutKeyFor(it.value(), m_primaryPanel));
         s.setValue("paneLayout",
                    QString::fromUtf8(QJsonDocument(
-                       paneNodeToJson(m_paneTree, m_viewById, m_primaryPanel))
+                       paneTreeToJson(m_paneTree, keyForSlot))
                        .toJson(QJsonDocument::Compact)));
         QStringList winList;
         for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it)
@@ -2187,63 +2189,6 @@ static QString paneLayoutKeyFor(QWidget *view, QWidget *primary)
     return {};
 }
 
-static QJsonObject paneNodeToJson(const PaneNode &node, const QHash<int, QWidget*> &views,
-                                  QWidget *primary)
-{
-    QJsonObject obj;
-    if (node.isLeaf()) {
-        obj["view"] = paneLayoutKeyFor(views.value(node.slot), primary);
-        return obj;
-    }
-    obj["axis"] = (node.axis == Qt::Horizontal) ? "h" : "v";
-    const std::vector<double> f = (node.fractions.size() == node.children.size())
-        ? node.fractions : evenFractions(node.children.size());
-    QJsonArray sizes;
-    for (double v : f) sizes.append(v);
-    obj["sizes"] = sizes;
-    QJsonArray kids;
-    for (const PaneNode &c : node.children)
-        kids.append(paneNodeToJson(c, views, primary));
-    obj["children"] = kids;
-    return obj;
-}
-
-// Rebuilds a node from JSON, resolving each stored buffer back to a live view
-// id. Leaves whose channel didn't come back are dropped, and a split left with
-// nothing is dropped with them.
-static bool paneNodeFromJson(const QJsonObject &obj, const QHash<QString, int> &idForKey,
-                             PaneNode &out)
-{
-    if (obj.contains("view")) {
-        const int id = idForKey.value(obj["view"].toString(), -1);
-        if (id < 0) return false;
-        out = PaneNode{};
-        out.slot = id;
-        return true;
-    }
-    PaneNode node;
-    node.axis = (obj["axis"].toString() == "v") ? Qt::Vertical : Qt::Horizontal;
-    const QJsonArray kids  = obj["children"].toArray();
-    const QJsonArray sizes = obj["sizes"].toArray();
-    for (int i = 0; i < kids.size(); ++i) {
-        PaneNode child;
-        if (!paneNodeFromJson(kids[i].toObject(), idForKey, child)) continue;
-        node.children.push_back(std::move(child));
-        node.fractions.push_back(i < sizes.size() ? sizes[i].toDouble() : 0.0);
-    }
-    if (node.children.empty()) return false;
-    double total = 0;
-    for (double v : node.fractions) total += v;
-    if (total <= 0) node.fractions = evenFractions(node.children.size());
-    else for (double &v : node.fractions) v /= total;
-    if (node.children.size() == 1) {
-        out = std::move(node.children[0]);   // a split of one is just its child
-        return true;
-    }
-    out = std::move(node);
-    return true;
-}
-
 int MainWindow::viewId(const QWidget *view) const
 {
     for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it)
@@ -2319,7 +2264,7 @@ void MainWindow::restorePaneLayout(const QString &json)
 
     const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
     PaneNode restored;
-    if (!doc.isObject() || !paneNodeFromJson(doc.object(), idForKey, restored)) {
+    if (!doc.isObject() || !paneTreeFromJson(doc.object(), idForKey, restored)) {
         rebuildPaneLayout();
         return;
     }

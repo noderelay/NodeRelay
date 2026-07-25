@@ -1,4 +1,7 @@
 #pragma once
+#include <QHash>
+#include <QJsonObject>
+#include <QString>
 #include <Qt>
 #include <vector>
 
@@ -65,3 +68,19 @@ PaneNode flattenTree(const PaneNode &root, Qt::Orientation axis);
 
 bool operator==(const PaneNode &a, const PaneNode &b);
 inline bool operator!=(const PaneNode &a, const PaneNode &b) { return !(a == b); }
+
+// ---------------------------------------------------------------------------
+// Layout persistence. Leaves are stored under caller-provided string keys —
+// slot ids are handed out per run and mean nothing across a restart.
+// ---------------------------------------------------------------------------
+
+QJsonObject paneTreeToJson(const PaneNode &root, const QHash<int, QString> &keyForSlot);
+
+// Rebuilds a tree, resolving each stored key back to a live slot. Leaves
+// whose key didn't come back are dropped, a key appearing twice keeps only
+// its first leaf (a hand-edited layout must not yield a duplicate-slot
+// tree), and a split left with nothing is dropped with its leaves. Splits
+// of one collapse and bad size lists fall back to even fractions, same
+// rules as the tree edits. Returns false when nothing survives.
+bool paneTreeFromJson(const QJsonObject &obj, const QHash<QString, int> &idForKey,
+                      PaneNode &out);
