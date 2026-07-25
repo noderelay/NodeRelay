@@ -31,6 +31,7 @@
 #include <QUrl>
 #include <QDrag>
 #include <QMimeData>
+#include <QPointer>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
@@ -776,7 +777,13 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
                 m_dragPending = false;
                 m_dragging    = true;
 
+                // The exec loop inside services the IRC socket — a kick or
+                // server close can deleteLater() this pane mid-drag. Don't
+                // touch members after it returns without checking; a dead
+                // pane's filter is unhooked by ~QObject anyway.
+                QPointer<ChannelPane> self(this);
                 execPaneDrag(this, key(), m_dragStartPos); // blocks until drop or cancel
+                if (!self) return false;
 
                 m_dragging = false;
                 qApp->removeEventFilter(this);
@@ -860,7 +867,9 @@ void ChannelPane::execPaneDrag(QWidget *pane, const QString &key, const QPoint &
                                 Qt::KeepAspectRatio, Qt::SmoothTransformation);
     ghost.setDevicePixelRatio(dpr);
 
-    auto *placeholder = new DragPlaceholder(pane);
+    // QPointer: the pane (and this placeholder with it) can be destroyed
+    // while exec() blocks — see the caller's mid-drag teardown note.
+    QPointer<DragPlaceholder> placeholder = new DragPlaceholder(pane);
     placeholder->activate();
 
     auto *mime = new QMimeData;
@@ -883,5 +892,5 @@ void ChannelPane::execPaneDrag(QWidget *pane, const QString &key, const QPoint &
     drag->exec(Qt::MoveAction); // blocks until drop or cancel
     qApp->removeEventFilter(&editGuard);
 
-    placeholder->deleteLater();
+    if (placeholder) placeholder->deleteLater();
 }

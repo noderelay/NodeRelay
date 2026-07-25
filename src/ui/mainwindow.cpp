@@ -454,10 +454,18 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
-    connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
-    connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
+    connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::showBuffer);
+    // Focus follows the same routing showBuffer used — /query answered by a
+    // pane must not yank focus back to the (possibly hidden) main input.
+    connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{
+        if (ChannelPane *p = paneRouteTarget()) p->input()->setFocus();
+        else if (m_input)                       m_input->setFocus();
+    });
+    // Straight to clearBuffer — the dispatcher already knows which buffer
+    // /clear was typed in. Deriving it from focus here cleared the main
+    // view when the command came from a popped-out pane window.
     connect(m_dispatcher, &CommandDispatcher::clearChat,
-            this, &MainWindow::clearActiveBuffer);
+            this, &MainWindow::clearBuffer);
     connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
 }
@@ -916,7 +924,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 auto *ke = static_cast<QKeyEvent *>(event);
                 // Emoji autocomplete owns the navigation keys while it's up
                 if (handleEmojiCompleterKey(obj, ke)) return true;
-                if (ke->key() == Qt::Key_Escape && !m_pendingReplyMsgid.isEmpty()) {
+                // Only a reply pending in THIS pane's buffer — Esc here must
+                // not cancel one being composed in another view.
+                if (ke->key() == Qt::Key_Escape
+                    && !replyMsgidFor(pane->host(), pane->channel()).isEmpty()) {
                     clearReplyBar();
                     return true;
                 }
@@ -979,7 +990,8 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
-    if (ke->key() == Qt::Key_Escape && !m_pendingReplyMsgid.isEmpty()) {
+    if (ke->key() == Qt::Key_Escape
+        && !replyMsgidFor(m_model->activeHost(), m_model->activeChannel()).isEmpty()) {
         clearReplyBar();
         return true;
     }
@@ -1315,16 +1327,30 @@ void MainWindow::onSidebarSelectionChanged()
     const ServerId host{item->data(0, Qt::UserRole).toString()};
     const BufferId channel{item->data(0, Qt::UserRole + 1).toString()};
     if (host.isEmpty() || channel.isEmpty()) return;
-    // Typing in a docked pane? Load the selection there and leave the primary
-    // (and the layout) alone. With the main view closed the panes are all
-    // there is, so a click loads into one of them either way — switching into
-    // the hidden main view would put a dismissed view back on screen.
-    ChannelPane *target = (m_focusedPane && m_orderedPanes.contains(m_focusedPane))
-                          ? m_focusedPane
-                          : (m_primaryPanel->isHidden() ? currentPaneTarget() : nullptr);
+    showBuffer(host, channel);
+}
 
-    if (target) retargetPane(target, host, channel);
-    else        switchToChannel(host, channel);
+// The pane a loaded buffer should land in, if any. Typing in a docked pane?
+// Load it there and leave the primary (and the layout) alone. With the main
+// view closed the panes are all there is, so it loads into one of them
+// either way — switching into the hidden main view would put a dismissed
+// view back on screen. Null means the primary takes it.
+ChannelPane *MainWindow::paneRouteTarget() const
+{
+    if (m_focusedPane && m_orderedPanes.contains(m_focusedPane))
+        return m_focusedPane;
+    return m_primaryPanel->isHidden() ? currentPaneTarget() : nullptr;
+}
+
+// Every route that loads a buffer on the user's behalf — sidebar click,
+// /query, /msg, the nick menu's Message — funnels through here so none of
+// them can land in the hidden primary.
+void MainWindow::showBuffer(const ServerId &host, const BufferId &channel)
+{
+    if (ChannelPane *target = paneRouteTarget())
+        retargetPane(target, host, channel);
+    else
+        switchToChannel(host, channel);
 }
 
 void MainWindow::navigateChannel(int direction)
@@ -1665,8 +1691,8 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
             pane->setInputBase(QColor(m_theme.inputBg));
         }
     }
-    connect(pane, &ChannelPane::escapePressed, this, [this]{
-        if (!m_pendingReplyMsgid.isEmpty()) clearReplyBar();
+    connect(pane, &ChannelPane::escapePressed, this, [this, pane]{
+        if (!replyMsgidFor(pane->host(), pane->channel()).isEmpty()) clearReplyBar();
     });
     // Seed the unsent text stashed for this buffer, as retargetPane does —
     // a draft typed in the main view survives the channel moving to a pane.
@@ -2040,9 +2066,14 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
         win->deleteLater(); // deletes the pane it owns
         m_sidebarCtl->setCheckedOut(host, channel, false);
         // Skip the reselect while the server itself is being torn down —
-        // no point churning the main view through dying buffers.
+        // no point churning the main view through dying buffers. And with
+        // the main view closed, don't load the buffer into it invisibly (or
+        // steal a pane the user is reading) — back to the server list it
+        // goes, highlight kept on what's actually showing.
         if (m_model->session(host)) {
-            if (auto *item = m_sidebarCtl->channelItem(host, channel)) {
+            if (m_primaryPanel->isHidden()) {
+                syncSidebarToActive();
+            } else if (auto *item = m_sidebarCtl->channelItem(host, channel)) {
                 m_sidebar->setCurrentItem(item);
                 switchToChannel(host, channel); // available again → show in main
             }

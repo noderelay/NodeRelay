@@ -114,6 +114,7 @@ private:
     void connectPreferences();
 
     void switchToChannel(const ServerId &host, const BufferId &channel);
+    void showBuffer(const ServerId &host, const BufferId &channel);
     void openChannelList(const ServerId &host);
     void refreshChatView(const ServerId &host, const BufferId &channel, bool resetToLatest = true);
     void loadOlderMessages();
@@ -152,6 +153,7 @@ private:
     // The pane a sidebar click acts on while the main view is closed: the one
     // being typed in, else the first in layout order. Null if there are none.
     ChannelPane *currentPaneTarget() const;
+    ChannelPane *paneRouteTarget() const;
     // Puts the sidebar highlight back on whatever the primary view is showing.
     void syncSidebarToActive();
     // Edge-drop placement: nullptr means the primary view on either side.

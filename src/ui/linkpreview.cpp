@@ -145,7 +145,16 @@ void LinkPreview::resolveAndFetchHover(const QUrl &url)
 // then calls doPageFetch. Used for both initial fetches and redirect follow-ups.
 void LinkPreview::resolveAndFetch(const QUrl &url)
 {
-    if (isBlockedBySchemeOrLiteral(url)) return;
+    // The URL the card is for: the one fetch() was asked about, held across
+    // redirect hops. Results and failures must land under this key — the
+    // controller keys its queue by it and drops anything else on the floor.
+    if (m_redirectCount == 0)
+        m_pendingUrl = url;
+
+    if (isBlockedBySchemeOrLiteral(url)) {
+        emit fetchFailed(m_pendingUrl);
+        return;
+    }
 
     if (m_redirectCount == 0) {
         const QString key = url.toString();
@@ -160,19 +169,22 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
         }
     }
 
-    m_pendingUrl = url;
     ++m_fetchGen;
     const quint64 gen = m_fetchGen;
 
     m_dnsId = QHostInfo::lookupHost(url.host(), this,
         [this, url, gen](const QHostInfo &info) {
             m_dnsId = 0;
+            // Superseded by a newer fetch — its failure is not ours to report.
             if (gen != m_fetchGen) return;
-            if (info.error() != QHostInfo::NoError) return;
-            if (info.addresses().isEmpty()) return;
+            if (info.error() != QHostInfo::NoError || info.addresses().isEmpty()) {
+                emit fetchFailed(m_pendingUrl);
+                return;
+            }
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) {
                     qCDebug(lcPreview) << "blocked private address for" << url.host();
+                    emit fetchFailed(m_pendingUrl);
                     return;
                 }
             doPageFetch(url, info.addresses().first());
@@ -222,6 +234,8 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
             if (m_redirectCount < kMaxRedirects) {
                 ++m_redirectCount;
                 resolveAndFetch(next);
+            } else {
+                emit fetchFailed(m_pendingUrl);
             }
             return;
         }
@@ -231,6 +245,7 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
         if (httpStatus >= 400) {
             reply->deleteLater();
             m_buf.clear();
+            emit fetchFailed(m_pendingUrl);
             return;
         }
 
@@ -251,7 +266,10 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
             reply->deleteLater();
             m_buf.clear();
             const QString filename = imgPage.fileName();
-            fetchImage(imgPage, filename.isEmpty() ? imgPage.host() : filename, imgPage);
+            // Refetch from this hop's url — after a redirect chain that's
+            // where the raster content actually is, and it's the URL this
+            // response's DNS check vetted.
+            fetchImage(imgPage, filename.isEmpty() ? imgPage.host() : filename, url);
             return;
         }
 
@@ -261,7 +279,10 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
         reply->deleteLater();
         m_buf.clear();
 
-        if (title.isEmpty()) return;
+        if (title.isEmpty()) {
+            emit fetchFailed(pageUrl);
+            return;
+        }
 
         emit titleReady(pageUrl, title);
 
@@ -277,7 +298,14 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &addr)
 // DNS-checks the image URL before fetching, same policy as page fetches.
 void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl)
 {
-    if (isBlockedBySchemeOrLiteral(imageUrl)) return;
+    // A thumbnail that can't be fetched still leaves a usable card — settle
+    // for title-only, same as the error branches in doImageFetch, so the
+    // queue isn't left waiting on its watchdog.
+    if (isBlockedBySchemeOrLiteral(imageUrl)) {
+        insertCache(pageUrl.toString(), {title, {}});
+        emit cardReady(pageUrl, title, {});
+        return;
+    }
 
     if (m_imgDnsId) {
         QHostInfo::abortHostLookup(m_imgDnsId);
@@ -287,13 +315,18 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
     m_imgDnsId = QHostInfo::lookupHost(imageUrl.host(), this,
         [this, pageUrl, title, imageUrl](const QHostInfo &info) {
             m_imgDnsId = 0;
-            if (info.error() != QHostInfo::NoError) return;
-            if (info.addresses().isEmpty()) return;
+            bool blocked = info.error() != QHostInfo::NoError || info.addresses().isEmpty();
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) {
                     qCDebug(lcPreview) << "blocked private address for" << imageUrl.host();
-                    return;
+                    blocked = true;
+                    break;
                 }
+            if (blocked) {
+                insertCache(pageUrl.toString(), {title, {}});
+                emit cardReady(pageUrl, title, {});
+                return;
+            }
             doImageFetch(pageUrl, title, imageUrl, info.addresses().first());
         });
 }

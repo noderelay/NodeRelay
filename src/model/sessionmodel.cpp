@@ -1400,23 +1400,38 @@ static QString ctcpOriginKey(const ServerId &host, const QString &nick, const QS
     return host.str() + '\t' + nick.toLower() + '\t' + cmd.toUpper();
 }
 
+// How long a recorded origin stays valid waiting for its reply.
+static constexpr qint64 kCtcpOriginTtlMs = 5 * 60 * 1000;
+
 void SessionModel::sendCtcp(const ServerId &host, const BufferId &origin,
                             const QString &nick, const QString &request)
 {
     auto *cl = clientFor(host);
     if (!cl) return;
     const QString cmd = request.section(' ', 0, 0).toUpper();
-    if (!origin.isEmpty() && origin.str() != "(server)")
-        m_ctcpOrigins.insert(ctcpOriginKey(host, nick, cmd), origin.str());
+    if (!origin.isEmpty() && origin.str() != "(server)") {
+        // Most CTCPs are simply never answered — prune here so unanswered
+        // entries can't pile up for the life of the process.
+        const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        for (auto it = m_ctcpOrigins.begin(); it != m_ctcpOrigins.end(); ) {
+            if (now - it->second > kCtcpOriginTtlMs) it = m_ctcpOrigins.erase(it);
+            else ++it;
+        }
+        m_ctcpOrigins.insert(ctcpOriginKey(host, nick, cmd), {origin.str(), now});
+    }
     cl->privmsg(nick, "\x01" + request + "\x01");
 }
 
 BufferId SessionModel::ctcpReplyBuffer(const ServerId &host, const QString &nick,
                                        const QString &cmd)
 {
-    const QString stored = m_ctcpOrigins.take(ctcpOriginKey(host, nick, cmd));
-    if (!stored.isEmpty() && channel(host, BufferId{stored}))
-        return BufferId{stored};
+    const auto stored = m_ctcpOrigins.take(ctcpOriginKey(host, nick, cmd));
+    // An expired origin routes like a reply nobody asked for — a buffer the
+    // user asked from minutes ago is no better a guess than the active one.
+    if (!stored.first.isEmpty()
+        && QDateTime::currentMSecsSinceEpoch() - stored.second <= kCtcpOriginTtlMs
+        && channel(host, BufferId{stored.first}))
+        return BufferId{stored.first};
     return activeOrServer(host);
 }
 

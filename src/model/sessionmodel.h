@@ -256,7 +256,7 @@ private:
     void seedFromLog(const ServerId &host, const BufferId &target);
 
     QSet<QString> m_userJoins;            // pane keys the user asked to join, pending arrival
-    QHash<QString, QString> m_ctcpOrigins; // host\tnick\tCMD → buffer that asked
+    QHash<QString, QPair<QString, qint64>> m_ctcpOrigins; // host\tnick\tCMD → {buffer that asked, when}
     QSet<QString> m_logSeeded;            // buffers already seeded from local logs this run
     QSet<QString> m_pendingHistoryBefore; // "host\tchannel" keys awaiting CHATHISTORY BEFORE
     QHash<QString, QList<Message>> m_historyBeforeBuf; // collected prepend messages
