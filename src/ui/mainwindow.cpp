@@ -2162,6 +2162,16 @@ void MainWindow::rebuildPaneLayout()
     };
 
     if (m_viewById.isEmpty()) seedPaneTree();
+    // Closing panes back down to one collapses the root into a lone leaf, and
+    // the top-level splitter can only be handed a split's children — without
+    // the wrapper the last view is left detached and shows up as its own
+    // window the next time something makes it visible.
+    if (m_paneTree.isLeaf()) {
+        PaneNode root;
+        root.axis = paneRowsAxis() ? Qt::Vertical : Qt::Horizontal;
+        if (m_paneTree.slot >= 0) root.children.push_back(m_paneTree);
+        m_paneTree = root;
+    }
     // Whatever the user dragged the handles to is the truth until now.
     captureFractions(m_paneTree, m_panesSplitter);
     const QList<QWidget*> widgets = paneViewOrder();

@@ -158,6 +158,17 @@ private slots:
         QVERIFY(t.children[1].isLeaf());
     }
 
+    // Closing panes down to the last view leaves the root a bare leaf, not a
+    // split of one — callers that walk root.children have to expect it.
+    void removeDownToOneLeavesALeafRoot()
+    {
+        PaneNode t = buildShapeTree(2, false);
+        QVERIFY(removeLeaf(t, 1));
+        QVERIFY(t.isLeaf());
+        QVERIFY(t.children.empty());
+        QCOMPARE(leafOrder(t), (std::vector<int>{0}));
+    }
+
     void removeUnknownLeafFails()
     {
         PaneNode t = buildShapeTree(2, false);
