@@ -1463,6 +1463,9 @@ void MainWindow::switchToChannel(const ServerId &host, const BufferId &channel)
         m_typing->noteBufferLeft(m_model->activeHost(), m_model->activeChannel());
     }
 
+    // Showing it while it sits outside the layout would open it as a window of
+    // its own — put it back in the splitter first.
+    if (!m_primaryPanel->parentWidget()) rebuildPaneLayout();
     m_primaryPanel->setVisible(true);
 
     const bool isChannel = isChannelName(channel.str());
@@ -2174,6 +2177,20 @@ void MainWindow::rebuildPaneLayout()
     }
     // Whatever the user dragged the handles to is the truth until now.
     captureFractions(m_paneTree, m_panesSplitter);
+
+    // Every live view needs a leaf. One that isn't in the tree still gets
+    // detached below and is then never re-added, and a parentless widget
+    // shown is a top-level window — that's how clicking a channel used to
+    // pop the main view out into one. Take in the strays at the root; the
+    // shares are re-evened because a reclaimed view has none of its own.
+    for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it) {
+        if (containsLeaf(m_paneTree, it.key())) continue;
+        PaneNode stray;
+        stray.slot = it.key();
+        m_paneTree.children.push_back(stray);
+        m_paneTree.fractions.clear();
+    }
+
     const QList<QWidget*> widgets = paneViewOrder();
 
     // Detach all pane widgets from wherever they currently live
