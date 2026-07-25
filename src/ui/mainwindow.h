@@ -230,12 +230,15 @@ private:
     QString     m_tabPrefix;
     bool        m_tabActive{false};
 
-    // Emoji inline autocomplete
-    void checkEmojiAutocomplete(const QString &text);
+    // Emoji inline autocomplete. Works in any input — the main view's and
+    // every pane's — so the completer follows whichever one triggered it.
+    void checkEmojiAutocomplete(QPlainTextEdit *input, const QString &text);
     void commitEmojiAutocomplete(int row);
     void hideEmojiAutocomplete();
-    QListWidget *m_emojiCompleter{nullptr};
-    int          m_emojiTriggerPos{-1};
+    bool handleEmojiCompleterKey(QObject *obj, QKeyEvent *ke);
+    QListWidget    *m_emojiCompleter{nullptr};
+    QPlainTextEdit *m_emojiTarget{nullptr};
+    int             m_emojiTriggerPos{-1};
 
     // Input history
     void handleHistoryUp();

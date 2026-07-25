@@ -1,6 +1,38 @@
 # Changelog
 
 <!--
+2026-07-25: :emoji completion in panes, and the closed main view stays
+closed across a restart (unreleased).
+
+Joe: ":emoji autocomplete isn't working in the text input area now", and
+"it is starting with a second pane each time and I close it as a single
+window."
+
+Both are the same shape of bug as #181 — pane inputs drifting from the
+main view's.
+
+1. Emoji autocomplete only ever ran on m_input. The popup, the trigger
+   scan and the Up/Down/Enter/Tab keys were all hard-wired to it, so
+   typing :smi in a pane did nothing. checkEmojiAutocomplete now takes
+   the input it fired for, the completer reparents to that input's
+   window (so it works in floated pane windows too), and the key
+   handling moved into handleEmojiCompleterKey() shared by both filters.
+   The completer is reparented back to the main window on hide, and
+   hidden when its pane is closed or floated, so a pane teardown can't
+   take it with it.
+
+2. The ✕ on the main view hides m_primaryPanel, but nothing recorded
+   that. On quit the layout saved as "one pane + the primary at size 0";
+   on the next start the primary came back visible, which reads as a
+   second pane appearing every launch. Now saved as primaryHidden and
+   honoured on restore — but only while a pane came back with it, so an
+   empty window is never what starts.
+
+His uplink.conf showed it exactly: panes=LINUXDOJO|#linuxdojo with
+paneLayout sizes [0,1].
+-->
+
+<!--
 2026-07-24: links and preview cards open again inside panes (unreleased).
 
 Joe: "we've lost the ability to click Preview images to open links."

@@ -358,8 +358,9 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     if (!savedPanes.isEmpty()) {
-        const QString savedLayout = settings.value("paneLayout").toString();
-        QTimer::singleShot(0, this, [this, savedPanes, savedLayout]{
+        const QString savedLayout  = settings.value("paneLayout").toString();
+        const bool primaryWasShut  = settings.value("primaryHidden").toBool();
+        QTimer::singleShot(0, this, [this, savedPanes, savedLayout, primaryWasShut]{
             for (const QString &k : savedPanes) {
                 const qsizetype sep = k.indexOf('|');
                 if (sep < 0) continue;
@@ -368,6 +369,12 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             // The opens above split whatever had room, which gets the panes on
             // screen; the saved layout then puts them where they were.
             restorePaneLayout(savedLayout);
+            // The ✕ on the main view is a real close — it has to survive a
+            // restart, or the panes come back with the closed view alongside
+            // them. Only honour it while a pane is left to show, so a window
+            // with nothing in it is never what starts.
+            if (primaryWasShut && !m_orderedPanes.isEmpty())
+                m_primaryPanel->hide();
         });
     }
 
@@ -409,6 +416,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         for (auto *p : std::as_const(m_orderedPanes))
             paneList << p->host().str() + "|" + p->channel().str();
         s.setValue("panes", paneList);
+        s.setValue("primaryHidden", m_primaryPanel->isHidden());
         s.remove("primarySlot"); // replaced by the layout tree below
         // Sizes as last dragged, then the arrangement itself.
         captureFractions(m_paneTree, m_panesSplitter);
@@ -887,6 +895,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         for (auto *pane : std::as_const(m_panes)) {
             if (obj == pane->input()) {
                 auto *ke = static_cast<QKeyEvent *>(event);
+                // Emoji autocomplete owns the navigation keys while it's up
+                if (handleEmojiCompleterKey(obj, ke)) return true;
                 if (ke->key() == Qt::Key_Tab || ke->key() == Qt::Key_Backtab) {
                     handleTabComplete(pane->input(), pane->host(), pane->channel(),
                                       ke->key() == Qt::Key_Backtab);
@@ -914,31 +924,7 @@ if (obj == m_input && event->type() == QEvent::Resize) {
     auto *ke = static_cast<QKeyEvent *>(event);
 
     // Emoji autocomplete navigation takes priority when popup is visible
-    if (m_emojiCompleter->isVisible()) {
-        if (ke->key() == Qt::Key_Escape) {
-            hideEmojiAutocomplete();
-            return true;
-        }
-        if (ke->key() == Qt::Key_Up) {
-            const int cur = m_emojiCompleter->currentRow();
-            m_emojiCompleter->setCurrentRow(qMax(0, cur - 1));
-            return true;
-        }
-        if (ke->key() == Qt::Key_Down) {
-            const int cur = m_emojiCompleter->currentRow();
-            m_emojiCompleter->setCurrentRow(
-                qMin(m_emojiCompleter->count() - 1, cur + 1));
-            return true;
-        }
-        if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter ||
-            ke->key() == Qt::Key_Tab) {
-            const int row = m_emojiCompleter->currentRow();
-            if (row >= 0) {
-                commitEmojiAutocomplete(row);
-                return true;
-            }
-        }
-    }
+    if (handleEmojiCompleterKey(obj, ke)) return true;
 
     if (ke->key() == Qt::Key_F && (ke->modifiers() & Qt::ControlModifier)) {
         m_searchBar->open();
@@ -1608,6 +1594,11 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
                                     QColor(m_theme.border));
 
     pane->input()->installEventFilter(this);
+    // Panes get the same :shortcode completion as the main view
+    connect(pane->input(), &QPlainTextEdit::textChanged, this, [this, pane]{
+        if (m_restoringDraft) return; // buffer switch, not the user typing
+        checkEmojiAutocomplete(pane->input(), pane->input()->toPlainText());
+    });
     pane->setTypingEnabled(m_config.ui.typingIndicator);
     pane->setTyping(m_typing->typingText(pane->host(), pane->channel())); // seed current typers
     {
@@ -1705,6 +1696,7 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
         closeChannelPane(pane->host(), pane->channel());
     });
     connect(pane, &ChannelPane::inputSubmitted, this, [this, pane](const QString &text){
+        hideEmojiAutocomplete();
         dispatchInput(text, pane->host(), pane->channel());
     });
     pane->setDropZoneFilter([this, pane](const QString &sourceKey, ChannelPane::DropZone zone){
@@ -1808,6 +1800,7 @@ void MainWindow::floatPane(ChannelPane *pane)
             m_viewById.remove(id);
         }
     if (m_focusedPane == pane) m_focusedPane = nullptr; // no longer a docked target
+    if (m_emojiTarget == pane->input()) hideEmojiAutocomplete(); // it changes window
 
     auto *win = new QWidget(nullptr, Qt::Window);
     win->setObjectName("paneWindow");
@@ -1905,6 +1898,7 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     auto *pane = m_panes.take(key);
     if (!pane) return;
     if (m_focusedPane == pane) m_focusedPane = nullptr;
+    if (m_emojiTarget == pane->input()) hideEmojiAutocomplete();
 
     // Floating pane: tear down its window and return to the server list.
     if (auto *win = m_paneWindows.take(key)) {
@@ -2350,7 +2344,9 @@ void MainWindow::retargetPane(ChannelPane *pane, const ServerId &host, const Buf
     if (auto *ch = m_model->channel(host, channel))
         pane->setTopic(ChatRenderer::linkifyTopic(ch->topic));
     pane->setTyping(m_typing->typingText(host, channel));
+    m_restoringDraft = true; // a restored draft must not pop the completer
     pane->input()->setPlainText(m_inputDrafts.value(bufferKey(host, channel)));
+    m_restoringDraft = false;
     pane->input()->moveCursor(QTextCursor::End);
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);

@@ -105,7 +105,7 @@ Type a colon to start an emoji shortcode:
 | **Escape** | Dismiss the list |
 | `:fire:` | Substituted to 🔥 immediately, no list needed |
 
-Any `:shortcode:` patterns still in the text when you send are substituted automatically.
+Any `:shortcode:` patterns still in the text when you send are substituted automatically. This works in every input box: the main view, docked panes, and popped-out windows.
 
 ---
 
