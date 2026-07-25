@@ -20,6 +20,36 @@ state switchToChannel already bounces away from when you click it.
 -->
 
 <!--
+2026-07-24: pane tree becomes real — stage B (unreleased).
+
+The tree is now the source of truth. m_primarySlot is gone entirely and
+the primary is just leaf id 0, which deleted every combined-list dance
+(three copies of it) and the siblingSlot promotion logic.
+
+Opening a pane splits the roomiest view along its longer side (Halloy's
+largest-shorter). What limits pane count now is kMinPaneExtent = 260 in
+chooseSplitTarget: a view with no room to halve refuses, so the ceiling
+follows the window. kMaxExtraPanes stays as a 7 backstop, not the rule.
+
+normalize() in panetree.cpp is what makes three-stacked work: a split
+nested in a split of the SAME axis is spliced into its parent. Without
+it, dropping a third pane below a pair nests instead of joining the row.
+tst_panetree covers it (20 cases now).
+
+Forcing columns/rows flattens the tree onto that axis — with nesting
+possible, "always rows" has to mean all views in one column of rows, not
+a transposed top level. That is also the quickest route to three equal
+rows without dragging.
+
+Edge-drop no longer writes pane_split_axis: splits carry their own axis,
+so placing a pane changes one split instead of the whole layout. That
+reverses part of #173 by design.
+
+NOT done here: the layout still isn't persisted (panes reopen in
+creation order, arrangement lost) — that's stage C.
+-->
+
+<!--
 2026-07-24: pane layout becomes a tree — stage A (unreleased).
 
 Joe picked the split-tree rewrite over the cheap "make 3 flat" rule,

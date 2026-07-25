@@ -22,3 +22,38 @@ struct PaneNode {
 // The root is always a split so the caller can hand its children straight to
 // the existing top-level splitter. A count of 0 gives a childless root.
 PaneNode buildShapeTree(int count, bool rows);
+
+// ---------------------------------------------------------------------------
+// Tree edits. Ids are the caller's own identifiers for its views; the tree
+// neither creates nor owns them. Every edit renormalises: a split left with one
+// child collapses into it, and a split nested directly inside a split of the
+// same axis is flattened into its parent, so three views dropped one below the
+// other end up as three equal rows rather than a lopsided pile.
+// ---------------------------------------------------------------------------
+
+// Leaf ids in layout order.
+std::vector<int> leafOrder(const PaneNode &root);
+bool containsLeaf(const PaneNode &root, int id);
+
+// Splits the leaf holding `targetId` in two along `axis`, putting `newId` on
+// the near side when `before` is set. Returns false if the target isn't there.
+bool splitLeaf(PaneNode &root, int targetId, int newId, Qt::Orientation axis, bool before);
+
+// Exchanges the positions of two leaves. Returns false unless both exist.
+bool swapLeaves(PaneNode &root, int a, int b);
+
+// Removes a leaf, collapsing whatever that empties.
+bool removeLeaf(PaneNode &root, int id);
+
+// Moves an existing leaf to sit beside another: a remove followed by a split,
+// which is what an edge-drop does. Refuses to move a leaf onto itself.
+bool moveLeafBeside(PaneNode &root, int movingId, int targetId,
+                    Qt::Orientation axis, bool before);
+
+// Rebuilds the tree as a single split along `axis` holding every leaf in its
+// current order — what "always columns" and "always rows" mean once layouts
+// can nest.
+PaneNode flattenTree(const PaneNode &root, Qt::Orientation axis);
+
+bool operator==(const PaneNode &a, const PaneNode &b);
+inline bool operator!=(const PaneNode &a, const PaneNode &b) { return !(a == b); }
