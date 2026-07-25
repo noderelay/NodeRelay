@@ -260,6 +260,74 @@ void MainWindow::refreshViewsFor(const ServerId &host, const BufferId &channel)
         refreshPaneChatView(pane);
 }
 
+// The one URL matcher for chat text. Preview lookups must tokenise the same
+// way everywhere, or a card that shows in one view is missing in another —
+// the render loops had already grown two variants of this pattern.
+static const QRegularExpression &chatUrlRe()
+{
+    static const QRegularExpression re(
+        R"(https?://[^\s<>"]+)",
+        QRegularExpression::CaseInsensitiveOption);
+    return re;
+}
+
+// Renders ch->messages[from, to) the way every bulk render draws them:
+// event runs condensed per local day, each message line followed by its
+// reaction row and, when `withPreviews`, its cached preview cards. `sep`
+// (the unread marker) is emitted just before message index `sepBeforeIdx`;
+// a group swallowing that index skips it, as the main view always has.
+QList<ChatLine> MainWindow::renderMessageRange(Channel *ch, const ChatRenderer::Context &ctx,
+                                               const QString &selfNick, int from, int to,
+                                               bool withPreviews,
+                                               int sepBeforeIdx, const ChatLine *sep)
+{
+    QList<ChatLine> out;
+    bool sepInserted = false;
+    for (int i = from; i < to; ) {
+        if (sep && !sepInserted && i == sepBeforeIdx) {
+            out.append(*sep);
+            sepInserted = true;
+        }
+        const auto &msg = ch->messages[i];
+        if (ChatRenderer::isCondensable(msg, selfNick)) {
+            const QDate day = msg.timestamp.toLocalTime().date();
+            int j = i + 1;
+            while (j < to
+                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
+                   && ch->messages[j].timestamp.toLocalTime().date() == day)
+                ++j;
+            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
+            const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
+            const bool grpExpanded = m_expandedEventGroups.contains(groupId);
+            out.append(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
+            i = j;
+        } else {
+            out.append(ChatRenderer::formatMessageLine(msg, ctx));
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
+                    out.append(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
+            }
+            const bool isText = (msg.type == MessageType::Privmsg ||
+                                 msg.type == MessageType::Action  ||
+                                 msg.type == MessageType::Notice);
+            if (withPreviews && isText && !ch->previews.isEmpty()) {
+                auto uit = chatUrlRe().globalMatch(msg.text);
+                while (uit.hasNext()) {
+                    const QString urlStr = QUrl(uit.next().captured(0)).toString();
+                    const auto p = ch->previews.constFind(urlStr);
+                    if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
+                        continue;
+                    out.append(ChatRenderer::buildPreviewCardLine(
+                        urlStr, p->title, p->domain, p->pngData));
+                }
+            }
+            ++i;
+        }
+    }
+    return out;
+}
+
 void MainWindow::refreshPaneChatView(ChannelPane *pane)
 {
     pane->chatView()->clear();
@@ -267,52 +335,12 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     if (!ch) return;
 
     const ChatRenderer::Context ctx = makeRenderContext(pane->host(), ch);
-
     const QString selfNick = m_model->selfNick(pane->host());
 
-    static const QRegularExpression urlRe(
-        R"(https?://[^\s<>"]+)",
-        QRegularExpression::CaseInsensitiveOption);
-
-    for (int i = 0; i < ch->messages.size(); ) {
-        const auto &msg = ch->messages[i];
-        if (ChatRenderer::isCondensable(msg, selfNick)) {
-            const QDate day = msg.timestamp.toLocalTime().date();
-            int j = i + 1;
-            while (j < ch->messages.size()
-                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
-                   && ch->messages[j].timestamp.toLocalTime().date() == day)
-                ++j;
-            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
-            const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
-            const bool grpExpanded = m_expandedEventGroups.contains(groupId);
-            pane->chatView()->appendLine(
-                ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
-            i = j;
-        } else {
-            pane->chatView()->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
-            if (!msg.msgid.isEmpty()) {
-                auto rxIt = ch->reactions.constFind(msg.msgid);
-                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    pane->chatView()->appendLine(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
-            }
-            const bool isText = (msg.type == MessageType::Privmsg ||
-                                 msg.type == MessageType::Action  ||
-                                 msg.type == MessageType::Notice);
-            if (isText && !ch->previews.isEmpty()) {
-                auto uit = urlRe.globalMatch(msg.text);
-                while (uit.hasNext()) {
-                    const QString urlStr = QUrl(uit.next().captured(0)).toString();
-                    const auto p = ch->previews.constFind(urlStr);
-                    if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
-                        continue;
-                    pane->chatView()->appendLine(ChatRenderer::buildPreviewCardLine(
-                        urlStr, p->title, p->domain, p->pngData));
-                }
-            }
-            ++i;
-        }
-    }
+    const QList<ChatLine> lines = renderMessageRange(
+        ch, ctx, selfNick, 0, static_cast<int>(ch->messages.size()), true);
+    for (const ChatLine &l : lines)
+        pane->chatView()->appendLine(l);
 
     pane->chatView()->scrollToBottom();
 }
@@ -330,10 +358,6 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
         m_renderStart[key] = static_cast<int>(qMax(qsizetype(0), total - kRenderWindow));
     const int startIdx = m_renderStart.value(key, 0);
 
-    static const QRegularExpression urlRe(
-        R"(https?://[^\s<>"]+)",
-        QRegularExpression::CaseInsensitiveOption);
-
     const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     if (startIdx > 0) {
@@ -346,58 +370,24 @@ void MainWindow::refreshChatView(const ServerId &host, const BufferId &channel, 
         m_chatView->appendLine(loggingNudgeLine(m_theme.separator));
     }
 
-    const QString selfNick   = m_model->selfNick(host);
+    const QString selfNick    = m_model->selfNick(host);
     const int     firstUnread = ch->firstUnreadIdx;
-    bool          sepInserted = false;
 
-    for (int i = startIdx; i < ch->messages.size(); ) {
-        // Insert "── N new messages ──" separator before first unread message
-        if (!sepInserted && firstUnread >= startIdx && i == firstUnread) {
-            const int n = ch->unread;
-            ChatLine sep = ChatRenderer::makeStatusLine(
-                QString("── %1 new message%2 ──").arg(n).arg(n == 1 ? "" : "s"), m_theme.separator);
-            sep.id = QStringLiteral("sep:unread");
-            m_chatView->appendLine(sep);
-            sepInserted = true;
-        }
-
-        const auto &msg = ch->messages[i];
-        if (ChatRenderer::isCondensable(msg, selfNick)) {
-            const QDate day = msg.timestamp.toLocalTime().date();
-            int j = i + 1;
-            while (j < ch->messages.size()
-                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
-                   && ch->messages[j].timestamp.toLocalTime().date() == day)
-                ++j;
-            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
-            const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
-            const bool grpExpanded = m_expandedEventGroups.contains(groupId);
-            m_chatView->appendLine(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
-            i = j;
-        } else {
-            m_chatView->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
-            if (!msg.msgid.isEmpty()) {
-                auto rxIt = ch->reactions.constFind(msg.msgid);
-                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    m_chatView->appendLine(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
-            }
-            const bool isText = (msg.type == MessageType::Privmsg ||
-                                 msg.type == MessageType::Action  ||
-                                 msg.type == MessageType::Notice);
-            if (isText && !ch->previews.isEmpty()) {
-                auto it = urlRe.globalMatch(msg.text);
-                while (it.hasNext()) {
-                    const QString urlStr = QUrl(it.next().captured(0)).toString();
-                    const auto p = ch->previews.constFind(urlStr);
-                    if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
-                        continue;
-                    m_chatView->appendLine(ChatRenderer::buildPreviewCardLine(
-                        urlStr, p->title, p->domain, p->pngData));
-                }
-            }
-            ++i;
-        }
+    // "── N new messages ──" goes in front of the first unread message.
+    ChatLine sep;
+    const bool wantSep = firstUnread >= startIdx;
+    if (wantSep) {
+        const int n = ch->unread;
+        sep = ChatRenderer::makeStatusLine(
+            QString("── %1 new message%2 ──").arg(n).arg(n == 1 ? "" : "s"), m_theme.separator);
+        sep.id = QStringLiteral("sep:unread");
     }
+
+    const QList<ChatLine> lines = renderMessageRange(
+        ch, ctx, selfNick, startIdx, static_cast<int>(ch->messages.size()), true,
+        wantSep ? firstUnread : -1, wantSep ? &sep : nullptr);
+    for (const ChatLine &l : lines)
+        m_chatView->appendLine(l);
 
     if (resetToLatest) {
         QTimer::singleShot(0, this, [this, key, firstUnread, startIdx] {
@@ -471,30 +461,9 @@ void MainWindow::loadOlderMessages()
         older.append(status);
     }
 
-    for (int i = newStart; i < prevStart; ) {
-        const auto &msg = ch->messages[i];
-        if (ChatRenderer::isCondensable(msg, selfNick)) {
-            const QDate day = msg.timestamp.toLocalTime().date();
-            int j = i + 1;
-            while (j < prevStart
-                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
-                   && ch->messages[j].timestamp.toLocalTime().date() == day)
-                ++j;
-            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
-            const QString groupId    = QString::number(group.first().timestamp.toMSecsSinceEpoch());
-            const bool    grpExpanded = m_expandedEventGroups.contains(groupId);
-            older.append(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
-            i = j;
-        } else {
-            older.append(ChatRenderer::formatMessageLine(msg, ctx));
-            if (!msg.msgid.isEmpty()) {
-                auto rxIt = ch->reactions.constFind(msg.msgid);
-                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    older.append(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
-            }
-            ++i;
-        }
-    }
+    // Paged-in history renders without preview cards, as it always has —
+    // cards belong to the recent tail of the buffer.
+    older += renderMessageRange(ch, ctx, selfNick, newStart, prevStart, false);
 
     // Remove the existing "older messages" sentinel before prepending new batch
     m_chatView->removeLine("status:older");
@@ -541,33 +510,8 @@ void MainWindow::onOlderHistoryLoaded(const ServerId &host, const BufferId &chan
     const ChatRenderer::Context ctx = makeRenderContext(host, ch);
 
     const QString selfNick = m_model->selfNick(host);
-    QList<ChatLine> older;
     const int end = qMin(count, static_cast<int>(ch->messages.size()));
-
-    for (int i = 0; i < end; ) {
-        const auto &msg = ch->messages[i];
-        if (ChatRenderer::isCondensable(msg, selfNick)) {
-            const QDate day = msg.timestamp.toLocalTime().date();
-            int j = i + 1;
-            while (j < end
-                   && ChatRenderer::isCondensable(ch->messages[j], selfNick)
-                   && ch->messages[j].timestamp.toLocalTime().date() == day)
-                ++j;
-            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
-            const QString groupId    = QString::number(group.first().timestamp.toMSecsSinceEpoch());
-            const bool    grpExpanded = m_expandedEventGroups.contains(groupId);
-            older.append(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
-            i = j;
-        } else {
-            older.append(ChatRenderer::formatMessageLine(msg, ctx));
-            if (!msg.msgid.isEmpty()) {
-                auto rxIt = ch->reactions.constFind(msg.msgid);
-                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
-                    older.append(ChatRenderer::buildReactionLine(*rxIt, msg.msgid));
-            }
-            ++i;
-        }
-    }
+    QList<ChatLine> older = renderMessageRange(ch, ctx, selfNick, 0, end, false);
 
     m_chatView->removeLine("status:older");
     m_chatView->prependLines(std::move(older));
@@ -689,10 +633,7 @@ void MainWindow::appendPreviewCards(ChatView *view, const Message &msg,
     if (!isText) return;
     auto *ch = m_model->channel(host, channel);
 
-    static const QRegularExpression urlRe(
-        R"(https?://[^ \t\r\n<>"]+)",
-        QRegularExpression::CaseInsensitiveOption);
-    auto it = urlRe.globalMatch(msg.text);
+    auto it = chatUrlRe().globalMatch(msg.text);
     while (it.hasNext()) {
         const QString urlStr = QUrl(it.next().captured(0)).toString();
         if (urlStr.isEmpty()) continue;
