@@ -161,6 +161,7 @@ private:
     int      viewId(const QWidget *view) const;
     QWidget *viewForId(int id) const;
     void     seedPaneTree();            // tree holding just the primary
+    void     restorePaneLayout(const QString &json);
     QList<QWidget*> paneViewOrder() const;
     // Where a newly opened pane should go: the roomiest view, split along its
     // shorter side unless the axis is forced. Returns false when nothing has

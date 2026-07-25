@@ -157,6 +157,12 @@ static constexpr int kDefaultWindowH  = 650;
 // size in chooseSplitTarget — a view with no room to halve refuses to split,
 // so the limit follows the window rather than a shape table.
 static constexpr int kMaxExtraPanes   = 7;
+
+// Layout-tree plumbing, defined with the rest of it further down; the window's
+// constructor needs them for the quit handler.
+static void captureFractions(PaneNode &node, QSplitter *s);
+static QJsonObject paneNodeToJson(const PaneNode &node, const QHash<int, QWidget*> &views,
+                                  QWidget *primary);
 static constexpr int kMaxPaneWindows  = 4;
 static constexpr int kPaneMaxLines    = 800; // pane scrollback retention (main view: 2000)
 
@@ -352,13 +358,16 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     if (!savedPanes.isEmpty()) {
-        QTimer::singleShot(0, this, [this, savedPanes]{
+        const QString savedLayout = settings.value("paneLayout").toString();
+        QTimer::singleShot(0, this, [this, savedPanes, savedLayout]{
             for (const QString &k : savedPanes) {
                 const qsizetype sep = k.indexOf('|');
                 if (sep < 0) continue;
                 openChannelPane(ServerId{k.left(sep)}, BufferId{k.mid(sep + 1)});
             }
-            rebuildPaneLayout();
+            // The opens above split whatever had room, which gets the panes on
+            // screen; the saved layout then puts them where they were.
+            restorePaneLayout(savedLayout);
         });
     }
 
@@ -400,7 +409,13 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         for (auto *p : std::as_const(m_orderedPanes))
             paneList << p->host().str() + "|" + p->channel().str();
         s.setValue("panes", paneList);
-        s.remove("primarySlot"); // the tree replaces it — persisted in stage C
+        s.remove("primarySlot"); // replaced by the layout tree below
+        // Sizes as last dragged, then the arrangement itself.
+        captureFractions(m_paneTree, m_panesSplitter);
+        s.setValue("paneLayout",
+                   QString::fromUtf8(QJsonDocument(
+                       paneNodeToJson(m_paneTree, m_viewById, m_primaryPanel))
+                       .toJson(QJsonDocument::Compact)));
         QStringList winList;
         for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it)
             if (auto *p = m_panes.value(it.key()))
@@ -1914,6 +1929,19 @@ bool MainWindow::paneRowsAxis() const
 
 // Builds the widget side of a layout tree: leaves are the views themselves,
 // every split becomes a nested QSplitter carrying its own axis.
+// Splitter sizes are relative, so the stored fractions can be handed over as
+// they are — no need to know the real extent, which isn't settled yet anyway.
+static void applyFractions(QSplitter *s, const PaneNode &node)
+{
+    if (!s || s->count() == 0) return;
+    const std::vector<double> f = (node.fractions.size() == node.children.size())
+        ? node.fractions : evenFractions(node.children.size());
+    QList<int> sizes;
+    for (int i = 0; i < s->count(); ++i)
+        sizes << qMax(1, int((i < int(f.size()) ? f[size_t(i)] : 0.0) * 10000));
+    s->setSizes(sizes);
+}
+
 static QWidget *buildPaneWidgets(const PaneNode &node, const QHash<int, QWidget*> &views,
                                  const std::function<void(QWidget*)> &show)
 {
@@ -1928,16 +1956,97 @@ static QWidget *buildPaneWidgets(const PaneNode &node, const QHash<int, QWidget*
     for (const PaneNode &child : node.children)
         if (QWidget *w = buildPaneWidgets(child, views, show))
             split->addWidget(w);
+    applyFractions(split, node);
     return split;
 }
 
-// Equal slices at every level of the splitter tree.
-static void equalizeSplitters(QSplitter *s, int total)
+// Reads the splitters back into the tree so a drag isn't lost the next time
+// the layout is rebuilt. The widget tree mirrors the node tree exactly —
+// buildPaneWidgets adds children in node order — so a parallel walk lines up.
+static void captureFractions(PaneNode &node, QSplitter *s)
 {
-    if (!s || s->count() == 0 || total <= 0) return;
-    s->setSizes(QList<int>(s->count(), total / s->count()));
-    for (int i = 0; i < s->count(); ++i)
-        equalizeSplitters(qobject_cast<QSplitter *>(s->widget(i)), total);
+    if (!s || node.isLeaf()) return;
+    const QList<int> sizes = s->sizes();
+    if (sizes.size() == int(node.children.size())) {
+        double total = 0;
+        for (int v : sizes) total += v;
+        if (total > 0) {
+            node.fractions.clear();
+            for (int v : sizes) node.fractions.push_back(double(v) / total);
+        }
+    }
+    for (int i = 0; i < s->count() && i < int(node.children.size()); ++i)
+        captureFractions(node.children[size_t(i)], qobject_cast<QSplitter *>(s->widget(i)));
+}
+
+// ---------------------------------------------------------------------------
+// Layout persistence. Leaves are stored by buffer, not by view id: ids are
+// handed out per run and mean nothing across a restart.
+// ---------------------------------------------------------------------------
+
+static QString paneLayoutKeyFor(QWidget *view, QWidget *primary)
+{
+    if (view == primary) return QStringLiteral("primary");
+    if (auto *p = qobject_cast<ChannelPane *>(view))
+        return p->host().str() + "|" + p->channel().str();
+    return {};
+}
+
+static QJsonObject paneNodeToJson(const PaneNode &node, const QHash<int, QWidget*> &views,
+                                  QWidget *primary)
+{
+    QJsonObject obj;
+    if (node.isLeaf()) {
+        obj["view"] = paneLayoutKeyFor(views.value(node.slot), primary);
+        return obj;
+    }
+    obj["axis"] = (node.axis == Qt::Horizontal) ? "h" : "v";
+    const std::vector<double> f = (node.fractions.size() == node.children.size())
+        ? node.fractions : evenFractions(node.children.size());
+    QJsonArray sizes;
+    for (double v : f) sizes.append(v);
+    obj["sizes"] = sizes;
+    QJsonArray kids;
+    for (const PaneNode &c : node.children)
+        kids.append(paneNodeToJson(c, views, primary));
+    obj["children"] = kids;
+    return obj;
+}
+
+// Rebuilds a node from JSON, resolving each stored buffer back to a live view
+// id. Leaves whose channel didn't come back are dropped, and a split left with
+// nothing is dropped with them.
+static bool paneNodeFromJson(const QJsonObject &obj, const QHash<QString, int> &idForKey,
+                             PaneNode &out)
+{
+    if (obj.contains("view")) {
+        const int id = idForKey.value(obj["view"].toString(), -1);
+        if (id < 0) return false;
+        out = PaneNode{};
+        out.slot = id;
+        return true;
+    }
+    PaneNode node;
+    node.axis = (obj["axis"].toString() == "v") ? Qt::Vertical : Qt::Horizontal;
+    const QJsonArray kids  = obj["children"].toArray();
+    const QJsonArray sizes = obj["sizes"].toArray();
+    for (int i = 0; i < kids.size(); ++i) {
+        PaneNode child;
+        if (!paneNodeFromJson(kids[i].toObject(), idForKey, child)) continue;
+        node.children.push_back(std::move(child));
+        node.fractions.push_back(i < sizes.size() ? sizes[i].toDouble() : 0.0);
+    }
+    if (node.children.empty()) return false;
+    double total = 0;
+    for (double v : node.fractions) total += v;
+    if (total <= 0) node.fractions = evenFractions(node.children.size());
+    else for (double &v : node.fractions) v /= total;
+    if (node.children.size() == 1) {
+        out = std::move(node.children[0]);   // a split of one is just its child
+        return true;
+    }
+    out = std::move(node);
+    return true;
 }
 
 int MainWindow::viewId(const QWidget *view) const
@@ -1999,6 +2108,48 @@ bool MainWindow::chooseSplitTarget(int &targetId, Qt::Orientation &axis) const
     return true;
 }
 
+// Puts the panes back where they were, at the sizes they were. Falls back to
+// whatever opening them produced if the saved layout no longer describes the
+// views that came back — a channel may have been removed from the config, or
+// failed to rejoin.
+void MainWindow::restorePaneLayout(const QString &json)
+{
+    if (json.isEmpty()) { rebuildPaneLayout(); return; }
+
+    QHash<QString, int> idForKey;
+    for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it) {
+        const QString key = paneLayoutKeyFor(it.value(), m_primaryPanel);
+        if (!key.isEmpty()) idForKey.insert(key, it.key());
+    }
+
+    const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
+    PaneNode restored;
+    if (!doc.isObject() || !paneNodeFromJson(doc.object(), idForKey, restored)) {
+        rebuildPaneLayout();
+        return;
+    }
+
+    // Anything on screen that the saved layout doesn't mention still needs a
+    // home: give it half of whichever view has the most room.
+    PaneNode tree = restored;
+    if (tree.isLeaf()) {
+        PaneNode root;
+        root.axis = paneRowsAxis() ? Qt::Vertical : Qt::Horizontal;
+        root.children.push_back(tree);
+        tree = root;
+    }
+    m_paneTree = tree;
+    for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it) {
+        if (containsLeaf(m_paneTree, it.key())) continue;
+        int targetId = -1;
+        Qt::Orientation axis = Qt::Horizontal;
+        if (chooseSplitTarget(targetId, axis))
+            splitLeaf(m_paneTree, targetId, it.key(), axis, false);
+    }
+
+    rebuildPaneLayout();
+}
+
 void MainWindow::rebuildPaneLayout()
 {
     // The primary can be hidden via its ✕ button — a rebuild must not
@@ -2011,6 +2162,8 @@ void MainWindow::rebuildPaneLayout()
     };
 
     if (m_viewById.isEmpty()) seedPaneTree();
+    // Whatever the user dragged the handles to is the truth until now.
+    captureFractions(m_paneTree, m_panesSplitter);
     const QList<QWidget*> widgets = paneViewOrder();
 
     // Detach all pane widgets from wherever they currently live
@@ -2038,11 +2191,7 @@ void MainWindow::rebuildPaneLayout()
         if (QWidget *w = buildPaneWidgets(child, m_viewById, showWidget))
             m_panesSplitter->addWidget(w);
 
-    // Give every splitter in the tree equal slices. Any positive number splits
-    // evenly, so the top-level extent serves for the nested ones too — they
-    // have no size of their own until the layout runs.
-    equalizeSplitters(m_panesSplitter, qMax(m_panesSplitter->width(),
-                                            m_panesSplitter->height()));
+    applyFractions(m_panesSplitter, m_paneTree);
 
     // The setParent(nullptr) detach above makes the style engine repolish
     // every pane, which resets programmatic fonts to the app default —

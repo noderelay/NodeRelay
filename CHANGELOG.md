@@ -1,6 +1,34 @@
 # Changelog
 
 <!--
+2026-07-24: pane layout persists, sizes included — stage C (unreleased).
+
+Joe asked for the dragged sizes to survive, not just the arrangement.
+
+Fractions live IN the tree (parallel to children, summing to 1) rather
+than beside it, so they're maintained through every edit: a new split
+starts 50/50, closing a view renormalises the survivors, and splicing a
+same-axis split into its parent multiplies the inner fractions by the
+share the parent held. That last one is what keeps proportions honest
+when a drop flattens a nest. Five new cases, 25 in tst_panetree.
+
+captureFractions() reads the splitters back into the tree before every
+rebuild, so a drag isn't lost when a pane is opened or closed — that was
+broken even within a session before this, since rebuild re-equalised.
+
+Persistence keys leaves by host|channel (and "primary"), never by view
+id: ids are per-run. Missing channels are dropped on restore, empty
+splits collapse with them, and any view that came back but isn't in the
+saved layout gets half the roomiest leaf. Unreadable JSON falls back to
+"panes are open, arrangement lost".
+
+Deliberately NOT QSplitter::saveState() — that is the restoreState()
+trap from #134/#139 (it silently resets childrenCollapsible and brings
+back the zero-width pane). Own fractions, reapplied against whatever the
+window is now, which also makes the layout survive a different monitor.
+-->
+
+<!--
 2026-07-24: sidebar highlight follows the main view around panes.
 
 Joe: #linuxdojo in the main view, open #freebsd in a pane, close the

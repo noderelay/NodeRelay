@@ -1,5 +1,7 @@
 #include "ui/panetree.h"
 
+#include <QtGlobal>
+
 static PaneNode leaf(int slot)
 {
     PaneNode n;
@@ -13,6 +15,28 @@ static PaneNode split(Qt::Orientation axis, std::vector<PaneNode> children)
     n.axis     = axis;
     n.children = std::move(children);
     return n;
+}
+
+std::vector<double> evenFractions(size_t count)
+{
+    if (count == 0) return {};
+    return std::vector<double>(count, 1.0 / double(count));
+}
+
+// Sizes are only meaningful next to the children they describe; anything that
+// edits the child list runs through here so a stale array can't survive.
+static std::vector<double> fractionsOf(const PaneNode &node)
+{
+    if (node.fractions.size() == node.children.size()) return node.fractions;
+    return evenFractions(node.children.size());
+}
+
+static void normalizeFractions(std::vector<double> &f)
+{
+    double sum = 0;
+    for (double v : f) sum += v;
+    if (sum <= 0) { f = evenFractions(f.size()); return; }
+    for (double &v : f) v /= sum;
 }
 
 PaneNode buildShapeTree(int count, bool rows)
@@ -50,6 +74,9 @@ bool operator==(const PaneNode &a, const PaneNode &b)
     if (a.isLeaf() != b.isLeaf()) return false;
     if (a.isLeaf()) return a.slot == b.slot;
     if (a.axis != b.axis || a.children.size() != b.children.size()) return false;
+    const std::vector<double> fa = fractionsOf(a), fb = fractionsOf(b);
+    for (size_t i = 0; i < fa.size(); ++i)
+        if (qAbs(fa[i] - fb[i]) > 0.001) return false;   // a drag apart, not a rounding apart
     for (size_t i = 0; i < a.children.size(); ++i)
         if (!(a.children[i] == b.children[i])) return false;
     return true;
@@ -88,19 +115,30 @@ static void normalize(PaneNode &node)
         normalize(c);
 
     std::vector<PaneNode> merged;
-    for (PaneNode &c : node.children) {
+    std::vector<double>   mergedF;
+    const std::vector<double> mine = fractionsOf(node);
+    for (size_t i = 0; i < node.children.size(); ++i) {
+        PaneNode &c = node.children[i];
         if (!c.isLeaf() && c.axis == node.axis) {
-            for (PaneNode &grand : c.children)
-                merged.push_back(std::move(grand));
+            // Spliced-up children divide the share their parent held, so the
+            // views keep the proportions they had on screen.
+            const std::vector<double> inner = fractionsOf(c);
+            for (size_t j = 0; j < c.children.size(); ++j) {
+                merged.push_back(std::move(c.children[j]));
+                mergedF.push_back(mine[i] * inner[j]);
+            }
         } else {
             merged.push_back(std::move(c));
+            mergedF.push_back(mine[i]);
         }
     }
-    node.children = std::move(merged);
+    node.children  = std::move(merged);
+    node.fractions = std::move(mergedF);
+    normalizeFractions(node.fractions);
 
     if (node.children.size() == 1) {
         PaneNode only = std::move(node.children[0]);
-        node = std::move(only);
+        node = std::move(only);   // a lone child takes the whole share
     }
 }
 
@@ -130,6 +168,7 @@ bool splitLeaf(PaneNode &root, int targetId, int newId, Qt::Orientation axis, bo
     replacement.axis = axis;
     if (before) replacement.children = { std::move(added), std::move(target) };
     else        replacement.children = { std::move(target), std::move(added) };
+    replacement.fractions = evenFractions(2);   // a split starts down the middle
 
     if (!replaceLeaf(root, targetId, std::move(replacement))) return false;
     normalize(root);
@@ -157,12 +196,16 @@ bool swapLeaves(PaneNode &root, int a, int b)
 static bool eraseLeaf(PaneNode &node, int id)
 {
     if (node.isLeaf()) return false;
-    for (auto it = node.children.begin(); it != node.children.end(); ++it) {
-        if (it->isLeaf() && it->slot == id) {
-            node.children.erase(it);
+    std::vector<double> f = fractionsOf(node);
+    for (size_t i = 0; i < node.children.size(); ++i) {
+        if (node.children[i].isLeaf() && node.children[i].slot == id) {
+            node.children.erase(node.children.begin() + long(i));
+            f.erase(f.begin() + long(i));
+            normalizeFractions(f);  // the freed space goes to the survivors
+            node.fractions = std::move(f);
             return true;
         }
-        if (eraseLeaf(*it, id)) return true;
+        if (eraseLeaf(node.children[i], id)) return true;
     }
     return false;
 }
@@ -201,11 +244,13 @@ PaneNode flattenTree(const PaneNode &root, Qt::Orientation axis)
 {
     PaneNode flat;
     flat.axis = axis;
+    // Shares from the old shape mean nothing once everything is one split.
     for (int id : leafOrder(root)) {
         PaneNode leafNode;
         leafNode.slot = id;
         flat.children.push_back(std::move(leafNode));
     }
+    flat.fractions = evenFractions(flat.children.size());
     // The root stays a split even with a single child, so callers can always
     // hand its children straight to the top-level splitter.
     return flat;
