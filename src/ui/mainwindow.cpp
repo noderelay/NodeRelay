@@ -447,9 +447,14 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     // clicking a channel row must not count as leaving the pane.
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *, QWidget *now){
         for (QWidget *w = now; w; w = w->parentWidget()) {
-            if (w == m_primaryPanel) { m_focusedPane = nullptr; return; }
+            if (w == m_primaryPanel) {
+                m_focusedPane = nullptr;
+                syncSidebarToActive(); // highlight follows focus
+                return;
+            }
             if (auto *p = qobject_cast<ChannelPane *>(w)) {
                 if (m_orderedPanes.contains(p)) m_focusedPane = p; // docked only
+                syncSidebarToActive(); // floating panes count for the highlight too
                 return;
             }
         }
@@ -1467,17 +1472,36 @@ ChannelPane *MainWindow::currentPaneTarget() const
     return nullptr;
 }
 
-// The highlight follows the primary view, never a pane — a checked-out or
-// paned row left selected would claim to be what the main view is showing.
-// Closed with its ✕, though, the main view shows nothing at all, and leaving
-// the highlight on the buffer it still holds marks a row the user can't see.
-// The pane they're working in stands in until the main view is back.
+// The pane (docked or floating) holding keyboard focus right now, or null.
+// Unlike m_focusedPane this sees floating panes too, and goes null the
+// moment focus parks on the sidebar or a dialog — syncSidebarToActive uses
+// the two together.
+ChannelPane *MainWindow::paneWithFocus() const
+{
+    for (QWidget *w = QApplication::focusWidget(); w; w = w->parentWidget())
+        if (auto *p = qobject_cast<ChannelPane *>(w))
+            return (m_panes.value(p->key()) == p) ? p : nullptr;
+    return nullptr;
+}
+
+// The highlight follows keyboard focus: whichever chat view the user is
+// working in owns the row — a docked or floating pane while it has focus,
+// the main view's buffer otherwise. Focus parked on the sidebar or a dialog
+// keeps the last choice, the same rule the click routing uses, so clicking
+// a row doesn't bounce the highlight. (This replaced the original
+// anchored-to-main-view rule from the pane arc.)
 void MainWindow::syncSidebarToActive()
 {
     ServerId host = m_model->activeHost();
     BufferId chan = m_model->activeChannel();
-    if (m_primaryPanel->isHidden())
-        if (ChannelPane *p = currentPaneTarget()) { host = p->host(); chan = p->channel(); }
+
+    ChannelPane *p = paneWithFocus();
+    if (!p && m_focusedPane && m_orderedPanes.contains(m_focusedPane))
+        p = m_focusedPane;
+    // Main view closed: some pane stands in even without focus.
+    if (!p && m_primaryPanel->isHidden())
+        p = currentPaneTarget();
+    if (p) { host = p->host(); chan = p->channel(); }
 
     if (auto *active = m_sidebarCtl->channelItem(host, chan))
         m_sidebar->setCurrentItem(active);
