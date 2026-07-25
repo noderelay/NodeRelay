@@ -1795,6 +1795,11 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
         // Read the IRC codes off the document — bold/italic/colour live in
         // the char formats, and toPlainText() would drop every one of them.
         const QString raw = inputToIrcText(pane->input());
+        // Clear BEFORE dispatching, same order as the main input: a command
+        // that retargets this pane (/query, /msg) stashes whatever the input
+        // still holds as the old buffer's draft — the command must not come
+        // back as a draft every time that channel is opened.
+        pane->input()->clear();
         // Panes share the main view's history, both ways: what's sent from
         // one is what Up cycles back through in any of them.
         if (const QString trimmed = raw.trimmed(); !trimmed.isEmpty()) {
