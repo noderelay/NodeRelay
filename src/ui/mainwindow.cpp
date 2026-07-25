@@ -1761,6 +1761,9 @@ void MainWindow::openChannelPane(const ServerId &host, const BufferId &channel)
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);
     m_model->markRead(pane->host(), pane->channel());
+    // Right-clicking the row to open it here moved the selection onto a
+    // channel the main view isn't showing; the highlight tracks the primary.
+    syncSidebarToActive();
 }
 
 // Opens a channel in its own floating top-level window. Closing the window
@@ -1921,6 +1924,9 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     }
 
     rebuildPaneLayout();
+    // The closed channel may still own the highlight — put it back on whatever
+    // the main view is showing, as the floating-window path above already does.
+    syncSidebarToActive();
 }
 
 // Which way panes split. On "auto" the shape of the pane area decides: a wide
