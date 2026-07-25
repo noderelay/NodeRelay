@@ -1,6 +1,31 @@
 # Changelog
 
 <!--
+2026-07-24: edge-drop only highlights zones that would move something.
+
+Joe: two panes side by side, grab the right one, hover the LEFT pane's
+right edge — it highlighted, and releasing snapped the pane back where
+it started. Correct outcome (inserting after the left pane is where it
+already was), lying highlight.
+
+Zones are now filtered: paneOrderAfterDrop() computes the resulting slot
+order and paneDropWouldChange() compares it with the current one. Same
+order still counts as a change when the panes would visibly flip axis,
+which is how a rows→columns drop on an existing neighbour stays live.
+
+Note what is deliberately NOT a change: pinning pane_split_axis from
+auto to the same orientation it already resolves to. Nothing moves on
+screen, so highlighting it would be the same lie in a different form.
+The checkbox is where you pin the axis without moving panes.
+
+ChannelPane can't reach MainWindow, so it holds a std::function filter
+installed in createPane, consulted on dragEnter/dragMove (highlight) and
+on drop (ignore). The primary view runs the same predicate inline in
+MainWindow's event filter. Also deduped three copies of the
+combined-slot-order loop into paneSlotOrder().
+-->
+
+<!--
 2026-07-24: pane header stops at the user list (unreleased).
 
 Joe screenshotted a second pane (#freebsd under #linuxdojo) whose

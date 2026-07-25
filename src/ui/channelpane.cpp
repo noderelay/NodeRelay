@@ -607,8 +607,7 @@ void ChannelPane::dragEnterEvent(QDragEnterEvent *event)
     // shape, and the grab hand should hold from pickup to drop. Only real
     // targets get the drop frame, and only they act on the drop.
     event->acceptProposedAction();
-    if (isPaneDropTarget(event->mimeData()))
-        setDragHighlight(zoneFor(size(), event->position().toPoint()));
+    updateDropHighlight(event->mimeData(), event->position().toPoint());
 }
 
 void ChannelPane::dragMoveEvent(QDragMoveEvent *event)
@@ -620,8 +619,7 @@ void ChannelPane::dragMoveEvent(QDragMoveEvent *event)
     event->acceptProposedAction();
     // Track the cursor: the highlight has to say which side is about to be
     // taken, not just that this pane is the target.
-    if (isPaneDropTarget(event->mimeData()))
-        setDragHighlight(zoneFor(size(), event->position().toPoint()));
+    updateDropHighlight(event->mimeData(), event->position().toPoint());
 }
 
 void ChannelPane::dragLeaveEvent(QDragLeaveEvent *)
@@ -634,9 +632,26 @@ void ChannelPane::dropEvent(QDropEvent *event)
     clearDragHighlight();
     event->acceptProposedAction();
     const QByteArray fmt = mimeType().toUtf8();
-    if (isPaneDropTarget(event->mimeData()))
-        emit dropReceived(QString::fromUtf8(event->mimeData()->data(fmt)),
-                          zoneFor(size(), event->position().toPoint()));
+    if (!isPaneDropTarget(event->mimeData())) return;
+    const QString sourceKey = QString::fromUtf8(event->mimeData()->data(fmt));
+    const DropZone zone = zoneFor(size(), event->position().toPoint());
+    // Nothing was highlighted, so nothing was promised.
+    if (m_zoneFilter && !m_zoneFilter(sourceKey, zone)) return;
+    emit dropReceived(sourceKey, zone);
+}
+
+// Light up the zone under the cursor, but only when releasing there would
+// rearrange something — see the filter MainWindow installs.
+void ChannelPane::updateDropHighlight(const QMimeData *mime, const QPoint &pos)
+{
+    if (!isPaneDropTarget(mime)) return;
+    const QString sourceKey = QString::fromUtf8(mime->data(mimeType().toUtf8()));
+    const DropZone zone = zoneFor(size(), pos);
+    if (m_zoneFilter && !m_zoneFilter(sourceKey, zone)) {
+        clearDragHighlight();
+        return;
+    }
+    setDragHighlight(zone);
 }
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
