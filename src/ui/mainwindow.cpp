@@ -1866,6 +1866,11 @@ void MainWindow::openChannelPane(const ServerId &host, const BufferId &channel)
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);
     m_model->markRead(pane->host(), pane->channel());
+    // The same channel never shows in the primary and a pane at once — the
+    // pop-out path shifts the primary away, and docking has to match it.
+    if (host == m_model->activeHost() &&
+        channel.str().compare(m_model->activeChannel().str(), Qt::CaseInsensitive) == 0)
+        switchAwayFromChannel(host, channel);
     // Right-clicking the row to open it here moved the selection onto a
     // channel the main view isn't showing; the highlight tracks the primary.
     syncSidebarToActive();

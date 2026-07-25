@@ -1777,6 +1777,8 @@ channels = "#uplinkirc"</pre>
       <li>The same channel never appears in both the primary view and a pane at the same time. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically. Left-clicking a channel that is already open in a pane just keeps the primary view where it was; it does not also load it there.</li>
       <li>All slash commands work in pane input bars: <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
       <li><strong>Tab completion works in pane input bars.</strong> Pressing <kbd>Tab</kbd> completes nicks from that pane's own channel, not the primary channel, so you always get the right suggestions regardless of which input is focused.</li>
+      <li><strong>Pane inputs match the primary input.</strong> <code>:emoji</code> autocomplete and shortcode substitution, <kbd>Up</kbd>/<kbd>Down</kbd> send history (one list shared across every input), <kbd>Ctrl+B/I/U/S/O</kbd> and color formatting with the same corner badge, and outgoing typing notifications all work the same in a pane. Replying from a pane shows who you are replying to in the input placeholder; <kbd>Esc</kbd> cancels it.</li>
+      <li><strong>Everything acts on the pane's own channel.</strong> Right-clicking a nick in a pane's chat or user list gives the full menu — Kick, Ban, Op, CTCP, DCC — aimed at that pane's channel, CTCP replies come back to the buffer that asked, and <code>/clear</code> clears the buffer it was typed in.</li>
       <li>Font sizes set in <strong>Preferences → Font Config</strong> apply consistently to all panes: chat text, nick list, topic bar, and input label all inherit the same configured sizes whether the pane is opened at launch or mid-session.</li>
       <li>Right-clicking anywhere on a message in a pane gives the same context menu as the primary view: Reply, React, Delete (your own messages), and Copy (when text is selected).</li>
     </ul>
@@ -3393,7 +3395,7 @@ hanging_indent = true   # default on</pre>
   <!-- APP ICON -->
   <section id="app-icon">
     <h2>App icon variant</h2>
-    <p>Uplink ships with 15 icon variants across flat, colorful, gruvbox, and original styles. Pick one from the visual grid in <strong>Preferences → Appearance</strong>; the icon updates the window, system tray, and KDE Plasma taskbar live.</p>
+    <p>Uplink ships with 22 icon variants across flat, colorful, gruvbox, original, and circle-bubble styles. Pick one from the visual grid in <strong>Preferences → Appearance</strong>; the icon updates the window, system tray, and KDE Plasma taskbar live.</p>
 
     <figure class="shot">
       <img src="shots/app-icon-variants.png" loading="lazy"
@@ -3412,6 +3414,7 @@ app_icon = "flat-black"</pre>
       <tr><td><code>"colorful-blueish"</code></td><td>Colorful blue tones</td></tr>
       <tr><td><code>"colorful-purple"</code></td><td>Colorful purple</td></tr>
       <tr><td><code>"original-black"</code></td><td>Original style, black</td></tr>
+      <tr><td><code>"circle-bubble-red"</code></td><td>Speech-bubble badge; also <code>-black</code>, <code>-blue</code>, <code>-cyan</code>, <code>-green</code>, <code>-magenta</code>, <code>-purple</code></td></tr>
     </table>
     <p>15 variants total: <code>flat-black</code>, <code>black-old-orange</code>, <code>black-orange</code>, <code>original-black</code>, <code>original-flat-shine</code>, <code>colorful-blueish</code>, <code>colorful-greenblue</code>, <code>colorful-hotbluepink</code>, <code>colorful-orange</code>, <code>colorful-purple</code>, <code>gruvbox-blue</code>, <code>gruvbox-colorful</code>, <code>gruvbox-orange</code>, <code>gruvbox-purple</code>, <code>gruvbox-yellow</code>.</p>
 
