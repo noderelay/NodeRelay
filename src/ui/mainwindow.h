@@ -15,6 +15,7 @@
 #include "ui/nicklistmodel.h"
 #include "ui/themeloader.h"
 #include "ui/channelpane.h"   // ChannelPane::DropZone appears in a signature below
+#include "ui/chatline.h"      // renderMessageRange returns display lines
 #include "ui/panetree.h"
 
 namespace ChatRenderer { struct Context; }
@@ -203,6 +204,12 @@ private:
     QString    formatMessage(const Message &msg) const;
     void       applyThemeColors(ChatRenderer::Context &ctx) const;
     ChatRenderer::Context makeRenderContext(const ServerId &host, Channel *ch) const;
+    // The one bulk-render loop: messages[from, to) as display lines. Every
+    // full or paged render goes through it — never fork a copy per view.
+    QList<ChatLine> renderMessageRange(Channel *ch, const ChatRenderer::Context &ctx,
+                                       const QString &selfNick, int from, int to,
+                                       bool withPreviews,
+                                       int sepBeforeIdx = -1, const ChatLine *sep = nullptr);
     void       toggleEventGroupInView(ChatView *view, const QString &groupId,
                                       const ServerId &host, const BufferId &channel);
     void       handleChatViewContextMenu(ChatView *view, const QString &anchor,

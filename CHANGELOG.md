@@ -1,6 +1,16 @@
 # Changelog
 
 <!--
+2026-07-25 (follow-up): the four near-identical bulk render loops in
+chatupdates.cpp (pane refresh, main refresh, scrollback page-in,
+server-history prepend) collapsed into one renderMessageRange() —
+their URL regexes had already silently diverged, which is exactly the
+copy-drift that caused the pane arc. One shared chatUrlRe() now feeds
+both rendering and appendPreviewCards, so preview-card lookups
+tokenise identically everywhere. No intended behavior change.
+-->
+
+<!--
 2026-07-25 (follow-up): pane-layout JSON moved out of mainwindow.cpp
 file-statics into panetree.{h,cpp} (paneTreeToJson/paneTreeFromJson) so
 the stage-C save/restore surface finally has tests: round-trip,
