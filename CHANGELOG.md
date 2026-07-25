@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+2026-07-25 (live-testing, cont): a command that retargets its own pane
+(/query, /msg) came back as the OLD channel's draft forever — the pane
+emits inputSubmitted before clearing (receiver reads formats off the
+document), so the retarget's draft stash still saw the sent command in
+the input and persisted it. The receiver now clears the pane input
+before dispatching, same order the main input has always used. Anyone
+already carrying a stale draft: it shows once more, delete it once and
+it stays gone.
+-->
+
+<!--
 2026-07-25 (Joe live-testing the sweep), two finds:
 
 - /query and /msg switched the view but left the sidebar highlight on
