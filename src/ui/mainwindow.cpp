@@ -1316,10 +1316,8 @@ void MainWindow::onSidebarSelectionChanged()
                           ? m_focusedPane
                           : (m_primaryPanel->isHidden() ? currentPaneTarget() : nullptr);
 
-    tracePanes(target ? "sidebar click -> retarget pane" : "sidebar click -> primary");
     if (target) retargetPane(target, host, channel);
     else        switchToChannel(host, channel);
-    tracePanes("sidebar click done");
 }
 
 void MainWindow::navigateChannel(int direction)
@@ -1934,7 +1932,6 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     // The closed channel may still own the highlight — put it back on whatever
     // the main view is showing, as the floating-window path above already does.
     syncSidebarToActive();
-    tracePanes("pane closed");
 }
 
 // Which way panes split. On "auto" the shape of the pane area decides: a wide
@@ -2079,44 +2076,6 @@ static bool paneNodeFromJson(const QJsonObject &obj, const QHash<QString, int> &
     }
     out = std::move(node);
     return true;
-}
-
-// TEMPORARY: set UPLINK_PANE_DEBUG=1 to trace the pane layout state. Goes out
-// once the pane-tree layout bugs are closed.
-static QString dumpNode(const PaneNode &n)
-{
-    if (n.isLeaf()) return QStringLiteral("leaf(%1)").arg(n.slot);
-    QStringList kids;
-    for (const PaneNode &c : n.children) kids << dumpNode(c);
-    return QStringLiteral("%1[%2]")
-        .arg(n.axis == Qt::Horizontal ? QStringLiteral("H") : QStringLiteral("V"),
-             kids.join(QStringLiteral(", ")));
-}
-
-void MainWindow::tracePanes(const char *where) const
-{
-    static const bool on = qEnvironmentVariableIsSet("UPLINK_PANE_DEBUG");
-    if (!on) return;
-
-    QStringList views;
-    for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it) {
-        QWidget *w = it.value();
-        QString name = QStringLiteral("?");
-        if (w == m_primaryPanel) name = QStringLiteral("primary");
-        else if (auto *p = qobject_cast<ChannelPane *>(w)) name = p->key();
-        views << QStringLiteral("%1=%2%3%4").arg(it.key()).arg(name,
-                   w->parentWidget() ? QString() : QStringLiteral(" DETACHED"),
-                   w->isHidden()     ? QStringLiteral(" HIDDEN") : QString());
-    }
-    qDebug().noquote()
-        << "[panes]" << where
-        << "\n  tree    " << dumpNode(m_paneTree)
-        << "\n  views   " << views.join(QStringLiteral(" | "))
-        << "\n  m_panes " << m_panes.keys().join(QStringLiteral(","))
-        << "\n  ordered " << m_orderedPanes.size()
-        << " active" << m_model->activeHost().str() + "/" + m_model->activeChannel().str()
-        << " focused" << (m_focusedPane ? m_focusedPane->key() : QStringLiteral("none"))
-        << " primaryHidden" << m_primaryPanel->isHidden();
 }
 
 int MainWindow::viewId(const QWidget *view) const
@@ -2291,7 +2250,6 @@ void MainWindow::rebuildPaneLayout()
     // every pane, which resets programmatic fonts to the app default —
     // re-apply the configured fonts.
     applyFontSizes();
-    tracePanes("layout rebuilt");
 }
 
 // The tree an edge-drop would produce. Empty when the drop can't be honoured.

@@ -638,7 +638,6 @@ void MainWindow::setupChatArea()
         m_primaryCloseBtn->setVisible(false);
         connect(m_primaryCloseBtn, &QToolButton::clicked, this, [this]{
             m_primaryPanel->hide();
-            tracePanes("primary closed");
         });
 
         m_searchBtn = new QToolButton;
