@@ -10,7 +10,7 @@ than beside it, so they're maintained through every edit: a new split
 starts 50/50, closing a view renormalises the survivors, and splicing a
 same-axis split into its parent multiplies the inner fractions by the
 share the parent held. That last one is what keeps proportions honest
-when a drop flattens a nest. Five new cases, 25 in tst_panetree.
+when a drop flattens a nest. Six new cases, 26 in tst_panetree.
 
 captureFractions() reads the splitters back into the tree before every
 rebuild, so a drag isn't lost when a pane is opened or closed — that was
@@ -26,6 +26,34 @@ Deliberately NOT QSplitter::saveState() — that is the restoreState()
 trap from #134/#139 (it silently resets childrenCollapsible and brings
 back the zero-width pane). Own fractions, reapplied against whatever the
 window is now, which also makes the layout survive a different monitor.
+
+Three bugs from the tree rewrite (#178/#179) fell out of testing stage C
+on FreeBSD, all reached by closing panes back down again. Field-verified
+by Joe on zippy, PR #180:
+
+1. removeLeaf collapses a one-child split into that child, so closing
+   back to a single view left the ROOT a bare leaf — and rebuildPaneLayout
+   only ever walked m_paneTree.children. Nothing went back into the
+   splitter: blank chat area. The rebuild re-wraps a leaf root now.
+2. A view absent from the tree still gets detached by the rebuild and is
+   never re-added, and a parentless widget that is shown becomes a
+   TOP-LEVEL WINDOW — that was "clicking a channel pops out a window".
+   The rebuild takes strays back in at the root before detaching.
+3. The primary's ✕ only hides it; it stays in the tree. Every
+   switchToChannel() did setVisible(true) on it, so a sidebar click put
+   the dismissed view back beside the panes and read as "the click opened
+   a pane". Worst via retargetPane's primary/pane trade, which routes
+   through switchToChannel by design. Now the main view is only restored
+   once m_orderedPanes is empty, and syncSidebarToActive() follows the
+   stand-in pane while it's closed (the highlight was otherwise stuck on
+   a buffer nothing on screen was showing).
+
+Diagnosis took three wrong rounds first: zippy was sitting on main while
+the fixes were on the branch, so "still broken" reports were the old
+binary. Check the branch on the test box BEFORE re-diagnosing. What
+finally settled it was a temporary UPLINK_PANE_DEBUG trace (tree, per-view
+parent/hidden state, m_panes, focus) rather than more inference — added
+and reverted within the same PR.
 -->
 
 <!--
