@@ -158,6 +158,17 @@ private slots:
         QVERIFY(t.children[1].isLeaf());
     }
 
+    // Closing panes down to the last view leaves the root a bare leaf, not a
+    // split of one — callers that walk root.children have to expect it.
+    void removeDownToOneLeavesALeafRoot()
+    {
+        PaneNode t = buildShapeTree(2, false);
+        QVERIFY(removeLeaf(t, 1));
+        QVERIFY(t.isLeaf());
+        QVERIFY(t.children.empty());
+        QCOMPARE(leafOrder(t), (std::vector<int>{0}));
+    }
+
     void removeUnknownLeafFails()
     {
         PaneNode t = buildShapeTree(2, false);
@@ -209,6 +220,69 @@ private slots:
         for (const PaneNode &c : flat.children)
             QVERIFY(c.isLeaf());
         QCOMPARE(leafOrder(flat), leafOrder(t));          // order preserved
+    }
+
+    // ── sizes ───────────────────────────────────────────────────────────────
+
+    void splitStartsDownTheMiddle()
+    {
+        PaneNode t = buildShapeTree(1, false);
+        QVERIFY(splitLeaf(t, 0, 1, Qt::Horizontal, false));
+        QCOMPARE(t.fractions.size(), size_t(2));
+        QVERIFY(qAbs(t.fractions[0] - 0.5) < 1e-9);
+        QVERIFY(qAbs(t.fractions[1] - 0.5) < 1e-9);
+    }
+
+    void removingAViewSharesOutItsSpace()
+    {
+        PaneNode t = buildShapeTree(1, false);
+        QVERIFY(splitLeaf(t, 0, 1, Qt::Horizontal, false));
+        QVERIFY(splitLeaf(t, 1, 2, Qt::Horizontal, false));
+        t.fractions = {0.5, 0.2, 0.3};
+
+        QVERIFY(removeLeaf(t, 1));
+        QCOMPARE(t.children.size(), size_t(2));
+        // 0.5 and 0.3 renormalised, keeping their ratio
+        QVERIFY(qAbs(t.fractions[0] - 0.625) < 1e-6);
+        QVERIFY(qAbs(t.fractions[1] - 0.375) < 1e-6);
+        double sum = 0;
+        for (double f : t.fractions) sum += f;
+        QVERIFY(qAbs(sum - 1.0) < 1e-9);
+    }
+
+    void flatteningNestedSharesMultipliesThrough()
+    {
+        // A wide left view and a right half holding two rows.
+        PaneNode t = buildShapeTree(1, false);
+        QVERIFY(splitLeaf(t, 0, 1, Qt::Horizontal, false));
+        t.fractions = {0.7, 0.3};
+        QVERIFY(splitLeaf(t, 1, 2, Qt::Horizontal, false)); // same axis: splices up
+
+        // The right half's 0.3 is divided between the two views that shared it
+        QCOMPARE(t.children.size(), size_t(3));
+        QVERIFY(qAbs(t.fractions[0] - 0.7)  < 1e-6);
+        QVERIFY(qAbs(t.fractions[1] - 0.15) < 1e-6);
+        QVERIFY(qAbs(t.fractions[2] - 0.15) < 1e-6);
+    }
+
+    void differentSizesMakeTreesUnequal()
+    {
+        PaneNode a = buildShapeTree(2, false);
+        PaneNode b = a;
+        a.fractions = {0.5, 0.5};
+        b.fractions = {0.8, 0.2};
+        QVERIFY(a != b);
+        b.fractions = {0.5, 0.5};
+        QVERIFY(a == b);
+    }
+
+    void flattenResetsToEvenShares()
+    {
+        PaneNode t = buildShapeTree(2, false);
+        t.fractions = {0.9, 0.1};
+        const PaneNode flat = flattenTree(t, Qt::Vertical);
+        QCOMPARE(flat.fractions.size(), size_t(2));
+        QVERIFY(qAbs(flat.fractions[0] - 0.5) < 1e-9);
     }
 
     void emptyTreeHasNoChildren()

@@ -11,9 +11,17 @@ struct PaneNode {
     int             slot{-1};                  // leaf only: index into the view list
     Qt::Orientation axis{Qt::Horizontal};      // split only: how children are laid out
     std::vector<PaneNode> children;            // empty on a leaf
+    // Split only: each child's share of this split, parallel to children and
+    // summing to 1. Empty means "even", which is what every new split starts
+    // as; dragging a splitter writes real numbers back.
+    std::vector<double> fractions;
 
     bool isLeaf() const { return children.empty(); }
 };
+
+// Even shares for a split's children, used whenever fractions are missing or
+// don't line up with the child count.
+std::vector<double> evenFractions(size_t count);
 
 // The layout for `count` views, reproducing the shapes Uplink has always used:
 // 1 or 2 flat along the main axis, 3 as one full-length view beside a stacked

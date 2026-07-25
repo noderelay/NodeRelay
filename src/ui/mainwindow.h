@@ -146,6 +146,9 @@ private:
     void refreshPaneNickList(ChannelPane *pane);
     // Loads another buffer into an already-docked pane, leaving the layout alone.
     void retargetPane(ChannelPane *pane, const ServerId &host, const BufferId &channel);
+    // The pane a sidebar click acts on while the main view is closed: the one
+    // being typed in, else the first in layout order. Null if there are none.
+    ChannelPane *currentPaneTarget() const;
     // Puts the sidebar highlight back on whatever the primary view is showing.
     void syncSidebarToActive();
     // Edge-drop placement: nullptr means the primary view on either side.
@@ -161,6 +164,7 @@ private:
     int      viewId(const QWidget *view) const;
     QWidget *viewForId(int id) const;
     void     seedPaneTree();            // tree holding just the primary
+    void     restorePaneLayout(const QString &json);
     QList<QWidget*> paneViewOrder() const;
     // Where a newly opened pane should go: the roomiest view, split along its
     // shorter side unless the axis is forced. Returns false when nothing has
