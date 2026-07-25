@@ -1,5 +1,7 @@
 #include "ui/panetree.h"
 
+#include <QJsonArray>
+#include <QSet>
 #include <QtGlobal>
 
 static PaneNode leaf(int slot)
@@ -254,4 +256,71 @@ PaneNode flattenTree(const PaneNode &root, Qt::Orientation axis)
     // The root stays a split even with a single child, so callers can always
     // hand its children straight to the top-level splitter.
     return flat;
+}
+
+// ---------------------------------------------------------------------------
+// Layout persistence
+// ---------------------------------------------------------------------------
+
+QJsonObject paneTreeToJson(const PaneNode &node, const QHash<int, QString> &keyForSlot)
+{
+    QJsonObject obj;
+    if (node.isLeaf()) {
+        obj["view"] = keyForSlot.value(node.slot);
+        return obj;
+    }
+    obj["axis"] = (node.axis == Qt::Horizontal) ? "h" : "v";
+    const std::vector<double> f = (node.fractions.size() == node.children.size())
+        ? node.fractions : evenFractions(node.children.size());
+    QJsonArray sizes;
+    for (double v : f) sizes.append(v);
+    obj["sizes"] = sizes;
+    QJsonArray kids;
+    for (const PaneNode &c : node.children)
+        kids.append(paneTreeToJson(c, keyForSlot));
+    obj["children"] = kids;
+    return obj;
+}
+
+static bool nodeFromJson(const QJsonObject &obj, const QHash<QString, int> &idForKey,
+                         QSet<int> &used, PaneNode &out)
+{
+    if (obj.contains("view")) {
+        const int id = idForKey.value(obj["view"].toString(), -1);
+        // A repeated key keeps only its first leaf — two leaves resolving to
+        // the same slot would put one widget in two splitters.
+        if (id < 0 || used.contains(id)) return false;
+        used.insert(id);
+        out = PaneNode{};
+        out.slot = id;
+        return true;
+    }
+    PaneNode node;
+    node.axis = (obj["axis"].toString() == "v") ? Qt::Vertical : Qt::Horizontal;
+    const QJsonArray kids  = obj["children"].toArray();
+    const QJsonArray sizes = obj["sizes"].toArray();
+    for (int i = 0; i < kids.size(); ++i) {
+        PaneNode child;
+        if (!nodeFromJson(kids[i].toObject(), idForKey, used, child)) continue;
+        node.children.push_back(std::move(child));
+        node.fractions.push_back(i < sizes.size() ? sizes[i].toDouble() : 0.0);
+    }
+    if (node.children.empty()) return false;
+    double total = 0;
+    for (double v : node.fractions) total += v;
+    if (total <= 0) node.fractions = evenFractions(node.children.size());
+    else for (double &v : node.fractions) v /= total;
+    if (node.children.size() == 1) {
+        out = std::move(node.children[0]);   // a split of one is just its child
+        return true;
+    }
+    out = std::move(node);
+    return true;
+}
+
+bool paneTreeFromJson(const QJsonObject &obj, const QHash<QString, int> &idForKey,
+                      PaneNode &out)
+{
+    QSet<int> used;
+    return nodeFromJson(obj, idForKey, used, out);
 }

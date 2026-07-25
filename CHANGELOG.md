@@ -1,6 +1,15 @@
 # Changelog
 
 <!--
+2026-07-25 (follow-up): pane-layout JSON moved out of mainwindow.cpp
+file-statics into panetree.{h,cpp} (paneTreeToJson/paneTreeFromJson) so
+the stage-C save/restore surface finally has tests: round-trip,
+unknown-leaf dropping, bad sizes, garbage input. Restore also dedupes
+now — a hand-edited layout naming the same view twice used to build a
+duplicate-slot tree that put one widget in two splitters.
+-->
+
+<!--
 2026-07-25 (follow-up): MARKREAD only while the app has focus. A buffer
 open in a pane or window was marked read the moment a message arrived,
 even minimized — so other clients on the account never saw it as
