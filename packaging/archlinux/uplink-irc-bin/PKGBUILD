@@ -1,6 +1,6 @@
 # Maintainer: NodeRelay <joe@linuxdojo.org>
 pkgname=uplink-irc-bin
-pkgver=2026.8.0
+pkgver=2026.8.1
 pkgrel=1
 pkgdesc="Fast, secure, IRCv3-featured IRC client (Qt6, prebuilt binary)"
 arch=('x86_64')
