@@ -42,6 +42,9 @@ public:
     // channels the user is already watching in a docked pane or pop-out
     // window, which never become active.
     void    markRead       (const ServerId &host, const BufferId &channel);
+    // Whether any Uplink window has focus — read marks are held while the
+    // user is away and flushed when they come back.
+    void    setUiActive    (bool active);
     ServerId activeHost()    const { return m_activeHost; }
     BufferId activeChannel() const { return m_activeChannel; }
 
@@ -265,4 +268,5 @@ private:
     void flushReadMarks();
     QHash<QString, QPair<ServerId, BufferId>> m_pendingReadMarks; // bufferKey → buffer
     bool m_readMarkQueued{false};
+    bool m_uiActive{true};
 };
