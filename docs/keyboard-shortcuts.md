@@ -87,7 +87,7 @@ Apply mIRC formatting as you type. The input box shows formatted text live: bold
 | **Ctrl+Shift+K** | Pick text / background color |
 | **Ctrl+O** | Reset all formatting |
 
-Formats stack: press Ctrl+B then Ctrl+U to type bold underlined text. Press the same shortcut again to turn off just that format. Use Ctrl+O to clear everything at once.
+Formats stack: press Ctrl+B then Ctrl+U to type bold underlined text. Press the same shortcut again to turn off just that format. Use Ctrl+O to clear everything at once. The shortcuts work in every input box — the main view's and each pane's — and the format badge shows in whichever input you're typing in.
 
 **Ctrl+Shift+K**, or **right-clicking the input box** and opening the **Color** submenu, shows the 16 mIRC colors, where you pick a **Text color** and, optionally, a **Background**. The chosen colors apply to what you type next (or to a selection), just like bold, and appear as a colored `A` in the format indicator. Choose **Reset color** to go back to the default.
 
