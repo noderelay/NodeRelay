@@ -15,6 +15,13 @@
         <file alias="gruvbox-yellow.png">../assets/icons/gruvbox-yellow.png</file>
         <file alias="original-black.png">../assets/icons/original-black.png</file>
         <file alias="original-flat-shine.png">../assets/icons/original-flat-shine.png</file>
+        <file alias="circle-bubble-black.png">../assets/icons/circle-bubble-black.png</file>
+        <file alias="circle-bubble-blue.png">../assets/icons/circle-bubble-blue.png</file>
+        <file alias="circle-bubble-cyan.png">../assets/icons/circle-bubble-cyan.png</file>
+        <file alias="circle-bubble-green.png">../assets/icons/circle-bubble-green.png</file>
+        <file alias="circle-bubble-magenta.png">../assets/icons/circle-bubble-magenta.png</file>
+        <file alias="circle-bubble-purple.png">../assets/icons/circle-bubble-purple.png</file>
+        <file alias="circle-bubble-red.png">../assets/icons/circle-bubble-red.png</file>
         <file alias="about-logo.png">../assets/icons/flat-black.png</file>
         <file alias="banner.png">icons/banner.png</file>
         <file alias="mi-manage-accounts.svg">icons/mi-manage-accounts.svg</file>

@@ -36,6 +36,13 @@ const QList<QPair<QString,QString>> PreferencesDialog::s_iconChoices = {
     { "gruvbox-orange",      "Gruvbox Orange"},
     { "gruvbox-purple",      "Gruvbox Purple"},
     { "gruvbox-yellow",      "Gruvbox Yellow"},
+    { "circle-bubble-black",   "Bubble Black"  },
+    { "circle-bubble-blue",    "Bubble Blue"   },
+    { "circle-bubble-cyan",    "Bubble Cyan"   },
+    { "circle-bubble-green",   "Bubble Green"  },
+    { "circle-bubble-magenta", "Bubble Magenta"},
+    { "circle-bubble-purple",  "Bubble Purple" },
+    { "circle-bubble-red",     "Bubble Red"    },
 };
 
 const QList<QPair<QString,QString>> PreferencesDialog::s_bracketChoices = {
