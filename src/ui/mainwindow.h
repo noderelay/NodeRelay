@@ -156,6 +156,8 @@ private:
     bool paneDropWouldChange(ChannelPane *source, ChannelPane *target,
                              ChannelPane::DropZone zone) const;
     void rebuildPaneLayout();
+    // TEMPORARY: traces pane bookkeeping when UPLINK_PANE_DEBUG is set.
+    void tracePanes(const char *where) const;
     bool paneRowsAxis() const;
     // View/id plumbing for the layout tree. Id 0 is the primary panel.
     int      viewId(const QWidget *view) const;
