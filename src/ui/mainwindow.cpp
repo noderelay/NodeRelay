@@ -1641,10 +1641,13 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     connect(pane->input(), &QPlainTextEdit::cursorPositionChanged, this, [this, pane]{
         updateFormatIndicatorFor(pane->input());
     });
-    // Panes get the same :shortcode completion as the main view
+    // Panes get the same :shortcode completion as the main view — and the
+    // same outgoing typing notifications, which only the main input sent.
     connect(pane->input(), &QPlainTextEdit::textChanged, this, [this, pane]{
         if (m_restoringDraft) return; // buffer switch, not the user typing
         checkEmojiAutocomplete(pane->input(), pane->input()->toPlainText());
+        m_typing->noteInputChanged(pane->host(), pane->channel(),
+                                   !pane->input()->toPlainText().isEmpty());
     });
     pane->setTypingEnabled(m_config.ui.typingIndicator);
     pane->setTyping(m_typing->typingText(pane->host(), pane->channel())); // seed current typers
@@ -1665,6 +1668,14 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     connect(pane, &ChannelPane::escapePressed, this, [this]{
         if (!m_pendingReplyMsgid.isEmpty()) clearReplyBar();
     });
+    // Seed the unsent text stashed for this buffer, as retargetPane does —
+    // a draft typed in the main view survives the channel moving to a pane.
+    if (const QString draft = m_inputDrafts.value(bufferKey(host, channel)); !draft.isEmpty()) {
+        m_restoringDraft = true; // not the user typing: no completer, no TAGMSG
+        pane->input()->setPlainText(draft);
+        m_restoringDraft = false;
+        pane->input()->moveCursor(QTextCursor::End);
+    }
     connect(pane, &ChannelPane::popOutRequested, this, [this, pane]{ floatPane(pane); });
     connect(pane->chatView(), &ChatView::anchorActivated, this,
             [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
@@ -2004,6 +2015,17 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     if (m_focusedPane == pane) m_focusedPane = nullptr;
     if (m_emojiTarget == pane->input()) hideEmojiAutocomplete();
     if (m_pendingReplyPane == pane) clearReplyBar(); // don't outlive the pane
+    m_typing->noteBufferLeft(host, channel); // close out an in-flight typing state
+
+    // Keep the unsent text, same as the main view does on a switch — the
+    // buffer stays open, only its view is going away. The floating path
+    // below immediately reloads the buffer into the main view, which reads
+    // this stash back.
+    const QString draftKey = bufferKey(host, channel);
+    if (const QString draft = pane->input()->toPlainText(); !draft.isEmpty())
+        m_inputDrafts[draftKey] = draft;
+    else
+        m_inputDrafts.remove(draftKey);
 
     // Floating pane: tear down its window and return to the server list.
     if (auto *win = m_paneWindows.take(key)) {
@@ -2441,6 +2463,9 @@ void MainWindow::retargetPane(ChannelPane *pane, const ServerId &host, const Buf
     else                 m_inputDrafts[oldDraftKey] = draft;
 
     if (m_pendingReplyPane == pane) clearReplyBar(); // it belonged to the old buffer
+    // A typing state in flight belongs to the buffer being left, same as the
+    // main view does on a switch.
+    m_typing->noteBufferLeft(oldHost, oldChan);
 
     m_panes.remove(oldKey);
     pane->retarget(host, channel);

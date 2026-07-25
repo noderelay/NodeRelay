@@ -25,7 +25,8 @@ public:
     bool enabled() const { return m_enabled; }
 
     // Outbound: the user's own typing in the active buffer.
-    void noteInputChanged(bool hasText);                                 // input box edited by the user
+    void noteInputChanged(const ServerId &host, const BufferId &channel,
+                          bool hasText);                                 // an input box edited by the user
     void noteMessageSent(const ServerId &host, const BufferId &channel); // input submitted
     void noteBufferLeft (const ServerId &host, const BufferId &channel); // switched away mid-draft
 
@@ -47,6 +48,8 @@ private:
 
     QTimer *m_selfTimer{nullptr};   // 5s inactivity → "paused"
     bool    m_selfTyping{false};
+    ServerId m_selfHost;            // buffer the in-flight self-typing belongs to
+    BufferId m_selfChannel;
 
     QHash<QString, QSet<QString>> m_typers;      // paneKey → nicks
     QHash<QString, QTimer*>       m_nickTimers;  // paneKey|nick → 6s expiry

@@ -12,12 +12,11 @@ TypingController::TypingController(SessionModel *model, QObject *parent)
     m_selfTimer->setSingleShot(true);
     m_selfTimer->setInterval(5000);
     connect(m_selfTimer, &QTimer::timeout, this, [this]{
-        if (!m_enabled) return;
-        const ServerId host = m_model->activeHost();
-        const BufferId ch   = m_model->activeChannel();
-        if (ch.isEmpty() || ch.str() == "(server)") return;
+        if (!m_enabled || !m_selfTyping) return;
+        // The buffer the typing was happening in, not whatever is active by
+        // the time the pause fires — panes type without becoming active.
         m_selfTyping = false;
-        m_model->sendTyping(host, ch, "paused");
+        m_model->sendTyping(m_selfHost, m_selfChannel, "paused");
     });
 
     connect(m_model, &SessionModel::typingReceived,
@@ -35,15 +34,19 @@ void TypingController::setEnabled(bool on)
     m_nickTimers.clear();
 }
 
-void TypingController::noteInputChanged(bool hasText)
+void TypingController::noteInputChanged(const ServerId &host, const BufferId &ch, bool hasText)
 {
     if (!m_enabled) return;
-    const ServerId host = m_model->activeHost();
-    const BufferId ch   = m_model->activeChannel();
     if (ch.isEmpty() || ch.str() == "(server)") return;
+    // Typing moved to a different input (main view vs pane) — close out the
+    // old buffer's state first so it doesn't dangle as "active" over there.
+    if (m_selfTyping && (host != m_selfHost || ch.str() != m_selfChannel.str()))
+        endSelfTyping(m_selfHost, m_selfChannel);
     if (hasText) {
         if (!m_selfTyping) {
             m_selfTyping = true;
+            m_selfHost    = host;
+            m_selfChannel = ch;
             m_model->sendTyping(host, ch, "active");
         }
         m_selfTimer->start();
@@ -72,8 +75,13 @@ void TypingController::noteBufferLeft(const ServerId &host, const BufferId &chan
 // time the timer would have fired.
 void TypingController::endSelfTyping(const ServerId &host, const BufferId &channel)
 {
+    // Only an in-flight state for THIS buffer — leaving or closing one view
+    // must not close out typing that belongs to another.
+    if (!m_selfTyping || host != m_selfHost
+        || channel.str().compare(m_selfChannel.str(), Qt::CaseInsensitive) != 0)
+        return;
     m_selfTimer->stop();
-    if (m_selfTyping && m_enabled && channel.str() != "(server)")
+    if (m_enabled && channel.str() != "(server)")
         m_model->sendTyping(host, channel, "done");
     m_selfTyping = false;
 }

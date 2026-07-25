@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+2026-07-25 (round three): typing, drafts and the byte counter.
+
+- Typing TAGMSGs were never sent from a pane: noteInputChanged() was
+  wired to the main input only and hard-coded the active buffer. Peers
+  never saw "joe is typing" from a pane. The controller's self-typing
+  state now carries the buffer it belongs to (m_selfHost/m_selfChannel),
+  every input reports with its own buffer, moving between inputs closes
+  out the old buffer's state first, and the 5s "paused" fires at the
+  recorded buffer, not whatever is active by then. endSelfTyping() only
+  acts when the passed buffer matches the in-flight one — closing pane B
+  must not clear typing that belongs to pane A.
+- Closing a pane (docked or floating) threw away its unsent draft; the
+  floating path then reloaded the buffer into the main view and restored
+  the STALE stash over what was just lost. The draft is stashed before
+  teardown now, and createPane() seeds a new pane from the stash so a
+  draft typed in the main view survives the channel moving to a pane.
+- The byte counter subtracted the reply-tag overhead whenever ANY reply
+  was pending; now only when it belongs to the buffer being counted.
+-->
+
+<!--
 2026-07-25 (later still): sweep round two. Joe: "right now we are finding
 fucked up bugs you allowed from regressions" — so this round went looking
 instead of waiting for the next report.
