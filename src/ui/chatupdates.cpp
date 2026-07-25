@@ -237,6 +237,18 @@ void MainWindow::onMessageRedacted(const ServerId &host, const BufferId &channel
     }
 }
 
+// Re-render a buffer wherever it is on screen. Hiding a preview (or anything
+// else that rewrites the whole view) from a pane used to refresh the main
+// view only, leaving the pane showing what was just hidden.
+void MainWindow::refreshViewsFor(const ServerId &host, const BufferId &channel)
+{
+    if (host == m_model->activeHost()
+        && channel.str().compare(m_model->activeChannel().str(), Qt::CaseInsensitive) == 0)
+        refreshChatView(host, channel);
+    if (auto *pane = m_panes.value(paneKey(host, channel)))
+        refreshPaneChatView(pane);
+}
+
 void MainWindow::refreshPaneChatView(ChannelPane *pane)
 {
     pane->chatView()->clear();
