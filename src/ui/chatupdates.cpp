@@ -237,6 +237,17 @@ void MainWindow::onMessageRedacted(const ServerId &host, const BufferId &channel
     }
 }
 
+// Chat lines bake their colours and their timestamp at append time, so a
+// theme or timestamp change has to re-render every view on screen — a pane
+// would otherwise keep drawing the old ones until its buffer changed.
+void MainWindow::refreshVisibleChatViews(bool resetToLatest)
+{
+    if (m_chatView)
+        refreshChatView(m_model->activeHost(), m_model->activeChannel(), resetToLatest);
+    for (auto *p : std::as_const(m_panes))
+        refreshPaneChatView(p);
+}
+
 // Re-render a buffer wherever it is on screen. Hiding a preview (or anything
 // else that rewrites the whole view) from a pane used to refresh the main
 // view only, leaving the pane showing what was just hidden.

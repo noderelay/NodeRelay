@@ -51,6 +51,8 @@ public:
     NickListModel *nickModel() const { return m_nickModel; }
     void setNickModel(NickListModel *model); // wires view + filter; reparents to the pane
     QPlainTextEdit *input()  const { return m_input; }
+    // Active IRC format modes badge, drawn inside the input (empty hides it)
+    void setFormatBadge(const QString &html);
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
     void setNickChrome(const QString &bg, bool rounded = true); // nick panel fill, painted by ChromePanel
@@ -117,6 +119,7 @@ private:
     QToolButton  *m_nickRevealBtn{nullptr};
     NickFilterEdit *m_nickFilter{nullptr};
     QPlainTextEdit *m_input{nullptr};
+    QLabel       *m_formatIndicator{nullptr};
     QLabel       *m_nickPrefix{nullptr};
     QLabel       *m_typingLabel{nullptr};
     QToolButton  *m_closeBtn{nullptr};

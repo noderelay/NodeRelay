@@ -925,6 +925,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                                       ke->key() == Qt::Key_Backtab);
                     return true;
                 }
+                // Bold/italic/underline/strike, same as the main input
+                if (applyFormatShortcut(pane->input(), ke)) return true;
+                if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_O) {
+                    pane->input()->setCurrentCharFormat(QTextCharFormat{});
+                    updateFormatIndicatorFor(pane->input());
+                    return true;
+                }
+                if (ke->key() == Qt::Key_K
+                    && ke->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
+                    showColorPicker();
+                    return true;
+                }
                 // Input history, same rule as the main view: only step once
                 // the cursor is on the first (or last) line of what's typed
                 QPlainTextEdit *inp = pane->input();
@@ -1012,48 +1024,13 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
-    // mIRC formatting: toggle visual QTextCharFormat only — no control chars in the widget.
-    // IRC codes are generated from the document formatting at send time (inputToIrcText).
-    if (ke->modifiers() == Qt::ControlModifier) {
-        switch (ke->key()) {
-        case Qt::Key_B: {
-            QTextCharFormat cf = m_input->currentCharFormat();
-            cf.setFontWeight(cf.fontWeight() >= QFont::Bold ? QFont::Normal : QFont::Bold);
-            m_input->textCursor().setCharFormat(cf);
-            m_input->setCurrentCharFormat(cf);
-            updateFormatIndicator();
-            return true;
-        }
-        case Qt::Key_I: {
-            QTextCharFormat cf = m_input->currentCharFormat();
-            cf.setFontItalic(!cf.fontItalic());
-            m_input->textCursor().setCharFormat(cf);
-            m_input->setCurrentCharFormat(cf);
-            updateFormatIndicator();
-            return true;
-        }
-        case Qt::Key_U: {
-            QTextCharFormat cf = m_input->currentCharFormat();
-            cf.setFontUnderline(!cf.fontUnderline());
-            m_input->textCursor().setCharFormat(cf);
-            m_input->setCurrentCharFormat(cf);
-            updateFormatIndicator();
-            return true;
-        }
-        case Qt::Key_S: {
-            QTextCharFormat cf = m_input->currentCharFormat();
-            cf.setFontStrikeOut(!cf.fontStrikeOut());
-            m_input->textCursor().setCharFormat(cf);
-            m_input->setCurrentCharFormat(cf);
-            updateFormatIndicator();
-            return true;
-        }
-        case Qt::Key_O:
-            m_input->setCurrentCharFormat(QTextCharFormat{});
-            updateFormatIndicator();
-            return true;
-        default: break;
-        }
+    // mIRC formatting: toggle visual QTextCharFormat only — no control chars
+    // in the widget. IRC codes come from the document at send time.
+    if (applyFormatShortcut(m_input, ke)) return true;
+    if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_O) {
+        m_input->setCurrentCharFormat(QTextCharFormat{});
+        updateFormatIndicator();
+        return true;
     }
 
     return QMainWindow::eventFilter(obj, event);
@@ -1240,6 +1217,14 @@ void MainWindow::onChannelAdded(const ServerId &host, const BufferId &channel)
         m_sidebarCtl->setCheckedOut(host, channel, true);
         return;
     }
+
+    // Only a join the user asked for takes the view. Config autojoins and the
+    // ones a reconnect replays used to select each row as it arrived, so the
+    // last channel to come up stole both the highlight and — with the main
+    // view closed — the pane the user was reading, while the view itself was
+    // left on the first channel. The first buffer of a session still opens.
+    if (!m_model->takeUserJoin(host, channel) && !m_model->activeChannel().isEmpty())
+        return;
 
     m_sidebar->setCurrentItem(item);
     switchToChannel(host, channel);
@@ -1605,7 +1590,7 @@ void MainWindow::openChannelList(const ServerId &host)
     });
     connect(m_channelListDialog, &ChannelListDialog::joinRequested,
             this, [this](const ServerId &h, const BufferId &channel) {
-        m_model->sendRaw(h, "JOIN " + channel.str());
+        m_model->sendJoin(h, channel); // via sendJoin so the view follows it
     });
     connect(m_channelListDialog, &ChannelListDialog::refreshRequested,
             this, [this](const ServerId &h) {
@@ -1650,6 +1635,11 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
         if (nick.isEmpty()) return;
         showNickContextMenu(nick, pane->nickList()->viewport()->mapToGlobal(pos),
                             pane->host(), pane->channel());
+    });
+    // Keep the pane's format badge in step with the cursor, as the main
+    // input does — the char format changes as you move through the text.
+    connect(pane->input(), &QPlainTextEdit::cursorPositionChanged, this, [this, pane]{
+        updateFormatIndicatorFor(pane->input());
     });
     // Panes get the same :shortcode completion as the main view
     connect(pane->input(), &QPlainTextEdit::textChanged, this, [this, pane]{
@@ -1757,13 +1747,16 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     });
     connect(pane, &ChannelPane::inputSubmitted, this, [this, pane](const QString &text){
         hideEmojiAutocomplete();
+        // Read the IRC codes off the document — bold/italic/colour live in
+        // the char formats, and toPlainText() would drop every one of them.
+        const QString raw = inputToIrcText(pane->input());
         // Panes share the main view's history, both ways: what's sent from
         // one is what Up cycles back through in any of them.
-        if (const QString trimmed = text.trimmed(); !trimmed.isEmpty()) {
+        if (const QString trimmed = raw.trimmed(); !trimmed.isEmpty()) {
             pushInputHistory(trimmed);
             noteHistoryTarget(pane->input());
         }
-        dispatchInput(text, pane->host(), pane->channel());
+        dispatchInput(raw.isEmpty() ? text : raw, pane->host(), pane->channel());
     });
     pane->setDropZoneFilter([this, pane](const QString &sourceKey, ChannelPane::DropZone zone){
         ChannelPane *source = (sourceKey == kPrimaryDragKey) ? nullptr
@@ -1801,16 +1794,52 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
     return pane;
 }
 
+// Say why something didn't happen, in the buffer the user is looking at —
+// a menu entry that does nothing at all reads as broken.
+void MainWindow::notifyFocusedBuffer(const QString &text)
+{
+    ServerId h;
+    BufferId c;
+    if (m_focusedPane && m_orderedPanes.contains(m_focusedPane)) {
+        h = m_focusedPane->host();
+        c = m_focusedPane->channel();
+    } else {
+        h = m_model->activeHost();
+        c = m_model->activeChannel();
+    }
+    if (!h.isEmpty() && !c.isEmpty())
+        m_model->localMessage(h, c, text);
+}
+
 // Docks a channel as a tiled pane in the main window.
 void MainWindow::openChannelPane(const ServerId &host, const BufferId &channel)
 {
-    if (m_orderedPanes.size() >= kMaxExtraPanes) return;
+    // Already open somewhere — go to it rather than doing nothing.
+    if (auto *existing = m_panes.value(paneKey(host, channel))) {
+        if (auto *win = m_paneWindows.value(existing->key())) {
+            win->show(); win->raise(); win->activateWindow();
+        } else {
+            m_focusedPane = existing;
+            existing->input()->setFocus();
+        }
+        return;
+    }
+    if (m_orderedPanes.size() >= kMaxExtraPanes) {
+        notifyFocusedBuffer(QStringLiteral("Pane limit reached (%1) — close one first.")
+                                .arg(kMaxExtraPanes));
+        return;
+    }
     if (m_viewById.isEmpty()) seedPaneTree();
 
     // Decide where it goes before creating it, so a refusal costs nothing.
     int targetId = -1;
     Qt::Orientation axis = Qt::Horizontal;
-    if (!chooseSplitTarget(targetId, axis)) return; // no view has room to halve
+    if (!chooseSplitTarget(targetId, axis)) {
+        notifyFocusedBuffer(QStringLiteral(
+            "No room for another pane — every view would end up too small. "
+            "Widen the window, or close a pane."));
+        return;
+    }
 
     auto *pane = createPane(host, channel);
     if (!pane) return;
@@ -1841,7 +1870,11 @@ void MainWindow::popOutChannel(const ServerId &host, const BufferId &channel)
         win->show(); win->raise(); win->activateWindow();
         return;
     }
-    if (m_paneWindows.size() >= kMaxPaneWindows) return;
+    if (m_paneWindows.size() >= kMaxPaneWindows) {
+        notifyFocusedBuffer(QStringLiteral("Window limit reached (%1) — close one first.")
+                                .arg(kMaxPaneWindows));
+        return;
+    }
     if (auto *existing = m_panes.value(key)) { floatPane(existing); return; }
 
     if (auto *pane = createPane(host, channel))
@@ -1854,7 +1887,12 @@ void MainWindow::floatPane(ChannelPane *pane)
 {
     // Cap check must precede the m_orderedPanes removal so a refused
     // docked pane stays docked untouched.
-    if (!pane || m_paneWindows.size() >= kMaxPaneWindows) return;
+    if (!pane) return;
+    if (m_paneWindows.size() >= kMaxPaneWindows) {
+        notifyFocusedBuffer(QStringLiteral("Window limit reached (%1) — close one first.")
+                                .arg(kMaxPaneWindows));
+        return;
+    }
     const QString  key     = pane->key();
     const ServerId host    = pane->host();
     const BufferId channel = pane->channel();

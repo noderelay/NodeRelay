@@ -49,10 +49,14 @@ void MainWindow::ensureEmojiPicker()
             m_pendingReactChannel = {};
             return;
         }
-        QTextCursor tc = m_input->textCursor();
+        // Into whichever input is being typed in — the picker can be opened
+        // from a pane (React that isn't a react, menu bar) as well as from
+        // the main view's emoji button.
+        QPlainTextEdit *input = formatTargetInput();
+        QTextCursor tc = input->textCursor();
         tc.insertText(emoji);
-        m_input->setTextCursor(tc);
-        m_input->setFocus();
+        input->setTextCursor(tc);
+        input->setFocus();
     });
 }
 
@@ -273,8 +277,20 @@ void MainWindow::moveLengthIndicator()
 
 void MainWindow::updateFormatIndicator()
 {
-    if (!m_formatIndicator || !m_input) return;
-    const QTextCharFormat cf = m_input->currentCharFormat();
+    updateFormatIndicatorFor(formatTargetInput());
+}
+
+// The badge belongs to the input the format was toggled in — the main view
+// has its own label, each pane carries one of its own.
+void MainWindow::updateFormatIndicatorFor(QPlainTextEdit *input)
+{
+    if (!input) return;
+    ChannelPane *pane = nullptr;
+    for (auto *p : std::as_const(m_panes))
+        if (p->input() == input) { pane = p; break; }
+    if (!pane && (!m_formatIndicator || input != m_input)) return;
+
+    const QTextCharFormat cf = input->currentCharFormat();
     const bool bold   = cf.fontWeight() >= QFont::Bold;
     const bool italic = cf.fontItalic();
     const bool under  = cf.fontUnderline();
@@ -284,7 +300,8 @@ void MainWindow::updateFormatIndicator()
     const bool hasBg  = cf.hasProperty(QTextFormat::BackgroundBrush)
         && ChatRenderer::mircColorIndex(cf.background().color()) >= 0;
     if (!bold && !italic && !under && !strike && !hasFg && !hasBg) {
-        m_formatIndicator->hide();
+        if (pane) pane->setFormatBadge({});
+        else      m_formatIndicator->hide();
         return;
     }
     QString text;
@@ -298,6 +315,7 @@ void MainWindow::updateFormatIndicator()
         const QString bg = hasBg ? cf.background().color().name() : QStringLiteral("transparent");
         text += QString("<span style='color:%1;background-color:%2'>A</span>").arg(fg, bg);
     }
+    if (pane) { pane->setFormatBadge(text); return; }
     m_formatIndicator->setText(text);
     m_formatIndicator->adjustSize();
     const int fy = m_input->height() - m_formatIndicator->height() - 3;
@@ -355,14 +373,51 @@ void MainWindow::showColorPicker()
 // fg/bg: 0-15 sets that mIRC color, -1 clears it, -2 leaves it unchanged.
 void MainWindow::applyInputColor(int fg, int bg)
 {
-    QTextCharFormat cf = m_input->currentCharFormat();
+    QPlainTextEdit *input = formatTargetInput();
+    QTextCharFormat cf = input->currentCharFormat();
     if (fg == -1)      cf.clearProperty(QTextFormat::ForegroundBrush);
     else if (fg >= 0)  cf.setForeground(ChatRenderer::mircColor(fg));
     if (bg == -1)      cf.clearProperty(QTextFormat::BackgroundBrush);
     else if (bg >= 0)  cf.setBackground(ChatRenderer::mircColor(bg));
-    m_input->textCursor().setCharFormat(cf);
-    m_input->setCurrentCharFormat(cf);
-    updateFormatIndicator();
+    input->textCursor().setCharFormat(cf);
+    input->setCurrentCharFormat(cf);
+    updateFormatIndicatorFor(input);
+}
+
+// Colour and format menus have no input of their own — they act on whichever
+// one holds focus, falling back to the main view's.
+QPlainTextEdit *MainWindow::formatTargetInput() const
+{
+    for (auto *p : std::as_const(m_panes))
+        if (p->input()->hasFocus()) return p->input();
+    // A menu holds the focus while its action fires, so fall back to the pane
+    // the user was last typing in — m_focusedPane survives popups by design.
+    if (m_focusedPane && m_orderedPanes.contains(m_focusedPane) && !m_input->hasFocus())
+        return m_focusedPane->input();
+    return m_input;
+}
+
+// Ctrl+B/I/U/S toggle QTextCharFormat only — no control chars in the widget;
+// the IRC codes come from the document at send time (inputToIrcText). Shared
+// by the main input and every pane's.
+bool MainWindow::applyFormatShortcut(QPlainTextEdit *input, QKeyEvent *ke)
+{
+    if (!input || ke->modifiers() != Qt::ControlModifier) return false;
+
+    QTextCharFormat cf = input->currentCharFormat();
+    switch (ke->key()) {
+    case Qt::Key_B:
+        cf.setFontWeight(cf.fontWeight() >= QFont::Bold ? QFont::Normal : QFont::Bold);
+        break;
+    case Qt::Key_I: cf.setFontItalic(!cf.fontItalic());       break;
+    case Qt::Key_U: cf.setFontUnderline(!cf.fontUnderline()); break;
+    case Qt::Key_S: cf.setFontStrikeOut(!cf.fontStrikeOut()); break;
+    default: return false;
+    }
+    input->textCursor().setCharFormat(cf);
+    input->setCurrentCharFormat(cf);
+    updateFormatIndicatorFor(input);
+    return true;
 }
 
 void MainWindow::handleTabComplete(QPlainTextEdit *input, const ServerId &host, const BufferId &channel,
@@ -649,7 +704,7 @@ bool MainWindow::handleEmojiCompleterKey(QObject *obj, QKeyEvent *ke)
 // IRC control chars (bold \x02, italic \x1D, underline \x1F, strikethrough \x1E,
 // color \x03fg[,bg]) are emitted at format-change boundaries; the visible text
 // has no control glyphs.
-static QString inputToIrcText(QPlainTextEdit *edit)
+QString MainWindow::inputToIrcText(QPlainTextEdit *edit)
 {
     const QTextDocument *doc = edit->document();
     QString result;

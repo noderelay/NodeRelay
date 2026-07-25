@@ -563,16 +563,14 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         if (args.isEmpty())
             m_model->sendRaw(host, "VERSION");
         else
-            m_model->sendRaw(host, "PRIVMSG " + args.trimmed() + " :\x01VERSION\x01");
+            m_model->sendCtcp(host, channel, args.trimmed(), "VERSION");
     } else if (cmd == "/ctcp") {
         const QString target   = args.section(' ', 0, 0);
         const QString ctcpcmd  = args.section(' ', 1, 1).toUpper();
         const QString ctcpargs = args.section(' ', 2);
         if (!target.isEmpty() && !ctcpcmd.isEmpty()) {
-            const QString ctcp = ctcpargs.isEmpty()
-                ? "\x01" + ctcpcmd + "\x01"
-                : "\x01" + ctcpcmd + " " + ctcpargs + "\x01";
-            m_model->sendRaw(host, "PRIVMSG " + target + " :" + ctcp);
+            m_model->sendCtcp(host, channel, target,
+                              ctcpargs.isEmpty() ? ctcpcmd : ctcpcmd + " " + ctcpargs);
         }
     } else if (cmd == "/sysinfo") {
         if (!m_sysinfoCache.isEmpty()) {
@@ -622,13 +620,13 @@ bool CommandDispatcher::dispatch(const QString &text, const ServerId &host,
         const QString nick = args.trimmed().section(' ', 0, 0);
         if (!nick.isEmpty()) {
             const QString ts = QString::number(QDateTime::currentMSecsSinceEpoch());
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + ts + "\x01");
+            m_model->sendCtcp(host, channel, nick, "PING " + ts);
             m_model->localMessage(host, channel, "Pinged " + nick);
         }
     } else if (cmd == "/time") {
         const QString nick = args.trimmed().section(' ', 0, 0);
         if (!nick.isEmpty()) {
-            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01TIME\x01");
+            m_model->sendCtcp(host, channel, nick, "TIME");
             m_model->localMessage(host, channel, "Querying time for " + nick);
         } else {
             m_model->sendRaw(host, "TIME");

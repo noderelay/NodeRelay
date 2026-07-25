@@ -108,6 +108,7 @@ signals:
     void reconnecting   (const QString &host);
     void ctcpPingReply  (const QString &server, const QString &nick, qint64 rttMs);
     void ctcpTimeReply  (const QString &server, const QString &nick, const QString &timeStr);
+    void ctcpVersionReply(const QString &server, const QString &nick, const QString &version);
     void rawReceived  (const QString &line);
     void selfNickChanged(const QString &server, const QString &newNick);
     void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
