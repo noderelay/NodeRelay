@@ -221,7 +221,8 @@ void MainWindow::setupInputBar()
             vb->setValue(vb->maximum());
         }
         if (m_restoringDraft) return; // buffer switch, not the user typing
-        m_typing->noteInputChanged(!text.isEmpty());
+        m_typing->noteInputChanged(m_model->activeHost(), m_model->activeChannel(),
+                                   !text.isEmpty());
     });
 
     // The scroll range updates lazily, after textChanged — re-pin when it
@@ -772,8 +773,10 @@ void MainWindow::updateLengthIndicator()
         return;
     }
     int budget = 510 - 10 - static_cast<int>(channel.str().toUtf8().size());
-    if (!m_pendingReplyMsgid.isEmpty())  // "@+draft/reply=<msgid> "
-        budget -= 15 + static_cast<int>(m_pendingReplyMsgid.toUtf8().size());
+    // Only a reply that will actually ride along with THIS buffer's send
+    const QString replyId = replyMsgidFor(m_model->activeHost(), channel);
+    if (!replyId.isEmpty())  // "@+draft/reply=<msgid> "
+        budget -= 15 + static_cast<int>(replyId.toUtf8().size());
     if (budget <= 0) { m_lengthIndicator->hide(); return; }
 
     int maxLine = 0, msgs = 0;
