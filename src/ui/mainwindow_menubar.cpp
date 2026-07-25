@@ -422,6 +422,14 @@ void MainWindow::applyPaneSplitAxisSetting(const QString &axis)
 {
     m_config.ui.paneSplitAxis = axis;
     saveConfig();
+    // Forcing an axis flattens the layout onto it: with nesting possible,
+    // "always rows" has to mean every view in one column of rows, not just a
+    // transposed top level. Three panes forced to rows is three equal rows —
+    // the arrangement the old shape table could never produce. "auto" leaves
+    // the tree alone and only steers where the next split goes.
+    if (axis == "columns" || axis == "rows")
+        m_paneTree = flattenTree(m_paneTree,
+                                 axis == "rows" ? Qt::Vertical : Qt::Horizontal);
     rebuildPaneLayout();
     if (m_prefsDialog) m_prefsDialog->syncFromConfig(m_config);
 }

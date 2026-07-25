@@ -153,7 +153,10 @@ public:
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
 static constexpr int kDefaultWindowW  = 900;
 static constexpr int kDefaultWindowH  = 650;
-static constexpr int kMaxExtraPanes   = 3;
+// Sanity ceiling only. What actually stops the splitting is the minimum pane
+// size in chooseSplitTarget — a view with no room to halve refuses to split,
+// so the limit follows the window rather than a shape table.
+static constexpr int kMaxExtraPanes   = 7;
 static constexpr int kMaxPaneWindows  = 4;
 static constexpr int kPaneMaxLines    = 800; // pane scrollback retention (main view: 2000)
 
@@ -164,12 +167,7 @@ static constexpr int kPaneMaxLines    = 800; // pane scrollback retention (main 
 //   n<=2  — every slot is a lone top-level column, no stacking at all.
 //   n==3  — slot 0 is lone; slots 1 and 2 share one stack.
 //   n==4  — slots (0,1) share one stack, slots (2,3) share the other.
-static int siblingSlot(qsizetype totalSlots, int slot)
-{
-    if (totalSlots <= 2) return -1;
-    if (totalSlots == 3) return slot == 0 ? -1 : 3 - slot;
-    return slot ^ 1; // n == 4
-}
+
 
 // Mime payload marking a drag of the primary panel. Real pane keys are
 // "host|channel", so this can't collide with one.
@@ -314,7 +312,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         m_sidebarExpandedWidth = settings.value("sidebarWidth").toInt();
 
     const QStringList savedPanes       = settings.value("panes").toStringList();
-    const int         savedPrimarySlot = settings.value("primarySlot", 0).toInt();
 
     QTimer::singleShot(0, this, [this]{
         // Release the pre-show width cap.
@@ -355,13 +352,12 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     if (!savedPanes.isEmpty()) {
-        QTimer::singleShot(0, this, [this, savedPanes, savedPrimarySlot]{
+        QTimer::singleShot(0, this, [this, savedPanes]{
             for (const QString &k : savedPanes) {
                 const qsizetype sep = k.indexOf('|');
                 if (sep < 0) continue;
                 openChannelPane(ServerId{k.left(sep)}, BufferId{k.mid(sep + 1)});
             }
-            m_primarySlot = qBound(0, savedPrimarySlot, static_cast<int>(m_orderedPanes.size()));
             rebuildPaneLayout();
         });
     }
@@ -404,7 +400,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         for (auto *p : std::as_const(m_orderedPanes))
             paneList << p->host().str() + "|" + p->channel().str();
         s.setValue("panes", paneList);
-        s.setValue("primarySlot", m_primarySlot);
+        s.remove("primarySlot"); // the tree replaces it — persisted in stage C
         QStringList winList;
         for (auto it = m_paneWindows.constBegin(); it != m_paneWindows.constEnd(); ++it)
             if (auto *p = m_panes.value(it.key()))
@@ -811,40 +807,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 return true;
             }
 
-            // pane <-> primary: the dragged pane stays exactly where it is;
-            // primary takes over whichever slot the dragged pane's stack-
-            // mate currently holds (or the dragged pane's own slot directly,
-            // if it has no stack-mate). E.g. dragging one of two stacked
-            // panes onto a lone primary column: primary joins the stack
-            // alongside the dragged pane, and the pane displaced from the
-            // stack is promoted to the now-vacant lone column. Reduces to a
-            // plain swap when the dragged pane has no stack-mate — or when
-            // its stack-mate IS the primary (swapping primary with its own
-            // slot would be a silent no-op).
-            ChannelPane *source = m_panes.value(sourceKey);
-            const qsizetype srcIdx = source ? m_orderedPanes.indexOf(source) : -1;
-            if (srcIdx >= 0) {
-                const qsizetype nSlots = 1 + m_orderedPanes.size();
-                const int srcSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
-                const int sib = siblingSlot(nSlots, srcSlot);
-                const int swapSlot = (sib >= 0 && sib != m_primarySlot) ? sib : srcSlot;
-
-                QList<ChannelPane*> combined; // nullptr marks the primary slot
-                int pi = 0;
-                for (int i = 0; i < nSlots; i++)
-                    combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
-
-                ChannelPane *tmp = combined[m_primarySlot];
-                combined[m_primarySlot] = combined[swapSlot];
-                combined[swapSlot] = tmp;
-
-                m_orderedPanes.clear();
-                for (int i = 0; i < nSlots; i++) {
-                    if (!combined[i]) m_primarySlot = i;
-                    else m_orderedPanes.append(combined[i]);
-                }
+            // pane dropped on the primary's middle: the two trade places.
+            // With the layout a tree, that is simply a leaf swap — no slot
+            // arithmetic and no promoting whatever the pane was stacked with.
+            if (ChannelPane *source = m_panes.value(sourceKey);
+                source && swapLeaves(m_paneTree, viewId(source), viewId(m_primaryPanel)))
                 rebuildPaneLayout();
-            }
             return true;
         }
     }
@@ -1366,24 +1334,23 @@ void MainWindow::navigatePane(int direction)
 {
     if (m_orderedPanes.isEmpty()) return;
 
-    // Focus targets in slot order, with the primary input at m_primarySlot.
+    // Focus targets follow the layout tree, so Alt+arrow walks the views in
+    // the order they appear on screen.
     QList<QWidget*> targets;
-    int pi = 0;
-    const qsizetype nSlots = 1 + m_orderedPanes.size();
-    for (int i = 0; i < nSlots; i++)
-        targets.append(i == m_primarySlot ? static_cast<QWidget*>(m_input)
-                                          : m_orderedPanes[pi++]->input());
-
-    // Current slot: whichever pane holds the focus; anything else is primary.
-    int cur = m_primarySlot;
-    if (QWidget *fw = QApplication::focusWidget()) {
-        for (qsizetype i = 0; i < m_orderedPanes.size(); ++i) {
-            if (m_orderedPanes[i]->isAncestorOf(fw)) {
-                cur = static_cast<int>(i < m_primarySlot ? i : i + 1);
-                break;
-            }
+    int cur = 0;
+    QWidget *fw = QApplication::focusWidget();
+    for (QWidget *view : paneViewOrder()) {
+        if (view == m_primaryPanel) {
+            targets.append(m_input);
+        } else if (auto *p = qobject_cast<ChannelPane *>(view)) {
+            targets.append(p->input());
+        } else {
+            continue;
         }
+        // Whichever view owns the focus is where the walk starts.
+        if (fw && view->isAncestorOf(fw)) cur = static_cast<int>(targets.size()) - 1;
     }
+    if (targets.isEmpty()) return;
 
     const int count = static_cast<int>(targets.size());
     int next = cur + direction;
@@ -1704,37 +1671,13 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
                 placePaneBeside(source, pane, zone);
             return;
         }
-        if (sourceKey == kPrimaryDragKey) {
-            // Primary dragged onto this pane: plain slot swap — the primary
-            // takes this pane's slot, the pane takes the primary's old one.
-            const qsizetype nSlots = 1 + m_orderedPanes.size();
-            QList<ChannelPane*> combined; // nullptr marks the primary slot
-            int pi = 0;
-            for (int i = 0; i < nSlots; i++)
-                combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
-            const qsizetype paneSlot = combined.indexOf(pane);
-            if (paneSlot < 0 || paneSlot == m_primarySlot) return;
-            combined[m_primarySlot] = pane;
-            combined[paneSlot]      = nullptr;
-            m_orderedPanes.clear();
-            for (int i = 0; i < nSlots; i++) {
-                if (!combined[i]) m_primarySlot = i;
-                else m_orderedPanes.append(combined[i]);
-            }
+        // Middle of the pane: the dragged view and this one trade places.
+        QWidget *source = (sourceKey == kPrimaryDragKey)
+            ? static_cast<QWidget *>(m_primaryPanel)
+            : static_cast<QWidget *>(m_panes.value(sourceKey));
+        if (!source || source == pane) return;
+        if (swapLeaves(m_paneTree, viewId(source), viewId(pane)))
             rebuildPaneLayout();
-            return;
-        }
-        ChannelPane *source = m_panes.value(sourceKey);
-        ChannelPane *target = pane;
-        if (!source || source == target) return;
-
-        const qsizetype fromIdx = m_orderedPanes.indexOf(source);
-        const qsizetype toIdx   = m_orderedPanes.indexOf(target);
-        if (fromIdx >= 0 && toIdx >= 0) {
-            // pane ↔ pane swap
-            m_orderedPanes.swapItemsAt(fromIdx, toIdx);
-            rebuildPaneLayout();
-        }
     });
 
     m_panes[key] = pane;
@@ -1751,9 +1694,19 @@ ChannelPane *MainWindow::createPane(const ServerId &host, const BufferId &channe
 void MainWindow::openChannelPane(const ServerId &host, const BufferId &channel)
 {
     if (m_orderedPanes.size() >= kMaxExtraPanes) return;
+    if (m_viewById.isEmpty()) seedPaneTree();
+
+    // Decide where it goes before creating it, so a refusal costs nothing.
+    int targetId = -1;
+    Qt::Orientation axis = Qt::Horizontal;
+    if (!chooseSplitTarget(targetId, axis)) return; // no view has room to halve
+
     auto *pane = createPane(host, channel);
     if (!pane) return;
 
+    const int newId = m_nextViewId++;
+    m_viewById.insert(newId, pane);
+    splitLeaf(m_paneTree, targetId, newId, axis, false);
     m_orderedPanes.append(pane);
     m_primaryHeader->setVisible(true);
     m_primaryCloseBtn->setVisible(true);
@@ -1796,6 +1749,11 @@ void MainWindow::floatPane(ChannelPane *pane)
     const BufferId channel = pane->channel();
 
     const bool wasDocked = m_orderedPanes.removeOne(pane);
+    if (wasDocked)
+        if (const int id = viewId(pane); id >= 0) {
+            removeLeaf(m_paneTree, id);
+            m_viewById.remove(id);
+        }
     if (m_focusedPane == pane) m_focusedPane = nullptr; // no longer a docked target
 
     auto *win = new QWidget(nullptr, Qt::Window);
@@ -1841,7 +1799,6 @@ void MainWindow::floatPane(ChannelPane *pane)
     win->show();
 
     if (wasDocked) {
-        m_primarySlot = qMin(m_primarySlot, static_cast<int>(m_orderedPanes.size()));
         if (m_orderedPanes.isEmpty()) {
             m_primaryCloseBtn->setVisible(false);
             m_primaryPanel->setVisible(true);
@@ -1915,7 +1872,10 @@ void MainWindow::closeChannelPane(const ServerId &host, const BufferId &channel)
     }
 
     m_orderedPanes.removeOne(pane);
-    m_primarySlot = qMin(m_primarySlot, static_cast<int>(m_orderedPanes.size()));
+    if (const int id = viewId(pane); id >= 0) {
+        removeLeaf(m_paneTree, id);
+        m_viewById.remove(id);
+    }
     pane->setParent(nullptr); // detach before rebuild
     pane->deleteLater();
 
@@ -1954,7 +1914,7 @@ bool MainWindow::paneRowsAxis() const
 
 // Builds the widget side of a layout tree: leaves are the views themselves,
 // every split becomes a nested QSplitter carrying its own axis.
-static QWidget *buildPaneWidgets(const PaneNode &node, const QList<QWidget*> &views,
+static QWidget *buildPaneWidgets(const PaneNode &node, const QHash<int, QWidget*> &views,
                                  const std::function<void(QWidget*)> &show)
 {
     if (node.isLeaf()) {
@@ -1980,6 +1940,65 @@ static void equalizeSplitters(QSplitter *s, int total)
         equalizeSplitters(qobject_cast<QSplitter *>(s->widget(i)), total);
 }
 
+int MainWindow::viewId(const QWidget *view) const
+{
+    for (auto it = m_viewById.constBegin(); it != m_viewById.constEnd(); ++it)
+        if (it.value() == view) return it.key();
+    return -1;
+}
+
+QWidget *MainWindow::viewForId(int id) const { return m_viewById.value(id); }
+
+// The tree always holds the primary; panes are split off it.
+void MainWindow::seedPaneTree()
+{
+    m_viewById.clear();
+    m_viewById.insert(0, m_primaryPanel);
+    m_paneTree = PaneNode{};
+    m_paneTree.axis = paneRowsAxis() ? Qt::Vertical : Qt::Horizontal;
+    PaneNode primary;
+    primary.slot = 0;
+    m_paneTree.children.push_back(primary);
+}
+
+QList<QWidget*> MainWindow::paneViewOrder() const
+{
+    QList<QWidget*> out;
+    for (int id : leafOrder(m_paneTree))
+        if (QWidget *w = m_viewById.value(id)) out.append(w);
+    return out;
+}
+
+// A new pane splits the roomiest view in half, along whichever side of it is
+// longer, so panes stay as square as the window allows. Halloy calls this
+// largest-shorter; with the axis forced, only the target is chosen. Views that
+// would end up under kMinPaneExtent are left alone, which is what caps the
+// number of panes now that the shape table is gone.
+bool MainWindow::chooseSplitTarget(int &targetId, Qt::Orientation &axis) const
+{
+    constexpr int kMinPaneExtent = 260;
+
+    int bestId = -1;
+    qint64 bestArea = -1;
+    Qt::Orientation bestAxis = Qt::Horizontal;
+    for (int id : leafOrder(m_paneTree)) {
+        QWidget *w = m_viewById.value(id);
+        if (!w || w->isHidden()) continue;
+        const QSize sz = w->size();
+        const Qt::Orientation split = (m_config.ui.paneSplitAxis == "columns") ? Qt::Horizontal
+                                    : (m_config.ui.paneSplitAxis == "rows")    ? Qt::Vertical
+                                    : (sz.width() >= sz.height() ? Qt::Horizontal : Qt::Vertical);
+        const int extent = (split == Qt::Horizontal) ? sz.width() : sz.height();
+        if (extent / 2 < kMinPaneExtent) continue; // both halves would be too thin
+        const qint64 area = qint64(sz.width()) * sz.height();
+        if (area > bestArea) { bestArea = area; bestId = id; bestAxis = split; }
+    }
+    if (bestId < 0) return false;
+    targetId = bestId;
+    axis     = bestAxis;
+    return true;
+}
+
 void MainWindow::rebuildPaneLayout()
 {
     // The primary can be hidden via its ✕ button — a rebuild must not
@@ -1991,16 +2010,8 @@ void MainWindow::rebuildPaneLayout()
         w->show();
     };
 
-    // Collect widgets in display order, inserting primary at m_primarySlot.
-    QList<QWidget*> widgets;
-    int pi = 0;
-    const qsizetype nSlots = 1 + m_orderedPanes.size();
-    for (int i = 0; i < nSlots; i++) {
-        if (i == m_primarySlot)
-            widgets.append(m_primaryPanel);
-        else
-            widgets.append(m_orderedPanes[pi++]);
-    }
+    if (m_viewById.isEmpty()) seedPaneTree();
+    const QList<QWidget*> widgets = paneViewOrder();
 
     // Detach all pane widgets from wherever they currently live
     for (auto *w : std::as_const(widgets))
@@ -2021,13 +2032,10 @@ void MainWindow::rebuildPaneLayout()
         m_primaryHeader->setCursor(m_orderedPanes.isEmpty() ? Qt::ArrowCursor
                                                             : Qt::OpenHandCursor);
 
-    // The shapes are a tree now rather than a branch per pane count, so the
-    // layout is built by walking it. buildShapeTree still returns exactly the
-    // arrangements Uplink has always used; paneRowsAxis() picks the main axis.
-    const PaneNode root = buildShapeTree(static_cast<int>(widgets.size()), paneRowsAxis());
-    m_panesSplitter->setOrientation(root.axis);
-    for (const PaneNode &child : root.children)
-        if (QWidget *w = buildPaneWidgets(child, widgets, showWidget))
+    // Walk the layout tree, mapping leaf ids to the views they stand for.
+    m_panesSplitter->setOrientation(m_paneTree.axis);
+    for (const PaneNode &child : m_paneTree.children)
+        if (QWidget *w = buildPaneWidgets(child, m_viewById, showWidget))
             m_panesSplitter->addWidget(w);
 
     // Give every splitter in the tree equal slices. Any positive number splits
@@ -2042,34 +2050,24 @@ void MainWindow::rebuildPaneLayout()
     applyFontSizes();
 }
 
-// Slot order as displayed, with nullptr standing in for the primary view.
-QList<ChannelPane*> MainWindow::paneSlotOrder() const
+// The tree an edge-drop would produce. Empty when the drop can't be honoured.
+PaneNode MainWindow::paneTreeAfterDrop(ChannelPane *source, ChannelPane *target,
+                                       ChannelPane::DropZone zone) const
 {
-    const qsizetype nSlots = 1 + m_orderedPanes.size();
-    QList<ChannelPane*> combined;
-    int pi = 0;
-    for (int i = 0; i < nSlots; i++)
-        combined.append(i == m_primarySlot ? nullptr : m_orderedPanes[pi++]);
-    return combined;
-}
-
-// The order an edge-drop would produce, or empty when it can't be honoured.
-QList<ChannelPane*> MainWindow::paneOrderAfterDrop(ChannelPane *source, ChannelPane *target,
-                                                   ChannelPane::DropZone zone) const
-{
-    if (source == target || zone == ChannelPane::DropZone::Center) return {};
-
-    QList<ChannelPane*> combined = paneSlotOrder();
-    const qsizetype from = combined.indexOf(source);
-    if (from < 0) return {};
-    combined.removeAt(from);
-    const qsizetype at = combined.indexOf(target);
-    if (at < 0) return {}; // target vanished mid-drag
+    if (zone == ChannelPane::DropZone::Center) return {};
+    // nullptr is the primary view on either side of the drop.
+    const int movingId = viewId(source ? static_cast<QWidget *>(source) : m_primaryPanel);
+    const int targetId = viewId(target ? static_cast<QWidget *>(target) : m_primaryPanel);
+    if (movingId < 0 || targetId < 0 || movingId == targetId) return {};
 
     const bool before = (zone == ChannelPane::DropZone::Left ||
                          zone == ChannelPane::DropZone::Top);
-    combined.insert(before ? at : at + 1, source);
-    return combined;
+    const Qt::Orientation axis = (zone == ChannelPane::DropZone::Left ||
+                                  zone == ChannelPane::DropZone::Right) ? Qt::Horizontal
+                                                                        : Qt::Vertical;
+    PaneNode next = m_paneTree;
+    if (!moveLeafBeside(next, movingId, targetId, axis, before)) return {};
+    return next;
 }
 
 // Whether a drop would actually move anything. Dropping a pane on the side of
@@ -2081,38 +2079,22 @@ bool MainWindow::paneDropWouldChange(ChannelPane *source, ChannelPane *target,
     if (zone == ChannelPane::DropZone::Center)
         return source != target; // a swap always moves both views
 
-    const QList<ChannelPane*> after = paneOrderAfterDrop(source, target, zone);
-    if (after.isEmpty()) return false;
-    if (after != paneSlotOrder()) return true;
-
-    // Same order — worth it only if the panes would visibly change axis.
-    const bool rows = (zone == ChannelPane::DropZone::Top ||
-                       zone == ChannelPane::DropZone::Bottom);
-    return rows != paneRowsAxis();
+    const PaneNode after = paneTreeAfterDrop(source, target, zone);
+    if (after.children.empty() && after.isLeaf()) return false;
+    return after != m_paneTree;
 }
 
-// Moves `source` next to `target` on the side the drop chose, and forces the
-// split axis that side implies. A nullptr means the primary view in either
-// position. Placing by hand overrides the automatic axis, the same way picking
-// a theme from the list turns Follow System Light/Dark off.
+// Moves `source` next to `target` on the side the drop chose. A nullptr means
+// the primary view in either position. Splits now carry their own axis, so a
+// placement no longer has to force the whole layout one way.
 void MainWindow::placePaneBeside(ChannelPane *source, ChannelPane *target,
                                  ChannelPane::DropZone zone)
 {
-    const QList<ChannelPane*> combined = paneOrderAfterDrop(source, target, zone);
-    if (combined.isEmpty()) return;
-
-    m_orderedPanes.clear();
-    for (int i = 0; i < combined.size(); i++) {
-        if (!combined[i]) m_primarySlot = i;
-        else              m_orderedPanes.append(combined[i]);
-    }
-
-    const QString axis = (zone == ChannelPane::DropZone::Left ||
-                          zone == ChannelPane::DropZone::Right) ? "columns" : "rows";
-    if (m_config.ui.paneSplitAxis != axis)
-        applyPaneSplitAxisSetting(axis); // saves, rebuilds, re-syncs Preferences
-    else
+    const PaneNode after = paneTreeAfterDrop(source, target, zone);
+    if (after != m_paneTree && !(after.isLeaf() && after.children.empty())) {
+        m_paneTree = after;
         rebuildPaneLayout();
+    }
 }
 
 // Puts another buffer in an already-docked pane. The pane keeps its slot, the

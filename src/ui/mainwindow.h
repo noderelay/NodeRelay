@@ -15,6 +15,7 @@
 #include "ui/nicklistmodel.h"
 #include "ui/themeloader.h"
 #include "ui/channelpane.h"   // ChannelPane::DropZone appears in a signature below
+#include "ui/panetree.h"
 
 namespace ChatRenderer { struct Context; }
 
@@ -150,13 +151,21 @@ private:
     // Edge-drop placement: nullptr means the primary view on either side.
     void placePaneBeside(ChannelPane *source, ChannelPane *target,
                          ChannelPane::DropZone zone);
-    QList<ChannelPane*> paneSlotOrder() const;
-    QList<ChannelPane*> paneOrderAfterDrop(ChannelPane *source, ChannelPane *target,
-                                           ChannelPane::DropZone zone) const;
+    PaneNode paneTreeAfterDrop(ChannelPane *source, ChannelPane *target,
+                               ChannelPane::DropZone zone) const;
     bool paneDropWouldChange(ChannelPane *source, ChannelPane *target,
                              ChannelPane::DropZone zone) const;
     void rebuildPaneLayout();
-    bool paneRowsAxis() const;  // true = stack in rows; resolves the "auto" setting
+    bool paneRowsAxis() const;
+    // View/id plumbing for the layout tree. Id 0 is the primary panel.
+    int      viewId(const QWidget *view) const;
+    QWidget *viewForId(int id) const;
+    void     seedPaneTree();            // tree holding just the primary
+    QList<QWidget*> paneViewOrder() const;
+    // Where a newly opened pane should go: the roomiest view, split along its
+    // shorter side unless the axis is forced. Returns false when nothing has
+    // room to spare.
+    bool chooseSplitTarget(int &targetId, Qt::Orientation &axis) const;  // true = stack in rows; resolves the "auto" setting
 
     // Menu bar (menu_style) — mainwindow_menubar.cpp
     void setupMenuActions();
@@ -278,14 +287,18 @@ private:
     QVBoxLayout  *m_chatLeftVbox{nullptr}; // chat column: header/topic/chat/search/reply/typing/input
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
-    QList<ChannelPane*>          m_orderedPanes; // insertion order for layout (docked panes only)
+    QList<ChannelPane*>          m_orderedPanes; // docked panes; layout order lives in m_paneTree
     QHash<QString, QWidget*>     m_paneWindows;  // key -> top-level window for popped-out panes
     // Last docked pane that held keyboard focus — sidebar clicks load into it
     // instead of the primary view. Null means the primary is the target.
     ChannelPane                 *m_focusedPane{nullptr};
     QSet<QString>                m_nickRefreshPending;    // channels with a debounced refresh queued
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
-    int                          m_primarySlot{0}; // position of primary panel in layout order
+    // Layout as a tree of splits. Leaf ids index m_viewById, where 0 is always
+    // the primary panel and docked panes take the ids after it.
+    PaneNode                     m_paneTree;
+    QHash<int, QWidget*>         m_viewById;
+    int                          m_nextViewId{1};
     bool          m_primaryDragPending{false}; // primary header press seen, waiting for threshold
     bool          m_primaryDragging{false};    // primary pane drag in flight
     QPoint        m_primaryDragStart;          // global press position of the pending drag

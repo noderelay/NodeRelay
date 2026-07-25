@@ -1725,19 +1725,10 @@ channels = "#uplinkirc"</pre>
     <div class="note"><strong>Note:</strong> Right-clicking does not navigate away from the channel you are currently viewing; only a left-click does that.</div>
 
     <h3>Layout</h3>
-    <p>The chat area restructures automatically as panes are added:</p>
-    <table>
-      <thead><tr><th>Panes open</th><th>Layout</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>Full width (normal single-channel view)</td></tr>
-        <tr><td>2</td><td>Side by side, equal halves</td></tr>
-        <tr><td>3</td><td>Primary channel full-height on the left; two panes stacked on the right</td></tr>
-        <tr><td>4</td><td>2×2 grid: two columns, each with two rows</td></tr>
-      </tbody>
-    </table>
+    <p>Opening a pane <strong>splits an existing view in half</strong>. Uplink picks the roomiest view on screen and halves it along its longer side, so panes stay as close to square as the window allows: the first pane splits the main view down the middle, the next splits whichever half now has the most space, and so on. There is no fixed arrangement per pane count, which means three views can be three equal columns, three equal rows, or one full-height view beside a stacked pair, depending on how you got there.</p>
     <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen. When a pane gets narrow, the header text shortens with an ellipsis (hover it for the full channel name), and a column stops at its minimum width rather than collapsing; use the <code>✕</code> in a pane's header when you want it gone.</p>
-    <p>Which way panes split is decided for you. On a window that is wider than it is tall, panes go into <strong>columns</strong> (the table above); on a tall or narrow one they stack into <strong>rows</strong>, which is every shape in the table rotated 90°: 2 panes top and bottom, 3 panes a full-width row plus two side by side beneath it, 4 panes still a 2×2 grid with rows and columns swapped. Splitting the long way is what keeps both halves readable, so the shape of the space picks the axis.</p>
-    <p>The choice is made when you open, close, or rearrange a pane, not while you drag the window edge; resizing never re-flows the layout under your cursor. To fix the axis instead, either drop a pane on another pane's edge (see <a href="#rearranging">Rearranging panes</a>) or untick <strong>Preferences → Interface → Split Panes Automatically</strong>, which freezes the panes the way they are split at that moment. Either way the choice is written to <code>pane_split_axis</code> in <code>config.toml</code> and remembered across restarts; tick the box again to hand the decision back to the window shape.</p>
+    <p>Which way each split runs is decided for you: a view wider than it is tall splits into <strong>columns</strong>, a taller one into <strong>rows</strong>. Splitting the long way is what keeps both halves readable. Every split keeps its own direction, so one column can hold a stack of rows while the column beside it holds a single view.</p>
+    <p>If you would rather not have it decided, untick <strong>Preferences → Interface → Split Panes Automatically</strong> and pick a direction. That flattens the whole layout onto one axis and keeps it there: three panes with rows forced are three equal rows, full width, top to bottom. Ticking the box again hands the choice back to the shape of each view. Either way the setting is written to <code>pane_split_axis</code> in <code>config.toml</code>.</p>
 
     <h3>Changing what a pane shows</h3>
     <p>A pane is not stuck with the channel you opened it on. <strong>Click inside a pane</strong> (its input bar, chat area, or nick list) and then <strong>left-click a channel in the sidebar</strong>: that channel loads into the pane you were last typing in, and the layout does not move. Click in the main view first and sidebar clicks go back to loading there, as usual. Focus is what decides the target, so <strong>Alt+Left / Alt+Right</strong> followed by a sidebar click works too.</p>
@@ -1745,7 +1736,7 @@ channels = "#uplinkirc"</pre>
 
     <h3 id="rearranging">Rearranging panes</h3>
     <p>Click and drag any pane's header bar to rearrange it, the primary view included. The pane <strong>lifts out and follows your cursor</strong> as a snapshot, and its old spot fills with a placeholder in the theme's panel color until you drop. While you drag, the target under the cursor is outlined with a <strong>highlight frame</strong>. Where that frame sits tells you what the drop will do: around the <strong>whole pane</strong> means the two will swap positions, and along <strong>one edge</strong> means the dragged pane will be placed on that side instead. Drop it in the middle of another pane to swap their positions. Drop a pane on the primary channel area instead, and the dragged pane stays exactly where it is; the primary view joins it there, while whichever pane it displaces takes over the primary's old spot. If the dragged pane already shares a stack with the primary, the two simply swap places. The layout rebuilds instantly without losing any content. The cursor keeps the grab hand for the whole gesture, and releasing anywhere that isn't a highlighted target simply cancels the drag; the pane stays where it was.</p>
-    <p><strong>Dropping on an edge places rather than swaps.</strong> Release over the left or right quarter of a pane and the dragged one lands on that side, which means columns; release over the top or bottom quarter and it lands above or below, which means rows. Because you have just chosen an axis by hand, <strong>Split Panes Automatically</strong> unticks itself and the layout stays that way, the same way picking a theme from the list switches <em>Follow System Light/Dark</em> off. Tick it again whenever you want the window shape deciding.</p>
+    <p><strong>Dropping on an edge places rather than swaps.</strong> Release over the left or right quarter of a view and the dragged pane takes that side of it; release over the top or bottom quarter and it lands above or below. Only that split changes direction, so the rest of the layout stays exactly as it was and <strong>Split Panes Automatically</strong> keeps steering the splits you haven't touched. Dropping a pane below another that already sits directly above it produces three equal rows rather than a pane nested inside a pane.</p>
     <p>You can also cycle keyboard focus between the open panes without touching the mouse: <strong>Alt+Left / Alt+Right</strong> moves focus through the pane input bars (the primary input included), in layout order.</p>
 
     <h3>Popping a channel out into its own window</h3>
@@ -1777,11 +1768,11 @@ channels = "#uplinkirc"</pre>
     </ul>
 
     <h3>Pane layout persistence</h3>
-    <p>Uplink saves the pane layout automatically when you quit: which channels are open in which pane slots, and the position of the primary column. On the next launch everything is restored exactly as you left it. No configuration required.</p>
+    <p>Uplink remembers which channels were open in panes and reopens them on the next launch. The exact arrangement you dragged them into is not preserved yet; the panes come back in the order they were opened.</p>
 
     <h3>Limits and notes</h3>
     <ul>
-      <li>Maximum 4 panes total (1 primary + 3 extras), plus up to 4 popped-out windows at a time.</li>
+      <li><strong>Panes stop when the space does.</strong> A view only splits while both halves would stay wide (or tall) enough to read, so a large window takes more panes than a small one; there is a hard ceiling of 8 views as a backstop. Popped-out windows are separate, up to 4 at a time.</li>
       <li><strong>No unread counters for visible channels.</strong> A channel open in a pane or popped-out window never accumulates an unread badge in the sidebar; you're already looking at it. Once the pane or window closes, unread counting resumes as normal.</li>
       <li>The same channel never appears in both the primary view and a pane at the same time. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically. Left-clicking a channel that is already open in a pane just keeps the primary view where it was; it does not also load it there.</li>
       <li>All slash commands work in pane input bars: <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
