@@ -1,6 +1,18 @@
 # Changelog
 
 <!--
+2026-07-25 (post-close, Joe spotted it on the fresh Air dmg): release
+builds no longer show the commit hash — "v2026.8.1+09e0c8c" on a
+stable dmg read as odd, and the tag already pins the commit.
+gitversion.cmake now emits the plain version when the tree is clean
+and sitting exactly on its own release tag (checked via `git tag
+--points-at HEAD` against v<version>); dev builds keep +hash, dirty
+trees keep +hash.dev, and a missing tag degrades to the old suffix
+behavior. All three paths verified locally against a worktree at
+v2026.8.1. Takes effect from the next tagged release.
+-->
+
+<!--
 SESSION SUMMARY 2026-07-25 (quality sweep + live testing), PRs #188-#194,
 all merged, unreleased:
 
