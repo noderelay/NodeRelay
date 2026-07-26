@@ -493,7 +493,7 @@ Click the **close panel button** (▦) in the **nick panel header** (top-right c
 Two different things can look like a missing user list:
 
 - **You're not in a channel.** The user list only exists in channels; the server window and private messages never show one. Join a channel and check again.
-- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab, and the stuck state was remembered across restarts. **v2026.7.8** brings a stuck list back automatically on startup, but if your config predates the fix the panel can still snap shut when you drag the divider; the old saved layout carries the bad behavior with it. One-time cleanup makes it permanent: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux); on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit, then relaunch. The next release retires that config entry entirely and migrates old configs on its own.
+- **On v2026.7.7 and earlier**, dragging the chat/user-list divider all the way to the edge could snap the panel to zero width with nothing left to grab, and the stuck state was remembered across restarts. **v2026.7.8** brings a stuck list back automatically on startup, but if your config predates the fix the panel can still snap shut when you drag the divider; the old saved layout carries the bad behavior with it. One-time cleanup makes it permanent: quit Uplink, delete the line starting with `nickSplitter=` from `~/.config/uplink/uplink.conf` (Linux); on macOS run `defaults delete com.uplink.uplink` in Terminal, on Windows delete the `nickSplitter` value under `HKCU\Software\uplink\uplink` in regedit, then relaunch. Since **v2026.8.0** the config entry is retired entirely and old configs are migrated automatically, so this cleanup is only needed on older versions.
 
 ### How do I show the channel topic?
 
@@ -897,7 +897,7 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 Uplink uses calendar versioning: **`year.month.fix`**. For example, `2026.7.0` is the first release of July 2026; if an urgent fix ships later that month, it becomes `2026.7.1`. Higher is always newer. (Versions before `2026.7.0` used an older `0.25.x` scheme; the update checker handles both.)
 
-Builds compiled from a git checkout append the commit they were built from, e.g. `2026.7.8+9dbfe64`, the base version plus the short git hash (with `.dev` added if the source tree had uncommitted changes — a development build of something not committed anywhere). You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
+Official release builds show the plain version. Builds compiled from a git checkout between releases append the commit they were built from, e.g. `2026.7.8+9dbfe64`, the base version plus the short git hash, with `.dev` added if the source tree had uncommitted changes. A clean checkout sitting exactly on a release tag builds with the plain version, same as the release itself. You'll see this in the About dialog. When reporting a bug from a source build, include this full string so it's clear exactly which code you're running.
 
 ### How do I get debug logs for a bug report?
 

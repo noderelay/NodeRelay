@@ -3712,6 +3712,9 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
     document.body.style.overflow = '';
   }
   document.querySelectorAll('figure.shot img').forEach(img => {
+    // Hide figures whose screenshot hasn't been shot yet
+    if (img.complete && img.naturalWidth === 0) img.closest('figure').hidden = true;
+    img.addEventListener('error', () => { img.closest('figure').hidden = true; });
     img.addEventListener('click', () => {
       lightboxImg.src = img.src;
       lightboxImg.alt = img.alt;
