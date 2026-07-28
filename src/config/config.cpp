@@ -188,6 +188,7 @@ Config Config::load(const QString &path)
             if (!lo || hi < lo) { lo = 0; hi = 0; }  // nonsense range = ephemeral
             cfg.dcc.portMin = quint16(lo);
             cfg.dcc.portMax = quint16(hi);
+            cfg.dcc.allowLan = (*dcc)["allow_lan"].value_or(false);
         }
 
         // [profile]
@@ -391,7 +392,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "[privacy]\n";
     out << "link_previews = " << boolStr(cfg.ui.linkPreviews) << "\n\n";
 
-    if (!cfg.dcc.externalIp.isEmpty() || cfg.dcc.portMin) {
+    if (!cfg.dcc.externalIp.isEmpty() || cfg.dcc.portMin || cfg.dcc.allowLan) {
         out << "[dcc]\n";
         if (!cfg.dcc.externalIp.isEmpty())
             out << "external_ip = " << tomlQuote(cfg.dcc.externalIp) << "\n";
@@ -399,6 +400,8 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             out << "port_min = " << cfg.dcc.portMin << "\n";
             out << "port_max = " << cfg.dcc.portMax << "\n";
         }
+        if (cfg.dcc.allowLan)
+            out << "allow_lan = true\n";
         out << "\n";
     }
 

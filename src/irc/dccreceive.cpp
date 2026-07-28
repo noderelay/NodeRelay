@@ -59,8 +59,9 @@ static bool checkTransferPrecon(qint64 total, const QString &savePath, DccReceiv
 void DccReceive::start()
 {
     const QHostAddress peerAddr(m_ip);
-    if (isPrivateAddress(peerAddr)) {
-        emit error("DCC blocked: peer address " + peerAddr.toString() + " is private or reserved");
+    if (!m_allowPrivatePeer && isPrivateAddress(peerAddr)) {
+        emit error("DCC blocked: peer address " + peerAddr.toString()
+                   + " is private or reserved ([dcc] allow_lan = true permits LAN transfers)");
         return;
     }
 

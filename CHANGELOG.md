@@ -1,6 +1,19 @@
 # Changelog
 
 <!--
+2026-07-27: [dcc] allow_lan — the LAN opt-in Joe green-lit right after
+A+B, closing the whole DCC-NAT arc. Default-off bool that relaxes the
+private-address block at the two DCC connect-out sites only (active
+receive DccReceive::start via setAllowPrivatePeer, passive-send reply
+in DccController); addresscheck.h itself and the link-preview guard
+are UNTOUCHED — the CLAUDE.md invariant stands. Both block messages
+now name the setting. Config-file only, no GUI. Enables fortis<->zippy
+transfers over the dojo (both sides need the flag; LAN addresses get
+advertised there because discovery ignores private IPs and falls to
+the socket address).
+-->
+
+<!--
 2026-07-27: external IP discovery — second half of the DCC-NAT work
 (B of A+B). IrcClient::noteVisibleHost() captures the host the network
 shows for us (numeric 396, now also rendered with the host instead of
