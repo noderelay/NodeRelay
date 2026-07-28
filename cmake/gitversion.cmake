@@ -1,5 +1,8 @@
 # Regenerates gitversion.h at build time so the embedded hash tracks HEAD
 # without a reconfigure. Only rewrites the header when the hash changes.
+# Script mode has no policy floor from the top-level CMakeLists — without
+# this, IN_LIST below breaks on CMakes that default CMP0057 to OLD.
+cmake_minimum_required(VERSION 3.16)
 execute_process(COMMAND git -C "${SRC_DIR}" rev-parse --short HEAD
                 OUTPUT_VARIABLE GIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
