@@ -1,6 +1,40 @@
 # Changelog
 
 <!--
+SESSION SUMMARY 2026-07-27, PRs #197-#202, all merged, unreleased:
+
+Built/changed:
+- ZNC seed doubling fixed (#197, the last deferred pick from the 07-24
+  review): any znc.in/* cap in CAP LS/NEW marks the link as ZNC and
+  skips local-log seeding — plain ZNC replays unconditionally.
+- gitversion.cmake policy floor (#198): the IN_LIST from #195 broke
+  CI's older CMake in script mode; ubuntu build + sanitize had been
+  red on main since #195, masked by newer local/mac/win CMakes.
+- DCC NAT arc, Joe approved all three: [dcc] config table (#199,
+  external_ip + port_min/port_max), automatic external-IP discovery
+  from 396/own-JOIN hostmask (#200), allow_lan opt-in for LAN peers
+  (#201, default off, addresscheck.h untouched). Not yet wire-tested
+  against a real NAT or LAN peer.
+- Full docs/website accuracy audit (#202): ~70 verified fixes across
+  all 11 doc surfaces; detail in the block below.
+
+Decisions:
+- Joe picked ZNC auto-detect over dedupe/knob/accept.
+- Joe green-lit DCC PR A+B, then the LAN opt-in.
+- Decision backlog is now EMPTY.
+
+Flagged, not fixed (Joe's calls): soju BOUNCER LISTNETWORKS never
+sent when SASL is pending (latent gap, network list dead for SASL
+users); panetree.cpp cppcheck warning (parked cleanup);
+font_nick_dock fresh-install 10 vs parser default 9/13.
+
+Site: uplinkirc.chat is Neocities GitHub Connect (push-to-publish,
+site under /docs/) — audit verified live. Late-session false alarms
+(phantom outage, phantom stray file) were mine, not real; rule
+recorded in memory.
+-->
+
+<!--
 2026-07-27 (later): full docs/website accuracy audit at Joe's request
 ("super detailed... super duper accurate"). Six parallel audits (one
 per surface) + mechanical link/image checks, every finding hand-
