@@ -263,10 +263,12 @@ nick = "joe"
 external_ip = "203.0.113.7"
 port_min = 5000
 port_max = 5010
+allow_lan = true
 )");
         QCOMPARE(cfg.dcc.externalIp, "203.0.113.7");
         QCOMPARE(cfg.dcc.portMin, quint16(5000));
         QCOMPARE(cfg.dcc.portMax, quint16(5010));
+        QVERIFY(cfg.dcc.allowLan);
 
         // port_min alone pins a single port
         LOAD(one, R"(
@@ -301,6 +303,7 @@ theme = "default"
 )");
         QCOMPARE(none.dcc.externalIp, QString());
         QCOMPARE(none.dcc.portMin, quint16(0));
+        QVERIFY(!none.dcc.allowLan);
     }
 
     void saveLoadRoundTrip()
@@ -322,6 +325,7 @@ theme = "default"
         orig.dcc.externalIp = "203.0.113.7";
         orig.dcc.portMin = 5000;
         orig.dcc.portMax = 5010;
+        orig.dcc.allowLan = true;
 
         ServerConfig sc;
         sc.name = "TestNet";
@@ -366,6 +370,7 @@ theme = "default"
         QCOMPARE(loaded.dcc.externalIp, "203.0.113.7");
         QCOMPARE(loaded.dcc.portMin, quint16(5000));
         QCOMPARE(loaded.dcc.portMax, quint16(5010));
+        QVERIFY(loaded.dcc.allowLan);
 
         QCOMPARE(loaded.servers.size(), 1);
         const auto &ls = loaded.servers[0];

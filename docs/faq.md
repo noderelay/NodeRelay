@@ -883,6 +883,8 @@ Uplink enforces two receive limits before accepting a transfer:
 
 **Behind NAT with port forwarding:** active DCC can work through a home router if you forward a port range and tell Uplink about it. Add a `[dcc]` block to `config.toml` with your public IP and the forwarded range — see [the `[dcc]` block](configuration.md#the-dcc-block) for details.
 
+**Between machines on the same LAN:** transfers with private peer addresses are blocked by default (a malicious offer could otherwise reach into your network). Set `allow_lan = true` in the `[dcc]` block on both machines to permit them. This works best when both machines connect to an IRC server on the LAN, so offers carry LAN addresses.
+
 > **If both sides are behind NAT** (and neither has port forwarding): neither active nor passive DCC will work; there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
 
 ### How do I check for updates?

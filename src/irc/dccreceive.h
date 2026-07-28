@@ -17,6 +17,7 @@ public:
     void    start();
     bool    listenPassive(quint32 expectedIp = 0,
                           quint16 portMin = 0, quint16 portMax = 0);
+    void    setAllowPrivatePeer(bool allow) { m_allowPrivatePeer = allow; }
     quint16 listenPort() const;
     void    cancel();
 
@@ -42,4 +43,5 @@ private:
     qint64      m_received{0};
     qint64      m_lastReceivedSeen{0};
     bool        m_done{false};
+    bool        m_allowPrivatePeer{false};
 };

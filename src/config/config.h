@@ -134,6 +134,7 @@ struct DccConfig {
     QString externalIp;   // IPv4 advertised in DCC offers (empty = socket address)
     quint16 portMin{0};   // listen range for DCC servers; 0 = ephemeral port
     quint16 portMax{0};
+    bool    allowLan{false};  // permit private peer addresses for DCC transfers
 };
 
 inline const QString kKeychainSentinel = QStringLiteral("<keychain>");

@@ -236,12 +236,14 @@ Settings for DCC file transfers behind NAT or a firewall. All keys are optional;
 | `external_ip` | string | *(empty)* | IPv4 address advertised in outgoing DCC offers. Set this to your public IP when behind NAT — otherwise peers are told your LAN address (`192.168.x.x`) and can never connect. When the network itself reveals your public address (visible-host notice or your own join hostmask), that discovered address is used automatically and wins over this setting; `external_ip` covers cloaked networks like Libera where nothing is revealed. |
 | `port_min` | int | *(ephemeral)* | Low end of the listen-port range used for DCC transfers. Set together with `port_max` and forward that range on your router. `port_min` alone pins a single port. |
 | `port_max` | int | *(ephemeral)* | High end of the range. An inverted or out-of-range pair is ignored. |
+| `allow_lan` | bool | `false` | Permit DCC transfers with peers on private addresses (`192.168.x.x` etc.). Off by default: a malicious offer could otherwise point Uplink at machines inside your own network. Turn on for transfers between your own machines on a LAN — most useful when both connect to a LAN IRC server, so offers carry LAN addresses. Affects DCC only; link previews always block private addresses. |
 
 ```toml
 [dcc]
 external_ip = "203.0.113.7"   # your public IP
 port_min = 5000               # forward 5000-5010 TCP on the router
 port_max = 5010
+allow_lan = true              # permit transfers with LAN peers
 ```
 
 ---

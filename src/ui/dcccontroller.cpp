@@ -71,6 +71,7 @@ void DccController::onSendReceived(const ServerId &, const QString &fromNick,
     if (savePath.isEmpty()) return;
 
     auto *dcc  = new DccReceive(savePath, ip, port, filesize, this);
+    dcc->setAllowPrivatePeer(m_model->dccConfig().allowLan);
     QPointer<DccReceive> dccGuard(dcc);
     auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
                                       "Cancel", 0, filesize > INT_MAX ? INT_MAX : static_cast<int>(filesize), m_window);
@@ -176,8 +177,10 @@ void DccController::onPassiveSendReply(const ServerId &, const QString &, const 
 {
     DccSend *dcc = m_pendingPassiveSends.take(token);
     if (dcc) {
-        if (isPrivateAddress(QHostAddress(ip))) {
-            QMessageBox::warning(m_window, "DCC", "Blocked: remote address is private or reserved.");
+        if (!m_model->dccConfig().allowLan && isPrivateAddress(QHostAddress(ip))) {
+            QMessageBox::warning(m_window, "DCC",
+                "Blocked: remote address is private or reserved.\n"
+                "([dcc] allow_lan = true in config.toml permits LAN transfers.)");
             dcc->deleteLater();
         } else {
             dcc->connectOut(ip, port);
