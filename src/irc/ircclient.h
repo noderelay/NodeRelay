@@ -63,6 +63,7 @@ public:
     bool    metadataEnabled() const { return m_metadataEnabled; }
     bool    supportsWhox() const { return m_supportsWhox; }
     bool    zncDetected() const { return m_zncDetected; }
+    quint32 externalIpv4() const { return m_externalIpv4; }
     QStringList ackedCaps() const { auto l = m_ackedCaps.values(); l.sort(); return l; }
     quint32 localIpv4()  const;
 
@@ -183,6 +184,7 @@ private:
     void routeMetadata (QString target, const QString &key, const QString &value);
     void handleCap     (const QStringList &params, const QString &trailing);
     void handleNumeric (const QString &cmd, const QStringList &params, const QString &trailing);
+    void noteVisibleHost(const QString &host);
     void handleBatch   (const QStringList &params);
     void handleBouncer (const QStringList &params, const QString &trailing);
     void deliverBatch  (const QString &ref);
@@ -235,6 +237,8 @@ private:
     QSet<QString>               m_ackedCaps;
     QStringList                 m_capLsBuffer;
     bool                        m_zncDetected{false};  // any znc.in/* cap seen in CAP LS/NEW
+    QString                     m_visibleHost;         // last host the network showed for us
+    quint32                     m_externalIpv4{0};     // public IPv4 derived from it (0 = none)
     bool                        m_registered{false};
     QHash<QString, QStringList> m_namesBuffer;
     QList<QStringList>          m_listBuffer;         // [channel, count, topic] per entry

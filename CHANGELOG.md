@@ -1,6 +1,18 @@
 # Changelog
 
 <!--
+2026-07-27: external IP discovery — second half of the DCC-NAT work
+(B of A+B). IrcClient::noteVisibleHost() captures the host the network
+shows for us (numeric 396, now also rendered with the host instead of
+bare trailing, and our own JOIN prefix), takes IP literals directly,
+resolves hostnames with one async QHostInfo lookup, and keeps only
+public IPv4s (cloaks resolve to nothing and are ignored; dedupe via
+m_visibleHost). DCC offers advertise: discovered -> [dcc] external_ip
+-> socket address. Reset on disconnect. Cloaked networks (Libera)
+still need the manual override — that's why A exists.
+-->
+
+<!--
 2026-07-27: [dcc] config table — first half of the DCC-NAT work Joe
 approved (A of A+B). external_ip sets the IPv4 advertised in outgoing
 DCC offers (behind NAT the socket address is a LAN one peers can't

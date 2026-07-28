@@ -30,10 +30,15 @@ DccController::DccController(SessionModel *model, QWidget *parentWindow)
 }
 
 // The address we put in outgoing DCC offers. Behind NAT the socket's local
-// address is a LAN one the peer can't reach, so a configured [dcc]
-// external_ip takes precedence when it parses as IPv4.
+// address is a LAN one the peer can't reach. Chain: the public address the
+// network showed for us (fresher than any hand-set value on dynamic IPs),
+// then the [dcc] external_ip override, then the socket address.
 quint32 DccController::advertisedIp(IrcClient *client) const
 {
+    if (client) {
+        if (const quint32 discovered = client->externalIpv4())
+            return discovered;
+    }
     const DccConfig &dcc = m_model->dccConfig();
     if (!dcc.externalIp.isEmpty()) {
         bool ok = false;

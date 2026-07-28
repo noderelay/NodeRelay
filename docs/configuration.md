@@ -233,7 +233,7 @@ Settings for DCC file transfers behind NAT or a firewall. All keys are optional;
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `external_ip` | string | *(empty)* | IPv4 address advertised in outgoing DCC offers. Set this to your public IP when behind NAT — otherwise peers are told your LAN address (`192.168.x.x`) and can never connect. |
+| `external_ip` | string | *(empty)* | IPv4 address advertised in outgoing DCC offers. Set this to your public IP when behind NAT — otherwise peers are told your LAN address (`192.168.x.x`) and can never connect. When the network itself reveals your public address (visible-host notice or your own join hostmask), that discovered address is used automatically and wins over this setting; `external_ip` covers cloaked networks like Libera where nothing is revealed. |
 | `port_min` | int | *(ephemeral)* | Low end of the listen-port range used for DCC transfers. Set together with `port_max` and forward that range on your router. `port_min` alone pins a single port. |
 | `port_max` | int | *(ephemeral)* | High end of the range. An inverted or out-of-range pair is ignored. |
 
