@@ -3,10 +3,12 @@
 #include "stsstore.h"
 #include "config/config.h"
 #include "model/ids.h" // for isChannelName()
+#include "net/addresscheck.h"
 #include "gitversion.h"
 #include "logging.h"
 
 #include <QCryptographicHash>
+#include <QHostInfo>
 #include <QRandomGenerator>
 #include <QRegularExpression>
 #include <QFile>
@@ -236,6 +238,35 @@ quint32 IrcClient::localIpv4() const
     bool ok = false;
     const quint32 v4 = sockLocalAddress().toIPv4Address(&ok);
     return ok ? v4 : 0;
+}
+
+// Best-effort external IPv4 for DCC offers: the host the network displays
+// for us (numeric 396, or our own JOIN prefix). An IP literal is taken
+// as-is, a hostname gets one async lookup; private and unresolvable results
+// (cloaks) leave the previous value alone.
+void IrcClient::noteVisibleHost(const QString &host)
+{
+    const QString h = host.section('@', -1);  // some servers send user@host
+    if (h.isEmpty() || h == m_visibleHost) return;
+    m_visibleHost = h;
+
+    auto notePublic = [this](const QHostAddress &addr) {
+        bool ok = false;
+        const quint32 v4 = addr.toIPv4Address(&ok);
+        if (!ok || isPrivateAddress(addr)) return false;
+        m_externalIpv4 = v4;
+        return true;
+    };
+
+    const QHostAddress literal(h);
+    if (!literal.isNull()) {
+        notePublic(literal);
+        return;
+    }
+    QHostInfo::lookupHost(h, this, [notePublic](const QHostInfo &info) {
+        for (const QHostAddress &a : info.addresses())
+            if (notePublic(a)) return;
+    });
 }
 
 void IrcClient::quit(const QString &reason)
@@ -540,6 +571,8 @@ void IrcClient::onDisconnected()
     m_ackedCaps.clear();
     m_capLsBuffer.clear();
     m_zncDetected = false;
+    m_visibleHost.clear();
+    m_externalIpv4 = 0;
     m_batches.clear();
     m_saslPending    = false;
     m_saslAuthed     = false;
@@ -1113,6 +1146,7 @@ void IrcClient::processLine(const QString &line)
         const QString channel = msg.params.isEmpty() ? msg.trailing : msg.params[0];
         if (msg.nick == m_nick) {
             emit serverMessage(m_serverName, "Joined " + channel);
+            noteVisibleHost(msg.host);
             if (m_ackedCaps.contains("no-implicit-names") ||
                 m_ackedCaps.contains("soju.im/no-implicit-names"))
                 sendRaw("NAMES " + channel);
@@ -1790,6 +1824,16 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         const QString query = params.size() >= 2 ? params[1] : QString();
         const QString msg   = trailing.isEmpty() ? "End of STATS" : trailing;
         emit contextualMessage(m_serverName, query.isEmpty() ? msg : msg + " (" + query + ")");
+        break;
+    }
+
+    case 396: { // RPL_VISIBLEHOST — <client> <host> :is now your displayed host
+        const QString host = params.size() >= 2 ? params[1] : QString();
+        if (!host.isEmpty()) {
+            noteVisibleHost(host);
+            emit serverMessage(m_serverName,
+                trailing.isEmpty() ? host : host + " " + trailing);
+        }
         break;
     }
 
