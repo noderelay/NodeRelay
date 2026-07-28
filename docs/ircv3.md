@@ -6,7 +6,7 @@ Uplink aims to be a first-class IRCv3 client. Below is the full status of every 
 
 ## How capability negotiation works
 
-Uplink uses **CAP LS 302**: it requests the server's full capability list before deciding what to ask for, and only requests capabilities the server actually advertises. This avoids failures from batching unsupported caps together. Multi-line CAP LS responses (marked with `*`) are fully buffered before any `CAP REQ` is sent, and capabilities advertised in `name=value` form (e.g. `sasl=PLAIN,EXTERNAL`) are matched correctly. After the server acknowledges the requested caps (CAP ACK), Uplink completes registration or starts SASL if needed.
+Uplink uses **CAP LS 302**: it requests the server's full capability list before deciding what to ask for, and only requests capabilities the server actually advertises. This avoids failures from batching unsupported caps together. Multi-line CAP LS responses (marked with `*`) are buffered before any `CAP REQ` is sent (with a 512-token safety cap against hostile servers streaming continuations forever), and capabilities advertised in `name=value` form (e.g. `sasl=PLAIN,EXTERNAL`) are matched correctly. After the server acknowledges the requested caps (CAP ACK), Uplink completes registration or starts SASL if needed.
 
 ---
 
@@ -56,11 +56,11 @@ When the user scrolls to the top of a channel buffer and all loaded messages hav
 
 This works on any server or bouncer that supports either cap name, including Ergo, soju, and modern ZNC.
 
-On connections without chathistory support, Uplink's own log files stand in (when message logging is enabled in Preferences): joining a channel seeds the buffer with the last 100 logged messages, mirroring `CHATHISTORY LATEST`, and scrolling to the top pages further back, so scrollback still reaches as far as your local logs go. Seeding is skipped when the server supports chathistory or the connection goes through ZNC (detected from its `znc.in/*` capabilities, with or without the playback module — ZNC replays its buffer on attach either way), so the two sources never duplicate.
+On connections without chathistory support, Uplink's own log files stand in (written while message logging is enabled in Preferences; existing logs seed even if logging is later turned off): joining a channel seeds the buffer with the last 100 logged messages, mirroring `CHATHISTORY LATEST`, and scrolling to the top pages further back, so scrollback still reaches as far as your local logs go. Seeding is skipped when the server supports chathistory or the connection goes through ZNC (detected from its `znc.in/*` capabilities, with or without the playback module — ZNC replays its buffer on attach either way), so the two sources never duplicate.
 
 ### `sasl` (PLAIN and EXTERNAL)
 
-Authenticates your account during the CAP handshake, before you appear on the network. Uplink holds `CAP END` until the server confirms success (`903`) or failure (`904`/`906`). On failure the connection continues without authentication.
+Authenticates your account during the CAP handshake, before you appear on the network. Uplink holds `CAP END` until the server confirms success (`903`) or failure (`904`/`905`/`906`). On failure the connection continues without authentication.
 
 **PLAIN**: Add `sasl_user` and `sasl_password` to a server block. Uplink sends `AUTHENTICATE PLAIN` followed by the base64-encoded `\0user\0password` payload.
 
@@ -77,7 +77,7 @@ Server → 903 :SASL authentication successful
 
 Uplink requests both the ratified `typing` cap name and the older `draft/typing` used by most servers today, so typing indicators work wherever either name is offered.
 
-When you start typing in the input box, Uplink immediately sends `TAGMSG` with `+typing=active`. It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `+typing=paused`. When you send or clear the input (or switch to another buffer with text still in the box), it sends `+typing=done` to the channel you were typing in.
+When you start typing in the input box, Uplink immediately sends a `TAGMSG` with `typing=active` (the ratified tag name when the `typing` cap was acknowledged, the client-only `+typing=` form otherwise — typing notifications go out whenever `message-tags` is available). It restarts a 5-second inactivity timer on each keypress; if you stop typing for 5 seconds, it sends `typing=paused`. When you send or clear the input (or switch to another buffer with text still in the box), it sends `typing=done` to the channel you were typing in.
 
 Incoming typing notifications from other users appear as "nick is typing…" above the input bar and time out automatically. The feature can be toggled from the **Preferences** dialog (**Settings → Preferences**, or **Ctrl+,**).
 
@@ -183,7 +183,7 @@ The list is stored in `config.toml` under `[monitor] nicks = [...]`.
 
 ### `WHOX`
 
-An extended version of the `WHO` command. Uplink checks the server's `ISUPPORT` tokens on connect: if `WHOX` is advertised, it sends `WHO <channel> %cnfa,42` after joining each channel, fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips. On servers that do not advertise `WHOX` (e.g. Rizon), Uplink falls back to a plain `WHO <channel>` so no "Unknown command" error is produced.
+An extended version of the `WHO` command. Uplink checks the server's `ISUPPORT` tokens on connect: if `WHOX` is advertised, it sends `WHO <channel> %tcnfa,42` after joining each channel, fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips. On servers that do not advertise `WHOX` (e.g. Rizon), Uplink falls back to a plain `WHO <channel>` so no "Unknown command" error is produced.
 
 ### `sts` (Strict Transport Security)
 
@@ -191,7 +191,7 @@ When a server advertises an STS policy in its `CAP LS` response, Uplink upgrades
 
 - **Plain connection:** Uplink receives `sts=port=6697,duration=2678400`, immediately disconnects, and reconnects over TLS on the specified port. The policy is saved with an expiry timestamp based on the `duration` value (in seconds).
 - **TLS connection:** Uplink receives `sts=duration=2678400` (no port, already on TLS), refreshes the stored policy expiry.
-- **Policy removal:** If the server sends `sts=duration=0` on a TLS connection, the cached policy is deleted.
+- **Policy removal:** If the server sends `sts=duration=0`, the cached policy is deleted.
 
 Policies survive restarts and are applied before each connection attempt. This prevents downgrade attacks where an attacker could intercept a plaintext connection before TLS is established, equivalent to HSTS in web browsers.
 
@@ -254,17 +254,21 @@ Allows composing and sending messages that span multiple lines as a single logic
 
 **Composing:** Press **Shift+Enter** in the message input to insert a line break. The input box grows up to 4 lines automatically. Press **Enter** to send.
 
-**Protocol flow:** When the server has acknowledged `draft/multiline`, Uplink opens a batch with `BATCH +ref draft/multiline <target>`, sends each line as `@batch=ref PRIVMSG <target> :<line>` (with the `draft/multiline-concat` tag on lines that should be joined without a newline), then closes it with `BATCH -ref`.
+**Protocol flow:** When the server has acknowledged `draft/multiline`, Uplink opens a batch with `BATCH +ref draft/multiline <target>`, sends each line as `@batch=ref PRIVMSG <target> :<line>`, then closes it with `BATCH -ref`.
 
-**Receiving:** Incoming `draft/multiline` batches are assembled into a single message with embedded newlines and rendered with `<br>` breaks in the chat view.
+**Receiving:** Incoming `draft/multiline` batches are assembled into a single message with embedded newlines (the `draft/multiline-concat` tag is honored, joining those lines without a break) and rendered with `<br>` breaks in the chat view.
 
 **Fallback:** On servers that do not advertise `draft/multiline`, each line is sent as a separate `PRIVMSG`. Recipients see the same lines in sequence; no content is lost.
+
+### `draft/persistence`
+
+Negotiated when the server offers it (Ergo's always-on draft). With persistence, the server can keep your presence alive after the client disconnects, replaying what you missed when you return. `PERSISTENCE STATUS` lines — sent in the registration burst and in reply to `PERSISTENCE GET`/`SET` — are rendered in the server buffer as `Persistence: <effective> (your setting: <requested>)`. Servers that require a registered account for persistence answer with `FAIL PERSISTENCE ACCOUNT_REQUIRED`, which Uplink shows for persistence commands.
 
 ---
 
 ## Bouncer capabilities
 
-These capabilities are negotiated only when `bouncer = "znc"` or `bouncer = "soju"` is set in the server block. They are not requested against regular IRC servers.
+The `znc.in/*` and `soju.im/*` capabilities below are negotiated only when `bouncer = "znc"` or `bouncer = "soju"` is set in the server block; they are not requested against regular IRC servers. The read-marker and no-implicit-names capabilities at the end of this section are requested everywhere — they simply matter most in bouncer/multi-client setups.
 
 ### `znc.in/playback` (ZNC only)
 
@@ -368,7 +372,7 @@ The on-demand fetch is retried sensibly: a lookup that fails because the user ju
 
 IRC lines carried over a WebSocket connection (`ws://` or `wss://`) instead of a raw TCP socket. Useful for connecting to servers hosted behind web infrastructure, or in environments where raw TCP is blocked.
 
-Enable per server with `websocket = true` in the server block (see [configuration](configuration.md)). The `ssl` key controls whether the connection uses `wss://` (TLS, recommended) or `ws://` (plain). All standard features (SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog) work identically over WebSocket.
+Enable per server with `websocket = true` in the server block (see [configuration](configuration.md)). The `ssl` key controls whether the connection uses `wss://` (TLS, recommended) or `ws://` (plain). Standard features (SASL, IRCv3 CAP negotiation, SOCKS5 proxy, reconnect backoff, and ping watchdog) work identically over WebSocket. STS is the exception: cached STS policies and the plain-to-TLS upgrade path do not apply to WebSocket connections, so use `wss://` (i.e. `ssl = true`) directly.
 
 ```toml
 [[server]]

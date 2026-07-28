@@ -767,23 +767,23 @@
         <div class="tab-label" onclick="switchTab(this,'windows')">Windows</div>
       </div>
       <div class="tab-panel active" id="tab-arch">
-        <pre>sudo pacman -S qt6-base qt6-svg cmake tomlplusplus</pre>
+        <pre>sudo pacman -S qt6-base qt6-svg qt6-websockets qtkeychain-qt6 cmake tomlplusplus</pre>
       </div>
       <div class="tab-panel" id="tab-ubuntu">
-        <pre>sudo apt install cmake qt6-base-dev libqt6svg6-dev libtomlplusplus-dev</pre>
+        <pre>sudo apt install cmake qt6-base-dev libqt6svg6-dev qt6-websockets-dev qtkeychain-qt6-dev libtomlplusplus-dev</pre>
       </div>
       <div class="tab-panel" id="tab-fedora">
-        <pre>sudo dnf install cmake qt6-qtbase-devel qt6-qtsvg-devel tomlplusplus-devel</pre>
+        <pre>sudo dnf install cmake qt6-qtbase-devel qt6-qtsvg-devel qt6-qtwebsockets-devel qtkeychain-qt6-devel tomlplusplus-devel</pre>
       </div>
       <div class="tab-panel" id="tab-freebsd">
-        <pre>sudo pkg install cmake qt6-base qt6-svg tomlplusplus</pre>
+        <pre>sudo pkg install cmake qt6-base qt6-svg qt6-websockets qtkeychain-qt6 tomlplusplus</pre>
       </div>
       <div class="tab-panel" id="tab-macos">
         <pre>brew install cmake qt tomlplusplus</pre>
         <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--subtext);">Then set Qt in your PATH: <code>export PATH="$(brew --prefix qt)/bin:$PATH"</code></p>
       </div>
       <div class="tab-panel" id="tab-windows">
-        <p style="font-size:0.85rem;color:var(--subtext);margin-bottom:0.5rem;">Install <a href="https://www.qt.io/download-qt-installer">Qt 6 via the Qt Online Installer</a> (select Qt 6.x → MSVC 2022 x64 or MinGW). Install CMake from <a href="https://cmake.org/download/">cmake.org</a>. tomlplusplus is fetched automatically by CMake if not found.</p>
+        <p style="font-size:0.85rem;color:var(--subtext);margin-bottom:0.5rem;">Install <a href="https://www.qt.io/download-qt-installer">Qt 6 via the Qt Online Installer</a> (select Qt 6.x → MSVC 2022 x64 or MinGW, and tick the <strong>Qt WebSockets</strong> module under Additional Libraries). Install CMake from <a href="https://cmake.org/download/">cmake.org</a>. qtkeychain and tomlplusplus are fetched automatically by CMake if not found.</p>
       </div>
     </div>
   </section>
@@ -794,7 +794,7 @@
     <p>Three commands. CMake downloads tomlplusplus automatically if your package manager doesn't have it.</p>
 
     <pre>git clone https://github.com/noderelay/UplinkIRC.git
-cd Uplink
+cd UplinkIRC
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build</pre>
 
@@ -1266,7 +1266,7 @@ sasl_password = "mysecretpassword"</pre>
     <pre>username/network:password</pre>
     <ul>
       <li><strong>username</strong>: your ZNC login name (set when ZNC was installed)</li>
-      <li><strong>network</strong>: the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or run <code>/znc ListNetworks</code> in Uplink's server buffer to see the exact names.</li>
+      <li><strong>network</strong>: the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or run <code>/msg *status ListNetworks</code> in Uplink's server buffer to see the exact names.</li>
       <li><strong>password</strong>: your ZNC account password</li>
     </ul>
     <p>Uplink assembles this string for you automatically. You just supply the three pieces separately and Uplink constructs <code>username/network:password</code> at connect time.</p>
@@ -1344,7 +1344,7 @@ bouncer_network = "oftc"
 channels = "#debian"</pre>
 
     <div class="tip">
-      <strong>Not sure what your network is named in ZNC?</strong> Connect once without setting the bouncer type, then type <code>/znc ListNetworks</code> in the server buffer. ZNC will reply with the exact names to use.
+      <strong>Not sure what your network is named in ZNC?</strong> Connect once without setting the bouncer type, then type <code>/msg *status ListNetworks</code> in the server buffer. ZNC will reply with the exact names to use.
     </div>
 
     <h3>Troubleshooting</h3>
@@ -1845,7 +1845,7 @@ channels = "#uplinkirc"</pre>
   <!-- CHAT AREA -->
   <section id="chat-area">
     <h2>Chat area</h2>
-    <p>The large center panel is the chat area. Messages appear in reverse-chronological order (newest at the bottom). History messages replayed by your bouncer or server appear dimmed at the top with their original timestamps.</p>
+    <p>The large center panel is the chat area. Messages appear in chronological order (newest at the bottom). History messages replayed by your bouncer or server appear dimmed at the top with their original timestamps.</p>
 
     <figure class="shot">
       <img src="shots/main-window.png" loading="lazy"
@@ -2288,7 +2288,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
         <td>Keeps metadata running but never fetches avatar images. Display names and status text still work. Applies immediately: cached images are dropped and sidebar icons clear.</td>
       </tr>
       <tr>
-        <td><strong>File → Manage Servers → Use metadata</strong><br><code>metadata</code> in a <code>[[server]]</code> block</td>
+        <td><strong>Use metadata</strong> checkbox in the Add Server dialog<br><code>metadata</code> in a <code>[[server]]</code> block for existing servers</td>
         <td>Uplink never requests the capability on that server. Nothing about you is published, and no display names, avatars or status text come back. Applies on the next connection to that server.</td>
       </tr>
     </table>
@@ -2414,7 +2414,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/clear</code></td><td>Clear the chat buffer</td><td><code>/clear</code></td></tr>
       <tr><td><code>/raw line</code></td><td>Send a raw IRC protocol line to the server</td><td><code>/raw MODE #uplinkirc +m</code></td></tr>
       <tr><td><code>/quote line</code></td><td>Alias for <code>/raw</code></td><td><code>/quote INVITE alice #uplinkirc</code></td></tr>
-      <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is, no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplinkirc +o alice</code></td></tr>
+      <tr><td><em>anything else</em></td><td>Unrecognized slash commands are <strong>not</strong> sent to the server — Uplink prints "Unknown command" instead. Wrap server-specific commands in <code>/raw</code></td><td><code>/raw REHASH</code>, <code>/raw SAMODE #uplinkirc +o alice</code></td></tr>
       <tr><td><code>/quit [message]</code></td><td>Disconnect</td><td><code>/quit see ya</code></td></tr>
       <tr><td><code>/sysinfo</code></td><td>Collect OS/CPU/RAM/GPU/uptime info and post to channel; collection runs async with 12s timeout</td><td><code>/sysinfo</code></td></tr>
       <tr><td><code>/help</code></td><td>List all commands</td><td><code>/help</code></td></tr>
@@ -2470,7 +2470,7 @@ alice is using a secure TLS connection</pre>
     <pre>/version alice</pre>
 
     <p>Example output in the active channel:</p>
-    <pre>VERSION reply from alice: Uplink 0.25.0 / Qt 6.7.2 / Linux x86_64</pre>
+    <pre>VERSION reply from alice: Uplink 2026.8.1 / Qt 6.11.1 / Linux x86_64</pre>
 
     <p>Common replies from other clients:</p>
     <pre>VERSION reply from bob:   HexChat 2.16.2 Linux [x86_64]
@@ -2508,7 +2508,7 @@ VERSION reply from bot:   (no reply, most bots block CTCP)</pre>
       <pre># You are in #linux, talking to alice and bob:
 /whois alice     →  full WHOIS block appears in #linux
 /ping alice      →  "Ping reply from alice: 23ms" in #linux
-/version alice   →  "VERSION reply from alice: Uplink 0.25.0" in #linux
+/version alice   →  "VERSION reply from alice: Uplink 2026.8.1" in #linux
 /whois bob       →  full WHOIS block appears in #linux (below alice's)</pre>
     </div>
 
@@ -2797,7 +2797,7 @@ al[Tab][Tab]      →  alex:            (next match)
 al[Shift+Tab]     →  alice:           (cycle back)
 /p[Tab]           →  /part
 /p[Tab][Tab]      →  /ping
-/p[Tab][Tab][Tab] →  /privmsg</pre>
+/p[Tab][Tab]      →  /part, /ping</pre>
 
     <figure class="shot">
       <img src="shots/tab-completion.png" loading="lazy"
@@ -3040,7 +3040,7 @@ nicks = ["alice", "bob"]</pre>
 
     <h3>Log file location</h3>
     <pre>~/.config/uplink/logs/&lt;server&gt;/&lt;channel&gt;.log</pre>
-    <p>For example: <code>~/.config/uplink/logs/irc.libera.chat/#uplinkirc.log</code></p>
+    <p>For example: <code>~/.config/uplink/logs/LiberaChat/#uplinkirc.log</code> — the directory is the server's <em>name</em> from your config, not its hostname.</p>
 
     <h3>Log format</h3>
     <pre>[2026-05-31 15:04:22] &lt;nick&gt; message text
@@ -3076,7 +3076,7 @@ link_previews = true</pre>
       <li><strong>Direct image links</strong>: <code>.png .jpg .jpeg .gif .webp</code> URLs are detected and shown as a thumbnail without any HTML parsing.</li>
     </ul>
 
-    <p>Previews are lightweight: HTML is capped at 32 KB, images at 8 MB, results are cached for the session (up to 50 cards; oldest evicted automatically). Private/LAN addresses are never fetched. When multiple URLs arrive at once, preview cards are fetched sequentially (up to 10 queued) so they do not compete with each other.</p>
+    <p>Previews are lightweight: HTML is capped at 32 KB, images at 8 MB, results are cached for the session (up to 20 cards; oldest evicted automatically). Private/LAN addresses are never fetched. When multiple URLs arrive at once, preview cards are fetched sequentially (up to 10 queued) so they do not compete with each other.</p>
 
     <h3>Interacting with preview cards</h3>
     <ul>
@@ -3099,20 +3099,20 @@ link_previews = true</pre>
     <h3>Which mode should I use?</h3>
     <table>
       <tr><th>Mode</th><th>When to use</th></tr>
-      <tr><td><strong>Send File</strong> (active)</td><td>You have a reachable IP: direct broadband, a VPS, or port forwarding configured on your router. Uplink opens a port and the recipient connects in.</td></tr>
+      <tr><td><strong>Send File</strong> (active)</td><td>You have a reachable IP: direct broadband, a VPS, or port forwarding configured on your router (see the <code>[dcc]</code> config below for the forwarded-port setup). Uplink opens a port and the recipient connects in.</td></tr>
       <tr><td><strong>Send File (Passive)</strong></td><td>You are behind a home router or VPN and cannot accept incoming connections. The recipient opens the port; Uplink connects out to them. Use this if active DCC never starts.</td></tr>
     </table>
     <p><strong>Quick guide:</strong> try <strong>Send File</strong> first. If the progress dialog sits at zero with no activity, cancel and try <strong>Send File (Passive)</strong> instead.</p>
 
     <h3>Sending a file (active)</h3>
     <div class="step-row"><span class="step">1</span><div>Right-click the recipient's nick in the user list.</div></div>
-    <div class="step-row"><span class="step">2</span><div>Choose <strong>Send File</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Choose <strong>DCC ▶ Send File</strong>.</div></div>
     <div class="step-row"><span class="step">3</span><div>Pick a file in the file picker. Uplink opens a TCP port and sends the DCC SEND offer.</div></div>
     <div class="step-row"><span class="step">4</span><div>A progress dialog appears. Transfer begins once the recipient accepts.</div></div>
 
     <h3>Sending a file (passive, for use behind NAT)</h3>
     <div class="step-row"><span class="step">1</span><div>Right-click the recipient's nick in the user list.</div></div>
-    <div class="step-row"><span class="step">2</span><div>Choose <strong>Send File (Passive)</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Choose <strong>DCC ▶ Send File (Passive)</strong>.</div></div>
     <div class="step-row"><span class="step">3</span><div>Pick a file. Uplink sends the offer with <code>port=0</code>, a signal that the recipient should open the port.</div></div>
     <div class="step-row"><span class="step">4</span><div>The recipient's client opens a port and replies with its address. Uplink connects out automatically and the transfer begins.</div></div>
 
@@ -3138,8 +3138,17 @@ link_previews = true</pre>
       <li><strong>Passive receiver (listening for sender):</strong> 60 seconds to receive an incoming connection.</li>
     </ul>
 
+    <h3>Behind NAT: the <code>[dcc]</code> config block</h3>
+    <p>Active DCC through a home router needs two things: peers must be told your <em>public</em> address (by default Uplink advertises the connection's local address), and the listen ports must be forwardable. Both are configurable in <code>config.toml</code>:</p>
+    <pre>[dcc]
+external_ip = "203.0.113.7"   # IPv4 advertised in DCC offers
+port_min = 5000               # forward this TCP range on your router
+port_max = 5010</pre>
+    <p>When the IRC network reveals your public address (visible-host notice, or your own join hostmask on networks without cloaking), Uplink discovers and uses it automatically — <code>external_ip</code> is the manual override for cloaked networks like Libera where nothing is revealed.</p>
+    <p><strong>Transfers on your own LAN</strong> (both machines at home, connected to a LAN IRC server) are blocked by default as a safety measure against malicious offers pointing into your network. Add <code>allow_lan = true</code> to the <code>[dcc]</code> block on <em>both</em> machines to permit them. Full key reference: <a href="https://github.com/noderelay/UplinkIRC/blob/main/docs/configuration.md">configuration.md</a>.</p>
+
     <div class="tip">
-      <strong>If both sides are behind NAT,</strong> neither mode will work; there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.
+      <strong>If both sides are behind NAT</strong> and neither has port forwarding, neither mode will work; there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.
     </div>
   </section>
 
@@ -3401,7 +3410,7 @@ hanging_indent = true   # default on</pre>
     <figure class="shot">
       <img src="shots/app-icon-variants.png" loading="lazy"
            alt="The app icon variant picker grid in Preferences">
-      <figcaption>Pick from 15 icon variants; the window, tray, and taskbar icon update live.</figcaption>
+      <figcaption>Pick from 22 icon variants; the window, tray, and taskbar icon update live.</figcaption>
     </figure>
 
     <p>Or set it directly in config:</p>
@@ -3417,7 +3426,7 @@ app_icon = "flat-black"</pre>
       <tr><td><code>"original-black"</code></td><td>Original style, black</td></tr>
       <tr><td><code>"circle-bubble-red"</code></td><td>Speech-bubble badge; also <code>-black</code>, <code>-blue</code>, <code>-cyan</code>, <code>-green</code>, <code>-magenta</code>, <code>-purple</code></td></tr>
     </table>
-    <p>15 variants total: <code>flat-black</code>, <code>black-old-orange</code>, <code>black-orange</code>, <code>original-black</code>, <code>original-flat-shine</code>, <code>colorful-blueish</code>, <code>colorful-greenblue</code>, <code>colorful-hotbluepink</code>, <code>colorful-orange</code>, <code>colorful-purple</code>, <code>gruvbox-blue</code>, <code>gruvbox-colorful</code>, <code>gruvbox-orange</code>, <code>gruvbox-purple</code>, <code>gruvbox-yellow</code>.</p>
+    <p>22 variants total: <code>flat-black</code>, <code>black-old-orange</code>, <code>black-orange</code>, <code>original-black</code>, <code>original-flat-shine</code>, <code>colorful-blueish</code>, <code>colorful-greenblue</code>, <code>colorful-hotbluepink</code>, <code>colorful-orange</code>, <code>colorful-purple</code>, <code>gruvbox-blue</code>, <code>gruvbox-colorful</code>, <code>gruvbox-orange</code>, <code>gruvbox-purple</code>, <code>gruvbox-yellow</code>, and seven <code>circle-bubble-*</code> colors (black, blue, cyan, green, magenta, purple, red).</p>
 
     <div class="callout callout-tip">
       <strong>Upgrading from an older version?</strong> Old <code>"dark"</code> and <code>"light"</code> config values are auto-migrated to <code>"flat-black"</code> on launch.
@@ -3542,7 +3551,7 @@ theme = "Catppuccin-Mocha"   # ✗ won't load, wrong case</pre>
     <h3>The window opens wider than my screen and I can't make it smaller</h3>
     <p>This happens when the saved window geometry is wider than the available screen area, common on FreeBSD or after moving to a smaller display. Uplink v0.25.1 fixes this by clamping the window to the screen after it is shown.</p>
 
-    <p>If you are already on v0.25.1 and still see the issue, delete the saved layout file so geometry starts fresh:</p>
+    <p>If you are on v0.25.1 or later and still see the issue, delete the saved layout store so geometry starts fresh:</p>
     <div class="tabs">
       <div class="tab-labels">
         <div class="tab-label active" onclick="switchTab(this,'wsize-linux')">Linux / FreeBSD</div>
@@ -3556,13 +3565,13 @@ rm -f ~/.config/LinuxDojo/Uplink.conf
 rm -f ~/.config/uplink/uplink.conf</code></pre>
       </div>
       <div class="tab-panel" id="tab-wsize-win">
-<pre><code>del "%APPDATA%\uplink\uplink\uplink.conf"</code></pre>
+<pre><code>reg delete "HKCU\Software\uplink\uplink" /f</code></pre>
       </div>
     </div>
     <p>Relaunch and the window will fit the screen. Your server config and preferences in <code>config.toml</code> are unaffected.</p>
 
     <div class="note">
-      <strong>Note:</strong> Window geometry, sidebar width, and pane layout are stored separately from <code>config.toml</code> in <code>~/.config/uplink/uplink.conf</code> (Linux/FreeBSD/macOS) or <code>%APPDATA%\uplink\uplink\uplink.conf</code> (Windows). Deleting it only resets the window layout.
+      <strong>Note:</strong> Window geometry, sidebar width, and pane layout are stored separately from <code>config.toml</code>: in <code>~/.config/uplink/uplink.conf</code> on Linux/FreeBSD, in <code>~/Library/Preferences/com.uplink.uplink.plist</code> on macOS (<code>defaults delete com.uplink.uplink</code> resets it), and in the registry under <code>HKCU\Software\uplink\uplink</code> on Windows. Deleting it only resets the window layout.
     </div>
   </section>
 

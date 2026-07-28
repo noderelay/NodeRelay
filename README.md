@@ -71,7 +71,7 @@
 </p>
 
 <p align="center">
-  <sub>15 icon variants, from flat black to Gruvbox: pick yours in <strong>Settings → Preferences → App Icon</strong></sub>
+  <sub>22 icon variants, from flat black to Gruvbox to circle bubbles: pick yours in <strong>Settings → Preferences → App Icon</strong></sub>
 </p>
 
 ---
@@ -92,7 +92,7 @@
 | **OS keychain password storage** | Passwords (`password`, `sasl_password`, `nickserv_password`) are stored in the OS keychain (Secret Service / macOS Keychain / Windows Credential Manager). The config file holds `"<keychain>"` as a sentinel: no plaintext secrets on disk. Existing plaintext passwords migrate automatically on next save. |
 | **Config file hardening** | `config.toml` is written with owner-only permissions (mode `0600`). Saves are atomic via `QSaveFile`; a crash mid-save cannot corrupt the file. |
 | **Link preview privacy** | Auto-previews skip loopback, RFC 1918 private ranges, link-local, and `.local` addresses. A malicious user cannot cause the client to probe your LAN. |
-| **DoS resistance** | Inbound IRC data is capped at 64 KB (oversized streams disconnect). Batch messages cap at 1 000 per batch, 8 open batches maximum. `QTextBrowser` block count is bounded so busy channels cannot grow RAM indefinitely. |
+| **DoS resistance** | Inbound IRC data is capped at 64 KB (oversized streams disconnect). Batch messages cap at 1 000 per batch, 8 open batches maximum. Each buffer keeps at most 500 messages in memory, so busy channels cannot grow RAM indefinitely. |
 | **CTCP rate limiting** | `VERSION` and `PING` CTCP replies are limited to once per nick per 5 seconds. Reflected `PING` payloads are capped at 32 bytes to prevent amplification. |
 
 ### 🌐 IRC Protocol & IRCv3
@@ -116,7 +116,7 @@
 | **Follow system light/dark** | Tick **Follow System Light/Dark (Auto)** in Preferences, Appearance and pick a day and a night theme; Uplink switches between them live whenever the desktop flips its color scheme (Qt 6.5+). A manual theme pick always wins and turns Auto off. |
 | **Theme-colored chat** | Timestamps, mention and keyword highlights, and every event line (joins, parts, quits, nick changes, notices, errors) draw their colors from the active theme's palette, so switching themes recolors the whole conversation, not just the chrome. Themes can override per event type via an `[events]` section ([format](docs/configuration.md)). |
 | **Per-buffer drafts** | Half-typed messages stay put: switch channels mid-sentence and your text is waiting in that buffer's input box when you come back. |
-| **Reworked Preferences** | Theme as a collapsible list: browse and apply without closing. App icon as a grid of 15 clickable icon tiles. Hanging indent toggle and all other UI options. Open with **Settings → Preferences** or **Ctrl+,**. |
+| **Reworked Preferences** | Theme as a collapsible list: browse and apply without closing. App icon as a grid of 22 clickable icon tiles. Hanging indent toggle and all other UI options. Open with **Settings → Preferences** or **Ctrl+,**. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
 | **Menu bar** | A lean **File / Edit / View / Settings / Help / Find** bar: joins the KDE global menu automatically, renders in-window everywhere else. Prefer a chrome-free window? `menu_style = "hidden"` keeps everything reachable by shortcut (**Ctrl+,** opens Preferences, **Ctrl+Q** quits). |
 | **Auto-join channels** | Each server keeps an auto-join list; those channels open by themselves at startup. Edit it under **File → Manage Servers → Edit → Auto-join**. |
@@ -187,7 +187,7 @@
 
 ```bash
 git clone https://github.com/noderelay/UplinkIRC.git
-cd Uplink
+cd UplinkIRC
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ./build/Uplink
@@ -203,7 +203,7 @@ cmake --build build --target tst_ircparser tst_chatformat
 ctest --test-dir build
 ```
 
-Tests cover the IRC message parser (prefix parsing, IRCv3 tags, tag value unescaping, numerics, malformed input) and the chat formatter (HTML escaping, IRC formatting codes, color codes, linkification). Pass `-DUPLINK_BUILD_TESTS=OFF` to CMake to skip them if Qt6 Test is not installed.
+Tests cover the IRC message parser (prefix parsing, IRCv3 tags, tag value unescaping, numerics, malformed input), the chat formatter (HTML escaping, IRC formatting codes, color codes, linkification), the config loader, ignore rules, the log reader, and the pane layout tree. Pass `-DUPLINK_BUILD_TESTS=OFF` to CMake to skip them if Qt6 Test is not installed.
 
 For distribution packaging, pass `-DUPLINK_VENDOR_DEPS=OFF` to require system-installed dependencies instead of auto-downloading missing ones.
 
@@ -231,7 +231,7 @@ sudo pacman -S qt6-base qt6-svg qt6-websockets qtkeychain-qt6 cmake tomlplusplus
 <summary><strong>Ubuntu / Debian</strong></summary>
 
 ```bash
-sudo apt install cmake qt6-base-dev libqt6svg6-dev libtomlplusplus-dev
+sudo apt install cmake qt6-base-dev libqt6svg6-dev qt6-websockets-dev qtkeychain-qt6-dev libtomlplusplus-dev
 ```
 </details>
 
@@ -239,7 +239,7 @@ sudo apt install cmake qt6-base-dev libqt6svg6-dev libtomlplusplus-dev
 <summary><strong>Fedora</strong></summary>
 
 ```bash
-sudo dnf install cmake qt6-qtbase-devel qt6-qtsvg-devel tomlplusplus-devel
+sudo dnf install cmake qt6-qtbase-devel qt6-qtsvg-devel qt6-qtwebsockets-devel qtkeychain-qt6-devel tomlplusplus-devel
 ```
 </details>
 
@@ -247,7 +247,7 @@ sudo dnf install cmake qt6-qtbase-devel qt6-qtsvg-devel tomlplusplus-devel
 <summary><strong>FreeBSD</strong></summary>
 
 ```bash
-sudo pkg install cmake qt6-base qt6-svg tomlplusplus
+sudo pkg install cmake qt6-base qt6-svg qt6-websockets qtkeychain-qt6 tomlplusplus
 ```
 </details>
 
@@ -329,7 +329,7 @@ nick_brackets = "<>"
 # Green dot on tray icon for mentions/PMs when window is not focused
 notifications = true
 
-# App icon variant. 15 choices; see docs/configuration.md for the full list.
+# App icon variant. 22 choices; see docs/configuration.md for the full list.
 # Old "dark"/"light" values still work and map to the new names.
 app_icon = "flat-black"
 

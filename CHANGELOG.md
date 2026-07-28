@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+2026-07-27 (later): full docs/website accuracy audit at Joe's request
+("super detailed... super duper accurate"). Six parallel audits (one
+per surface) + mechanical link/image checks, every finding hand-
+verified against code before fixing. ~70 fixes across configuration.md,
+commands.md, ircv3.md, faq.md, keyboard-shortcuts.md, README, ROADMAP,
+index/howto/quality.html. Themes: stale counts (15→22 icons, 75→108
+tests, 905→1163 commits, pane model pre-rewrite on index), inverted
+claims (deleted themes DO reseed; unknown commands are NOT forwarded;
+STS doesn't work over WebSocket), wrong platform paths (QSettings is
+plist/registry on mac/win, log dirs use server NAME), broken build
+instructions (dep lists missing qt6-websockets/qtkeychain — package
+names verified via packages.ubuntu.com, Fedora packages, zippy), dead
+links (ircv3.html, index.md), missing docs (draft/persistence section,
+[dcc] NAT block in howto, CTCP TIME auto-reply, submenu'd nick menu).
+Deliberately NOT changed: soju BOUNCER LISTNETWORKS doc — the code
+never sends it when SASL is pending (latent gap, Joe's call);
+panetree.cpp cppcheck warning (parked cleanup); fresh-install
+font_nick_dock=10 vs parser default 9/13 (code quirk, not doc).
+-->
+
+<!--
 2026-07-27: [dcc] allow_lan — the LAN opt-in Joe green-lit right after
 A+B, closing the whole DCC-NAT arc. Default-off bool that relaxes the
 private-address block at the two DCC connect-out sites only (active

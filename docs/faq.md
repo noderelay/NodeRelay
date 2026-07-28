@@ -47,9 +47,7 @@ Uplink detected that your config still has the placeholder nick `yournick`. Type
 
 ### themes/ folder missing: no themes load
 
-Uplink creates `~/.config/uplink/themes/` and seeds it with all bundled themes on first launch. If the folder is empty or missing, delete it and restart; it will be recreated and repopulated automatically.
-
-Themes you have deleted will not be restored on restart. To get a specific theme back, copy it from a fresh download or from the `themes/` directory inside the release tarball.
+Uplink creates `~/.config/uplink/themes/` and seeds it with all bundled themes. The check runs on every launch: if the folder is empty or missing, or any bundled theme file has been deleted, restarting recreates the missing files automatically (whenever a bundled `themes/` directory ships next to the binary). Your own custom theme files are never touched — the reseed only re-copies bundled ones that are absent.
 
 ---
 
@@ -71,7 +69,7 @@ Open it in any text editor and restart Uplink to apply changes.
 
 When you open Edit Server for a server with a stored password, the field shows a placeholder (*Stored in keychain - type to change, clear to remove*) so you know the value is there. Leaving the field empty and saving preserves the entry. All password fields also have a show/hide eye toggle on the right edge.
 
-If Uplink shows a red **"Keychain: no password stored for…"** error in the server buffer on connect, your config has `<keychain>` as a sentinel but no matching entry in the OS keychain (the entry was never written or was cleared). Fix: open Edit Server, type your password in the affected field, and save. Uplink will store it and authenticate normally going forward.
+If Uplink shows a red **"Keychain: no credentials stored for…"** error in the server buffer on connect, your config has `<keychain>` as a sentinel but no matching entry in the OS keychain (the entry was never written or was cleared). Fix: open Edit Server, type your password in the affected field, and save. Uplink will store it and authenticate normally going forward.
 
 ### I renamed a server and now it says "Invalid credentials"
 
@@ -846,7 +844,7 @@ The right-click menu for selected text also shows a **Reply** option for the mes
 
 ### How do I send a file to someone (DCC)?
 
-Right-click the recipient's nick in the user list, then choose either **Send File** or **Send File (Passive)** depending on your network situation.
+Right-click the recipient's nick in the user list, then choose **DCC ▶ Send File** or **DCC ▶ Send File (Passive)** depending on your network situation.
 
 **Which one should I use?**
 
@@ -859,7 +857,7 @@ A simple rule: **try Send File first. If the transfer never starts, use Send Fil
 **Sending a file:**
 
 1. Right-click the recipient's nick in the user list on the right.
-2. Choose **Send File** or **Send File (Passive)**.
+2. Choose **DCC ▶ Send File** or **DCC ▶ Send File (Passive)**.
 3. Pick a file in the dialog.
 4. A progress dialog appears. The transfer starts as soon as they accept.
 
@@ -973,24 +971,25 @@ You can also set it in the config file with `highlight_words = "myproject, deplo
 
 ### What can I do from the nick right-click menu?
 
-Right-click any nick, in the user list or directly on a nick link in the chat view, to open the full action menu:
+Right-click any nick, in the user list or directly on a nick link in the chat view, to open the action menu. **Message**, **Whois**, and **Copy Nick** sit at the top level; the rest live in submenus:
 
 | Action | Description |
 |---|---|
 | **Message** | Open a PM buffer for that nick |
-| **Send File** | Send a file via active DCC (you open the port) |
-| **Send File (Passive)** | Send via passive DCC (recipient opens the port; use behind NAT) |
 | **Whois** | Look up the user's info (result in server window) |
-| **Invite** | Invite the nick to a channel (dialog pre-fills current channel) |
-| **Give Op / Take Op** | Grant or remove `+o` (requires op) |
-| **Give Voice / Take Voice** | Grant or remove `+v` (requires op or half-op) |
-| **Version** | CTCP VERSION request (reply in server window) |
-| **Ping** | CTCP PING; shows round-trip time in the active buffer |
 | **Copy Nick** | Copy the nickname to clipboard |
-| **Ignore ▶** | Opens a submenu with checkboxes for Private Messages, Notices, and Invites. Tick/untick independently. Unignore All clears everything. Persists across sessions. |
-| **Kick** | Kick from current channel with optional reason (requires op) |
-| **Ban** | Ban `nick!*@*` in current channel (requires op) |
-| **Kick & Ban** | Ban then kick in the correct order (requires op) |
+| **Ignore ▶** | Submenu with checkboxes for Private Messages, Notices, and Invites. Tick/untick independently. Unignore All clears everything. Persists across sessions. |
+| **CTCP ▶ Ping** | CTCP PING; shows round-trip time in the active buffer |
+| **CTCP ▶ Time** | CTCP TIME request (asks for the user's local time) |
+| **CTCP ▶ Version** | CTCP VERSION request (reply in server window) |
+| **DCC ▶ Send File** | Send a file via active DCC (you open the port) |
+| **DCC ▶ Send File (Passive)** | Send via passive DCC (recipient opens the port; use behind NAT) |
+| **Chan Ops ▶ Give Op / Take Op** | Grant or remove `+o` (requires op) |
+| **Chan Ops ▶ Give Voice / Take Voice** | Grant or remove `+v` (requires op or half-op) |
+| **Chan Ops ▶ Invite** | Invite the nick to a channel (dialog pre-fills current channel) |
+| **Chan Ops ▶ Kick** | Kick from current channel with optional reason (requires op) |
+| **Chan Ops ▶ Ban** | Ban `nick!*@*` in current channel (requires op) |
+| **Chan Ops ▶ Kick & Ban** | Ban then kick in the correct order (requires op) |
 
 ### What can I do from the message right-click menu?
 
@@ -1001,6 +1000,7 @@ Right-clicking **anywhere on a message** (timestamp, nick, body, or blank space 
 | **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Type your reply and press Enter. Escape cancels. |
 | **React** | Opens the emoji picker. Search by name or shortcode and click, or type `:shortcode:` and press Enter. Sends an IRCv3 `draft/react` shown inline below the message. |
 | **Copy** | Appears when you have text selected; copies the selection to the clipboard. |
+| **Delete** | Appears on your own messages when the server supports `draft/message-redaction`; deletes the message for everyone. |
 
 You do not have to click the timestamp exactly to get Reply. If you right-click anywhere in the message body while text is selected, the menu shows both **Copy** and **Reply** for the message you are in.
 
@@ -1010,10 +1010,10 @@ Type `/sysinfo` in the input box. Uplink posts your system info to the current c
 
 The collection runs in the background (GPU detection via `vulkaninfo` or `lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result once ready. A 12-second timeout applies in case a subprocess hangs.
 
-The output includes: OS name and version, CPU model, RAM, GPU name, and system uptime. Example:
+The output includes: OS and kernel, CPU model, total RAM, GPU name, and system uptime. Example:
 
 ```
-OS: Arch Linux x86_64 | CPU: AMD Ryzen AI 9 HX PRO 370 | RAM: 15.5 GB / 23.2 GB | GPU: AMD Radeon 890M | UP: 3d 14h 22m
+OS: Linux (Arch Linux) (6.15.7-arch1-1) CPU: AMD Ryzen AI 9 HX PRO 370 MEM: 24 GB GPU: AMD Radeon 890M UP: 3d 14h 22m
 ```
 
 ### How do I check another user's IRC client version?
@@ -1159,7 +1159,7 @@ Close the window normally; it minimizes to the system tray instead of quitting. 
 
 ### How do I change the app icon?
 
-Open **Settings → Preferences** (**Ctrl+,**) and find the **App Icon** grid on the Appearance page. It shows all 15 icon variants as clickable tiles: click one and the icon changes immediately in the title bar and system tray without restarting. The preference is saved automatically.
+Open **Settings → Preferences** (**Ctrl+,**) and find the **App Icon** grid on the Appearance page. It shows all 22 icon variants as clickable tiles: click one and the icon changes immediately in the title bar and system tray without restarting. The preference is saved automatically.
 
 You can also set it directly in `config.toml`:
 
@@ -1168,7 +1168,7 @@ You can also set it directly in `config.toml`:
 app_icon = "flat-black"    # the default
 ```
 
-Valid names are the 15 variants listed in [Configuration](configuration.md): `flat-black`, `black-old-orange`, `black-orange`, `original-black`, `original-flat-shine`, `colorful-blueish`, `colorful-greenblue`, `colorful-hotbluepink`, `colorful-orange`, `colorful-purple`, and the five `gruvbox-*` colors. Old configs with `app_icon = "dark"` or `"light"` still work; they map to `flat-black` and `original-flat-shine` automatically.
+Valid names are the 22 variants listed in [Configuration](configuration.md): `flat-black`, `black-old-orange`, `black-orange`, `original-black`, `original-flat-shine`, `colorful-blueish`, `colorful-greenblue`, `colorful-hotbluepink`, `colorful-orange`, `colorful-purple`, the five `gruvbox-*` colors, and the seven `circle-bubble-*` colors (black, blue, cyan, green, magenta, purple, red). Old configs with `app_icon = "dark"` or `"light"` still work; they map to `flat-black` and `original-flat-shine` automatically.
 
 ### macOS says the app is damaged or can't be opened
 
@@ -1333,7 +1333,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 - Join **#uplinkirc** on `irc.libera.chat`, the Uplink development channel
 - File bugs and feature requests on the GitHub Issues page
-- Browse the full documentation index at [docs/index.md](index.md)
+- Browse the full documentation at [uplinkirc.chat](https://uplinkirc.chat/)
 
 ---
 
@@ -1403,7 +1403,7 @@ The tooltip shows `account: <name>` when the server has reported their account. 
 - **On join**: if the server supports `extended-join`, the account name arrives with the JOIN message.
 - **Login/logout**: `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
 - **Per-message**: `account-tag` attaches the account name to every message from an authenticated user, keeping the data current even without a separate notification.
-- **WHO scan**: Uplink sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field. On servers that do not advertise `WHOX` in `ISUPPORT` (e.g. Rizon), a plain `WHO #channel` is sent instead; account data is not available in that case, but no error is produced.
+- **WHO scan**: Uplink sends a WHOX query (`WHO #channel %tcnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field. On servers that do not advertise `WHOX` in `ISUPPORT` (e.g. Rizon), a plain `WHO #channel` is sent instead; account data is not available in that case, but no error is produced.
 
 If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.
 
@@ -1464,7 +1464,7 @@ Two conditions must both be true: the message must be one you sent, and the serv
 
 ### The window opens too wide and I can't resize it
 
-This can happen on screens narrower than the default 1100 px window width, or when saved geometry from a larger display is restored. Fixed in v0.25.1; upgrade and delete the old settings file to start fresh:
+This can happen on screens narrower than the default window width (900 px today, wider in older releases), or when saved geometry from a larger display is restored. Fixed in v0.25.1; upgrade and delete the old settings file to start fresh:
 
 ```bash
 # Remove old misnamed file (leftover from earlier builds)
@@ -1490,9 +1490,10 @@ Quiet channels with fewer than 150 messages show no scrollbar until content fill
 
 Window geometry, sidebar width, splitter positions, and pane layout are saved in:
 
-| Platform | Path |
+| Platform | Location |
 |---|---|
-| Linux / FreeBSD / macOS | `~/.config/uplink/uplink.conf` |
-| Windows | `%APPDATA%\uplink\uplink\uplink.conf` |
+| Linux / FreeBSD | `~/.config/uplink/uplink.conf` |
+| macOS | `~/Library/Preferences/com.uplink.uplink.plist` (reset with `defaults delete com.uplink.uplink`) |
+| Windows | Registry: `HKEY_CURRENT_USER\Software\uplink\uplink` |
 
-This is separate from `config.toml` (which holds your server/UI preferences). Deleting `uplink.conf` resets the window layout to defaults without affecting any other settings.
+This is separate from `config.toml` (which holds your server/UI preferences). Deleting the geometry store resets the window layout to defaults without affecting any other settings.

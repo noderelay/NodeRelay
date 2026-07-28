@@ -31,10 +31,9 @@ We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal qu
 
 ## Planned — DCC
 
-The one area of the old roadmap that isn't actually finished. Transfers work on LAN and in the one-side-NATed case (passive mode); both-sides-NATed has no path.
+Mostly finished as of 2026-07-27. Transfers work on LAN (opt-in via `[dcc] allow_lan`, off by default), in the one-side-NATed case (passive mode), and through a router with port forwarding (`[dcc]` external IP + port range, with automatic external-IP discovery when the network reveals it). Both-sides-NATed without port forwarding still has no path.
 
 - [ ] NAT traversal for the both-sides-NATed case — evaluate UPnP/NAT-PMP port mapping on the listening side; if we don't build it, promote the current Known Issues text into user-facing docs and call the limitation intentional.
-- [ ] External IP discovery for active DCC — active mode advertises the local interface address, which is wrong behind NAT even when the port is forwarded.
 
 ---
 
@@ -48,7 +47,7 @@ How complete "complete" is, by area. Detail is in git history of this file and i
 
 **UI** — done and stable. Menu bar (v2 with Bookmarks), detachable/pop-out channel panes with drag rearrange and persistence (rebuilt on a split tree 2026-07-24: any nesting, panes capped by readable space rather than a shape table, and the whole layout including divider positions restored on launch; hardened 2026-07-25 by a full quality sweep — pane-lifetime crash fixes, buffer routing that can't land in a hidden view, layout save/restore under test, and the sidebar highlight following keyboard focus), custom virtual-scrolling ChatView, model-based nick list, 297 themes, redesigned Preferences, emoji picker (Unicode 16.0), reactions/replies/redaction, link preview cards, mIRC formatting input with a byte counter near the wire limit (2026-07-16), per-buffer input drafts — unsent text survives channel switches (2026-07-18), font zoom, quick switcher, in-buffer search plus full-history log search v1/v2/v3 — v3 adds the context jump, opening a hit in place in its buffer's scrollback (shipped v2026.7.8, field-verified 2026-07-24).
 
-**DCC file transfer** — mostly done: active and passive send/receive, progress UI, and the full hardening list (offer validation, size caps, filename sanitization, peer checks, timeout/cleanup races). Incomplete: NAT handling, see Planned — DCC.
+**DCC file transfer** — done except UPnP: active and passive send/receive, progress UI, the full hardening list (offer validation, size caps, filename sanitization, peer checks, timeout/cleanup races), and NAT support as of 2026-07-27 — `[dcc]` config (advertised external IP, forwardable port range, LAN opt-in) plus best-effort external-IP discovery from the network's visible-host reply. Remaining: both-sides-NATed with no port forwarding, see Planned — DCC.
 
 **Security** — backlog cleared as of 2026-06: outbound injection prevention, credential redaction across all paths, OS keychain storage, SSRF guard with DNS pre-check, inbound DoS bounds, URL scheme guard, CodeQL and ASan/UBSan in CI. Treated as ongoing work, not a finished list. Transfer-timeout audit done 2026-07-15: every outbound `QNetworkRequest` (previews, update check + download, avatar fetches) now sets an inactivity timeout. Avatar fetches hardened same day: full SSRF guard (scheme gate, DNS pre-check, IP-pinned request — shared with link previews via `net/addresscheck.h`), 1 MB size cap with dimension-gated decode, and local-path avatars honored only for the user's own profile.
 
@@ -58,12 +57,12 @@ How complete "complete" is, by area. Detail is in git history of this file and i
 
 **Scripting** — user script bindings (Preferences → Scripts) with sandboxed QProcess execution; four bundled scripts (/music, /weather, /uptime, /roll) working on Linux, Windows, macOS. More bundled scripts planned above.
 
-**Docs & site** — full docs (configuration, commands, FAQ, IRCv3, shortcuts, howto), GitHub Pages site with theme cycler, README. Current through v2026.7.6.
+**Docs & site** — full docs (configuration, commands, FAQ, IRCv3, shortcuts, howto), GitHub Pages site with theme cycler, README. Current through v2026.8.1 plus a full accuracy audit 2026-07-27.
 
 ---
 
 ## Known Issues
 
-- DCC over internet (active mode) — active DCC advertises your local IP; if both sides are behind NAT the connection still fails. Use **Send File (Passive)** so the receiver opens the port instead.
+- DCC over internet (active mode) — behind NAT, active DCC needs the `[dcc]` config block (external IP or auto-discovery, plus a forwarded port range); without it the advertised address is your LAN one. If both sides are behind NAT with no forwarding, the connection fails either way — use **Send File (Passive)** so the receiver opens the port instead.
 - DCC passive receive over NAT — the receiver's port must be reachable from outside. If the receiver is also behind NAT, passive DCC will not work either (both sides blocked). No relay mechanism implemented.
 - KDE global menu "Search" is broken (not Uplink's bug) — on Plasma Wayland the appmenu applet appends its own non-removable Search entry after Uplink's menus, and since Plasma ~6.6.3 it does nothing when used ([KDE bug 518161](https://bugs.kde.org/show_bug.cgi?id=518161), confirmed, unfixed as of 6.7.2). Uplink's DBusMenu export is complete and correct (verified with busctl GetLayout/AboutToShow against a live instance), so the search will find Uplink's menu actions with no app-side changes once KDE fixes the applet. Not to be confused with Uplink's own **Find** menu, which was renamed from "Search" precisely to avoid colliding with the Plasma entry.
