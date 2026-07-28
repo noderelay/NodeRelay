@@ -11,10 +11,10 @@ Type any of these commands in the message input box and press Enter.
 | `/join #channel` | Join a channel |
 | `/join #channel [key]` | Join a key-protected channel |
 | `/j #channel` | Short alias for `/join` |
-| `/part` | Leave the current channel |
+| `/part` | Leave the current channel (in a PM buffer: closes it) |
 | `/part reason` | Leave the current channel with a part message. Everything after `/part` is the reason |
-| `/leave` | Alias for `/part`; leaves the current channel |
-| `/close` | Alias for `/part`; leaves the current channel (or closes a PM buffer) |
+| `/leave` | Alias for `/part` |
+| `/close` | Alias for `/part`; reads most naturally for closing a PM buffer |
 | `/topic` | Show the current channel topic |
 | `/topic <text>` | Set the current channel topic |
 | `/topic #channel <text>` | Set the topic on a specific channel |
@@ -157,7 +157,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 
 | Command | Description |
 |---|---|
-| `/connect [host[:port]]` | Reconnect to the current server, or connect to a new server. If the host is already in your config, uses that entry; otherwise creates an ad-hoc connection with auto-detected SSL (port 6667 = plain, everything else = SSL). Append `+` to the host (e.g. `/connect irc.example.org+:6667`) to force SSL regardless of port. |
+| `/connect [host[:port]]` | Reconnect to the current server, or connect to a new server. A bare host that matches a config entry's name or host uses that entry (a `host:port` form is matched literally, so adding a port to a known host creates a fresh connection instead); anything else creates an ad-hoc connection with auto-detected SSL (port 6667 = plain, everything else = SSL). Append `+` to the host (e.g. `/connect irc.example.org+:6667`) to force SSL regardless of port. |
 | `/server [host[:port]]` | Alias for `/connect` |
 | `/disconnect` | Close the current server and all its channels from the sidebar. The server remains in your config and will reconnect on next launch. |
 | `/quit [message]` | Disconnect from the current server. If no message is given, uses the server's configured `quit_message` (default: `"Uplink"`) |
@@ -196,9 +196,9 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/ctcp <nick> <command> [args]` | Send a raw CTCP request to a user |
 | `/sysinfo` | Collect OS, CPU, RAM, GPU, and uptime info and post it to the current channel |
 
-Incoming CTCP VERSION and PING requests are answered automatically.
+Incoming CTCP VERSION, PING, and TIME requests are answered automatically (TIME replies with your local time).
 
-> **Note:** `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result when ready. A 12-second timeout applies; if collection hangs, an error is posted instead.
+> **Note:** the first `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately, then posts the result when ready; a 12-second timeout applies, and if collection hangs an error is posted instead. Results are cached, so later calls post instantly.
 
 > **Note:** `/time` and `/ping` only work if the target client supports those CTCP commands. Most IRC clients do, but bots often do not respond. If you see no reply, the other side simply does not support it.
 
@@ -369,7 +369,7 @@ Uplink supports IRCv3 `draft/react`: emoji reactions attached to specific messag
 **Receiving reactions:**
 - Reactions appear inline below the original message as `emoji(count)` whenever they are received
 
-**Requirements:** the server must support the `draft/react` capability. If the server does not advertise it, reactions are silently skipped.
+**Requirements:** sending needs the `message-tags` capability on the connection. Without it, Uplink posts "Cannot send reaction (message-tags cap not active)" locally instead of sending. (Whether other clients display the reaction depends on their `draft/react` support.)
 
 ### Examples
 
@@ -398,7 +398,7 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 
 Uplink lets you link external scripts to custom slash commands. Any executable (bash, python, ruby, whatever) can become a command. Configure them in **Preferences → Scripts**.
 
-Uplink ships with four bundled scripts (`/music`, `/weather`, `/uptime`, `/roll`) that are auto-installed on first launch to `~/.config/uplink/scripts/`. They show up in Preferences → Scripts ready to use.
+Uplink ships with four bundled scripts (`/music`, `/weather`, `/uptime`, `/roll`) installed to `~/.config/uplink/scripts/`. They show up in Preferences → Scripts ready to use. The script files are refreshed from the bundled versions on every launch, so local edits to those four files don't stick — copy a bundled script under a new name if you want to customize it.
 
 You can also add your own. Each script row has:
 - **Enabled** checkbox
@@ -407,7 +407,7 @@ You can also add your own. Each script row has:
 - **Browse** button to pick the file
 - **Delete** button to remove the binding
 
-If you delete a bundled script and want it back, click **Restore Defaults**; it only re-adds the missing ones without touching your custom scripts.
+If you delete a bundled script binding, it comes back on the next launch (or immediately via **Restore Defaults**, which only re-adds the missing ones without touching your custom scripts). To silence a bundled command for good, untick its **Enabled** box instead of deleting it.
 
 When you run a user script command, Uplink:
 1. Runs the script in a background thread (UI stays responsive)
@@ -416,7 +416,7 @@ When you run a user script command, Uplink:
 4. Sends each line of stdout to the current channel (max 5 lines, 450 chars each)
 5. Shows errors (non-zero exit, stderr, timeout) locally, never sent to the channel
 
-Scripts have a 10-second timeout. User scripts cannot shadow built-in commands. On Windows, `.sh` scripts are automatically launched via `bash.exe` (Git Bash or WSL).
+Scripts have a 10-second timeout. User scripts cannot shadow built-in commands. `.sh` scripts are launched via `bash` from PATH on every platform (on Windows that means Git Bash or WSL must provide it).
 
 ### Included: `/music`
 
@@ -498,7 +498,7 @@ Arguments are also passed as positional parameters (`$1`, `$2`, etc.).
 | `/raw <line>` | Send a raw IRC protocol line directly to the server |
 | `/quote <line>` | Alias for `/raw` |
 
-Use these when you need to send a command that Uplink does not have a built-in shortcut for. Unrecognized slash commands are NOT forwarded to the server: typing `/REHASH` prints `Unknown command: REHASH (use /raw or /quote to send raw IRC)` and sends nothing. Prefix server-specific commands with `/raw` instead. (The one exception: commands you have bound with a user script run as usual.)
+Use these when you need to send a command that Uplink does not have a built-in shortcut for. Unrecognized slash commands are NOT forwarded to the server: typing `/REHASH` prints `Unknown command: /rehash  (use /raw or /quote to send raw IRC)` and sends nothing. Prefix server-specific commands with `/raw` instead. (The one exception: commands you have bound with a user script run as usual.)
 
 ### Examples
 
@@ -518,7 +518,7 @@ Use these when you need to send a command that Uplink does not have a built-in s
 
 | Command | Description |
 |---|---|
-| `/help` | Print a list of all available commands in the current chat buffer |
+| `/help` | Print a command reference in the current chat buffer (the main commands plus your enabled scripts; a few aliases like `/leave` and `/close` are left out for brevity) |
 
 ---
 

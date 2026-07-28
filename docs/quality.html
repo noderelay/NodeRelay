@@ -305,7 +305,7 @@
       <span style="color:var(--gb-bg3)">·</span>
       Qt6 / C++20
       <span style="color:var(--gb-bg3)">·</span>
-      905 commits
+      1 163 commits
     </div>
     <h1 class="page-title">Code <span class="hl">Quality</span> &amp; Correctness</h1>
     <p class="page-sub">Every claim on this page is backed by the test suite, the compiler, or the source code.</p>
@@ -316,7 +316,7 @@
 <div class="wrap">
   <div class="stat-grid">
     <div class="stat-cell">
-      <div class="stat-num c-green">75</div>
+      <div class="stat-num c-green">108</div>
       <div class="stat-label">Tests passing</div>
     </div>
     <div class="stat-cell">
@@ -332,7 +332,7 @@
       <div class="stat-label">Compiler warnings</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-aqua">284</div>
+      <div class="stat-num c-aqua">416</div>
       <div class="stat-label">Assertions</div>
     </div>
     <div class="stat-cell">
@@ -340,15 +340,15 @@
       <div class="stat-label">Fuzz inputs</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-blue">35</div>
-      <div class="stat-label">IRCv3 caps</div>
+      <div class="stat-num c-blue">40</div>
+      <div class="stat-label">IRCv3 features</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-orange">104</div>
+      <div class="stat-num c-orange">107</div>
       <div class="stat-label">Source files</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-num c-purple">24 015</div>
+      <div class="stat-num c-purple">27 701</div>
       <div class="stat-label">Lines of C++</div>
     </div>
     <div class="stat-cell">
@@ -364,9 +364,9 @@
     <span class="section-tag c-green">Test suite</span>
     <h2>All tests pass</h2>
     <p class="section-sub">
-      Five Qt Test suites cover the IRC protocol parser, the mIRC chat renderer,
-      the TOML config loader, the history log reader, and the ignore-list types.
-      Below is the live output from the last run.
+      Six Qt Test suites cover the IRC protocol parser, the mIRC chat renderer,
+      the TOML config loader, the history log reader, the ignore-list types, and
+      the pane layout tree. Below is the live output from the last run.
     </p>
 
     <div class="results-grid">
@@ -476,6 +476,7 @@
       <code style="color:var(--gb-fg2)">tests/tst_config.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/tst_logreader.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/tst_ignoretypes.cpp</code>,
+      <code style="color:var(--gb-fg2)">tests/tst_panetree.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/fuzz_ircparser.cpp</code>,
       <code style="color:var(--gb-fg2)">tests/fuzz_chatformat.cpp</code>.
     </p>
@@ -486,7 +487,7 @@
 <section class="alt-bg">
   <div class="wrap">
     <span class="section-tag c-blue">Protocol conformance</span>
-    <h2>38 IRCv3 capabilities negotiated</h2>
+    <h2>40 IRCv3 features supported</h2>
     <p class="section-sub">
       Full <code>CAP LS 302</code> negotiation. Only capabilities the server actually advertises
       are requested; no blindly batched REQs that fail silently.
@@ -529,7 +530,7 @@
         <tr><td class="cap-name">setname</td><td>Receives real-name changes; /setname changes your own without reconnect</td><td class="cap-status status-full">Full (send + recv)</td></tr>
         <tr><td class="cap-name">userhost-in-names</td><td>Strips !user@host from display; stores for future ban/ignore work</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">Monitor</td><td>Sends MONITOR + after welcome; /monitor add|del|list|status commands</td><td class="cap-status status-full">Full</td></tr>
-        <tr><td class="cap-name">WHOX</td><td>Detects ISUPPORT token; uses WHO %cnfa,42 when available; falls back to plain WHO</td><td class="cap-status status-full">Full</td></tr>
+        <tr><td class="cap-name">WHOX</td><td>Detects ISUPPORT token; uses WHO %tcnfa,42 when available; falls back to plain WHO</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">sts</td><td>Caches STS policy to disk (sts.ini); enforces TLS on reconnect (HSTS equivalent)</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">standard-replies</td><td>Routes FAIL/WARN/NOTE to the correct buffer with colored [FAIL]/[WARN]/[NOTE] prefix</td><td class="cap-status status-full">Full</td></tr>
         <tr><td class="cap-name">cap-notify</td><td>Handles CAP NEW / CAP DEL to stay in sync if server cap set changes at runtime</td><td class="cap-status status-full">Full</td></tr>
@@ -548,7 +549,7 @@
       <span class="cap-status status-full">Full</span> = negotiated and actively used.
       <span class="cap-status status-recv" style="margin-left:0.75rem">Detected / Negotiated</span> = negotiated, feature-flagged internally.
       <span class="cap-status status-bouncer" style="margin-left:0.75rem">ZNC / soju only</span> = only requested when bouncer type is configured.
-      Full details: <a href="ircv3.html">ircv3.md</a>.
+      Full details: <a href="https://github.com/noderelay/UplinkIRC/blob/main/docs/ircv3.md">ircv3.md</a>.
     </p>
   </div>
 </section>
@@ -608,7 +609,7 @@
         <span class="dot dot-r"></span>
         <span class="dot dot-y"></span>
         <span class="dot dot-g"></span>
-        <span class="terminal-label">cppcheck 2.21 - 47 source files</span>
+        <span class="terminal-label">cppcheck 2.21 - 48 source files</span>
       </div>
       <div class="terminal-body"><span class="t-dim">$ cppcheck --enable=all --std=c++20 -I src src/</span>
 <span class="t-dim">47/47 files checked 100% done</span>
@@ -730,14 +731,14 @@
     <span class="section-tag c-aqua">Continuous integration</span>
     <h2>Every push is built, tested, and scanned</h2>
     <p class="section-sub">
-      Three CI workflows run on every push to main and every pull request.
+      Two CI workflows (build + test, CodeQL) run on every push to main and every pull request; a third builds release artifacts when a version tag is pushed.
       Nothing merges without passing all of them.
     </p>
 
     <div class="flag-grid">
       <div class="flag-card f-aqua">
         <div class="flag-name">Build matrix</div>
-        <div class="flag-desc">Compiled and tested on Linux (Ubuntu 24.04), Windows (MSVC 2025), and macOS on every push. Tests run on all three platforms, not just Linux.</div>
+        <div class="flag-desc">Compiled and tested on Linux (Ubuntu 24.04), Windows (MSVC 2022), and macOS on every push. Tests run on all three platforms, not just Linux.</div>
       </div>
       <div class="flag-card f-orange">
         <div class="flag-name">Sanitizer job</div>
@@ -770,11 +771,11 @@
     </p>
 
     <div class="arch-diagram">
-<span class="arch-name">┌─ IrcParser</span>                  <span class="arch-note">src/irc/ircparser.cpp  (100 lines)</span>
+<span class="arch-name">┌─ IrcParser</span>                  <span class="arch-note">src/irc/ircparser.cpp  (108 lines)</span>
 <span class="arch-rule">│</span>   Pure function. <span class="t-dim">IrcParser::parse(QString) → IrcMessage</span>. No state, no Qt I/O.
 <span class="arch-rule">│</span>   Handles tags, prefix, params, trailing, CRLF stripping, server-time decoding.
 <span class="arch-rule">│</span>
-<span class="arch-name">├─ IrcClient</span>                  <span class="arch-note">src/irc/ircclient.cpp  (1 677 lines)</span>
+<span class="arch-name">├─ IrcClient</span>                  <span class="arch-note">src/irc/ircclient.cpp  (1 947 lines)</span>
 <span class="arch-rule">│</span>   Owns the <span class="t-dim">QSslSocket</span>. Drives CAP LS 302 handshake, SASL, STS, all commands.
 <span class="arch-rule">│</span>   Emits signals; the UI never calls methods directly on the socket.
 <span class="arch-rule">│</span>
@@ -782,11 +783,11 @@
 <span class="arch-rule">│</span>   In-memory state: servers, channels, nick lists, message history.
 <span class="arch-rule">│</span>   Receives IrcClient signals, transforms them into model updates.
 <span class="arch-rule">│</span>
-<span class="arch-name">├─ ChatRenderer</span>               <span class="arch-note">src/ui/chatrenderer.cpp  (872 lines)</span>
+<span class="arch-name">├─ ChatRenderer</span>               <span class="arch-note">src/ui/chatrenderer.cpp  (945 lines)</span>
 <span class="arch-rule">│</span>   Pure functions: mIRC → HTML, linkify, HTML attribute escaping.
 <span class="arch-rule">│</span>   All XSS-critical paths tested. No HTML injection possible from message content.
 <span class="arch-rule">│</span>
-<span class="arch-name">└─ MainWindow / ChannelPane</span>   <span class="arch-note">src/ui/mainwindow.cpp  (4 644 lines)</span>
+<span class="arch-name">└─ MainWindow / ChannelPane</span>   <span class="arch-note">src/ui/mainwindow.cpp  (2 754 lines + topic files)</span>
     Reads model. Sends commands via IrcClient slots. Never touches socket or parser.
 
 <span class="arch-rule">──────────────────────────────────────────────────────────────</span>
@@ -873,7 +874,7 @@
       <div class="principle-card">
         <h3 style="color:var(--gb-green)">Correct IRC parsing</h3>
         <p>
-          13 unit tests cover every edge case of the RFC 1459 / IRCv3 message format:
+          16 unit tests cover every edge case of the RFC 1459 / IRCv3 message format:
           tags, prefix types, multi-param, trailing-only, CRLF stripping, server-time decoding,
           tag unescaping, and malformed input. Confirmed by 50 real-world message inputs in the fuzz corpus.
         </p>
@@ -939,13 +940,13 @@
       <div class="principle-card">
         <h3 style="color:var(--gb-green)">Protocol knowledge is real</h3>
         <p>
-          37 IRCv3 protocol features with full CAP LS 302 negotiation, SASL PLAIN and EXTERNAL, STS policy enforcement, bouncer-specific extensions for ZNC and soju. You don't get these right by prompting an LLM. You get them right by reading the specs and testing against live servers.
+          40 IRCv3 protocol features with full CAP LS 302 negotiation, SASL PLAIN and EXTERNAL, STS policy enforcement, bouncer-specific extensions for ZNC and soju. You don't get these right by prompting an LLM. You get them right by reading the specs and testing against live servers.
         </p>
       </div>
       <div class="principle-card">
         <h3 style="color:var(--gb-aqua)">Tested and shipped</h3>
         <p>
-          Unit tests for IRC parsing and HTML rendering, including malformed input. CI pipeline across Linux, Windows, macOS, and FreeBSD. Every release ships with a real changelog. This is a maintained project with discipline, not a one-shot dump.
+          Unit tests for IRC parsing and HTML rendering, including malformed input. CI pipeline across Linux, Windows, and macOS. Every release ships with a real changelog. This is a maintained project with discipline, not a one-shot dump.
         </p>
       </div>
       <div class="principle-card">

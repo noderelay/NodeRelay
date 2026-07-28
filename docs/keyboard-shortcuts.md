@@ -29,7 +29,7 @@ All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cm
 
 ## Navigation
 
-Navigate between channels and panes without touching the mouse. These shortcuts work from any focused widget: the input box, nick list, or anywhere else.
+Navigate between channels and panes without touching the mouse. These shortcuts work from any focused widget in the main window: the input box, nick list, or anywhere else. (Popped-out channel windows are deliberately excluded.)
 
 | Shortcut | Action |
 |---|---|
@@ -71,7 +71,7 @@ Slash commands complete the same way:
 
 ```
 /pi     → Tab →  /ping
-/mo     → Tab →  /mode  → Tab →  /monitor  → Tab →  /motd
+/mo     → Tab →  /mode  → Tab →  /motd
 ```
 
 ### Text formatting
@@ -139,11 +139,13 @@ For example, with **Regex** enabled, `error|timeout` finds lines mentioning eith
 
 | Shortcut | Action |
 |---|---|
-| **Ctrl+W** | Minimize to system tray |
-| **Close button (×)** | Same as Ctrl+W; minimizes to tray, does not quit |
+| **Ctrl+W** | Minimize to system tray (when a tray is available; without one it does nothing) |
+| **Close button (×)** | Minimizes to tray when one is available, does not quit; with no system tray it quits normally |
 | **Ctrl+Plus** / **Ctrl+=** | Increase font size (0.5 pt) for the focused UI region |
 | **Ctrl+Minus** | Decrease font size (0.5 pt) for the focused UI region |
 | **Ctrl+Scroll wheel** | Zoom font size for the region under the cursor |
+| **Ctrl+C** (chat view) | Copy the selected chat text |
+| **Escape** (nick filter) | Clear the nick-list filter box |
 
 Font zoom is per-region: you can set different sizes for the chat view, nick list, sidebar, and input box independently.
 

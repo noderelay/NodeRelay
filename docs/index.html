@@ -566,7 +566,7 @@
       <img id="shot-harmonic16" src="assets/harmonic16.png" alt="Uplink in Harmonic16" width="1016" height="666" loading="lazy">
       <img id="shot-humanoid-light" src="assets/humanoid-light.png" alt="Uplink in Humanoid Light" width="1016" height="666" loading="lazy">
     </div>
-    <p class="theme-count"><b>297 more</b> in Preferences → Theme. Per-widget font sizes, hanging indent toggle, and a collapsible sidebar round out the fit-and-finish.</p>
+    <p class="theme-count"><b>288 more</b> in Preferences → Theme. Per-widget font sizes, hanging indent toggle, and a collapsible sidebar round out the fit-and-finish.</p>
     <p class="theme-count">Want your own? Drop a <code>.toml</code> file into <code>~/.config/uplink/themes/</code> and it shows up in the list on next launch. Copy any shipped theme as a starting point. <a href="howto.html#themes">Full guide →</a></p>
   </div>
 </section>
@@ -584,7 +584,7 @@
     <div class="sec-list">
       <div class="sec-item">
         <h3>TLS by default, verified</h3>
-        <p>Every connection runs through <code>QSslSocket</code>. Invalid or self-signed certs disconnect immediately. There is no silent bypass.</p>
+        <p>Every connection runs through <code>QSslSocket</code>. Invalid or self-signed certs disconnect immediately — no silent bypass. For self-hosted servers, an explicit prompt lets you pin the certificate's fingerprint (trust-on-first-use) or accept it once.</p>
       </div>
       <div class="sec-item">
         <h3>OS keychain storage</h3>
@@ -663,7 +663,7 @@
       </div>
       <div class="feat-card b-yellow">
         <h3>Channel panes &amp; pop-out windows</h3>
-        <p>Open up to four channels at once. Each pane gets its own history, nick list, topic bar, search, and input. Auto-layout from side-by-side to a 2×2 grid, or pop any channel out into its own window.</p>
+        <p>Open up to eight channel views at once. Each pane gets its own history, nick list, topic bar, search, and input. Panes split automatically along whichever axis has room — any nesting, layout restored on launch — or pop a channel out into its own window (up to four).</p>
       </div>
       <div class="feat-card b-green">
         <h3>Watch list &amp; logging</h3>
@@ -727,7 +727,7 @@
       </div>
       <div class="feat-card b-yellow">
         <h3>② Set your nick</h3>
-        <p>First launch connects to Libera.Chat with a placeholder nick. Open <strong>File → Open Config</strong>, change <code>nick = "yournick"</code> to your actual nick, save, then click <strong>File → Reload Config</strong>.</p>
+        <p>First launch asks for your nick in a small dialog before connecting to Libera.Chat — type it and you're done. You can change it any time later with <code>/nick</code> or by editing <code>nick = "yournick"</code> in the config.</p>
       </div>
       <div class="feat-card b-green">
         <h3>③ You're in</h3>
@@ -767,7 +767,7 @@
       <tr><td><code>/me action</code></td><td>CTCP action (<em>/me waves</em>)</td></tr>
       <tr><td><code>/whois nick</code></td><td>Full user info, lands in active channel</td></tr>
       <tr><td><code>/away message</code></td><td>Set away · <code>/back</code> to return</td></tr>
-      <tr><td><code>/ignore nick</code></td><td>Suppress a nick · <code>/unignore nick</code> to lift</td></tr>
+      <tr><td><code>/ignore nick</code></td><td>Block PMs, notices &amp; invites from a nick · <code>/unignore nick</code> to lift</td></tr>
       <tr><td><code>/server host[:port]</code></td><td>Connect to any server on the fly</td></tr>
       <tr><td><code>/disconnect</code></td><td>Close the current server</td></tr>
       <tr><td><code>/clear</code></td><td>Clear the chat buffer</td></tr>
@@ -801,7 +801,7 @@
     <div class="section-head">
       <span class="section-tag" style="color: var(--gb-red);">build from source</span>
       <h2>Or compile it yourself</h2>
-      <p>CMake + Qt6 is all it takes. FreeBSD users: install <span style="font-family: var(--mono); font-size: 0.9em;">qt6-base</span>, <span style="font-family: var(--mono); font-size: 0.9em;">qt6-websockets</span>, and cmake from ports or pkg first.</p>
+      <p>CMake + Qt6 is all it takes. FreeBSD users: install <span style="font-family: var(--mono); font-size: 0.9em;">qt6-base</span>, <span style="font-family: var(--mono); font-size: 0.9em;">qt6-svg</span>, <span style="font-family: var(--mono); font-size: 0.9em;">qt6-websockets</span>, and cmake from ports or pkg first.</p>
     </div>
     <div class="install-block">
       <div class="label">clone &amp; build</div>

@@ -23,7 +23,7 @@ You can edit the file directly, or use the in-app tools:
 
 ## Full example
 
-This is a complete config file showing every available option.
+This is a full example covering the most commonly used options. Every key is documented in the per-section tables below, including a few that don't appear here (SASL certificate auth, `[monitor]`, `[[script]]`, channel keys).
 
 ```toml
 [ui]
@@ -70,6 +70,7 @@ link_previews = false              # set to true to enable URL preview cards in 
 external_ip = "203.0.113.7"        # IPv4 advertised in DCC offers (for NAT)
 port_min = 5000                    # listen-port range for DCC transfers
 port_max = 5010                    # (forward these on your router)
+allow_lan = false                  # permit DCC with private/LAN peer addresses
 
 [profile]
 display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata)
@@ -141,7 +142,7 @@ Controls the look and feel of the interface. All keys are optional; missing keys
 | `pane_split_axis` | string | `"auto"` | Which way [detachable channel panes](howto.html#channel-panes) split. `"auto"` decides per split from the shape of the view being halved: wider than tall gives columns, taller gives rows, and each split keeps its own direction. `"columns"` and `"rows"` flatten the whole layout onto that one axis and hold it there, which is what unticking **Preferences → Interface → Split Panes Automatically** writes. Replaces the old `pane_stack_rows` bool, which still migrates if it was set to `true`. |
 | `panel_cards` | bool | `true` | The server/channel list and user list use their own `[sidebar]`/`[nicklist]` theme backgrounds and float as fully rounded cards, framed by an even `[general] background` gap on all sides. Set `false` for the classic flat look where the whole window sits on the buffer color. Toggle live from **Preferences → Interface → Panel Cards**. |
 | `menu_style` | string | `"menubar"` | How the app menu is presented. `"menubar"` shows the **File / Edit / View / Settings / Help / Find** menu bar; on KDE it joins the global menu automatically; elsewhere it renders in-window. `"hidden"` hides it; everything stays reachable via shortcuts and right-click menus (**Ctrl+,** always opens Preferences). Switch live from **Preferences → Interface → Menu Style**. |
-| `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
+| `app_icon` | string | `"flat-black"` | Which app icon variant to use. 22 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`, `"circle-bubble-black"`, `"circle-bubble-blue"`, `"circle-bubble-cyan"`, `"circle-bubble-green"`, `"circle-bubble-magenta"`, `"circle-bubble-purple"`, `"circle-bubble-red"`. Change from **Preferences → Appearance** (visual grid picker). Old values migrate automatically: `"dark"` becomes `"flat-black"`, `"light"` becomes `"original-flat-shine"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones. If the configured font is not installed, Uplink silently falls back to your system's default monospace font, so a missing font never leaves the UI unreadable. |
 | `font_toolbar` | integer | `10` | Legacy top-bar font size, kept for config compatibility |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
@@ -235,7 +236,7 @@ Settings for DCC file transfers behind NAT or a firewall. All keys are optional;
 |---|---|---|---|
 | `external_ip` | string | *(empty)* | IPv4 address advertised in outgoing DCC offers. Set this to your public IP when behind NAT — otherwise peers are told your LAN address (`192.168.x.x`) and can never connect. When the network itself reveals your public address (visible-host notice or your own join hostmask), that discovered address is used automatically and wins over this setting; `external_ip` covers cloaked networks like Libera where nothing is revealed. |
 | `port_min` | int | *(ephemeral)* | Low end of the listen-port range used for DCC transfers. Set together with `port_max` and forward that range on your router. `port_min` alone pins a single port. |
-| `port_max` | int | *(ephemeral)* | High end of the range. An inverted or out-of-range pair is ignored. |
+| `port_max` | int | *(ephemeral)* | High end of the range. An inverted or out-of-range pair is ignored, as is `port_max` on its own without `port_min`. |
 | `allow_lan` | bool | `false` | Permit DCC transfers with peers on private addresses (`192.168.x.x` etc.). Off by default: a malicious offer could otherwise point Uplink at machines inside your own network. Turn on for transfers between your own machines on a LAN — most useful when both connect to a LAN IRC server, so offers carry LAN addresses. Affects DCC only; link previews always block private addresses. |
 
 ```toml
@@ -255,9 +256,9 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | Key | Type | Required | Description |
 |---|---|---|---|
 | `name` | string | yes | Display name shown in the sidebar. **Must be unique**: Uplink uses this as the identity key, so two servers cannot share the same name (even if they share the same host). **Renaming a server requires re-entering its password**; passwords are stored in the OS keychain under this name, so a rename loses the keychain association. Open Manage Servers, select the renamed entry, re-enter the password, and save. |
-| `host` | string | yes | IRC server hostname or IP address |
-| `port` | integer | yes | Server port. Standard ports: `6697` for TLS (recommended), `6667` for plain (unencrypted). |
-| `ssl` | bool | yes | Use TLS encryption. Set `true` for any public server; all modern networks support it. Set `false` only for plain connections: local test servers, LAN servers, some bouncers on localhost, or `.onion` addresses where the Tor tunnel provides its own encryption. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |
+| `host` | string | yes | IRC server hostname or IP address. The only key whose absence drops the whole block. |
+| `port` | integer | no | Server port (defaults to `6697`). Standard ports: `6697` for TLS (recommended), `6667` for plain (unencrypted). |
+| `ssl` | bool | no | Use TLS encryption (defaults to `true`). Set `true` for any public server; all modern networks support it. Set `false` only for plain connections: local test servers, LAN servers, some bouncers on localhost, or `.onion` addresses where the Tor tunnel provides its own encryption. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |
 | `nick` | string | yes | Your preferred nickname |
 | `user` | string | no | Username in your hostmask (defaults to `"uplink"`) |
 | `realname` | string | no | Shown in WHOIS (defaults to `"Uplink User"`) |
@@ -357,7 +358,7 @@ proxy_port = 9050
 
 ### Password storage: OS keychain
 
-Uplink stores all passwords (`password`, `sasl_password`, `nickserv_password`) in your **OS keychain**, not as plaintext in `config.toml`. The file stores the sentinel value `"<keychain>"` instead of the actual secret.
+Uplink stores all secrets (`password`, `sasl_password`, `nickserv_password`, `proxy_pass`, and channel `key`s) in your **OS keychain**, not as plaintext in `config.toml`. The file stores the sentinel value `"<keychain>"` instead of the actual secret.
 
 | Platform | Storage backend |
 |---|---|
@@ -365,7 +366,7 @@ Uplink stores all passwords (`password`, `sasl_password`, `nickserv_password`) i
 | macOS | macOS Keychain |
 | Windows | Windows Credential Manager |
 
-**How migration works:** If you already have a plaintext password in your config from an older version, Uplink migrates it automatically the next time you save your settings. You do not need to do anything manually.
+**How migration works:** If you already have a plaintext password in your config from an older version, Uplink migrates it automatically the next time you save from **Add Server** or **Manage Servers**. Other kinds of saves (Preferences, slash commands) leave existing plaintext values in place until then.
 
 **What you'll see after saving:**
 
@@ -738,7 +739,7 @@ channels = "#uplinkirc, #linux, #archlinux"
 
 ### Table format (with keys)
 
-For password-protected channels, use `[[server.channel]]` sub-tables with a `key` field. This format is also how Uplink saves channels internally after the first config write.
+For password-protected channels, use `[[server.channel]]` sub-tables with a `key` field. Uplink also saves in this format itself once any channel on the server has a key.
 
 ```toml
 [[server]]
@@ -756,7 +757,7 @@ name = "#private"
 key = "secretkey"
 ```
 
-Both formats load correctly. On the next save (via **Manage Servers** or **Reload Config**), channels are written in the table format with keys preserved.
+Both formats load correctly. On save, servers where at least one channel has a key are written in the table format with keys preserved; servers with no channel keys keep the simple string format.
 
 > **Note:** Uplink will not prompt you for a missing channel key. If a channel requires a key, add it to the config manually using the `[[server.channel]]` format above.
 
@@ -850,7 +851,7 @@ The list is sent to all connected servers on every connect and reconnect.
 
 ## The `[profile]` block
 
-Stores your IRCv3 `draft/metadata` display name and avatar. Values are published to every server you connect to that advertises the capability; other users see them in the nick list tooltip.
+Stores your IRCv3 `draft/metadata` display name, avatar, and status text. Values are published to every server you connect to that advertises the capability; other users see them in the nick list tooltip.
 
 ```toml
 [profile]
@@ -864,6 +865,7 @@ The block is written automatically when you use the **Preferences → Profile** 
 |---|---|---|
 | `display_name` | string | Friendly name shown in the nick list tooltip alongside your IRC nick. Does not replace your nick. |
 | `avatar_url` | string | URL to your avatar image, or a local file path (e.g. `/home/you/avatar.png`). A web URL is broadcast to the server via `METADATA SET` and visible to other users. A local path is displayed only to you; it is never sent to the server. Leave blank to publish no avatar. |
+| `status` | string | Free-form status line (e.g. `"afk until monday"`), shown in italics in nick tooltips. Set from **Preferences → Profile** or `/status`. Leave blank to publish no status. |
 
 **Setting from Preferences:** Open **Preferences** (click **⚙** in the channel header) and select the **Profile** page from the left navigation. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
 
