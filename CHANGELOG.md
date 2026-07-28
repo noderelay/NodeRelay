@@ -10,6 +10,11 @@ and sitting exactly on its own release tag (checked via `git tag
 trees keep +hash.dev, and a missing tag degrades to the old suffix
 behavior. All three paths verified locally against a worktree at
 v2026.8.1. Takes effect from the next tagged release.
+2026-07-27 followup: the IN_LIST in that check broke CI's older CMake —
+script mode has no policy floor, so CMP0057 defaulted to OLD (ubuntu
+build + sanitize red on main since #195; local/mac/win CMakes were new
+enough to mask it). gitversion.cmake now opens with
+cmake_minimum_required(VERSION 3.16), matching the project.
 -->
 
 <!--
