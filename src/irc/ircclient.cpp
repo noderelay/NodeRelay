@@ -539,6 +539,7 @@ void IrcClient::onDisconnected()
     m_requestedCaps.clear();
     m_ackedCaps.clear();
     m_capLsBuffer.clear();
+    m_zncDetected = false;
     m_batches.clear();
     m_saslPending    = false;
     m_saslAuthed     = false;
@@ -1376,6 +1377,14 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         const QStringList available = m_capLsBuffer;
         m_capLsBuffer.clear();
 
+        // ZNC advertises znc.in/* vendor caps even when no playback module is
+        // loaded, so this spots a ZNC link regardless of the user's bouncer
+        // setting. seedFromLog() keys off it: plain ZNC replays its buffer
+        // unconditionally, and seeding on top of that doubles the backlog.
+        for (const QString &a : available) {
+            if (a.startsWith("znc.in/")) { m_zncDetected = true; break; }
+        }
+
         // Servers may advertise caps as "name=value" (e.g. "sasl=PLAIN,EXTERNAL")
         auto hasAvailable = [&](const QString &cap) {
             for (const QString &a : available)
@@ -1498,6 +1507,10 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         // Server added capabilities mid-session — request any we want
         const QStringList newCaps = trailing.split(' ', Qt::SkipEmptyParts);
         const QStringList desired = desiredCaps();
+
+        for (const QString &cap : newCaps) {
+            if (cap.startsWith("znc.in/")) { m_zncDetected = true; break; }
+        }
 
         QStringList want;
         for (const QString &cap : newCaps) {
