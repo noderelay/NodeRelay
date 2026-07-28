@@ -1,6 +1,18 @@
 # Changelog
 
 <!--
+2026-07-27: [dcc] config table — first half of the DCC-NAT work Joe
+approved (A of A+B). external_ip sets the IPv4 advertised in outgoing
+DCC offers (behind NAT the socket address is a LAN one peers can't
+reach); port_min/port_max pin DCC listeners to a forwardable range
+(port_min alone = single port, invalid pairs fall back to ephemeral).
+Wired into active send, the passive-receive reply, and both listeners
+via a shared dccListen() helper (dccports.h). Bind address stays the
+local one — only the advertised address changes. Config-file only, no
+GUI; documented in configuration.md + FAQ NAT note.
+-->
+
+<!--
 2026-07-27: plain ZNC (no playback module) no longer doubles the
 backlog. seedFromLog skipped on chathistory/playback caps, but plain
 ZNC advertises neither and still replays its buffer on attach — so the

@@ -66,6 +66,11 @@ font_emoji = 16   # emoji size in chat messages (independent of font_chat)
 [privacy]
 link_previews = false              # set to true to enable URL preview cards in chat
 
+[dcc]
+external_ip = "203.0.113.7"        # IPv4 advertised in DCC offers (for NAT)
+port_min = 5000                    # listen-port range for DCC transfers
+port_max = 5010                    # (forward these on your router)
+
 [profile]
 display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata)
 status = "afk until monday"            # italic status line in nick tooltips
@@ -219,6 +224,25 @@ link_previews = true    # enable URL preview cards
 ```
 
 > **Privacy note:** When link previews are on, every URL posted in chat triggers a background HTTP request from your machine. The target site sees your IP address. Uplink blocks requests to private/LAN addresses, but external URLs are always fetched. Disable if you want no outgoing requests from chat content.
+
+---
+
+## The `[dcc]` block
+
+Settings for DCC file transfers behind NAT or a firewall. All keys are optional; without them Uplink advertises the connection's local address and listens on random ports, which works on a directly connected machine but not behind a home router. This section has no GUI — edit the file and restart. If you can't (or don't want to) configure your router, **passive DCC** (`Send File (Passive)` in the nick menu) avoids listening entirely by asking the receiver to connect to you instead.
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `external_ip` | string | *(empty)* | IPv4 address advertised in outgoing DCC offers. Set this to your public IP when behind NAT — otherwise peers are told your LAN address (`192.168.x.x`) and can never connect. |
+| `port_min` | int | *(ephemeral)* | Low end of the listen-port range used for DCC transfers. Set together with `port_max` and forward that range on your router. `port_min` alone pins a single port. |
+| `port_max` | int | *(ephemeral)* | High end of the range. An inverted or out-of-range pair is ignored. |
+
+```toml
+[dcc]
+external_ip = "203.0.113.7"   # your public IP
+port_min = 5000               # forward 5000-5010 TCP on the router
+port_max = 5010
+```
 
 ---
 

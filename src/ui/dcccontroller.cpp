@@ -29,6 +29,20 @@ DccController::DccController(SessionModel *model, QWidget *parentWindow)
             this, &DccController::onPassiveSendReply, Qt::QueuedConnection);
 }
 
+// The address we put in outgoing DCC offers. Behind NAT the socket's local
+// address is a LAN one the peer can't reach, so a configured [dcc]
+// external_ip takes precedence when it parses as IPv4.
+quint32 DccController::advertisedIp(IrcClient *client) const
+{
+    const DccConfig &dcc = m_model->dccConfig();
+    if (!dcc.externalIp.isEmpty()) {
+        bool ok = false;
+        const quint32 v4 = QHostAddress(dcc.externalIp).toIPv4Address(&ok);
+        if (ok) return v4;
+    }
+    return client ? client->localIpv4() : 0;
+}
+
 void DccController::onSendReceived(const ServerId &, const QString &fromNick,
                                    const QString &filename, quint32 ip, quint16 port, qint64 filesize)
 {
@@ -106,12 +120,13 @@ void DccController::onPassiveOfferReceived(const ServerId &server, const QString
         m_window, "Save File", QFileInfo(filename).fileName());
     if (savePath.isEmpty()) return;
 
+    const DccConfig &dccCfg = m_model->dccConfig();
     auto *dcc = new DccReceive(savePath, 0, 0, filesize, this);
-    if (!dcc->listenPassive(senderIp)) { dcc->deleteLater(); return; }
+    if (!dcc->listenPassive(senderIp, dccCfg.portMin, dccCfg.portMax)) { dcc->deleteLater(); return; }
     QPointer<DccReceive> dccGuard(dcc);
 
     IrcClient *client = m_model->clientFor(server);
-    const quint32 ourIp   = client ? client->localIpv4() : 0;
+    const quint32 ourIp   = advertisedIp(client);
     const quint16 ourPort = dcc->listenPort();
     QString fn = QFileInfo(filename).fileName().replace(' ', '_');
     static const QRegularExpression kCtrlChars(QStringLiteral("[\\x00-\\x1f\\x7f]"));
@@ -173,14 +188,18 @@ void DccController::sendFile(const ServerId &host, const QString &nick)
     IrcClient *client = m_model->clientFor(host);
     if (!client) return;
 
+    // Bind to the socket's local address; advertise the effective one (they
+    // differ behind NAT when [dcc] external_ip is set).
     const quint32 localIp = client->localIpv4();
+    const DccConfig &dccCfg = m_model->dccConfig();
     auto *dcc = new DccSend(path, this);
-    if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any)) {
+    if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any,
+                     std::nullopt, dccCfg.portMin, dccCfg.portMax)) {
         dcc->deleteLater(); return;
     }
     QPointer<DccSend> dccGuard(dcc);
 
-    const quint32 ip   = localIp;
+    const quint32 ip   = advertisedIp(client);
     const quint16 port = dcc->port();
     const QString fn   = dcc->filename();
     const qint64  size = dcc->filesize();

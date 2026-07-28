@@ -1,4 +1,5 @@
 #include "dccreceive.h"
+#include "dccports.h"
 #include "logging.h"
 #include "net/addresscheck.h"
 
@@ -87,7 +88,7 @@ void DccReceive::start()
     m_socket->connectToHost(peerAddr, m_port);
 }
 
-bool DccReceive::listenPassive(quint32 expectedIp)
+bool DccReceive::listenPassive(quint32 expectedIp, quint16 portMin, quint16 portMax)
 {
     if (!checkTransferPrecon(m_total, m_savePath, this))
         return false;
@@ -97,7 +98,7 @@ bool DccReceive::listenPassive(quint32 expectedIp)
         return false;
     }
     m_server = new QTcpServer(this);
-    if (!m_server->listen(QHostAddress::Any, 0)) {
+    if (!dccListen(m_server, QHostAddress::Any, portMin, portMax)) {
         emit error("Cannot bind listen port");
         cancel(); // closes and removes the freshly created .part file
         return false;

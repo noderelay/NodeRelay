@@ -58,6 +58,7 @@ public:
     bool    resolveLogBuffer(const QString &serverPart, const QString &bufferPart,
                              ServerId &host, BufferId &buffer) const;
     bool    messageLoggingEnabled() const { return m_config.ui.logMessages; }
+    const DccConfig &dccConfig() const { return m_config.dcc; }
 
     // Send on behalf of a session
     void sendMessage(const ServerId &host, const BufferId &target, const QString &text,

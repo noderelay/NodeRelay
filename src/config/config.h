@@ -130,11 +130,18 @@ struct UiConfig {
     QString   menuStyle{"menubar"};   // "menubar" (File/Edit/... bar), "hidden" (shortcuts only)
 };
 
+struct DccConfig {
+    QString externalIp;   // IPv4 advertised in DCC offers (empty = socket address)
+    quint16 portMin{0};   // listen range for DCC servers; 0 = ephemeral port
+    quint16 portMax{0};
+};
+
 inline const QString kKeychainSentinel = QStringLiteral("<keychain>");
 
 struct Config {
     QList<ServerConfig> servers;
     UiConfig            ui;
+    DccConfig           dcc;
     QList<IgnoreEntry>  ignoreList;
     QStringList         monitorList;   // nicks to watch with MONITOR
     QList<ScriptBinding> scripts;

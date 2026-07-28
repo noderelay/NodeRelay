@@ -256,6 +256,53 @@ nick = "joe"
         QCOMPARE(cfg.servers[2].bouncerType, BouncerType::None);
     }
 
+    void dccSection()
+    {
+        LOAD(cfg, R"(
+[dcc]
+external_ip = "203.0.113.7"
+port_min = 5000
+port_max = 5010
+)");
+        QCOMPARE(cfg.dcc.externalIp, "203.0.113.7");
+        QCOMPARE(cfg.dcc.portMin, quint16(5000));
+        QCOMPARE(cfg.dcc.portMax, quint16(5010));
+
+        // port_min alone pins a single port
+        LOAD(one, R"(
+[dcc]
+port_min = 5000
+)");
+        QCOMPARE(one.dcc.portMin, quint16(5000));
+        QCOMPARE(one.dcc.portMax, quint16(5000));
+
+        // inverted range falls back to ephemeral
+        LOAD(bad, R"(
+[dcc]
+port_min = 5010
+port_max = 5000
+)");
+        QCOMPARE(bad.dcc.portMin, quint16(0));
+        QCOMPARE(bad.dcc.portMax, quint16(0));
+
+        // out-of-range values fall back to ephemeral
+        LOAD(oob, R"(
+[dcc]
+port_min = 70000
+port_max = 70010
+)");
+        QCOMPARE(oob.dcc.portMin, quint16(0));
+        QCOMPARE(oob.dcc.portMax, quint16(0));
+
+        // no [dcc] table at all
+        LOAD(none, R"(
+[ui]
+theme = "default"
+)");
+        QCOMPARE(none.dcc.externalIp, QString());
+        QCOMPARE(none.dcc.portMin, quint16(0));
+    }
+
     void saveLoadRoundTrip()
     {
         Config orig;
@@ -272,6 +319,9 @@ nick = "joe"
         orig.ui.menuStyle = "hidden";
         orig.profileDisplayName = "Joe";
         orig.profileAvatarUrl = "https://example.com/avatar.png";
+        orig.dcc.externalIp = "203.0.113.7";
+        orig.dcc.portMin = 5000;
+        orig.dcc.portMax = 5010;
 
         ServerConfig sc;
         sc.name = "TestNet";
@@ -313,6 +363,9 @@ nick = "joe"
         QCOMPARE(loaded.ui.menuStyle, "hidden");
         QCOMPARE(loaded.profileDisplayName, "Joe");
         QCOMPARE(loaded.profileAvatarUrl, "https://example.com/avatar.png");
+        QCOMPARE(loaded.dcc.externalIp, "203.0.113.7");
+        QCOMPARE(loaded.dcc.portMin, quint16(5000));
+        QCOMPARE(loaded.dcc.portMax, quint16(5010));
 
         QCOMPARE(loaded.servers.size(), 1);
         const auto &ls = loaded.servers[0];

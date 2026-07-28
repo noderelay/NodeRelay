@@ -1,4 +1,5 @@
 #include "dccsend.h"
+#include "dccports.h"
 #include "logging.h"
 
 #include <QFileInfo>
@@ -14,7 +15,8 @@ DccSend::DccSend(const QString &filepath, QObject *parent)
     , m_file(filepath)
 {}
 
-bool DccSend::listen(const QHostAddress &bindAddr, std::optional<QHostAddress> expectedPeer)
+bool DccSend::listen(const QHostAddress &bindAddr, std::optional<QHostAddress> expectedPeer,
+                     quint16 portMin, quint16 portMax)
 {
     m_expectedPeer = expectedPeer;
     if (!m_file.open(QIODevice::ReadOnly)) {
@@ -31,7 +33,7 @@ bool DccSend::listen(const QHostAddress &bindAddr, std::optional<QHostAddress> e
     }
 
     m_server = new QTcpServer(this);
-    if (!m_server->listen(bindAddr, 0)) {
+    if (!dccListen(m_server, bindAddr, portMin, portMax)) {
         emit error("Cannot bind listen port");
         m_file.close();
         return false;
