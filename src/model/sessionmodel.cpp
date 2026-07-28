@@ -850,9 +850,12 @@ BufferId SessionModel::activeOrServer(const ServerId &host) const
 // would duplicate lines. Seeded at most once per buffer per run.
 void SessionModel::seedFromLog(const ServerId &host, const BufferId &target)
 {
+    // Skip when the connection replays history itself. zncDetected() covers
+    // every ZNC link, playback module or not — plain ZNC replays its buffer
+    // unconditionally without advertising any history cap.
     auto *cl = clientFor(host);
     if (cl && (cl->hasCap("chathistory") || cl->hasCap("draft/chathistory")
-               || cl->hasCap("znc.in/playback")))
+               || cl->zncDetected()))
         return;
 
     const QString key = bufferKeyLower(host, target);

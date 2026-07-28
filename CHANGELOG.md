@@ -1,6 +1,19 @@
 # Changelog
 
 <!--
+2026-07-27: plain ZNC (no playback module) no longer doubles the
+backlog. seedFromLog skipped on chathistory/playback caps, but plain
+ZNC advertises neither and still replays its buffer on attach — so the
+local-log seed landed on top of the replay. IrcClient now flags any
+znc.in/* cap in CAP LS/NEW (ZNC always sends some, modules or not;
+reset on disconnect) and seedFromLog skips on that flag, which also
+subsumes the old znc.in/playback check. Joe picked auto-detect over
+arrival dedupe / a config knob / accept-as-is. Trade-off, by design:
+behind plain ZNC a fresh buffer only shows what ZNC's buffer replays,
+never local logs. Scroll-up paging from logs is unaffected.
+-->
+
+<!--
 2026-07-25 (post-close, Joe spotted it on the fresh Air dmg): release
 builds no longer show the commit hash — "v2026.8.1+09e0c8c" on a
 stable dmg read as odd, and the tag already pins the commit.

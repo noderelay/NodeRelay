@@ -62,6 +62,7 @@ public:
                                          || m_ackedCaps.contains("draft/metadata-2"); }
     bool    metadataEnabled() const { return m_metadataEnabled; }
     bool    supportsWhox() const { return m_supportsWhox; }
+    bool    zncDetected() const { return m_zncDetected; }
     QStringList ackedCaps() const { auto l = m_ackedCaps.values(); l.sort(); return l; }
     quint32 localIpv4()  const;
 
@@ -233,6 +234,7 @@ private:
     QSet<QString>               m_requestedCaps;
     QSet<QString>               m_ackedCaps;
     QStringList                 m_capLsBuffer;
+    bool                        m_zncDetected{false};  // any znc.in/* cap seen in CAP LS/NEW
     bool                        m_registered{false};
     QHash<QString, QStringList> m_namesBuffer;
     QList<QStringList>          m_listBuffer;         // [channel, count, topic] per entry

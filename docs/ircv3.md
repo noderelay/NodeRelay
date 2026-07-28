@@ -56,7 +56,7 @@ When the user scrolls to the top of a channel buffer and all loaded messages hav
 
 This works on any server or bouncer that supports either cap name, including Ergo, soju, and modern ZNC.
 
-On connections without chathistory support, Uplink's own log files stand in (when message logging is enabled in Preferences): joining a channel seeds the buffer with the last 100 logged messages, mirroring `CHATHISTORY LATEST`, and scrolling to the top pages further back, so scrollback still reaches as far as your local logs go. Seeding is skipped when the server or a ZNC playback module will replay the backlog itself, so the two sources never duplicate.
+On connections without chathistory support, Uplink's own log files stand in (when message logging is enabled in Preferences): joining a channel seeds the buffer with the last 100 logged messages, mirroring `CHATHISTORY LATEST`, and scrolling to the top pages further back, so scrollback still reaches as far as your local logs go. Seeding is skipped when the server supports chathistory or the connection goes through ZNC (detected from its `znc.in/*` capabilities, with or without the playback module — ZNC replays its buffer on attach either way), so the two sources never duplicate.
 
 ### `sasl` (PLAIN and EXTERNAL)
 
