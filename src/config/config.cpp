@@ -177,6 +177,19 @@ Config Config::load(const QString &path)
         if (auto priv = tbl["privacy"].as_table())
             cfg.ui.linkPreviews = (*priv)["link_previews"].value_or(false);
 
+        // [dcc]
+        if (auto dcc = tbl["dcc"].as_table()) {
+            cfg.dcc.externalIp = QString::fromStdString((*dcc)["external_ip"].value_or<std::string>(""));
+            int lo = (*dcc)["port_min"].value_or(0);
+            int hi = (*dcc)["port_max"].value_or(0);
+            if (lo < 0 || lo > 65535) lo = 0;
+            if (hi < 0 || hi > 65535) hi = 0;
+            if (lo && !hi) hi = lo;                  // port_min alone pins one port
+            if (!lo || hi < lo) { lo = 0; hi = 0; }  // nonsense range = ephemeral
+            cfg.dcc.portMin = quint16(lo);
+            cfg.dcc.portMax = quint16(hi);
+        }
+
         // [profile]
         if (auto prof = tbl["profile"].as_table()) {
             cfg.profileDisplayName = QString::fromStdString((*prof)["display_name"].value_or<std::string>(""));
@@ -377,6 +390,17 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
 
     out << "[privacy]\n";
     out << "link_previews = " << boolStr(cfg.ui.linkPreviews) << "\n\n";
+
+    if (!cfg.dcc.externalIp.isEmpty() || cfg.dcc.portMin) {
+        out << "[dcc]\n";
+        if (!cfg.dcc.externalIp.isEmpty())
+            out << "external_ip = " << tomlQuote(cfg.dcc.externalIp) << "\n";
+        if (cfg.dcc.portMin) {
+            out << "port_min = " << cfg.dcc.portMin << "\n";
+            out << "port_max = " << cfg.dcc.portMax << "\n";
+        }
+        out << "\n";
+    }
 
     if (!cfg.profileDisplayName.isEmpty() || !cfg.profileAvatarUrl.isEmpty()
         || !cfg.profileStatusText.isEmpty()) {

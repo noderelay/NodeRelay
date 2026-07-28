@@ -881,7 +881,9 @@ Uplink enforces two receive limits before accepting a transfer:
 - **Maximum file size: 2 GiB.** Files advertised as larger than this are rejected immediately.
 - **Disk space check.** Available space on the destination drive is checked against the advertised file size. The transfer is rejected with an error if there is not enough room.
 
-> **If both sides are behind NAT:** neither active nor passive DCC will work; there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
+**Behind NAT with port forwarding:** active DCC can work through a home router if you forward a port range and tell Uplink about it. Add a `[dcc]` block to `config.toml` with your public IP and the forwarded range — see [the `[dcc]` block](configuration.md#the-dcc-block) for details.
+
+> **If both sides are behind NAT** (and neither has port forwarding): neither active nor passive DCC will work; there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
 
 ### How do I check for updates?
 

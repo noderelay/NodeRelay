@@ -15,7 +15,8 @@ public:
     ~DccReceive();
 
     void    start();
-    bool    listenPassive(quint32 expectedIp = 0);
+    bool    listenPassive(quint32 expectedIp = 0,
+                          quint16 portMin = 0, quint16 portMax = 0);
     quint16 listenPort() const;
     void    cancel();
 

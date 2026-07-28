@@ -15,7 +15,8 @@ public:
     explicit DccSend(const QString &filepath, QObject *parent = nullptr);
 
     bool    listen(const QHostAddress &bindAddr = QHostAddress::Any,
-                   std::optional<QHostAddress> expectedPeer = std::nullopt);
+                   std::optional<QHostAddress> expectedPeer = std::nullopt,
+                   quint16 portMin = 0, quint16 portMax = 0);
     QString initPassive();
     void    connectOut(quint32 ip, quint16 port);
     void    cancel();
