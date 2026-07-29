@@ -64,8 +64,6 @@
 #include <QSplitter>
 #include <QTextCharFormat>
 #include <QScrollBar>
-#include <QGraphicsOpacityEffect>
-#include <QPropertyAnimation>
 #include <QInputDialog>
 #include <QSysInfo>
 #include <QThread>
@@ -909,14 +907,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         m_sidebarRevealBtn && m_sidebarRevealBtn->isVisible()) {
         auto *re = static_cast<QResizeEvent *>(event);
         m_sidebarRevealBtn->move(4, re->size().height() - m_sidebarRevealBtn->height() - 4);
-    }
-
-    if (m_scrollBottomBtn && m_scrollBottomBtn->isVisible() &&
-        event->type() == QEvent::Resize && obj == m_chatView->viewport()) {
-        auto *re = static_cast<QResizeEvent *>(event);
-        m_scrollBottomBtn->move(
-            re->size().width() - m_scrollBottomBtn->width() - 12,
-            re->size().height() - m_scrollBottomBtn->height() - 12);
     }
 
     if (obj == m_sidebarPanel && event->type() == QEvent::Resize && m_sidebarCloseBtn) {

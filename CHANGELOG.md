@@ -1,6 +1,19 @@
 # Changelog
 
 <!--
+2026-07-28: jump-to-bottom button restored — it had been wired to the
+primary chat view only (a MainWindow-owned QToolButton on m_chatView's
+viewport), so pane views and popped-out windows never had one, and once
+reading moved into panes it looked gone everywhere. Classic pane-arc
+bug (wired to m_chatView alone). The button, its opacity fade and the
+click handler now live inside ChatView itself, so every chat view —
+primary, docked pane, popped-out window — owns its own. Diagnosed via
+temporary SCROLLBTN qDebug trace: the scrolled view emitted
+scrolledAwayFromBottom(true) repeatedly with zero handler runs; the
+handler was alive but connected to the other ChatView.
+-->
+
+<!--
 SESSION SUMMARY 2026-07-27, PRs #197-#202, all merged, unreleased:
 
 Built/changed:

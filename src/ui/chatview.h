@@ -7,6 +7,9 @@
 #include <QVector>
 
 class QTimer;
+class QToolButton;
+class QGraphicsOpacityEffect;
+class QPropertyAnimation;
 
 class ChatView : public QAbstractScrollArea {
     Q_OBJECT
@@ -47,6 +50,7 @@ signals:
 protected:
     void paintEvent(QPaintEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
+    bool viewportEvent(QEvent *e) override;
     void wheelEvent(QWheelEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
@@ -85,6 +89,9 @@ private:
     int              m_findFrom{-1};
     int              m_findTo{-1};
     QTimer          *m_relayoutTimer{nullptr}; // deferred off-screen relayout after width change
+    QToolButton            *m_bottomBtn{nullptr};     // jump-to-bottom, fades in when scrolled up
+    QGraphicsOpacityEffect *m_bottomOpacity{nullptr};
+    QPropertyAnimation     *m_bottomAnim{nullptr};
 
     static constexpr int kMaxLines   = 2000;
     int              m_maxLines{kMaxLines};
@@ -107,6 +114,8 @@ private:
     QString  anchorAt(const QPoint &vpPos) const;
     SelPoint hitTest(const QPoint &vpPos) const;
     void     setFind(int lineIdx, int from, int to);
+    void     setupBottomButton();
+    void     positionBottomButton();
     void     drawLine(QPainter &p, const ChatLine &line, int screenY,
                       int selFrom = -1, int selTo = -1,
                       int findFrom = -1, int findTo = -1) const;
