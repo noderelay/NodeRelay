@@ -14,6 +14,10 @@
 #include <QTextLayout>
 #include <QTimer>
 #include <QTextLine>
+#include "ui/menuicons.h"
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation>
+#include <QToolButton>
 #include <algorithm>
 #include <cmath>
 
@@ -67,6 +71,69 @@ ChatView::ChatView(QWidget *parent)
             emit scrolledAwayFromBottom(true);
         }
     });
+
+    setupBottomButton();
+}
+
+// Every chat view owns its jump-to-bottom button — primary, docked panes and
+// popped-out windows alike (it used to live in MainWindow, wired to the
+// primary view only, so panes never had one).
+void ChatView::setupBottomButton()
+{
+    // Child of the scroll area, NOT the viewport: the viewport clips its
+    // children at the scrollbar gutter, which shaved the button's right
+    // edge. As a sibling raised above viewport and scrollbar it can't be
+    // clipped or painted over.
+    m_bottomBtn = new QToolButton(this);
+    m_bottomBtn->setFixedSize(32, 32);
+    m_bottomBtn->setIconSize(QSize(22, 22));
+    m_bottomBtn->setAutoRaise(true);
+    m_bottomBtn->setCursor(Qt::PointingHandCursor);
+    m_bottomBtn->setStyleSheet(
+        "QToolButton { background: rgba(0,0,0,0.5); border: none; border-radius: 16px; }"
+        "QToolButton:hover { background: rgba(0,0,0,0.7); }"
+    );
+    m_bottomBtn->setToolTip(tr("Jump to bottom"));
+    m_bottomBtn->setIcon(MenuIcons::fromSvg(
+        QStringLiteral(":/icons/mi-keyboard-double-arrow-down.svg"),
+        QColor("#e3e3e3"), 20));
+    m_bottomBtn->setVisible(false);
+    m_bottomOpacity = new QGraphicsOpacityEffect(m_bottomBtn);
+    m_bottomOpacity->setOpacity(0.0);
+    m_bottomBtn->setGraphicsEffect(m_bottomOpacity);
+    m_bottomAnim = new QPropertyAnimation(m_bottomOpacity, "opacity", this);
+    m_bottomAnim->setDuration(300);
+    m_bottomAnim->setEasingCurve(QEasingCurve::OutCubic);
+    connect(m_bottomBtn, &QToolButton::clicked, this, &ChatView::scrollToBottom);
+    connect(this, &ChatView::scrolledAwayFromBottom, this, [this](bool away){
+        positionBottomButton();
+        m_bottomBtn->raise();
+        m_bottomAnim->stop();
+        if (away) {
+            m_bottomBtn->setVisible(true);
+            m_bottomAnim->setStartValue(m_bottomOpacity->opacity());
+            m_bottomAnim->setEndValue(0.85);
+            m_bottomAnim->start();
+        } else {
+            m_bottomAnim->setStartValue(m_bottomOpacity->opacity());
+            m_bottomAnim->setEndValue(0.0);
+            m_bottomAnim->start();
+            connect(m_bottomAnim, &QPropertyAnimation::finished, this, [this]{
+                if (m_bottomOpacity->opacity() < 0.01)
+                    m_bottomBtn->setVisible(false);
+            }, Qt::SingleShotConnection);
+        }
+    });
+}
+
+void ChatView::positionBottomButton()
+{
+    // Anchor to the viewport's rect in scroll-area coordinates. The wide
+    // right inset keeps the button clear of the scrollbar strip on the
+    // content's right edge.
+    const QRect vp = viewport()->geometry();
+    m_bottomBtn->move(vp.right()  - m_bottomBtn->width()  - 28,
+                      vp.bottom() - m_bottomBtn->height() - 12);
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
@@ -289,9 +356,22 @@ void ChatView::paintEvent(QPaintEvent *)
             m_lines[k].cachedLayout.reset();
 }
 
+// Reposition against the viewport's own resize — the scroll area's
+// resizeEvent runs before the viewport gets its final width, and a stale
+// (wider) width pushes the button past the right clip edge.
+bool ChatView::viewportEvent(QEvent *e)
+{
+    const bool handled = QAbstractScrollArea::viewportEvent(e);
+    if (e->type() == QEvent::Resize && m_bottomBtn)
+        positionBottomButton();
+    return handled;
+}
+
 void ChatView::resizeEvent(QResizeEvent *e)
 {
     QAbstractScrollArea::resizeEvent(e);
+    if (m_bottomBtn)
+        positionBottomButton();
     if (e->oldSize().width() == e->size().width()) {
         updateScrollRange();
         return;
