@@ -180,7 +180,7 @@ void DccController::onPassiveSendReply(const ServerId &, const QString &, const 
         if (!m_model->dccConfig().allowLan && isPrivateAddress(QHostAddress(ip))) {
             QMessageBox::warning(m_window, "DCC",
                 "Blocked: remote address is private or reserved.\n"
-                "([dcc] allow_lan = true in config.toml permits LAN transfers.)");
+                "(Preferences > File Transfers permits LAN transfers.)");
             dcc->deleteLater();
         } else {
             dcc->connectOut(ip, port);

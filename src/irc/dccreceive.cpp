@@ -61,7 +61,7 @@ void DccReceive::start()
     const QHostAddress peerAddr(m_ip);
     if (!m_allowPrivatePeer && isPrivateAddress(peerAddr)) {
         emit error("DCC blocked: peer address " + peerAddr.toString()
-                   + " is private or reserved ([dcc] allow_lan = true permits LAN transfers)");
+                   + " is private or reserved (Preferences > File Transfers permits LAN transfers)");
         return;
     }
 

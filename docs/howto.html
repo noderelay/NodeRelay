@@ -3139,13 +3139,13 @@ link_previews = true</pre>
     </ul>
 
     <h3>Behind NAT: the <code>[dcc]</code> config block</h3>
-    <p>Active DCC through a home router needs two things: peers must be told your <em>public</em> address (by default Uplink advertises the connection's local address), and the listen ports must be forwardable. Both are configurable in <code>config.toml</code>:</p>
+    <p>Active DCC through a home router needs two things: peers must be told your <em>public</em> address (by default Uplink advertises the connection's local address), and the listen ports must be forwardable. Both live in <strong>Preferences → File Transfers</strong>, or in <code>config.toml</code>:</p>
     <pre>[dcc]
 external_ip = "203.0.113.7"   # IPv4 advertised in DCC offers
 port_min = 5000               # forward this TCP range on your router
 port_max = 5010</pre>
     <p>When the IRC network reveals your public address (visible-host notice, or your own join hostmask on networks without cloaking), Uplink discovers and uses it automatically — <code>external_ip</code> is the manual override for cloaked networks like Libera where nothing is revealed.</p>
-    <p><strong>Transfers on your own LAN</strong> (both machines at home, connected to a LAN IRC server) are blocked by default as a safety measure against malicious offers pointing into your network. Add <code>allow_lan = true</code> to the <code>[dcc]</code> block on <em>both</em> machines to permit them. Full key reference: <a href="https://github.com/noderelay/UplinkIRC/blob/main/docs/configuration.md">configuration.md</a>.</p>
+    <p><strong>Transfers on your own LAN</strong> (both machines at home, connected to a LAN IRC server) are blocked by default as a safety measure against malicious offers pointing into your network. Turn on <strong>Preferences → File Transfers → Allow Transfers with LAN Peers</strong> (or <code>allow_lan = true</code> in the <code>[dcc]</code> block) on <em>both</em> machines to permit them. Full key reference: <a href="https://github.com/noderelay/UplinkIRC/blob/main/docs/configuration.md">configuration.md</a>.</p>
 
     <div class="tip">
       <strong>If both sides are behind NAT</strong> and neither has port forwarding, neither mode will work; there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.

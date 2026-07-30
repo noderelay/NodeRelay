@@ -879,9 +879,9 @@ Uplink enforces two receive limits before accepting a transfer:
 - **Maximum file size: 2 GiB.** Files advertised as larger than this are rejected immediately.
 - **Disk space check.** Available space on the destination drive is checked against the advertised file size. The transfer is rejected with an error if there is not enough room.
 
-**Behind NAT with port forwarding:** active DCC can work through a home router if you forward a port range and tell Uplink about it. Add a `[dcc]` block to `config.toml` with your public IP and the forwarded range — see [the `[dcc]` block](configuration.md#the-dcc-block) for details.
+**Behind NAT with port forwarding:** active DCC can work through a home router if you forward a port range and tell Uplink about it. Set your public IP and the forwarded range under **Preferences → File Transfers** (or in the `[dcc]` block of `config.toml` — see [the `[dcc]` block](configuration.md#the-dcc-block) for details).
 
-**Between machines on the same LAN:** transfers with private peer addresses are blocked by default (a malicious offer could otherwise reach into your network). Set `allow_lan = true` in the `[dcc]` block on both machines to permit them. This works best when both machines connect to an IRC server on the LAN, so offers carry LAN addresses.
+**Between machines on the same LAN:** transfers with private peer addresses are blocked by default (a malicious offer could otherwise reach into your network). Turn on **Preferences → File Transfers → Allow Transfers with LAN Peers** (or set `allow_lan = true` in the `[dcc]` block) on both machines to permit them. This works best when both machines connect to an IRC server on the LAN, so offers carry LAN addresses.
 
 > **If both sides are behind NAT** (and neither has port forwarding): neither active nor passive DCC will work; there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
 
