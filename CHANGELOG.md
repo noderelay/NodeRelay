@@ -1,6 +1,26 @@
 # Changelog
 
 <!--
+SESSION SUMMARY 2026-07-29 (evening), diagnosis only — no code changed:
+
+- "Unread counters gone on fortis, fine on zippy" turned out to be
+  config state, not a regression: show_unread_counts = false in the
+  fortis config.toml. The bubble icon and the number are controlled
+  separately (icon always set on unread, number gated by the setting),
+  which is why the bubble alone showed. Re-enabled via the checkbox;
+  #204/#205 verified clean of the badge path (untouched since #185).
+- REAL BUG FOUND while tracing every config.toml writer:
+  SessionModel::pinCertificate() (sessionmodel.cpp:1644) saves the
+  model's OWN config copy, whose ui section is frozen at launch. A
+  TOFU cert accept therefore silently reverts every UI toggle changed
+  since launch — it can't invent a bad value, but it makes a corrected
+  toggle "mysteriously" flip back. #204's setDccConfig already patches
+  the dcc part of this same gap. Proposed fix (not yet approved): pin
+  should read-modify-write only the fingerprint, never dump the whole
+  stale copy. In ROADMAP Known Issues until fixed.
+-->
+
+<!--
 SESSION SUMMARY 2026-07-29, release day + first DCC wire test:
 
 - v2026.8.2 RELEASED (tag + all five artifacts + AUR ×3 + brew tap,
