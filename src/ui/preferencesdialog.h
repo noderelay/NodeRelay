@@ -7,6 +7,7 @@ class QCheckBox;
 class QLineEdit;
 class QListWidget;
 class QPushButton;
+class QSpinBox;
 class QStackedWidget;
 class SolidComboBox;
 
@@ -47,6 +48,9 @@ signals:
     void docsRequested();
     void profileSetRequested(const QString &displayName, const QString &avatarUrl,
                              const QString &statusText);
+    void dccAllowLanToggled(bool on);
+    void dccExternalIpChanged(const QString &ip);
+    void dccPortRangeChanged(quint16 lo, quint16 hi);
     void scriptsChanged(const QList<ScriptBinding> &scripts);
 
 private:
@@ -55,6 +59,7 @@ private:
     QWidget *createInterfacePage(const Config &cfg);
     QWidget *createNotificationsPage(const Config &cfg);
     QWidget *createLoggingPage(const Config &cfg);
+    QWidget *createTransfersPage(const Config &cfg);
     QWidget *createProfilePage(const Config &cfg, const QColor &accent);
     QWidget *createScriptsPage(const Config &cfg, const QColor &accent);
 
@@ -84,6 +89,10 @@ private:
     QButtonGroup *m_bracketsGroup{nullptr};
     QCheckBox    *m_paneSplitAutoCheck{nullptr};
     QButtonGroup *m_menuStyleGroup{nullptr};
+    QCheckBox *m_dccAllowLanCheck{nullptr};
+    QLineEdit *m_dccExternalIpEdit{nullptr};
+    QSpinBox  *m_dccPortMinSpin{nullptr};
+    QSpinBox  *m_dccPortMaxSpin{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
     QLineEdit *m_statusEdit{nullptr};

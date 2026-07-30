@@ -1,6 +1,19 @@
 # Changelog
 
 <!--
+2026-07-29: Preferences gets a File Transfers page — the [dcc] block
+(allow_lan, external_ip, port_min/port_max) was config-file-only, found
+during the first real LAN wire test (zippy→fortis blocked as designed,
+but flipping the setting meant hand-editing config.toml on both ends
+with the app closed). The page edits all four keys live: MainWindow
+syncs its config copy AND the model's (new SessionModel::setDccConfig —
+DccController reads m_model->dccConfig() per transfer, so changes apply
+to the next offer without a restart). Port pair normalised like the
+config loader (min alone pins one port, nonsense range = ephemeral).
+Both DCC block messages now point at the page instead of config.toml.
+-->
+
+<!--
 2026-07-28: jump-to-bottom button restored — it had been wired to the
 primary chat view only (a MainWindow-owned QToolButton on m_chatView's
 viewport), so pane views and popped-out windows never had one, and once

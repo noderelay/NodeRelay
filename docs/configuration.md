@@ -230,7 +230,7 @@ link_previews = true    # enable URL preview cards
 
 ## The `[dcc]` block
 
-Settings for DCC file transfers behind NAT or a firewall. All keys are optional; without them Uplink advertises the connection's local address and listens on random ports, which works on a directly connected machine but not behind a home router. This section has no GUI — edit the file and restart. If you can't (or don't want to) configure your router, **passive DCC** (`Send File (Passive)` in the nick menu) avoids listening entirely by asking the receiver to connect to you instead.
+Settings for DCC file transfers behind NAT or a firewall. All keys are optional; without them Uplink advertises the connection's local address and listens on random ports, which works on a directly connected machine but not behind a home router. All of this is also editable in **Preferences → File Transfers**, where changes apply immediately. If you can't (or don't want to) configure your router, **passive DCC** (`Send File (Passive)` in the nick menu) avoids listening entirely by asking the receiver to connect to you instead.
 
 | Key | Type | Default | Description |
 |---|---|---|---|

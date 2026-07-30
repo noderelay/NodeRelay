@@ -16,6 +16,7 @@
 #include <QListWidgetItem>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSpinBox>
 #include <QStackedWidget>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -98,6 +99,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     addNavItem("Interface",     MenuIcons::preferences());
     addNavItem("Notifications", MenuIcons::mention());
     addNavItem("Logging",       MenuIcons::documentation());
+    addNavItem("File Transfers",MenuIcons::openConfig());
     addNavItem("Profile",       MenuIcons::gear());
     addNavItem("Scripts",       MenuIcons::scripts());
 
@@ -107,6 +109,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     m_pages->addWidget(createInterfacePage(cfg));
     m_pages->addWidget(createNotificationsPage(cfg));
     m_pages->addWidget(createLoggingPage(cfg));
+    m_pages->addWidget(createTransfersPage(cfg));
     m_pages->addWidget(createProfilePage(cfg, accent));
     m_pages->addWidget(createScriptsPage(cfg, accent));
 
@@ -458,6 +461,88 @@ QWidget *PreferencesDialog::createLoggingPage(const Config &cfg)
     return page;
 }
 
+// ── File Transfers ───────────────────────────────────────────────────────────
+
+QWidget *PreferencesDialog::createTransfersPage(const Config &cfg)
+{
+    auto *page = new QWidget;
+    auto *vbox = new QVBoxLayout(page);
+    vbox->setContentsMargins(12, 8, 12, 8);
+    vbox->setSpacing(6);
+
+    vbox->addWidget(pageTitle("File Transfers"));
+
+    {
+        auto *note = new QLabel(
+            "DCC transfers connect directly between you and the other user, "
+            "outside the IRC server. These settings match the <b>[dcc]</b> "
+            "block in config.toml.");
+        note->setWordWrap(true);
+        note->setStyleSheet("font-size: 9pt;");
+        vbox->addWidget(note);
+    }
+
+    vbox->addSpacing(6);
+    m_dccAllowLanCheck = new QCheckBox("Allow Transfers with LAN Peers");
+    m_dccAllowLanCheck->setChecked(cfg.dcc.allowLan);
+    m_dccAllowLanCheck->setToolTip(
+        "Permit DCC with private addresses (e.g. 192.168.x.x), such as "
+        "your own machines at home. Off, such peers are refused.");
+    connect(m_dccAllowLanCheck, &QCheckBox::toggled, this, [this](bool on){
+        emit dccAllowLanToggled(on);
+    });
+    vbox->addWidget(m_dccAllowLanCheck);
+
+    vbox->addWidget(sectionLabel("Behind NAT"));
+    {
+        auto *note = new QLabel(
+            "When your router hides your public address, set it here and "
+            "forward a port range to this machine. Leave the address empty "
+            "to use what the IRC network reveals about your host.");
+        note->setWordWrap(true);
+        note->setStyleSheet("font-size: 9pt;");
+        vbox->addWidget(note);
+    }
+    {
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("External IP:"));
+        m_dccExternalIpEdit = new QLineEdit;
+        m_dccExternalIpEdit->setPlaceholderText("e.g. 203.0.113.7  (empty = auto-discover)");
+        m_dccExternalIpEdit->setText(cfg.dcc.externalIp);
+        connect(m_dccExternalIpEdit, &QLineEdit::editingFinished, this, [this]{
+            emit dccExternalIpChanged(m_dccExternalIpEdit->text().trimmed());
+        });
+        row->addWidget(m_dccExternalIpEdit, 1);
+        vbox->addLayout(row);
+    }
+    {
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("Listen Ports:"));
+        m_dccPortMinSpin = new QSpinBox;
+        m_dccPortMinSpin->setRange(0, 65535);
+        m_dccPortMinSpin->setSpecialValueText("auto");
+        m_dccPortMinSpin->setValue(cfg.dcc.portMin);
+        m_dccPortMaxSpin = new QSpinBox;
+        m_dccPortMaxSpin->setRange(0, 65535);
+        m_dccPortMaxSpin->setSpecialValueText("auto");
+        m_dccPortMaxSpin->setValue(cfg.dcc.portMax);
+        auto emitRange = [this]{
+            emit dccPortRangeChanged(quint16(m_dccPortMinSpin->value()),
+                                     quint16(m_dccPortMaxSpin->value()));
+        };
+        connect(m_dccPortMinSpin, &QSpinBox::editingFinished, this, emitRange);
+        connect(m_dccPortMaxSpin, &QSpinBox::editingFinished, this, emitRange);
+        row->addWidget(m_dccPortMinSpin);
+        row->addWidget(new QLabel("to"));
+        row->addWidget(m_dccPortMaxSpin);
+        row->addStretch();
+        vbox->addLayout(row);
+    }
+
+    vbox->addStretch();
+    return page;
+}
+
 // ── Profile ──────────────────────────────────────────────────────────────────
 
 QWidget *PreferencesDialog::createProfilePage(const Config &cfg, const QColor &accent)
@@ -707,6 +792,16 @@ void PreferencesDialog::syncFromConfig(const Config &cfg)
     // An edge-drop writes columns/rows, so this can change without the dialog
     setCheck(m_paneSplitAutoCheck, cfg.ui.paneSplitAxis == "auto");
     setCheck(m_themeAutoCheck,     cfg.ui.themeAuto);
+    setCheck(m_dccAllowLanCheck,   cfg.dcc.allowLan);
+    if (m_dccExternalIpEdit) {
+        QSignalBlocker block(m_dccExternalIpEdit);
+        m_dccExternalIpEdit->setText(cfg.dcc.externalIp);
+    }
+    if (m_dccPortMinSpin && m_dccPortMaxSpin) {
+        QSignalBlocker b1(m_dccPortMinSpin), b2(m_dccPortMaxSpin);
+        m_dccPortMinSpin->setValue(cfg.dcc.portMin);
+        m_dccPortMaxSpin->setValue(cfg.dcc.portMax);
+    }
     auto setCombo = [&cfg](SolidComboBox *combo, const QString &text){
         if (!combo) return;
         QSignalBlocker block(combo);

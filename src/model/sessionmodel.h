@@ -59,6 +59,7 @@ public:
                              ServerId &host, BufferId &buffer) const;
     bool    messageLoggingEnabled() const { return m_config.ui.logMessages; }
     const DccConfig &dccConfig() const { return m_config.dcc; }
+    void setDccConfig(const DccConfig &dcc) { m_config.dcc = dcc; }
 
     // Send on behalf of a session
     void sendMessage(const ServerId &host, const BufferId &target, const QString &text,

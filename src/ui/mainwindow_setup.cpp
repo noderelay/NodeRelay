@@ -386,6 +386,29 @@ void MainWindow::connectPreferences()
         m_docsDialog->activateWindow();
     });
 
+    connect(m_prefsDialog, &PreferencesDialog::dccAllowLanToggled, this, [this](bool on){
+        m_config.dcc.allowLan = on;
+        m_model->setDccConfig(m_config.dcc);
+        saveConfig();
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::dccExternalIpChanged, this, [this](const QString &ip){
+        m_config.dcc.externalIp = ip;
+        m_model->setDccConfig(m_config.dcc);
+        saveConfig();
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::dccPortRangeChanged, this, [this](quint16 lo, quint16 hi){
+        // Same normalisation as the config loader: min alone pins one port,
+        // a nonsense range means ephemeral.
+        if (lo && !hi) hi = lo;
+        if (!lo || hi < lo) { lo = 0; hi = 0; }
+        m_config.dcc.portMin = lo;
+        m_config.dcc.portMax = hi;
+        m_model->setDccConfig(m_config.dcc);
+        saveConfig();
+    });
+
     connect(m_prefsDialog, &PreferencesDialog::profileSetRequested,
             this, [this](const QString &displayName, const QString &avatarUrl,
                          const QString &statusText) {
