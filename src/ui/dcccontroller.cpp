@@ -82,23 +82,32 @@ void DccController::onSendReceived(const ServerId &, const QString &fromNick,
         prog->setValue(static_cast<int>(filesize > INT_MAX
             ? received * INT_MAX / filesize : received));
     });
-    connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
-        prog->setValue(prog->maximum());
-        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+    // Queued, like the offer slots above: these open dialogs and deleteLater
+    // the transfer, which must not happen inside the socket's signal chain —
+    // a nested dialog loop there can destroy the socket mid-emission. The
+    // dialog is a QPointer since it can die (cancel) before a queued signal
+    // is delivered.
+    QPointer<QProgressDialog> progGuard(prog);
+    connect(dcc, &DccReceive::finished, this, [this, progGuard, dccGuard](const QString &path){
+        if (progGuard) {
+            progGuard->setValue(progGuard->maximum());
+            progGuard->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+        }
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::information(m_window, "DCC", "File received:\n" + path);
-    });
-    connect(dcc, &DccReceive::error, this, [this, prog, dccGuard](const QString &msg){
-        prog->close();
+    }, Qt::QueuedConnection);
+    connect(dcc, &DccReceive::error, this, [this, progGuard, dccGuard](const QString &msg){
+        if (progGuard) progGuard->close();
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::warning(m_window, "DCC Error", msg);
-    });
+    }, Qt::QueuedConnection);
     connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
         if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
     });
 
     // Show before start(): start() can emit error() synchronously, and its
-    // handler close()s the dialog — show() afterwards would resurrect it.
+    // (queued) handler close()s the dialog — show() afterwards would
+    // resurrect it.
     prog->show();
     dcc->start();
 }
@@ -155,17 +164,21 @@ void DccController::onPassiveOfferReceived(const ServerId &server, const QString
     connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
         prog->setValue(static_cast<int>(filesize > INT_MAX ? received * INT_MAX / filesize : received));
     });
-    connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
-        prog->setValue(prog->maximum());
-        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+    // Queued + QPointer'd dialog: same reasoning as onSendReceived.
+    QPointer<QProgressDialog> progGuard(prog);
+    connect(dcc, &DccReceive::finished, this, [this, progGuard, dccGuard](const QString &path){
+        if (progGuard) {
+            progGuard->setValue(progGuard->maximum());
+            progGuard->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+        }
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::information(m_window, "DCC", "File received:\n" + path);
-    });
-    connect(dcc, &DccReceive::error, this, [this, prog, dccGuard](const QString &msg){
-        prog->close();
+    }, Qt::QueuedConnection);
+    connect(dcc, &DccReceive::error, this, [this, progGuard, dccGuard](const QString &msg){
+        if (progGuard) progGuard->close();
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::warning(m_window, "DCC Error", msg);
-    });
+    }, Qt::QueuedConnection);
     connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
         if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
     });
@@ -226,16 +239,20 @@ void DccController::sendFile(const ServerId &host, const QString &nick)
     connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
         prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
     });
-    connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
-        prog->setValue(prog->maximum());
-        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+    // Queued + QPointer'd dialog: same reasoning as onSendReceived.
+    QPointer<QProgressDialog> progGuard(prog);
+    connect(dcc, &DccSend::finished, this, [progGuard, dccGuard]{
+        if (progGuard) {
+            progGuard->setValue(progGuard->maximum());
+            progGuard->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+        }
         if (dccGuard) dccGuard->deleteLater();
-    });
-    connect(dcc, &DccSend::error, this, [this, prog, dccGuard](const QString &msg){
-        prog->close();
+    }, Qt::QueuedConnection);
+    connect(dcc, &DccSend::error, this, [this, progGuard, dccGuard](const QString &msg){
+        if (progGuard) progGuard->close();
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::warning(m_window, "DCC Error", msg);
-    });
+    }, Qt::QueuedConnection);
     connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
         if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
     });
@@ -279,17 +296,21 @@ void DccController::sendFilePassive(const ServerId &host, const QString &nick)
     connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
         prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
     });
-    connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
-        prog->setValue(prog->maximum());
-        prog->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+    // Queued + QPointer'd dialog: same reasoning as onSendReceived.
+    QPointer<QProgressDialog> progGuard(prog);
+    connect(dcc, &DccSend::finished, this, [progGuard, dccGuard]{
+        if (progGuard) {
+            progGuard->setValue(progGuard->maximum());
+            progGuard->close(); // setValue(max) only hides; close() lets WA_DeleteOnClose fire
+        }
         if (dccGuard) dccGuard->deleteLater();
-    });
-    connect(dcc, &DccSend::error, this, [this, prog, dccGuard, token](const QString &msg){
-        prog->close();
+    }, Qt::QueuedConnection);
+    connect(dcc, &DccSend::error, this, [this, progGuard, dccGuard, token](const QString &msg){
+        if (progGuard) progGuard->close();
         m_pendingPassiveSends.remove(token);
         if (dccGuard) dccGuard->deleteLater();
         QMessageBox::warning(m_window, "DCC Error", msg);
-    });
+    }, Qt::QueuedConnection);
     connect(prog, &QProgressDialog::canceled, dcc, [this, dccGuard, token]{
         m_pendingPassiveSends.remove(token);
         if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }

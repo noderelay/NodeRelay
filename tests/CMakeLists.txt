@@ -40,6 +40,15 @@ uplink_test(tst_ignoretypes
         tst_ignoretypes.cpp
 )
 
+uplink_test(tst_dcctransfer
+    SOURCES
+        tst_dcctransfer.cpp
+        ${CMAKE_SOURCE_DIR}/src/irc/dccsend.cpp
+        ${CMAKE_SOURCE_DIR}/src/irc/dccreceive.cpp
+        ${CMAKE_SOURCE_DIR}/src/logging.cpp
+    LIBS Qt6::Network
+)
+
 uplink_test(tst_panetree
     SOURCES
         tst_panetree.cpp

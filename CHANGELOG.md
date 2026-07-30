@@ -1,6 +1,28 @@
 # Changelog
 
 <!--
+2026-07-29 (later): BOTH ends crashed after the first successful LAN
+transfer (zippy→fortis). Root cause, proven via fortis core dumps
+(SIGSEGV in canReadNotification, vtable call through freed socket) and
+an offscreen ASan repro of the controller wiring: DccController's
+finished/error handlers ran synchronously inside the socket's signal
+emission, opened modal QMessageBoxes (nested event loop), and the
+receiver — which never marked itself done on success — then emitted a
+bogus RemoteHostClosed error from inside that nested loop, whose
+handler's deleteLater executed while the socket's own emission was
+still on the stack. Deleted socket mid-emission = SEGV on unwind.
+Second find from the same repro: the receiver's teardown destroyed the
+socket before the final 4-byte ACK flushed, so the SENDER never
+completed — sat at ~100% until the 60s stall guard errored (zippy's
+crash entry point). Fixes: DccReceive completion sets m_done and
+flush()es the ACK before teardown; all four finished/error connect
+pairs in DccController are Qt::QueuedConnection (same rule the offer
+slots always had) with QPointer'd progress dialogs. New
+tst_dcctransfer runs real localhost transfers, active and passive,
+with the controller's deleteLater-on-finished pattern.
+-->
+
+<!--
 2026-07-29: Preferences gets a File Transfers page — the [dcc] block
 (allow_lan, external_ip, port_min/port_max) was config-file-only, found
 during the first real LAN wire test (zippy→fortis blocked as designed,
