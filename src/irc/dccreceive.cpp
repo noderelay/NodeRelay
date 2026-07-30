@@ -231,6 +231,11 @@ void DccReceive::onReadyRead()
 
     if (m_received >= m_total) {
         qCDebug(lcDcc) << "recv: complete," << m_received << "bytes";
+        // Success: flush the final ACK before teardown can destroy the socket
+        // (the sender never completes without it), and mark done so the
+        // trailing disconnect doesn't surface as a bogus error.
+        m_done = true;
+        m_socket->flush();
         const QString partPath = m_file.fileName();
         m_file.close();
         m_socket->disconnectFromHost();
