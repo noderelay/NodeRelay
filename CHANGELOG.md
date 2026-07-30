@@ -2899,6 +2899,22 @@ Session 2026-07-06:
 No regressions; 5/5 tests pass. No release tagged.
 -->
 
+## v2026.8.2 — 2026-07-29
+
+- **DCC through NAT**: a new `[dcc]` config block sets the external IPv4 to advertise in outgoing offers and pins listeners to a forwardable port range. Where the network reveals your host (numeric 396 or your own JOIN prefix), the external IP is discovered automatically — the config value stays as an override
+- **`allow_lan`** in the same block (default off) permits DCC transfers with LAN peers, for moving files between your own machines; the link-preview SSRF guard is untouched
+- **No doubled backlog behind plain ZNC**: any `znc.in/*` capability now marks the link as a bouncer that replays on attach, so the local-log seed stays out of the replay's way
+- **Read marks wait for you**: a buffer open in a pane or pop-out window no longer gets marked read while Uplink is unfocused, so your other clients keep their unread badges until you've actually looked
+- The jump-to-bottom button belongs to every chat view now — docked panes and popped-out windows included, not just the main view
+- `/query nick <text>` sends the text (mIRC-style) instead of silently dropping it, and `/query` and `/msg` move the sidebar highlight along with the view
+- The sidebar highlight follows keyboard focus: click into a pane and its row lights up, click back into the main view and the active buffer's row does
+- Fix: a `/query` or `/msg` typed in a pane was saved as the old channel's draft and reappeared every time that channel was opened
+- Fix: context menus and pane drags survive their pane closing under them, `/clear` acts on the buffer it was typed in, and Esc only cancels a reply in the view it's pressed in
+- Fix: `/query`, `/msg` and the nick menu's Message could route into a hidden main view
+- Fix: failed and redirected link previews stalled the preview queue for 20 seconds each; redirected URLs get their preview cards now
+- Release builds report a clean version number with no commit hash; dev builds keep the `+hash` suffix
+- Pane layout save/restore moved into a tested module, and a hand-edited layout naming the same view twice no longer builds a broken tree
+
 ## v2026.8.1 — 2026-07-25
 
 - **Pane layout rebuilt on a split tree**: opening a pane now halves the roomiest view along its longer side, so three views can be three equal columns, three rows, or one tall view beside a stacked pair — no more fixed shapes per pane count. Dragging a pane onto another view's edge places it on that side; the middle still swaps
