@@ -1,6 +1,30 @@
 # Changelog
 
 <!--
+SESSION SUMMARY 2026-07-29, release day + first DCC wire test:
+
+- v2026.8.2 RELEASED (tag + all five artifacts + AUR ×3 + brew tap,
+  winget still queued upstream): everything since 2026.8.1 — quality
+  sweep #188-#195, ZNC seed fix #197, DCC NAT arc #199-#201, docs
+  audit #202, jump-to-bottom #203.
+- #204 (merged, unreleased): Preferences → File Transfers page for the
+  whole [dcc] block, applies live via SessionModel::setDccConfig;
+  block messages now name the page. Born from the first LAN wire test:
+  the allow_lan block fired as designed but flipping it meant editing
+  config.toml on both machines.
+- #205 (merged, unreleased): both ends crashed after the first
+  successful zippy→fortis transfer. Two bugs, detail in the block
+  below: dialogs/deleteLater inside socket signal emission (SIGSEGV)
+  and the receiver killing its final ACK before flush (sender stuck at
+  100% until the stall guard). New tst_dcctransfer covers real
+  localhost transfers.
+- Joe re-tested after both fixes: LAN DCC works end to end, both
+  directions of the block/allow behavior verified. The [dcc]
+  external_ip/port-forwarding path against a real outside peer is the
+  only DCC scenario still untested (ROADMAP updated to say so).
+-->
+
+<!--
 2026-07-29 (later): BOTH ends crashed after the first successful LAN
 transfer (zippy→fortis). Root cause, proven via fortis core dumps
 (SIGSEGV in canReadNotification, vtable call through freed socket) and

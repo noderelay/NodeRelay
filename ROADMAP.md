@@ -31,7 +31,7 @@ We're on Qt 6.11 but still writing a lot of Qt 5-era code. These are internal qu
 
 ## Planned — DCC
 
-Mostly finished as of 2026-07-27. Transfers work on LAN (opt-in via `[dcc] allow_lan`, off by default), in the one-side-NATed case (passive mode), and through a router with port forwarding (`[dcc]` external IP + port range, with automatic external-IP discovery when the network reveals it). Both-sides-NATed without port forwarding still has no path.
+Mostly finished as of 2026-07-27. Transfers work on LAN (opt-in via `[dcc] allow_lan` or Preferences → File Transfers, off by default; verified between two real machines 2026-07-29), in the one-side-NATed case (passive mode), and through a router with port forwarding (`[dcc]` external IP + port range, with automatic external-IP discovery when the network reveals it — this path is not yet tested against a real outside peer). Both-sides-NATed without port forwarding still has no path.
 
 - [ ] NAT traversal for the both-sides-NATed case — evaluate UPnP/NAT-PMP port mapping on the listening side; if we don't build it, promote the current Known Issues text into user-facing docs and call the limitation intentional.
 
