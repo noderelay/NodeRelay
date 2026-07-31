@@ -3,13 +3,19 @@
 # Script mode has no policy floor from the top-level CMakeLists — without
 # this, IN_LIST below breaks on CMakes that default CMP0057 to OLD.
 cmake_minimum_required(VERSION 3.16)
-execute_process(COMMAND git -C "${SRC_DIR}" rev-parse --short HEAD
-                OUTPUT_VARIABLE GIT_HASH
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                ERROR_QUIET
-                RESULT_VARIABLE GIT_RC)
-if(NOT GIT_RC EQUAL 0)
-    set(GIT_HASH "")
+# Only trust git if SRC_DIR is itself a checkout. A release tarball has no
+# .git, but git walks up the tree — extracted inside another repo (an AUR
+# clone, say) it would report that repo's HEAD as our build hash.
+set(GIT_HASH "")
+if(EXISTS "${SRC_DIR}/.git")
+    execute_process(COMMAND git -C "${SRC_DIR}" rev-parse --short HEAD
+                    OUTPUT_VARIABLE GIT_HASH
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET
+                    RESULT_VARIABLE GIT_RC)
+    if(NOT GIT_RC EQUAL 0)
+        set(GIT_HASH "")
+    endif()
 endif()
 
 if(GIT_HASH)
