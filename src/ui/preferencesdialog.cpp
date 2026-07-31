@@ -58,6 +58,12 @@ const QList<QPair<QString,QString>> PreferencesDialog::s_menuStyleChoices = {
     { "hidden",  "Hidden (shortcuts only)"   },
 };
 
+const QList<QPair<QString,QString>> PreferencesDialog::s_persistenceChoices = {
+    { "default", "Server default" },
+    { "on",      "Enabled"        },
+    { "off",     "Disabled"       },
+};
+
 static QLabel *pageTitle(const QString &text)
 {
     auto *l = new QLabel(text);
@@ -400,6 +406,29 @@ QWidget *PreferencesDialog::createInterfacePage(const Config &cfg)
         connect(m_menuStyleGroup, &QButtonGroup::idClicked, this, [this](int idx){
             if (idx >= 0 && idx < s_menuStyleChoices.size())
                 emit menuStyleChanged(s_menuStyleChoices[idx].first);
+        });
+    }
+
+    vbox->addSpacing(6);
+    vbox->addWidget(sectionLabel("Stay Online (keeps your nick online like an IRC bouncer)"));
+    {
+        m_persistenceGroup = new QButtonGroup(this);
+        m_persistenceGroup->setExclusive(true);
+        const QString tip =
+            "Keep your nick on the server while Uplink is closed, like a\n"
+            "bouncer: no quit/join churn, and missed messages are waiting\n"
+            "when you reconnect. Needs a server that supports\n"
+            "draft/persistence (e.g. Ergo).";
+        for (int i = 0; i < s_persistenceChoices.size(); ++i) {
+            auto *rb = new QRadioButton(s_persistenceChoices[i].second);
+            rb->setToolTip(tip);
+            rb->setChecked(s_persistenceChoices[i].first == cfg.ui.persistence);
+            m_persistenceGroup->addButton(rb, i);
+            vbox->addWidget(rb);
+        }
+        connect(m_persistenceGroup, &QButtonGroup::idClicked, this, [this](int idx){
+            if (idx >= 0 && idx < s_persistenceChoices.size())
+                emit persistenceChanged(s_persistenceChoices[idx].first);
         });
     }
 

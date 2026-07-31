@@ -130,7 +130,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/avatar <url>` | Set your avatar via IRCv3 `draft/metadata`. Accepts an `https://` URL or a local file path. Leave blank to clear. Requires server support. |
 | `/chanavatar <url>` | Set the current channel's avatar, shown as its sidebar icon in metadata-capable clients. Channel-op only; leave blank to clear. Requires server support. Images are fetched over https and capped at 1 MB. |
 | `/status <text>` | Set your status text via IRCv3 `draft/metadata`; shown as an italic line in nick tooltips. Leave blank to clear. Requires server support. |
-| `/persistence [on\|off\|default]` | Read or set server-side always-on presence (IRCv3 `draft/persistence`; Ergo calls it always-on). With no argument, reports the current state. |
+| `/persistence [on\|off\|default]` | Read or set server-side always-on presence (IRCv3 `draft/persistence`; Ergo calls it always-on). With no argument, reports the current state. Also settable app-wide from **Preferences → Interface → Stay Online**. |
 | `/caps` | List all IRCv3 capabilities currently negotiated with the server |
 
 ### Examples

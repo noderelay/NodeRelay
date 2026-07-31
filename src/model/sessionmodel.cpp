@@ -145,6 +145,14 @@ void SessionModel::setHighlightWords(const QString &words)
         sess.highlightRe = re;
 }
 
+void SessionModel::setPersistence(const QString &mode)
+{
+    m_config.ui.persistence = mode;
+    for (IrcClient *cl : std::as_const(m_clients))
+        if (cl->isConnected() && cl->hasCap("draft/persistence"))
+            cl->sendRaw("PERSISTENCE SET " + mode);
+}
+
 void SessionModel::setIgnore(const QString &nick, IgnoreTypes flags)
 {
     m_ignoredNicks.insert(nick.toLower(), flags);
@@ -948,6 +956,10 @@ void SessionModel::onConnected(const QString &hostStr)
 
     // Caps are settled by now, so the server buffer can take its log seed.
     seedFromLog(host, serverBufferId());
+
+    // Apply the persistence preference; "default" leaves the server's choice
+    if (m_config.ui.persistence != "default" && cl->hasCap("draft/persistence"))
+        cl->sendRaw("PERSISTENCE SET " + m_config.ui.persistence);
 
     // Join configured channels (with keys)
     QSet<QString> configChans;

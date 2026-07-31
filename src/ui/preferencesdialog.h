@@ -43,6 +43,7 @@ signals:
     void paneSplitAutoToggled(bool on);
     void panelCardsToggled(bool on);
     void menuStyleChanged(const QString &style);
+    void persistenceChanged(const QString &mode);
     void manageServersRequested();
     void aboutRequested();
     void docsRequested();
@@ -89,6 +90,7 @@ private:
     QButtonGroup *m_bracketsGroup{nullptr};
     QCheckBox    *m_paneSplitAutoCheck{nullptr};
     QButtonGroup *m_menuStyleGroup{nullptr};
+    QButtonGroup *m_persistenceGroup{nullptr};
     QCheckBox *m_dccAllowLanCheck{nullptr};
     QLineEdit *m_dccExternalIpEdit{nullptr};
     QSpinBox  *m_dccPortMinSpin{nullptr};
@@ -100,4 +102,5 @@ private:
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
     static const QList<QPair<QString,QString>> s_menuStyleChoices;
+    static const QList<QPair<QString,QString>> s_persistenceChoices;
 };

@@ -262,7 +262,7 @@ Allows composing and sending messages that span multiple lines as a single logic
 
 ### `draft/persistence`
 
-Negotiated when the server offers it (Ergo's always-on draft). With persistence, the server can keep your presence alive after the client disconnects, replaying what you missed when you return. `PERSISTENCE STATUS` lines — sent in the registration burst and in reply to `PERSISTENCE GET`/`SET` — are rendered in the server buffer as `Persistence: <effective> (your setting: <requested>)`. Servers that require a registered account for persistence answer with `FAIL PERSISTENCE ACCOUNT_REQUIRED`, which Uplink shows for persistence commands.
+Negotiated when the server offers it (Ergo's always-on draft). With persistence, the server can keep your presence alive after the client disconnects, replaying what you missed when you return. `PERSISTENCE STATUS` lines — sent in the registration burst and in reply to `PERSISTENCE GET`/`SET` — are rendered in the server buffer as `Persistence: <effective> (your setting: <requested>)`. Servers that require a registered account for persistence answer with `FAIL PERSISTENCE ACCOUNT_REQUIRED`, which Uplink shows for persistence commands. Besides the `/persistence` command, **Preferences → Interface → Stay Online** sets a client-wide preference (`persistence` in config) that is applied to every supporting server on connect.
 
 ---
 
