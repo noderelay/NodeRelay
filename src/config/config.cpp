@@ -153,6 +153,9 @@ Config Config::load(const QString &path)
             cfg.ui.menuStyle       = ustr("menu_style", "menubar");
             if (cfg.ui.menuStyle != "hidden")
                 cfg.ui.menuStyle = "menubar";
+            cfg.ui.persistence     = ustr("persistence", "default");
+            if (cfg.ui.persistence != "on" && cfg.ui.persistence != "off")
+                cfg.ui.persistence = "default";
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10.0);
@@ -374,6 +377,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "pane_split_axis = " << tomlQuote(cfg.ui.paneSplitAxis) << "\n";
     out << "panel_cards = " << boolStr(cfg.ui.panelCards) << "\n";
     out << "menu_style = " << tomlQuote(cfg.ui.menuStyle) << "\n";
+    out << "persistence = " << tomlQuote(cfg.ui.persistence) << "\n";
     out << "notifications = " << boolStr(cfg.ui.notifications) << "\n";
     out << "font_family = " << tomlQuote(cfg.ui.fontFamily) << "\n";
     out << "font_toolbar = " << cfg.ui.fontSizes.toolbar << "\n";

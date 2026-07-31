@@ -85,6 +85,7 @@ public:
     void setIgnore         (const QString &nick, IgnoreTypes flags = kIgnoreAll);
     void clearIgnore       (const QString &nick);
     void setHighlightWords (const QString &words);
+    void setPersistence    (const QString &mode);
     // Comma-separated words → case-insensitive \b-anchored regex with one
     // capture group (the renderer highlights group 1). Invalid = no matches.
     static QRegularExpression buildHighlightRe(const QString &words)

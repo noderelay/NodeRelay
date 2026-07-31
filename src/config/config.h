@@ -128,6 +128,9 @@ struct UiConfig {
     QString   paneSplitAxis{"auto"};
     bool      panelCards{true};       // side panels use own theme colors + rounded-top cards
     QString   menuStyle{"menubar"};   // "menubar" (File/Edit/... bar), "hidden" (shortcuts only)
+    // draft/persistence: "default" (server decides), "on" (stay online while
+    // disconnected), "off" — applied on connect to servers that support it
+    QString   persistence{"default"};
 };
 
 struct DccConfig {

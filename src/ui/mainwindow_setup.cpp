@@ -355,6 +355,12 @@ void MainWindow::connectPreferences()
         applyMenuStyle();
     });
 
+    connect(m_prefsDialog, &PreferencesDialog::persistenceChanged, this, [this](const QString &mode){
+        m_config.ui.persistence = mode;
+        saveConfig();
+        m_model->setPersistence(mode);
+    });
+
     connect(m_prefsDialog, &PreferencesDialog::timestampsToggled,
             this, &MainWindow::applyTimestampsSetting);
 
