@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+SESSION SUMMARY 2026-07-30, one bug from the field, fixed and merged:
+
+- Eagle's CTCP VERSION reply read "2026.8.2+d0d07ab" from the plain AUR
+  uplink-irc package. Not a -git build: d0d07ab is the HEAD of the AUR
+  package repo itself. The PKGBUILD extracts the release tarball (no
+  .git) into the AUR clone's src/, and gitversion.cmake's rev-parse
+  walked up the tree to the AUR checkout — clean tree, no v-tag, so the
+  dev-style +hash suffix stuck. Only git-clone+makepkg users see it;
+  helpers building outside a git tree don't, hence "intermittent".
+- Fix #206 (merged, unreleased): gitversion.cmake only runs git when
+  SRC_DIR/.git exists (dir in a clone, file in a worktree). Verified in
+  script mode both ways: nested-tarball dir → plain 2026.8.2, real
+  checkout → +hash. Full build + all CI green.
+- Existing 2026.8.2 tarball builds keep the bogus suffix until the next
+  release; nothing to do retroactively. The -git package clones for
+  real and was never affected.
+- pinCertificate stale-config-copy fix still the one backlog item,
+  awaiting go-ahead (see 07-29 evening summary below).
+-->
+
+<!--
 SESSION SUMMARY 2026-07-29 (evening), diagnosis only — no code changed:
 
 - "Unread counters gone on fortis, fine on zippy" turned out to be
