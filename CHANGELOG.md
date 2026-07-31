@@ -19,8 +19,26 @@ unreleased):
   section now leads with the Preferences path, pointers in ircv3.md
   and commands.md.
 - Full build + 9/9 tests green.
-- pinCertificate stale-config-copy fix is still the one backlog item,
-  awaiting go-ahead (see 07-29 evening summary).
+
+Session continued after the first close; two more items, both done:
+
+- pinCertificate stale-config bug FIXED (#208, merged, unreleased) at
+  Joe's go-ahead: a TOFU cert accept saved the model's launch-frozen
+  config copy, reverting every setting changed since launch (found
+  07-29 tracing the unread-counters scare). Now a read-modify-write:
+  reload config from disk, set only ssl_fingerprint, save that.
+  Round-trip proven with a standalone load→pin→save harness (session
+  toggles, keychain sentinel, plaintext passwords, channel keys all
+  preserved). ROADMAP known-issues entry removed. Backlog EMPTY.
+- winget ABANDONED, Joe's call. The 2026.7.6 submission (winget-pkgs
+  #403545, queued since 07-17) finally got manual validation and
+  Defender false-flagged the zip as Trojan:Win32/Sprisky.U!cl.
+  Verified untampered: asset hash matches the manifest SHA-256,
+  contents the normal windeployqt bundle. Joe declined the WDSI
+  dispute path; both PRs (#403545, #403562) closed, ROADMAP and the
+  site's "winget package in review" line updated, and Joe posted a
+  for-the-record reply on the PR. Windows channel is the release-page
+  zip.
 -->
 
 <!--
