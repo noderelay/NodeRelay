@@ -1653,7 +1653,17 @@ void SessionModel::pinCertificate(const ServerId &host, const QString &fingerpri
     for (auto &sc : m_config.servers) {
         if (sc.name == host.str()) {
             sc.pinnedFingerprint = fingerprint;
-            Config::save(m_config, Config::defaultPath());
+            break;
+        }
+    }
+    // Read-modify-write only the fingerprint: our own copy's [ui]/[dcc]
+    // sections are frozen at launch, and saving them here would revert
+    // every setting changed since (MainWindow owns the live config)
+    Config fresh = Config::load(Config::defaultPath());
+    for (auto &sc : fresh.servers) {
+        if (sc.name == host.str()) {
+            sc.pinnedFingerprint = fingerprint;
+            Config::save(fresh, Config::defaultPath());
             break;
         }
     }
