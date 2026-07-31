@@ -1,6 +1,29 @@
 # Changelog
 
 <!--
+SESSION SUMMARY 2026-07-31, persistence gets a GUI (#207, merged,
+unreleased):
+
+- Joe wanted the bouncer-like always-on feature reachable without
+  knowing /persistence exists. New Preferences → Interface section
+  "Stay Online (keeps your nick online like an IRC bouncer)" with
+  Server default / Enabled / Disabled radios; label wording is Joe's.
+- Stored as persistence = "default"|"on"|"off" under [ui]. Enabled/
+  Disabled are sent to every connected server with draft/persistence
+  and re-applied on each connect (onConnected, after caps settle);
+  Server default sends nothing and leaves the server's account
+  setting alone. Confirmation is the existing PERSISTENCE STATUS
+  line in the server buffer. /persistence remains a live per-server
+  override.
+- Docs: configuration.md sample + key table, howto.html persistence
+  section now leads with the Preferences path, pointers in ircv3.md
+  and commands.md.
+- Full build + 9/9 tests green.
+- pinCertificate stale-config-copy fix is still the one backlog item,
+  awaiting go-ahead (see 07-29 evening summary).
+-->
+
+<!--
 SESSION SUMMARY 2026-07-30, one bug from the field, fixed and merged:
 
 - Eagle's CTCP VERSION reply read "2026.8.2+d0d07ab" from the plain AUR
